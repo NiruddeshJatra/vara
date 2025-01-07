@@ -28,6 +28,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
     'advertisements',
     'complaints',
     'rentals',
@@ -44,6 +48,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'vhara.urls'
@@ -65,6 +70,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'vhara.wsgi.application'
+
+SITE_ID = 1
 
 # Database configuration
 DATABASES = {
@@ -88,6 +95,19 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTH_USER_MODEL = 'users.CustomUser'
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',  # Default backend
+    'allauth.account.auth_backends.AuthenticationBackend',  # Allauth backend
+]
+
+# Allauth configurations
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'  # Login using username or email
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'optional'  # Options: 'mandatory', 'optional', 'none'
+LOGIN_REDIRECT_URL = '/'  # Redirect after login
+LOGOUT_REDIRECT_URL = '/login/'  # Redirect after logout
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
