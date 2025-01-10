@@ -10,3 +10,9 @@ class CustomRegisterSerializer(RegisterSerializer):
         user.phone_number = self.validated_data.get("phone_number", "")
         user.location = self.validated_data.get("location", "")
         user.save()
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['phone_number', 'location', 'profile_picture', 'date_of_birth', 'bio', 'social_links']

@@ -29,16 +29,17 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # for user authentication
     "django.contrib.sites",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
-    "allauth.socialaccount.providers.facebook",
     "rest_framework",
     "rest_framework.authtoken",
     "dj_rest_auth",
     "dj_rest_auth.registration",
+    # all apps
     "advertisements",
     "complaints",
     "rentals",
@@ -112,6 +113,20 @@ REST_AUTH_REGISTER_SERIALIZERS = {
 
 # Database configuration
 DATABASES = {"default": env.db("DATABASE_URL", default="sqlite:///db.sqlite3")}
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'vhara_db',
+        'USER': 'vhara_user',
+        'PASSWORD': 'Qweasd123@#Nj',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        }
+    }
+}
+
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
