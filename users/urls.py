@@ -5,6 +5,6 @@ from . import views
 
 
 urlpatterns = [
-    path("api/social/google/", views.GoogleLogin.as_view(), name="google_login"),
-    path("", views.home),
+    # path("api/social/google/", views.GoogleLogin.as_view(), name="google_login"),
+    # path("", views.home),
 ]

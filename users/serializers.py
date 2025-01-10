@@ -12,7 +12,7 @@ class CustomRegisterSerializer(RegisterSerializer):
         user.save()
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = ['phone_number', 'location', 'profile_picture', 'date_of_birth', 'bio', 'social_links']
+# class UserProfileSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = CustomUser
+#         fields = ['phone_number', 'location', 'profile_picture', 'date_of_birth', 'bio', 'social_links']

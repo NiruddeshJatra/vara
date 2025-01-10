@@ -106,13 +106,15 @@ REST_FRAMEWORK = {
     ],
 }
 
+CSRF_COOKIE_NAME = "csrftoken"
+CSRF_COOKIE_HTTPONLY = False
+
 REST_AUTH_REGISTER_SERIALIZERS = {
     "REGISTER_SERIALIZER": "users.serializers.CustomRegisterSerializer",
 }
 
 
 # Database configuration
-DATABASES = {"default": env.db("DATABASE_URL", default="sqlite:///db.sqlite3")}
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -124,7 +126,11 @@ DATABASES = {
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         }
-    }
+    },
+    'test': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
+    },
 }
 
 
@@ -147,15 +153,15 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTH_USER_MODEL = "users.CustomUser"
 
 AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
-    'social_core.backends.google.GoogleOAuth2',
 ]
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_EMAIL_VERIFICATION = "optional"
+ACCOUNT_EMAIL_VERIFICATION = "none"
 SOCIALACCOUNT_QUERY_EMAIL = True
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/login/"
