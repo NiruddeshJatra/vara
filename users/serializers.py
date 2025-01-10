@@ -1,7 +1,12 @@
+from dj_rest_auth.registration.serializers import RegisterSerializer
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = get_user_model()
-        fields = ('id', 'email', 'first_name', 'last_name')
+
+class CustomRegisterSerializer(RegisterSerializer):
+    phone_number = serializers.CharField(required=True, max_length=15)
+    location = serializers.CharField(required=True, max_length=255)
+
+    def custom_signup(self, request, user):
+        user.phone_number = self.validated_data.get("phone_number", "")
+        user.location = self.validated_data.get("location", "")
+        user.save()
