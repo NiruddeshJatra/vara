@@ -9,6 +9,8 @@ class CustomUser(AbstractUser):
     profile_picture = models.ImageField(upload_to="profile_pictures/", null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     social_links = models.JSONField(null=True, blank=True)
 
     def __str__(self):
