@@ -26,6 +26,12 @@ class Product(models.Model):
     user = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, related_name="advertisements"
     )
+    average_rating = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        default=0,
+        editable=False
+    )
     
     class Meta:
         ordering = ['-created_at']
@@ -47,6 +53,14 @@ class Product(models.Model):
             if category in categories:
                 return group
         return None
+      
+    def update_average_rating(self):
+        avg = Review.objects.filter(
+            review_type='property',
+            rental__product=self
+        ).aggregate(Avg('rating'))['rating__avg'] or 0
+        self.average_rating = round(avg, 2)
+        self.save()
 
     def __str__(self):
         return self.title

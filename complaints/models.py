@@ -3,6 +3,8 @@ from django.db import models
 from django.core.validators import MinLengthValidator, MinValueValidator
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from users.models import CustomUser
+from rentals.models import Rental
 
 class Complaint(models.Model):
     class ComplaintStatus(models.TextChoices):
@@ -27,18 +29,17 @@ class Complaint(models.Model):
         OTHER = 'other', 'Other'
 
     # Basic Fields
-    complainant = models.ForeignKey(
-        'CustomUser', 
-        on_delete=models.PROTECT,  # Changed to PROTECT to preserve complaint history
+    complainant = models.ForeignKey(CustomUser, 
+        on_delete=models.PROTECT,
         related_name='filed_complaints'
     )
     against_user = models.ForeignKey(
-        'CustomUser',
+        CustomUser,
         on_delete=models.PROTECT,
         related_name='complaints_received'
     )
     rental_request = models.ForeignKey(
-        'Rentals',
+        Rental,
         on_delete=models.PROTECT,
         related_name='complaints'
     )
@@ -76,7 +77,7 @@ class Complaint(models.Model):
 
     # Administrative Fields
     assigned_to = models.ForeignKey(
-        'CustomUser',
+        CustomUser,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -161,7 +162,7 @@ class Complaint(models.Model):
 class ComplaintUpdate(models.Model):
     """Model to track updates and communication regarding complaints"""
     complaint = models.ForeignKey(Complaint, on_delete=models.CASCADE, related_name='updates')
-    user = models.ForeignKey('CustomUser', on_delete=models.PROTECT)
+    user = models.ForeignKey(CustomUser, on_delete=models.PROTECT)
     message = models.TextField()
     attachment = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

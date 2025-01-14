@@ -68,8 +68,9 @@ class UserViewSet(viewsets.ModelViewSet):
         
         # Or hard delete
         # user.delete()
+        Session.objects.filter(session_key=request.session.session_key).delete()
         
-        return Response(status=204)
+        return Response({"detail": "Account deleted successfully"}, status=204)
       
     @throttle_classes([AuthenticationThrottle])
     class LoginView(APIView):

@@ -31,6 +31,8 @@ class Payment(models.Model):
     
     class Meta:
         ordering = ['-created_at']
+        verbose_name = "Payment"
+        verbose_name_plural = "Payments"
 
     def __str__(self):
-        return f"Payment {self.transaction_id} - {self.status}"
+        return f"Payment {self.transaction_id  or 'N/A'} - {self.status}"

@@ -23,7 +23,7 @@ class Rental(models.Model):
     end_time = models.DateTimeField(help_text='When renting period ends')
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='pending')
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
-    security_deposit = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    security_deposit = models.DecimalField(max_digits=10, decimal_places=2, editable=False, null=True, blank=True)
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

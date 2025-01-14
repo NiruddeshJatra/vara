@@ -3,6 +3,7 @@ from rest_framework import serializers
 import re
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
+from .models import CustomUser
 
 class ProfilePictureSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,11 +11,15 @@ class ProfilePictureSerializer(serializers.ModelSerializer):
         fields = ['profile_picture']
 
     def validate_profile_picture(self, value):
-        if value.size > 5 * 1024 * 1024:  # 5MB limit
-            raise serializers.ValidationError("Image size cannot exceed 5MB")
-        if value.content_type not in ['image/jpeg', 'image/png']:
-            raise serializers.ValidationError("Only JPEG and PNG files are allowed")
+        try:
+            if value.size > 5 * 1024 * 1024:  # 5MB limit
+                raise serializers.ValidationError("Image size cannot exceed 5MB")
+            if value.content_type not in ['image/jpeg', 'image/png']:
+                raise serializers.ValidationError("Only JPEG and PNG files are allowed")
+        except AttributeError as e:
+            raise serializers.ValidationError("Invalid file upload") from e
         return value
+
 
 class SocialLinksSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,17 +31,20 @@ class SocialLinksSerializer(serializers.ModelSerializer):
         allowed_platforms = ['linkedin', 'twitter', 'facebook', 'github']
 
         if not isinstance(value, dict):
-            raise serializers.ValidationError("Social links must be a dictionary")
+            raise serializers.ValidationError("Social links must be provided as a dictionary of platform-URL pairs")
 
         for platform, url in value.items():
             if platform not in allowed_platforms:
-                raise serializers.ValidationError(f"Invalid platform: {platform}")
+                raise serializers.ValidationError(f"Invalid platform '{platform}'. Allowed platforms are: {', '.join(allowed_platforms)}")
             try:
                 url_validator(url)
             except ValidationError as e:
-                raise serializers.ValidationError(f"Invalid URL for {platform}") from e
+                raise serializers.ValidationError(
+                    f"Invalid URL '{url}' for platform '{platform}'"
+                ) from e
 
         return value
+
 
 class CustomRegisterSerializer(RegisterSerializer):
     phone_number = serializers.CharField(required=True, max_length=15)
@@ -58,6 +66,7 @@ class CustomRegisterSerializer(RegisterSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
+    bio = serializers.CharField(required=False, max_length=500)
     
     class Meta:
         model = CustomUser
