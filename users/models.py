@@ -17,6 +17,9 @@ class CustomUser(AbstractUser):
         default=0,
         editable=False
     )
+    
+    USERNAME_FIELD = 'email'  # Use email for authentication
+    REQUIRED_FIELDS = ['username']
 
     class Meta:
         ordering = ['-date_joined']

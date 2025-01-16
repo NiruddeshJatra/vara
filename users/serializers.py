@@ -47,6 +47,8 @@ class SocialLinksSerializer(serializers.ModelSerializer):
 
 
 class CustomRegisterSerializer(RegisterSerializer):
+    username = serializers.CharField(required=True, max_length=150)
+    email = serializers.EmailField(required=True)
     phone_number = serializers.CharField(required=True, max_length=15)
     location = serializers.CharField(required=True, max_length=255)
     first_name = serializers.CharField(required=True, max_length=150)
@@ -63,6 +65,12 @@ class CustomRegisterSerializer(RegisterSerializer):
         if not re.match(r'^\+?88?01[5-9]\d{8}$', phone_number):
             raise serializers.ValidationError("Invalid phone number format")
         return phone_number
+      
+    def validate_email(self, email):
+        if User.objects.filter(email=email).exists():
+            raise serializers.ValidationError("A user with this email already exists.")
+        return email
+
 
 class UserProfileSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
