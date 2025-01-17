@@ -2,7 +2,6 @@ from dj_rest_auth.registration.serializers import RegisterSerializer
 from rest_framework import serializers
 import re
 from django.core.validators import URLValidator
-from django.core.exceptions import ValidationError
 from .models import CustomUser
 
 class ProfilePictureSerializer(serializers.ModelSerializer):
@@ -14,35 +13,10 @@ class ProfilePictureSerializer(serializers.ModelSerializer):
         try:
             if value.size > 5 * 1024 * 1024:  # 5MB limit
                 raise serializers.ValidationError("Image size cannot exceed 5MB")
-            if value.content_type not in ['image/jpeg', 'image/png']:
-                raise serializers.ValidationError("Only JPEG and PNG files are allowed")
+            if value.content_type not in ['image.jpg', 'image/jpeg', 'image/png']:
+                raise serializers.ValidationError("Only JPG, JPEG and PNG files are allowed")
         except AttributeError as e:
             raise serializers.ValidationError("Invalid file upload") from e
-        return value
-
-
-class SocialLinksSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = ['social_links']
-
-    def validate_social_links(self, value):
-        url_validator = URLValidator()
-        allowed_platforms = ['linkedin', 'twitter', 'facebook', 'github']
-
-        if not isinstance(value, dict):
-            raise serializers.ValidationError("Social links must be provided as a dictionary of platform-URL pairs")
-
-        for platform, url in value.items():
-            if platform not in allowed_platforms:
-                raise serializers.ValidationError(f"Invalid platform '{platform}'. Allowed platforms are: {', '.join(allowed_platforms)}")
-            try:
-                url_validator(url)
-            except ValidationError as e:
-                raise serializers.ValidationError(
-                    f"Invalid URL '{url}' for platform '{platform}'"
-                ) from e
-
         return value
 
 

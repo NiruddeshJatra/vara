@@ -9,7 +9,6 @@ class CustomUser(AbstractUser):
     bio = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    social_links = models.JSONField(null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     average_rating = models.DecimalField(
         max_digits=3,
@@ -18,7 +17,7 @@ class CustomUser(AbstractUser):
         editable=False
     )
     
-    USERNAME_FIELD = 'email'  # Use email for authentication
+    USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
     class Meta:
