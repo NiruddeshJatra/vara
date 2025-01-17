@@ -3,7 +3,6 @@ from .throttles import AuthenticationThrottle
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.utils.timezone import now
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.contrib.auth import update_session_auth_hash
 from .models import CustomUser
@@ -16,8 +15,8 @@ class UserViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = UserFilter
     search_fields = ['username', 'email', 'first_name', 'last_name', 'location']
-    ordering_fields = ['date_joined', 'created_at']
-    ordering = ['-date_joined']
+    ordering_fields = ['created_at']
+    ordering = ['-created_at']
 
     def get_queryset(self):
         if self.action in ['list', 'retrieve']:
@@ -35,8 +34,7 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-      
-        
+    
     @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser])
     def upload_picture(self, request):
         serializer = ProfilePictureSerializer(request.user, data=request.data, partial=True)
@@ -44,14 +42,6 @@ class UserViewSet(viewsets.ModelViewSet):
             # Delete old picture if it exists
             if request.user.profile_picture:
                 request.user.profile_picture.delete()
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=400)
-
-    @action(detail=False, methods=['post'])
-    def update_social_links(self, request):
-        serializer = SocialLinksSerializer(request.user, data=request.data, partial=True)
-        if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)

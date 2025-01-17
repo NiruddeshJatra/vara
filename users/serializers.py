@@ -1,7 +1,6 @@
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from rest_framework import serializers
 import re
-from django.core.validators import URLValidator
 from .models import CustomUser
 
 class ProfilePictureSerializer(serializers.ModelSerializer):
@@ -54,8 +53,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = [
             'id', 'username', 'email', 'full_name', 'phone_number', 
-            'location', 'profile_picture', 'date_of_birth', 'bio', 
-            'social_links', 'is_verified', 'created_at'
+            'location', 'profile_picture', 'date_of_birth', 'bio', 'is_verified', 'created_at'
         ]
         read_only_fields = ['id', 'email', 'is_verified', 'created_at']
 
