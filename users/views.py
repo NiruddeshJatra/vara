@@ -1,5 +1,6 @@
 from rest_framework.decorators import throttle_classes
 from .throttles import AuthenticationThrottle
+from dj_rest_auth.views import LoginView as DefaultLoginView
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -34,7 +35,6 @@ class UserViewSet(viewsets.ModelViewSet):
     def upload_picture(self, request):
         serializer = ProfilePictureSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
-            # Delete old picture if it exists
             if request.user.profile_picture:
                 request.user.profile_picture.delete()
             serializer.save()
@@ -57,12 +57,7 @@ class UserViewSet(viewsets.ModelViewSet):
         
         return Response({"detail": "Account deleted successfully"}, status=204)
       
-    @throttle_classes([AuthenticationThrottle])
-    class LoginView(APIView):
-        def post(self, request):
-            serializer = LoginSerializer(data=request.data)
-            if serializer.is_valid():
-                user = serializer.validated_data['user']
-                login(request, user)
-                return Response(UserSerializer(user).data)
-            return Response(serializer.errors, status=400)
+
+@throttle_classes([AuthenticationThrottle])
+class CustomLoginView(DefaultLoginView):
+    pass

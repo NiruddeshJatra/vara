@@ -1,4 +1,6 @@
-from django.urls import path, include
+from django.urls import path
+from .views import CustomLoginView
 
-
-urlpatterns = []
+urlpatterns = [
+    path('auth/login/', CustomLoginView.as_view(), name='custom_login'),
+]
