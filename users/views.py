@@ -4,12 +4,12 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
-from django.contrib.auth import update_session_auth_hash
 from .models import CustomUser
 from .serializers import UserProfileSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    queryset = CustomUser.objects.filter(is_active=True)
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -17,11 +17,6 @@ class UserViewSet(viewsets.ModelViewSet):
     search_fields = ['username', 'email', 'first_name', 'last_name', 'location']
     ordering_fields = ['created_at']
     ordering = ['-created_at']
-
-    def get_queryset(self):
-        if self.action in ['list', 'retrieve']:
-            return CustomUser.objects.filter(is_active=True)
-        return CustomUser.objects.filter(id=self.request.user.id)
 
     @action(detail=False, methods=['get', 'put', 'patch'])
     def me(self, request):
