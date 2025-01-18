@@ -10,10 +10,10 @@ class SessionManagementMiddleware:
             # Delete expired sessions
             Session.objects.filter(expire_date__lt=timezone.now()).delete()
 
-            # Limit active sessions per user (optional)
             sessions = Session.objects.filter(
                 expire_date__gte=timezone.now()
-            ).order_by('-expire_date')[5:]  # Keep only 5 most recent sessions
+            ).order_by('-expire_date')[5:]
+            
             for session in sessions:
                 session.delete()
 
