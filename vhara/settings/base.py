@@ -197,3 +197,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Media files
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
+
+SSLCOMMERZ_STORE_ID = 'your_store_id'
+SSLCOMMERZ_STORE_PASSWORD = 'your_store_password'
+
+SSLCOMMERZ_SANDBOX_MODE = True  # Set to False when moving to production
+SSLCOMMERZ_API_URL = 'https://sandbox.sslcommerz.com' if SSLCOMMERZ_SANDBOX_MODE else 'https://securepay.sslcommerz.com'

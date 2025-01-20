@@ -8,9 +8,9 @@ class PaymentSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'amount', 'currency', 'payment_method',
             'status', 'transaction_id', 'created_at',
-            'description', 'billing_address',
+            'description', 'billing_address', 'session_key', 'ssl_status'
         ]
-        read_only_fields = ['status', 'transaction_id', 'created_at']
+        read_only_fields = ['status', 'transaction_id', 'created_at', 'session_key', 'ssl_status']
 
     def validate_amount(self, value):
         if value <= Decimal('0'):

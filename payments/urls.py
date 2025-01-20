@@ -1,10 +1,13 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import PaymentViewSet
+from . import views
 
 router = DefaultRouter()
-router.register(r'payments', PaymentViewSet, basename='payment')
+router.register(r'payments', views.PaymentViewSet, basename='payment')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('payment-success/', views.payment_success, name='payment-success'),
+    path('payment-fail/', views.payment_fail, name='payment-fail'),
+    path('payment-cancel/', views.payment_cancel, name='payment-cancel'),
 ]

@@ -28,6 +28,8 @@ class Payment(models.Model):
     description = models.TextField(blank=True)
     billing_address = models.JSONField(null=True, blank=True)
     payment_details = models.JSONField(null=True, blank=True)
+    session_key = models.CharField(max_length=100, blank=True, null=True)
+    ssl_status = models.JSONField(null=True, blank=True)
     
     class Meta:
         ordering = ['-created_at']
