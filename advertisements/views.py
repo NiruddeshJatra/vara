@@ -8,15 +8,18 @@ from django.views.decorators.cache import cache_page
 
 from .models import Product, PricingOption, AvailabilityPeriod
 from .serializers import ProductSerializer, PricingOptionSerializer, AvailabilityPeriodSerializer
+from .filters import ProductFilter
 
 
 # Separate ViewSet for Product Read-Only operations (List/Retrieve)
 class ProductReadOnlyViewSet(ReadOnlyModelViewSet):
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_class = ProductFilter
     search_fields = ['title', 'description', 'location']
     ordering_fields = ['pricing__base_price', 'created_at']
+    ordering = ['pricing__base_price', 'created_at']
 
     def get_queryset(self):
         queryset = Product.objects.prefetch_related('pricing', 'availability_periods').all()
