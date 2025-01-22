@@ -3,6 +3,9 @@ from django.conf import settings
 from decimal import Decimal
 
 class Payment(models.Model):
+    """
+    Model representing a payment.
+    """
     PAYMENT_STATUS_CHOICES = [
         ('PENDING', 'Pending'),
         ('PROCESSING', 'Processing'),
@@ -30,11 +33,11 @@ class Payment(models.Model):
     payment_details = models.JSONField(null=True, blank=True)
     session_key = models.CharField(max_length=100, blank=True, null=True)
     ssl_status = models.JSONField(null=True, blank=True)
-    
+
     class Meta:
         ordering = ['-created_at']
         verbose_name = "Payment"
         verbose_name_plural = "Payments"
 
     def __str__(self):
-        return f"Payment {self.transaction_id  or 'N/A'} - {self.status}"
+        return f"Payment {self.transaction_id or 'N/A'} - {self.status}"

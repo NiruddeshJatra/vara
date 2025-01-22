@@ -1,12 +1,15 @@
-from django.db import models
+from django.db import models, transaction
 from django.core.exceptions import ValidationError
 from users.models import CustomUser
+from payments.models import Payment
 from advertisements.models import Product
 from django.utils import timezone
 from decimal import Decimal
 
-
 class Rental(models.Model):
+    """
+    Model representing a rental.
+    """
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('accepted', 'Accepted'),
@@ -60,3 +63,127 @@ class Rental(models.Model):
     def is_active(self):
         now = timezone.now()
         return self.status == 'accepted' and self.start_time <= now <= self.end_time
+
+    def approve_rental(self, payment_data):
+        """
+        Approve a rental request and create escrow payment.
+        """
+        if self.status != 'pending':
+            raise ValidationError("Can only approve pending rental requests")
+
+        with transaction.atomic():
+            # Create payment record
+            payment = Payment.objects.create(
+                user=self.renter,
+                amount=self.total_price + self.security_deposit,
+                payment_method=payment_data['payment_method'],
+                status='PROCESSING',
+                description=f'Payment for rental #{self.id}',
+                billing_address=payment_data.get('billing_address'),
+                payment_details=payment_data.get('payment_details')
+            )
+
+            # Create escrow payment
+            EscrowPayment.objects.create(
+                rental=self,
+                payment=payment,
+                held_amount=self.total_price + self.security_deposit
+            )
+
+            self.status = 'accepted'
+            self.save()
+
+            return payment
+
+    def reject_rental(self, reason=None):
+        """
+        Reject a rental request.
+        """
+        if self.status != 'pending':
+            raise ValidationError("Can only reject pending rental requests")
+
+        self.status = 'rejected'
+        if reason:
+            self.notes = reason
+        self.save()
+
+    def complete_rental(self):
+        """
+        Complete a rental and release payment from escrow.
+        """
+        if self.status != 'in_progress':
+            raise ValidationError("Can only complete rentals that are in progress")
+
+        with transaction.atomic():
+            self.status = 'completed'
+            self.save()
+
+            # Release payment from escrow
+            escrow_payment = self.escrow_payment
+            escrow_payment.release_to_owner()
+
+    def check_availability(self):
+        """
+        Check if the product is available for the requested time period.
+        """
+        overlapping_rentals = Rental.objects.filter(
+            product=self.product,
+            status__in=['accepted', 'in_progress'],
+            start_time__lt=self.end_time,
+            end_time__gt=self.start_time
+        ).exclude(id=self.id)
+
+        return not overlapping_rentals.exists()
+
+class EscrowPayment(models.Model):
+    """
+    Model representing an escrow payment.
+    """
+    ESCROW_STATUS_CHOICES = [
+        ('HELD', 'Payment Held in Escrow'),
+        ('RELEASED', 'Released to Owner'),
+        ('REFUNDED', 'Refunded to Renter'),
+        ('DISPUTED', 'Payment Disputed')
+    ]
+
+    rental = models.OneToOneField(Rental, on_delete=models.PROTECT, related_name='escrow_payment')
+    payment = models.OneToOneField(Payment, on_delete=models.PROTECT)
+    status = models.CharField(max_length=20, choices=ESCROW_STATUS_CHOICES, default='HELD')
+    held_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    release_date = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def release_to_owner(self):
+        with transaction.atomic():
+            if self.status != 'HELD':
+                raise ValidationError("Cannot release funds that are not held in escrow")
+            self.status = 'RELEASED'
+            self.release_date = timezone.now()
+            self.save()
+            # Create a new payment record for the owner
+            Payment.objects.create(
+                user=self.rental.owner,
+                amount=self.held_amount,
+                payment_method='BANK_TRANSFER',
+                status='COMPLETED',
+                description=f'Rental payment release for rental #{self.rental.id}',
+                transaction_id=f'REL-{uuid.uuid4().hex[:8]}'
+            )
+
+    def refund_to_renter(self):
+        with transaction.atomic():
+            if self.status != 'HELD':
+                raise ValidationError("Cannot refund funds that are not held in escrow")
+            self.status = 'REFUNDED'
+            self.release_date = timezone.now()
+            self.save()
+            # Create a refund payment record
+            Payment.objects.create(
+                user=self.rental.renter,
+                amount=self.held_amount,
+                payment_method='BANK_TRANSFER',
+                status='REFUNDED',
+                description=f'Rental payment refund for rental #{self.rental.id}',
+                transaction_id=f'REF-{uuid.uuid4().hex[:8]}'
+            )

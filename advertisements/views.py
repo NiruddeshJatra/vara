@@ -9,6 +9,9 @@ from django.views.decorators.cache import cache_page
 from django.db.models import F
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.exceptions import PermissionDenied
+from .serializers import ProductSerializer, PricingOptionSerializer, AvailabilityPeriodSerializer
+from .filters import ProductFilter
+
 
 class ProductReadOnlyViewSet(ReadOnlyModelViewSet):
     serializer_class = ProductSerializer
@@ -65,3 +68,35 @@ class ProductWriteViewSet(ModelViewSet):
             product.save()
             return Response({'status': new_status})
         return Response({'error': 'Invalid status'}, status=400)
+      
+      
+# ViewSet for PricingOption
+class PricingOptionViewSet(ModelViewSet):
+    serializer_class = PricingOptionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return PricingOption.objects.filter(product__user=self.request.user)
+
+    def perform_create(self, serializer):
+        product_id = self.request.data.get('product')
+        if Product.objects.filter(id=product_id, user=self.request.user).exists():
+            serializer.save()
+        else:
+            raise PermissionDenied("You can only add pricing options to your own products.")
+
+
+# ViewSet for AvailabilityPeriod
+class AvailabilityPeriodViewSet(ModelViewSet):
+    serializer_class = AvailabilityPeriodSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return AvailabilityPeriod.objects.filter(product__user=self.request.user)
+
+    def perform_create(self, serializer):
+        product_id = self.request.data.get('product')
+        if Product.objects.filter(id=product_id, user=self.request.user).exists():
+            serializer.save()
+        else:
+            raise PermissionDenied("You can only add availability periods to your own products.")

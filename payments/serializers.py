@@ -3,6 +3,9 @@ from .models import Payment
 from decimal import Decimal
 
 class PaymentSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Payment model.
+    """
     class Meta:
         model = Payment
         fields = [
