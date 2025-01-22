@@ -1,13 +1,19 @@
+# advertisements/urls.py
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ProductReadOnlyViewSet, ProductWriteViewSet, PricingOptionViewSet, AvailabilityPeriodViewSet
+from .views import (
+    ProductReadOnlyViewSet,
+    ProductWriteViewSet,
+    PricingOptionViewSet,
+    AvailabilityPeriodViewSet
+)
 
 router = DefaultRouter()
-router.register(r'advertisements', ProductReadOnlyViewSet, basename='advertisements-read')
-router.register(r'my-advertisements', ProductWriteViewSet, basename='advertisements-write')
-router.register(r'pricing-options', PricingOptionViewSet, basename='pricing-options')
-router.register(r'availability-periods', AvailabilityPeriodViewSet, basename='availability-periods')
+router.register(r'products', ProductReadOnlyViewSet, basename='products')
+router.register(r'my-products', ProductWriteViewSet, basename='my-products')
+router.register(r'pricing', PricingOptionViewSet, basename='pricing')
+router.register(r'availability', AvailabilityPeriodViewSet, basename='availability')
 
 urlpatterns = [
-    path('api/', include(router.urls)),
+    path('', include(router.urls)),
 ]
