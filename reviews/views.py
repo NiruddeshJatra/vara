@@ -2,7 +2,11 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from .models import Review
 from .serializers import ReviewSerializer
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
+
+@method_decorator(cache_page(60 * 15), name='list')
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticated]

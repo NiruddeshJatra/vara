@@ -1,3 +1,19 @@
 from django.contrib import admin
+from .models import Review
 
-# Register your models here.
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
+    list_display = ['id', 'reviewer', 'rental', 'review_type', 'rating', 'created_at']
+    list_filter = ['review_type', 'rating', 'created_at']
+    search_fields = ['reviewer__username', 'rental__id', 'comment']
+    actions = ['recalculate_average_ratings']
+
+    def recalculate_average_ratings(self, request, queryset):
+        for review in queryset:
+            if review.review_type == 'property':
+                review.rental.product.update_average_rating()
+            elif review.reviewer == review.rental.renter:
+                review.rental.owner.update_average_rating()
+            else:
+                review.rental.renter.update_average_rating()
+    recalculate_average_ratings.short_description = "Recalculate average ratings"

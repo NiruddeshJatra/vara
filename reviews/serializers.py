@@ -28,3 +28,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         review.reviewer = self.context["request"].user
         review.clean()
         return data
+      
+    def validate_comment(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Comment cannot be empty.")
+        return value
