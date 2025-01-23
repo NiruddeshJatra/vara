@@ -13,6 +13,7 @@ from .serializers import ProductSerializer, PricingOptionSerializer, Availabilit
 from .filters import ProductFilter
 
 
+@method_decorator(cache_page(60 * 15), name='list')
 class ProductReadOnlyViewSet(ReadOnlyModelViewSet):
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]
@@ -75,6 +76,11 @@ class ProductWriteViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+        
+    def perform_update(self, serializer):
+        if serializer.instance.user != self.request.user:
+            raise PermissionDenied("You can only update your own products.")
+        serializer.save()
 
     @action(detail=False, methods=['get'])
     def my_advertisements(self, request):

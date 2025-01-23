@@ -3,7 +3,7 @@ from io import BytesIO
 from django.core.files import File
 
 def compress_image(image):
-    if image:
+    try:
         img = Image.open(image)
         
         if img.mode != 'RGB':
@@ -17,4 +17,5 @@ def compress_image(image):
         output.seek(0)
         
         return File(output, name=image.name)
-    return None
+    except Exception as e:
+        raise ValidationError("Invalid image file") from e

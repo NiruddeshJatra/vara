@@ -57,27 +57,3 @@ class ProductSerializer(serializers.ModelSerializer):
         if obj.image and request:
             return request.build_absolute_uri(obj.image.url)
         return None
-        
-    def get_distance(self, obj):
-        """Calculate distance from user's location if provided"""
-        request = self.context.get('request')
-        if request and request.query_params.get('lat') and request.query_params.get('lng'):
-            from django.contrib.gis.geos import Point
-            from django.contrib.gis.db.models.functions import Distance
-            
-            user_location = Point(
-                float(request.query_params['lng']),
-                float(request.query_params['lat'])
-            )
-            if obj.latitude and obj.longitude:
-                product_location = Point(obj.longitude, obj.latitude)
-                distance = user_location.distance(product_location) * 100  # Convert to kilometers
-                return round(distance, 2)
-        return None
-
-    def validate(self, data):
-        if data.get('latitude') and not data.get('longitude'):
-            raise serializers.ValidationError("Both latitude and longitude must be provided")
-        if data.get('longitude') and not data.get('latitude'):
-            raise serializers.ValidationError("Both latitude and longitude must be provided")
-        return data

@@ -27,5 +27,6 @@ class UserAdmin(admin.ModelAdmin):
         queryset.update(is_verified=True)
     mark_verified.short_description = "Mark selected users as verified"
 
+    @admin.display(description='Full Name')
     def full_name(self):
         return f"{self.first_name} {self.last_name}"

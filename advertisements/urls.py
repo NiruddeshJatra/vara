@@ -7,6 +7,10 @@ from .views import (
     PricingOptionViewSet,
     AvailabilityPeriodViewSet
 )
+from rest_framework.throttling import UserRateThrottle
+
+class ProductListThrottle(UserRateThrottle):
+    rate = '100/hour'
 
 router = DefaultRouter()
 router.register(r'products', ProductReadOnlyViewSet, basename='products')

@@ -14,6 +14,7 @@ class ProductAdmin(admin.ModelAdmin):
     ]
     search_fields = ['title', 'description', 'location']
     readonly_fields = ['views_count', 'average_rating', 'created_at', 'updated_at']
+    list_editable = ['status', 'is_available']
     
     fieldsets = (
         (_('Basic Information'), {
@@ -29,12 +30,24 @@ class ProductAdmin(admin.ModelAdmin):
             'fields': ('user', 'views_count', 'average_rating', 'created_at', 'updated_at')
         })
     )
+    
+    actions = ['mark_as_active', 'mark_as_suspended']
+
+    def mark_as_active(self, request, queryset):
+        queryset.update(status='active')
+    mark_as_active.short_description = "Mark selected products as active"
+
+    def mark_as_suspended(self, request, queryset):
+        queryset.update(status='suspended')
+    mark_as_suspended.short_description = "Mark selected products as suspended"
+    
 
 @admin.register(PricingOption)
 class PricingOptionAdmin(admin.ModelAdmin):
     list_display = ['product', 'base_price', 'duration_unit', 'discount_percentage']
     list_filter = ['duration_unit']
     search_fields = ['product__title']
+    
 
 @admin.register(AvailabilityPeriod)
 class AvailabilityPeriodAdmin(admin.ModelAdmin):
