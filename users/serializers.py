@@ -12,7 +12,7 @@ class ProfilePictureSerializer(serializers.ModelSerializer):
         try:
             if value.size > 5 * 1024 * 1024:  # 5MB limit
                 raise serializers.ValidationError("Image size cannot exceed 5MB")
-            if value.content_type not in ['image.jpg', 'image/jpeg', 'image/png']:
+            if value.content_type not in ['image/jpg', 'image/jpeg', 'image/png']:
                 raise serializers.ValidationError("Only JPG, JPEG and PNG files are allowed")
         except AttributeError as e:
             raise serializers.ValidationError("Invalid file upload") from e
@@ -40,7 +40,7 @@ class CustomRegisterSerializer(RegisterSerializer):
         return phone_number
       
     def validate_email(self, email):
-        if User.objects.filter(email=email).exists():
+        if CustomUser.objects.filter(email=email).exists():
             raise serializers.ValidationError("A user with this email already exists.")
         return email
 

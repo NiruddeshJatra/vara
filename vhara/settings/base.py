@@ -46,7 +46,10 @@ INSTALLED_APPS = [
     "reviews",
     "users",
     "payments",
-    "messaging"
+    "messaging",
+    # extra
+    "django_filters",
+    "channels",
 ]
 
 # Social auth settings
@@ -93,6 +96,18 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "vhara.wsgi.application"
+
+# WebSocket settings
+ASGI_APPLICATION = "vhara.asgi.application"
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],  # Ensure Redis is running
+        },
+    },
+}
+
 
 SITE_ID = 1
 
