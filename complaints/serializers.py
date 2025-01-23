@@ -51,3 +51,8 @@ class ComplaintSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Invalid rental request for this complaint.")
 
         return data
+
+    def validate_evidence(self, value):
+        if value and not isinstance(value, dict):
+            raise serializers.ValidationError("Evidence must be a valid JSON object.")
+        return value

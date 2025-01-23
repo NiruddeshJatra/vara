@@ -7,8 +7,11 @@ from django.utils import timezone
 from .models import Complaint
 from .serializers import ComplaintSerializer
 from .filters import ComplaintFilter
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
 
+@method_decorator(cache_page(60 * 15), name='list')
 class ComplaintViewSet(viewsets.ModelViewSet):
     serializer_class = ComplaintSerializer
     permission_classes = [IsAuthenticated]
@@ -29,7 +32,12 @@ class ComplaintViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # Automatically set the complainant to the logged-in user
         serializer.save(complainant=self.request.user)
-
+        
+    def perform_update(self, serializer):
+        if serializer.instance.complainant != self.request.user and not self.request.user.is_staff:
+            raise PermissionDenied("You can only update your own complaints.")
+        serializer.save()
+        
     @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
     def resolve(self, request, pk=None):
         """

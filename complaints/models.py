@@ -134,6 +134,9 @@ class Complaint(models.Model):
             raise ValidationError({
                 'assigned_to': 'Selected user does not have permission to handle complaints'
             })
+            
+        if self.response_deadline and self.response_deadline <= self.created_at:
+            raise ValidationError("Response deadline must be after creation date.")
 
     def save(self, *args, **kwargs):
         # Set response deadline based on priority if not set
@@ -158,6 +161,12 @@ class Complaint(models.Model):
             self.resolution_date = timezone.now()
 
         super().save(*args, **kwargs)
+        
+    def escalate(self):
+        if self.status != self.ComplaintStatus.IN_PROGRESS:
+            raise ValidationError("Only in-progress complaints can be escalated.")
+        self.status = self.ComplaintStatus.ESCALATED
+        self.save()
 
 class ComplaintUpdate(models.Model):
     """Model to track updates and communication regarding complaints"""
