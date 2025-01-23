@@ -25,19 +25,46 @@ class ProductReadOnlyViewSet(ReadOnlyModelViewSet):
     def get_queryset(self):
         return (
             Product.objects.select_related('user', 'pricing')
-            .prefetch_related('availability_periods')
+            .prefetch_related(
+                Prefetch('availability_periods', 
+                      queryset=AvailabilityPeriod.objects.filter(is_available=True))
+            )
+            .only(
+                'title', 'category', 'description', 
+                'location', 'is_available', 'user__username',
+                'pricing__base_price'
+            )
             .filter(status='active')
         )
 
-    @method_decorator(cache_page(60 * 15))
     def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        category = request.query_params.get('category')
+        location = request.query_params.get('location')
+        page = request.query_params.get('page', 1)  # Get current page
+        cache_key = f'product_list_{category}_{location}_page_{page}'
+        
+        cached_products = cache.get(cache_key)
+        if not cached_products:
+            queryset = self.filter_queryset(self.get_queryset())
+            page = self.paginate_queryset(queryset)
+            serializer = self.get_serializer(page, many=True)
+            cached_products = serializer.data
+            cache.set(cache_key, cached_products, timeout=60 * 15)
+        
+        return Response(cached_products)
         
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
+        cache_key = f'product_detail_{instance.pk}'
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return Response(cached_data)
+
         instance.increment_views()
         serializer = self.get_serializer(instance)
+        cache.set(cache_key, serializer.data, timeout=60 * 15)  # Cache for 15 minutes
         return Response(serializer.data)
+
 
 class ProductWriteViewSet(ModelViewSet):
     serializer_class = ProductSerializer

@@ -68,14 +68,23 @@ SOCIALACCOUNT_PROVIDERS = {
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    'users.middleware.SessionManagementMiddleware'
+    'users.middleware.SessionManagementMiddleware',
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "allauth.account.middleware.AccountMiddleware"
+    "allauth.account.middleware.AccountMiddleware",
+    'django.middleware.cache.UpdateCacheMiddleware',
+    'django.middleware.cache.FetchFromCacheMiddleware',
 ]
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': env('REDIS_URL', default='redis://127.0.0.1:6379'),
+    }
+}
 
 ROOT_URLCONF = "vhara.urls"
 
@@ -130,8 +139,8 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle'
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/day',
-        'user': '1000/day',
+        'anon': '300/day',
+        'user': '3000/day',
         'auth': '5/minute',
     },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -213,8 +222,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
-SSLCOMMERZ_STORE_ID = 'your_store_id'
-SSLCOMMERZ_STORE_PASSWORD = 'your_store_password'
+SSLCOMMERZ_STORE_ID = env('SSLCOMMERZ_STORE_ID')
+SSLCOMMERZ_STORE_PASSWORD = env('SSLCOMMERZ_STORE_PASSWORD')
 
 SSLCOMMERZ_SANDBOX_MODE = True  # Set to False when moving to production
 SSLCOMMERZ_API_URL = 'https://sandbox.sslcommerz.com' if SSLCOMMERZ_SANDBOX_MODE else 'https://securepay.sslcommerz.com'

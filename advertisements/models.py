@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from .utils import compress_image
 from .constants import CATEGORY_CHOICES, CATEGORY_GROUPS
-from django.db.models import Avg
+from django.db.models import Avg, F
 
 class Product(models.Model):
     title = models.CharField(
@@ -42,18 +42,6 @@ class Product(models.Model):
         blank=True,
         db_index=True  # Add index for location-based searches
     )
-    latitude = models.DecimalField(  # New field for geolocation
-        max_digits=9,
-        decimal_places=6,
-        null=True,
-        blank=True
-    )
-    longitude = models.DecimalField(  # New field for geolocation
-        max_digits=9,
-        decimal_places=6,
-        null=True,
-        blank=True
-    )
     is_available = models.BooleanField(
         default=True,
         db_index=True  # Add index for availability filtering
@@ -73,7 +61,8 @@ class Product(models.Model):
         max_digits=3,
         decimal_places=2,
         default=0,
-        editable=False
+        editable=False,
+        db_index=True
     )
     status = models.CharField(  # New field for product status
         max_length=20,
@@ -92,21 +81,23 @@ class Product(models.Model):
         verbose_name = _("Property")
         verbose_name_plural = _("Properties")
         indexes = [
-            models.Index(fields=['category', 'is_available']),
-            models.Index(fields=['location', 'category']),
+            models.Index(fields=['category', 'is_available', 'status']),
+            models.Index(fields=['location', 'user']),
+            models.Index(fields=['created_at', 'status']),
         ]
 
     def clean(self):
         # Add validation logic
         if self.security_deposit < 0:
             raise ValidationError(_("Security deposit cannot be negative"))
-        if self.latitude and (self.latitude < -90 or self.latitude > 90):
-            raise ValidationError(_("Invalid latitude value"))
-        if self.longitude and (self.longitude < -180 or self.longitude > 180):
-            raise ValidationError(_("Invalid longitude value"))
 
     def save(self, *args, **kwargs):
         self.clean()
+        cache_keys = [
+            f'product_detail_{self.pk}',
+            f'product_list_{self.category}_{self.location}'
+        ]
+        cache.delete_many(cache_keys)
         if (self.pk is None or self._state.adding or 
             Product.objects.get(pk=self.pk).image != self.image) and self.image:
             if compressed_image := compress_image(self.image):
