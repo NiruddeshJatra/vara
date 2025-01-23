@@ -41,6 +41,7 @@ class SSLCommerzPayment:
         
         try:
             response = requests.post(api_url, data=data)
+            response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
             return {'status': 'FAILED', 'error': str(e)}

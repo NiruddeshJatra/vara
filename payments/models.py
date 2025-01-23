@@ -38,6 +38,26 @@ class Payment(models.Model):
         ordering = ['-created_at']
         verbose_name = "Payment"
         verbose_name_plural = "Payments"
+        indexes = [
+            models.Index(fields=['status', 'created_at']),
+            models.Index(fields=['user', 'status']),
+        ]
 
     def __str__(self):
         return f"Payment {self.transaction_id or 'N/A'} - {self.status}"
+      
+    def clean(self):
+        if self.amount <= Decimal('0'):
+            raise ValidationError("Amount must be greater than zero.")
+          
+    def refund(self):
+        if self.status != 'COMPLETED':
+            raise ValidationError("Only completed payments can be refunded.")
+        self.status = 'REFUNDED'
+        self.save()
+        # Create a refund record
+        Refund.objects.create(
+            payment=self,
+            amount=self.amount,
+            status='COMPLETED'
+        )

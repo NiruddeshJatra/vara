@@ -8,7 +8,11 @@ from .serializers import PaymentSerializer
 from .sslcommerz import SSLCommerzPayment
 import uuid
 from django.db import transaction
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
+
+@method_decorator(cache_page(60 * 15), name='list')
 class PaymentViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentSerializer
     permission_classes = [IsAuthenticated]
