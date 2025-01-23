@@ -28,25 +28,9 @@ class RentalSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         """Ensure rental dates do not overlap with existing rentals."""
-        start_time = attrs.get('start_time')
-        end_time = attrs.get('end_time')
-        product = attrs.get('product')
-
-        if start_time >= end_time:
-            raise serializers.ValidationError("End time must be after start time.")
-
-        if start_time < now():
-            raise serializers.ValidationError("Start time cannot be in the past.")
-
-        overlapping_rentals = Rental.objects.filter(
-            product=product,
-            start_time__lt=end_time,
-            end_time__gt=start_time,
-            status__in=['accepted', 'in_progress']
-        )
-        if overlapping_rentals.exists():
-            raise serializers.ValidationError("The selected product is already rented for the given time period.")
-
+        super().validate(attrs)
+        if not attrs['product'].check_availability(attrs['start_time'], attrs['end_time']):
+            raise serializers.ValidationError("The product is not available for the selected time period.")
         return attrs
       
       

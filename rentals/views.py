@@ -6,7 +6,10 @@ from .models import Rental, EscrowPayment
 from .serializers import RentalSerializer, EscrowPaymentSerializer
 from django.db import transaction
 from django.core.exceptions import ValidationError
+from django.core.cache import cache
 
+
+@method_decorator(cache_page(60 * 15), name='list')
 class RentalViewSet(viewsets.ModelViewSet):
     """
     A viewset for viewing and editing rental instances.
@@ -89,6 +92,11 @@ class RentalViewSet(viewsets.ModelViewSet):
             return Response({"status": "Rental completed and payment released"})
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+          
+    def perform_update(self, serializer):
+        if serializer.instance.owner != self.request.user:
+            raise PermissionDenied("You can only update your own rentals.")
+        serializer.save()
 
     def _create_sslcommerz_session(self, payment):
         # Reuse existing SSLCommerz session creation logic

@@ -35,14 +35,13 @@ class Rental(models.Model):
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['status', 'created_at']),
-            models.Index(fields=['owner']),
+            models.Index(fields=['owner', 'renter']),
         ]
 
     def clean(self):
-        if self.start_time >= self.end_time:
-            raise ValidationError("End time must be after start time")
-        if self.start_time < timezone.now():
-            raise ValidationError("Start time cannot be in the past")
+        super().clean()
+        if not self.product.check_availability(self.start_time, self.end_time):
+            raise ValidationError("The product is not available for the selected time period.")
 
     def calculate_total_price(self):
         duration = self.end_time - self.start_time
@@ -186,4 +185,17 @@ class EscrowPayment(models.Model):
                 status='REFUNDED',
                 description=f'Rental payment refund for rental #{self.rental.id}',
                 transaction_id=f'REF-{uuid.uuid4().hex[:8]}'
+            )
+            
+    def dispute_payment(self, reason=None):
+        with transaction.atomic():
+            if self.status != 'HELD':
+                raise ValidationError("Cannot dispute funds that are not held in escrow")
+            self.status = 'DISPUTED'
+            self.save()
+            # Create a dispute record
+            Dispute.objects.create(
+                escrow_payment=self,
+                reason=reason,
+                status='OPEN'
             )
