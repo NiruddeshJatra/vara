@@ -59,6 +59,11 @@ class ChatMessage(models.Model):
 
     class Meta:
         ordering = ["created_at"]
+        indexes = [
+            models.Index(fields=['chat_room', 'created_at']),
+            models.Index(fields=['sender', 'is_read']),
+    ]
+
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

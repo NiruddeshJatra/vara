@@ -6,8 +6,11 @@ from django.utils import timezone
 from django.db.models import Q
 from .models import ChatMessage, ChatRoom
 from .serializers import ChatMessageSerializer, ChatRoomSerializer
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
 
+@method_decorator(cache_page(60 * 15), name='list')
 class ChatRoomViewSet(viewsets.ModelViewSet):
     serializer_class = ChatRoomSerializer
     permission_classes = [IsAuthenticated]
@@ -21,6 +24,11 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
             serializer.save(initiator=self.request.user)
         else:
             raise ValidationError("A receiver must be specified.")
+          
+    def perform_update(self, serializer):
+        if serializer.instance.sender != self.request.user:
+            raise PermissionDenied("You can only update your own messages.")
+        serializer.save()
 
     @action(detail=True, methods=["post"])
     def mark_as_read(self, request, pk=None):

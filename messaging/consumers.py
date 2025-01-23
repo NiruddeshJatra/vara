@@ -6,20 +6,22 @@ from asgiref.sync import sync_to_async
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.chat_room_id = self.scope['url_route']['kwargs']['chat_room_id']
-        self.room_group_name = f"chat_{self.chat_room_id}"
+        try:
+            self.chat_room_id = self.scope['url_route']['kwargs']['chat_room_id']
+            self.room_group_name = f"chat_{self.chat_room_id}"
 
-        # Check if the user is authenticated and allowed to join
-        if self.scope["user"] == AnonymousUser:
-            await self.close()
-            return
+            if self.scope["user"] == AnonymousUser:
+                await self.close()
+                return
 
-        # Add the user to the group
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name
-        )
-        await self.accept()
+            await self.channel_layer.group_add(
+                self.room_group_name,
+                self.channel_name
+            )
+            await self.accept()
+        except Exception as e:
+            await self.close(code=4000)
+            print(f"WebSocket connection error: {e}")
 
     async def disconnect(self, close_code):
         # Leave the group
