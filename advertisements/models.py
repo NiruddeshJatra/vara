@@ -19,7 +19,7 @@ class Product(models.Model):
         choices=CATEGORY_CHOICES, 
         verbose_name=_("Category"), 
         help_text=_("Select the category that best describes your item"),
-        db_index=True  # Add index for better query performance
+        db_index=True
     )
     description = models.TextField(
         verbose_name=_("Description"), 
@@ -40,13 +40,13 @@ class Product(models.Model):
         max_length=255, 
         null=True, 
         blank=True,
-        db_index=True  # Add index for location-based searches
+        db_index=True
     )
     is_available = models.BooleanField(
         default=True,
-        db_index=True  # Add index for availability filtering
+        db_index=True
     )
-    views_count = models.PositiveIntegerField(  # New field for analytics
+    views_count = models.PositiveIntegerField(
         default=0,
         editable=False
     )
@@ -64,7 +64,7 @@ class Product(models.Model):
         editable=False,
         db_index=True
     )
-    status = models.CharField(  # New field for product status
+    status = models.CharField(
         max_length=20,
         choices=[
             ('draft', _('Draft')),
