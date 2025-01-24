@@ -19,9 +19,9 @@ class ProductReadOnlyViewSet(ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = ProductFilter
-    search_fields = ['title', 'description', 'location']
+    search_fields = ['title', 'category', 'description', 'location']
     ordering_fields = ['pricing__base_price', 'created_at', 'average_rating', 'views_count']
-    ordering = ['-created_at']
+    ordering = ['-created_at', '-average_rating']
 
     def get_queryset(self):
         return (
@@ -57,8 +57,7 @@ class ProductReadOnlyViewSet(ReadOnlyModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         cache_key = f'product_detail_{instance.pk}'
-        cached_data = cache.get(cache_key)
-        if cached_data:
+        if cached_data := cache.get(cache_key):
             return Response(cached_data)
 
         instance.increment_views()

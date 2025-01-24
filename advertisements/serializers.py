@@ -42,7 +42,7 @@ class ProductSerializer(serializers.ModelSerializer):
             'security_deposit', 'location', 'latitude', 'longitude',
             'is_available', 'views_count', 'status', 'average_rating',
             'created_at', 'updated_at', 'user', 'user_name',
-            'pricing_details', 'availability', 'distance', 'is_rentable'
+            'pricing_details', 'availability', 'distance', 'is_rentable', 'base_price'
         ]
         read_only_fields = [
             'id', 'created_at', 'updated_at', 'user', 'user_name',
