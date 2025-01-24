@@ -1,4 +1,3 @@
-# advertisements/models.py
 from django.db import models
 from django.conf import settings
 from django.core.validators import (
@@ -71,7 +70,10 @@ class Product(models.Model):
         default="active",
     )
     pricing = models.OneToOneField(
-        PricingOption, on_delete=models.CASCADE, related_name="product"
+        "PricingOption",
+        on_delete=models.CASCADE,
+        related_name="product_pricing",
+        null=True
     )
 
     class Meta:
@@ -140,8 +142,10 @@ class PricingOption(models.Model):
         ("month", _("Per Month")),
     ]
 
-    product = models.OneToOneField(
-        Product, on_delete=models.CASCADE, related_name="pricing"
+    product = models.ForeignKey(
+        "Product",
+        on_delete=models.CASCADE,
+        related_name="pricing_options"
     )
     base_price = models.DecimalField(
         max_digits=10,
