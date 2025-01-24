@@ -1,4 +1,3 @@
-# advertisements/views.py
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import filters
@@ -21,7 +20,7 @@ class ProductReadOnlyViewSet(ReadOnlyModelViewSet):
     filterset_class = ProductFilter
     search_fields = ['title', 'category', 'description', 'location']
     ordering_fields = ['pricing__base_price', 'created_at', 'average_rating', 'views_count']
-    ordering = ['-created_at', '-average_rating']
+    ordering = ['-created_at', '-average_rating', 'pricing__base_price']
 
     def get_queryset(self):
         return (
