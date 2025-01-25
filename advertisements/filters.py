@@ -1,4 +1,3 @@
-# advertisements/filters.py
 from django_filters import rest_framework as filters
 from .models import Product
 
@@ -6,18 +5,17 @@ class ProductFilter(filters.FilterSet):
     min_price = filters.NumberFilter(field_name="pricing__base_price", lookup_expr="gte")
     max_price = filters.NumberFilter(field_name="pricing__base_price", lookup_expr="lte")
     min_rating = filters.NumberFilter(field_name="average_rating", lookup_expr="gte")
-    status = filters.ChoiceFilter(choices=Product._meta.get_field('status').choices)
-    category_group = filters.CharFilter(method='filter_by_category_group')
-    
+    categories = filters.MultipleChoiceFilter(
+        field_name="category",
+        choices=Product._meta.get_field("category").choices
+    )
+
     class Meta:
         model = Product
         fields = {
-            'category': ['exact', 'in'],
-            'location': ['exact', 'icontains'],
-            'is_available': ['exact'],
-            'status': ['exact'],
-            'average_rating': ['gte', 'lte'],
+            "category": ["exact", "in"],
+            "location": ["exact", "icontains"],
+            "is_available": ["exact"],
+            "status": ["exact"],
+            "average_rating": ["gte", "lte"],
         }
-        
-    def filter_by_category_group(self, queryset, name, value):
-        return queryset.filter(category__in=Product.get_category_group(value))

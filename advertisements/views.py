@@ -40,7 +40,7 @@ class ProductReadOnlyViewSet(ReadOnlyModelViewSet):
     def list(self, request, *args, **kwargs):
         category = request.query_params.get('category')
         location = request.query_params.get('location')
-        page = request.query_params.get('page', 1)  # Get current page
+        page = request.query_params.get('page', 1)
         cache_key = f'product_list_{category}_{location}_page_{page}'
         
         cached_products = cache.get(cache_key)
@@ -61,7 +61,7 @@ class ProductReadOnlyViewSet(ReadOnlyModelViewSet):
 
         instance.increment_views()
         serializer = self.get_serializer(instance)
-        cache.set(cache_key, serializer.data, timeout=60 * 15)  # Cache for 15 minutes
+        cache.set(cache_key, serializer.data, timeout=60 * 15)
         return Response(serializer.data)
 
 
@@ -101,7 +101,6 @@ class ProductWriteViewSet(ModelViewSet):
         return Response({'error': 'Invalid status'}, status=400)
       
       
-# ViewSet for PricingOption
 class PricingOptionViewSet(ModelViewSet):
     serializer_class = PricingOptionSerializer
     permission_classes = [IsAuthenticated]
