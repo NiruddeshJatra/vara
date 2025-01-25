@@ -3,10 +3,21 @@ from django.contrib.auth import get_user_model
 from .models import Product, PricingOption, AvailabilityPeriod
 
 
-
-class ProductSerializer(serializers.ModelSerializer):
+class BaseProductSerializer(serializers.ModelSerializer):
     user_name = serializers.SerializerMethodField()
     image_url = serializers.SerializerMethodField()
+
+    def get_user_name(self, obj):
+        return obj.user.get_full_name() or obj.user.username
+
+    def get_image_url(self, obj):
+        request = self.context.get("request")
+        if obj.image and request:
+            return request.build_absolute_uri(obj.image.url)
+        return None
+
+
+class ProductSerializer(BaseProductSerializer):
     pricing_details = PricingOptionSerializer(source="pricing", read_only=True)
     availability = AvailabilityPeriodSerializer(
         source="availability_periods", many=True, read_only=True
@@ -48,15 +59,6 @@ class ProductSerializer(serializers.ModelSerializer):
             "average_rating",
             "distance",
         ]
-
-    def get_user_name(self, obj):
-        return obj.user.get_full_name() or obj.user.username
-
-    def get_image_url(self, obj):
-        request = self.context.get("request")
-        if obj.image and request:
-            return request.build_absolute_uri(obj.image.url)
-        return None
 
 
 class PricingOptionSerializer(serializers.ModelSerializer):

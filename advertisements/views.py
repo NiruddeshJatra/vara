@@ -8,41 +8,65 @@ from django.views.decorators.cache import cache_page
 from django.db.models import F
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.exceptions import PermissionDenied
-from .serializers import ProductSerializer, PricingOptionSerializer, AvailabilityPeriodSerializer
+from .serializers import (
+    ProductSerializer,
+    PricingOptionSerializer,
+    AvailabilityPeriodSerializer,
+)
 from .filters import ProductFilter
 
 
-@method_decorator(cache_page(60 * 15), name='list')
-class ProductReadOnlyViewSet(ReadOnlyModelViewSet):
-    serializer_class = ProductSerializer
+class BaseProductViewSet:
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_class = ProductFilter
-    search_fields = ['title', 'category', 'description', 'location']
-    ordering_fields = ['pricing__base_price', 'created_at', 'average_rating', 'views_count']
-    ordering = ['-created_at', '-average_rating', 'pricing__base_price']
+    serializer_class = ProductSerializer
 
-    def get_queryset(self):
+    def get_base_queryset(self):
         return (
-            Product.objects.select_related('user', 'pricing')
+            Product.objects.select_related("user", "pricing")
             .prefetch_related(
-                Prefetch('availability_periods', 
-                      queryset=AvailabilityPeriod.objects.filter(is_available=True))
+                Prefetch(
+                    "availability_periods",
+                    queryset=AvailabilityPeriod.objects.filter(is_available=True),
+                )
             )
             .only(
-                'title', 'category', 'description', 
-                'location', 'is_available', 'user__username',
-                'pricing__base_price'
+                "title",
+                "category",
+                "description",
+                "location",
+                "is_available",
+                "user__username",
+                "pricing__base_price",
             )
-            .filter(status='active')
         )
 
+
+@method_decorator(cache_page(60 * 15), name="list")
+class ProductReadOnlyViewSet(BaseProductViewSet, ReadOnlyModelViewSet):
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+    filterset_class = ProductFilter
+    search_fields = ["title", "category", "description", "location"]
+    ordering_fields = [
+        "pricing__base_price",
+        "created_at",
+        "average_rating",
+        "views_count",
+    ]
+    ordering = ["-created_at", "-average_rating", "pricing__base_price"]
+
+    def get_queryset(self):
+        return self.get_base_queryset().filter(status="active")
+
     def list(self, request, *args, **kwargs):
-        category = request.query_params.get('category')
-        location = request.query_params.get('location')
-        page = request.query_params.get('page', 1)
-        cache_key = f'product_list_{category}_{location}_page_{page}'
-        
+        category = request.query_params.get("category")
+        location = request.query_params.get("location")
+        page = request.query_params.get("page", 1)
+        cache_key = f"product_list_{category}_{location}_page_{page}"
+
         cached_products = cache.get(cache_key)
         if not cached_products:
             queryset = self.filter_queryset(self.get_queryset())
@@ -50,12 +74,12 @@ class ProductReadOnlyViewSet(ReadOnlyModelViewSet):
             serializer = self.get_serializer(page, many=True)
             cached_products = serializer.data
             cache.set(cache_key, cached_products, timeout=60 * 15)
-        
+
         return Response(cached_products)
-        
+
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        cache_key = f'product_detail_{instance.pk}'
+        cache_key = f"product_detail_{instance.pk}"
         if cached_data := cache.get(cache_key):
             return Response(cached_data)
 
@@ -65,22 +89,19 @@ class ProductReadOnlyViewSet(ReadOnlyModelViewSet):
         return Response(serializer.data)
 
 
-class ProductWriteViewSet(ModelViewSet):
-    serializer_class = ProductSerializer
-    permission_classes = [IsAuthenticated]
-
+class ProductWriteViewSet(BaseProductViewSet, ModelViewSet):
     def get_queryset(self):
-        return Product.objects.filter(user=self.request.user)
+        return self.get_base_queryset().filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-        
+
     def perform_update(self, serializer):
         if serializer.instance.user != self.request.user:
             raise PermissionDenied("You can only update your own products.")
         serializer.save()
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=["get"])
     def my_advertisements(self, request):
         queryset = self.get_queryset()
         page = self.paginate_queryset(queryset)
@@ -89,44 +110,45 @@ class ProductWriteViewSet(ModelViewSet):
             return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-        
-    @action(detail=True, methods=['post'])
+
+    @action(detail=True, methods=["post"])
     def toggle_status(self, request, pk=None):
         product = self.get_object()
-        new_status = request.data.get('status')
-        if new_status in dict(Product._meta.get_field('status').choices):
+        new_status = request.data.get("status")
+        if new_status in dict(Product._meta.get_field("status").choices):
             product.status = new_status
             product.save()
-            return Response({'status': new_status})
-        return Response({'error': 'Invalid status'}, status=400)
-      
-      
-class PricingOptionViewSet(ModelViewSet):
-    serializer_class = PricingOptionSerializer
+            return Response({"status": new_status})
+        return Response({"error": "Invalid status"}, status=400)
+
+
+class BaseUserRestrictedViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
+
+    def check_user_permission(self, product_id):
+        if not Product.objects.filter(id=product_id, user=self.request.user).exists():
+            raise PermissionDenied("You can only modify your own products' data.")
+
+
+class PricingOptionViewSet(BaseUserRestrictedViewSet):
+    serializer_class = PricingOptionSerializer
 
     def get_queryset(self):
         return PricingOption.objects.filter(product__user=self.request.user)
 
     def perform_create(self, serializer):
-        product_id = self.request.data.get('product')
-        if Product.objects.filter(id=product_id, user=self.request.user).exists():
-            serializer.save()
-        else:
-            raise PermissionDenied("You can only add pricing options to your own products.")
+        product_id = self.request.data.get("product")
+        self.check_user_permission(product_id)
+        serializer.save()
 
 
-# ViewSet for AvailabilityPeriod
-class AvailabilityPeriodViewSet(ModelViewSet):
+class AvailabilityPeriodViewSet(BaseUserRestrictedViewSet):
     serializer_class = AvailabilityPeriodSerializer
-    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return AvailabilityPeriod.objects.filter(product__user=self.request.user)
 
     def perform_create(self, serializer):
-        product_id = self.request.data.get('product')
-        if Product.objects.filter(id=product_id, user=self.request.user).exists():
-            serializer.save()
-        else:
-            raise PermissionDenied("You can only add availability periods to your own products.")
+        product_id = self.request.data.get("product")
+        self.check_user_permission(product_id)
+        serializer.save()

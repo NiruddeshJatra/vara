@@ -24,6 +24,7 @@ CATEGORY_CHOICES = [
     ('hiking_gear', 'Hiking Gear'),
     ('camp_stove', 'Portable Stove'),
     ('cooler', 'Cooler'),
+    ('bag', 'Bag'),
     
     # Audio & Entertainment
     ('speaker', 'Speaker'),
@@ -45,7 +46,6 @@ CATEGORY_CHOICES = [
     ('party_furniture', 'Tables & Chairs'),
     ('decorations', 'Decorations'),
     ('grill', 'Grills & BBQ Equipment'),
-    ('bounce_house', 'Bounce House'),
     ('stage', 'Portable Stage'),
     
     # Tools & Equipment
@@ -60,7 +60,7 @@ CATEGORY_CHOICES = [
 CATEGORY_GROUPS = {
     'Photography & Videography': ['camera', 'gimbal', 'lighting', 'video_acc', 'microphone', 'studio_equip'],
     'Sports & Fitness': ['bicycle', 'safety_gear', 'cricket', 'football', 'basketball', 'tennis', 'gym_equip'],
-    'Outdoor & Camping': ['tent', 'sleeping_bag', 'camp_furniture', 'hiking_gear', 'camp_stove', 'cooler'],
+    'Outdoor & Camping': ['tent', 'sleeping_bag', 'camp_furniture', 'hiking_gear', 'camp_stove', 'cooler', 'bag'],
     'Audio & Entertainment': ['speaker', 'dj_equip', 'musical_inst', 'karaoke', 'party_lights', 'projector'],
     'Electronics & Gadgets': ['drone', 'gaming', 'vr_equip', 'tablet', 'power_bank', 'laptop'],
     'Event & Party': ['party_furniture', 'decorations', 'grill', 'bounce_house', 'stage'],
