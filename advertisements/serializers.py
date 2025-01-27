@@ -69,8 +69,7 @@ class PricingOptionSerializer(serializers.ModelSerializer):
         exclude = ["product"]
 
     def get_discounted_price(self, obj):
-        duration = 1
-        return obj.calculate_price(duration)
+        return obj.calculate_price()
 
 
 class AvailabilityPeriodSerializer(serializers.ModelSerializer):

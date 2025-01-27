@@ -57,10 +57,8 @@ class Rental(models.Model):
 
     def calculate_total_price(self):
         duration = self.end_time - self.start_time
-        total_hours = duration.total_seconds() / 3600
-        pricing = self.product.pricingoption
-        price_per_unit = Decimal(pricing.price_per_unit)
-        total_price = total_hours * price_per_unit
+        price = self.product.pricing.calculate_base_price
+        total_price = duration * price
         return round(total_price, 2)
 
     def save(self, *args, **kwargs):

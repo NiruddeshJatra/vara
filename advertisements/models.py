@@ -190,11 +190,10 @@ class PricingOption(models.Model):
                 _("Maximum rental period must be greater than minimum rental period")
             )
 
-    def calculate_price(self, duration):
+    def calculate_base_price(self):
         """Calculate the total price for a given duration"""
-        base_total = self.base_price * duration
-        discount = (base_total * self.discount_percentage) / 100
-        return base_total - discount
+        discount = (self.base_price * self.discount_percentage) / 100
+        return self.base_price - discount
 
     def __str__(self):
         return f"{self.product.title} - {self.get_duration_unit_display()}"
