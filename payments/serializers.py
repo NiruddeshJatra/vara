@@ -9,16 +9,11 @@ class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = [
-            'id', 'amount', 'currency', 'payment_method',
+            'id', 'amount', 'payment_method',
             'status', 'transaction_id', 'created_at',
             'description', 'billing_address', 'session_key', 'ssl_status'
         ]
         read_only_fields = ['status', 'transaction_id', 'created_at', 'session_key', 'ssl_status']
-
-    def validate_amount(self, value):
-        if value <= Decimal('0'):
-            raise serializers.ValidationError("Amount must be greater than zero.")
-        return value
 
     def validate_billing_address(self, value):
         if value and not isinstance(value, dict):

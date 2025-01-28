@@ -30,10 +30,8 @@ class PaymentViewSet(viewsets.ModelViewSet):
     def _create_sslcommerz_session(self, payment):
         sslcommerz = SSLCommerzPayment()
 
-        # Prepare payment data
         payment_data = {
             'total_amount': payment.amount,
-            'currency': payment.currency,
             'tran_id': payment.transaction_id,
             'success_url': self.request.build_absolute_uri(reverse('payment-success')),
             'fail_url': self.request.build_absolute_uri(reverse('payment-fail')),
@@ -43,7 +41,6 @@ class PaymentViewSet(viewsets.ModelViewSet):
             'product_name': 'Order Payment'
         }
 
-        # Add billing address if available
         if payment.billing_address:
             payment_data |= {
                 'customer_address': payment.billing_address.get('address', ''),
@@ -52,7 +49,6 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 'customer_phone': payment.billing_address.get('phone', ''),
             }
 
-        # Create payment session
         response = sslcommerz.create_session(payment_data)
 
         if response.get('status') == 'SUCCESS':
@@ -77,7 +73,6 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 payment = Payment.objects.get(transaction_id=transaction_id)
 
                 if validation_id:
-                    # Validate payment
                     sslcommerz = SSLCommerzPayment()
                     validation_response = sslcommerz.validate_payment(validation_id)
 
@@ -92,8 +87,6 @@ class PaymentViewSet(viewsets.ModelViewSet):
                     payment.payment_details = data
 
                 payment.save()
-
-                # Handle escrow payment if exists
                 if payment.status == 'COMPLETED':
                     try:
                         escrow_payment = payment.escrow_payment
@@ -109,7 +102,6 @@ class PaymentViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Invalid transaction ID'}, status=status.HTTP_400_BAD_REQUEST)
           
           
-# Success, Fail, Cancel Views
 def payment_success(request):
     return JsonResponse({"status": "success"})
 

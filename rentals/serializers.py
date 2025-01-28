@@ -14,9 +14,9 @@ class RentalSerializer(serializers.ModelSerializer):
         model = Rental
         fields = [
             'id', 'renter', 'owner', 'product', 'start_time', 'end_time', 'status',
-            'total_price', 'security_deposit', 'notes', 'created_at', 'updated_at', 'duration', 'escrow_status'
+            'total_price', 'notes', 'created_at', 'updated_at', 'duration', 'escrow_status'
         ]
-        read_only_fields = ['owner', 'total_price', 'security_deposit', 'created_at', 'updated_at', 'escrow_status']
+        read_only_fields = ['owner', 'total_price', 'created_at', 'updated_at', 'escrow_status']
 
     def get_duration(self, obj):
         """Calculate rental duration in days."""
@@ -25,13 +25,6 @@ class RentalSerializer(serializers.ModelSerializer):
     def get_escrow_status(self, obj):
         """Get the status of the escrow payment."""
         return obj.escrow_payment.status if hasattr(obj, 'escrow_payment') else None
-
-    def validate(self, attrs):
-        """Ensure rental dates do not overlap with existing rentals."""
-        super().validate(attrs)
-        if not attrs['product'].check_availability(attrs['start_time'], attrs['end_time']):
-            raise serializers.ValidationError("The product is not available for the selected time period.")
-        return attrs
       
       
 class EscrowPaymentSerializer(serializers.ModelSerializer):

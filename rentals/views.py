@@ -49,17 +49,13 @@ class RentalViewSet(viewsets.ModelViewSet):
 
         try:
             with transaction.atomic():
-                # Validate payment data
                 payment_data = {
                     'payment_method': request.data.get('payment_method', 'CARD'),
                     'billing_address': request.data.get('billing_address', {}),
                     'payment_details': request.data.get('payment_details', {})
                 }
 
-                # Use the model's approve_rental method
                 payment = rental.approve_rental(payment_data)
-
-                # Initialize payment gateway session
                 payment_response = self._create_sslcommerz_session(payment)
 
                 return Response({
@@ -95,13 +91,25 @@ class RentalViewSet(viewsets.ModelViewSet):
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
           
+    @action(detail=True, methods=['post'], url_path='cancel')
+    def cancel(self, request, pk=None):
+        """Cancel a rental request."""
+        rental = self.get_object()
+        try:
+            if rental.status != "pending":
+                raise ValidationError("Can only cancel pending rental requests.")
+            rental.status = "cancelled"
+            rental.save()
+            return Response({"status": "Rental cancelled"})
+        except ValidationError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+          
     def perform_update(self, serializer):
         if serializer.instance.owner != self.request.user:
             raise PermissionDenied("You can only update your own rentals.")
         serializer.save()
 
     def _create_sslcommerz_session(self, payment):
-        # Reuse existing SSLCommerz session creation logic
         payment_viewset = PaymentViewSet()
         payment_viewset.request = self.request
         return payment_viewset.create_sslcommerz_session(payment)

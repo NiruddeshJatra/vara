@@ -35,12 +35,6 @@ class Product(models.Model):
         validators=[FileExtensionValidator(["jpg", "jpeg", "png"])],
         help_text=_("Upload a product image (max 5MB)"),
     )
-    security_deposit = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        validators=[MinValueValidator(0)],
-        help_text=_("Security deposit required for renting"),
-    )
     location = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     is_available = models.BooleanField(
         default=True,
