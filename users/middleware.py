@@ -7,7 +7,6 @@ class SessionManagementMiddleware:
 
     def __call__(self, request):
         if request.user.is_authenticated:
-            # Delete expired sessions
             Session.objects.filter(expire_date__lt=timezone.now()).delete()
 
             sessions = Session.objects.filter(
