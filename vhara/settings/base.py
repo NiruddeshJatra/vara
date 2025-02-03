@@ -43,8 +43,8 @@ INSTALLED_APPS = [
     "advertisements",
     "complaints",
     "rentals",
-    "reviews",
-    "users",
+    'users.apps.UsersConfig',
+    'reviews.apps.ReviewsConfig',
     "payments",
     "messaging",
     # extra
@@ -204,7 +204,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+VERIFICATION_EXPIRE_DAYS = 3
+CACHE_VERSION = 1
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/login/"
 

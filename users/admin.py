@@ -47,12 +47,17 @@ class UserAdmin(admin.ModelAdmin):
         ),
     )
     list_per_page = 25
-    actions = ["mark_verified"]
+    actions = ["mark_verified", "ban_account"]
 
     def mark_verified(self, request, queryset):
         queryset.update(is_verified=True)
 
     mark_verified.short_description = "Mark selected users as verified"
+    
+    def ban_account(self, request, queryset):
+        queryset.update(is_active=False)
+
+    ban_account.short_description = "Ban selected users"
 
     @admin.display(description="Full Name")
     def full_name(self):

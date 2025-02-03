@@ -69,6 +69,12 @@ class Product(models.Model):
         related_name="product_pricing",
         null=True
     )
+    security_deposit = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        help_text=_("Security deposit required for renting")
+    )
 
     class Meta:
         ordering = ["-created_at"]
@@ -113,8 +119,6 @@ class Product(models.Model):
         )
 
     def update_average_rating(self):
-        from reviews.models import Review
-
         avg = (
             Review.objects.filter(
                 review_type="property", rental__product=self
@@ -136,7 +140,7 @@ class PricingOption(models.Model):
         ("month", _("Per Month")),
     ]
 
-    product = models.ForeignKey(
+    product = models.OneToOneFieldn(
         "Product",
         on_delete=models.CASCADE,
         related_name="pricing_options"
@@ -184,7 +188,7 @@ class PricingOption(models.Model):
                 _("Maximum rental period must be greater than minimum rental period")
             )
 
-    def calculate_base_price(self):
+    def calculate_price(self):
         """Calculate the total price for a given duration"""
         discount = (self.base_price * self.discount_percentage) / 100
         return self.base_price - discount

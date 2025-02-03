@@ -23,9 +23,6 @@ class ProductAdmin(admin.ModelAdmin):
         (_('Rental Details'), {
             'fields': ('security_deposit', 'is_available', 'status')
         }),
-        (_('Location'), {
-            'fields': ('location', 'latitude', 'longitude')
-        }),
         (_('Owner & Metadata'), {
             'fields': ('user', 'views_count', 'average_rating', 'created_at', 'updated_at')
         })

@@ -1,6 +1,7 @@
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import filters
+from django.conf import settings
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils.decorators import method_decorator
@@ -65,8 +66,7 @@ class ProductReadOnlyViewSet(BaseProductViewSet, ReadOnlyModelViewSet):
         category = request.query_params.get("category")
         location = request.query_params.get("location")
         page = request.query_params.get("page", 1)
-        cache_key = f"product_list_{category}_{location}_page_{page}"
-
+        cache_key = f"product_list_{category}_{location}_page_{page}_v{settings.CACHE_VERSION}"
         cached_products = cache.get(cache_key)
         if not cached_products:
             queryset = self.filter_queryset(self.get_queryset())
@@ -79,7 +79,7 @@ class ProductReadOnlyViewSet(BaseProductViewSet, ReadOnlyModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        cache_key = f"product_detail_{instance.pk}"
+        cache_key = f"product_detail_{instance.pk}_v{settings.CACHE_VERSION}"
         if cached_data := cache.get(cache_key):
             return Response(cached_data)
 
@@ -100,6 +100,11 @@ class ProductWriteViewSet(BaseProductViewSet, ModelViewSet):
         if serializer.instance.user != self.request.user:
             raise PermissionDenied("You can only update your own products.")
         serializer.save()
+        
+    def perform_destroy(self, instance):
+        if instance.user != self.request.user:
+            raise PermissionDenied("You can only delete your own products.")
+        instance.delete()
 
     @action(detail=False, methods=["get"])
     def my_advertisements(self, request):

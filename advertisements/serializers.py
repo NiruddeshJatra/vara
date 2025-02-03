@@ -6,6 +6,7 @@ from .models import Product, PricingOption, AvailabilityPeriod
 class BaseProductSerializer(serializers.ModelSerializer):
     user_name = serializers.SerializerMethodField()
     image_url = serializers.SerializerMethodField()
+    location_url = serializers.SerializerMethodField()
 
     def get_user_name(self, obj):
         return obj.user.get_full_name() or obj.user.username
@@ -14,6 +15,11 @@ class BaseProductSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         if obj.image and request:
             return request.build_absolute_uri(obj.image.url)
+        return None
+      
+    def get_location_url(self, obj):
+        if obj.location:
+            return f"https://www.google.com/maps/search/?api=1&query={obj.location}"
         return None
 
 
@@ -35,6 +41,7 @@ class ProductSerializer(BaseProductSerializer):
             "image_url",
             "security_deposit",
             "location",
+            "location_url",
             "is_available",
             "views_count",
             "status",
@@ -45,7 +52,6 @@ class ProductSerializer(BaseProductSerializer):
             "user_name",
             "pricing_details",
             "availability",
-            "distance",
             "is_rentable",
             "base_price",
         ]
@@ -55,9 +61,11 @@ class ProductSerializer(BaseProductSerializer):
             "updated_at",
             "user",
             "user_name",
+            "location",
+            "location_url",
+            "is_rentable",
             "views_count",
             "average_rating",
-            "distance",
         ]
 
 
@@ -76,10 +84,3 @@ class AvailabilityPeriodSerializer(serializers.ModelSerializer):
     class Meta:
         model = AvailabilityPeriod
         exclude = ["product"]
-
-    def validate(self, data):
-        """Validate date ranges and check for overlaps"""
-        if data["end_date"] < data["start_date"]:
-            raise serializers.ValidationError("End date must be after start date")
-
-        return data
