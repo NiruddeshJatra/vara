@@ -9,6 +9,7 @@ from django.views.decorators.cache import cache_page
 from django.db.models import F
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.exceptions import PermissionDenied
+from django.core.cache import cache
 from .serializers import (
     ProductSerializer,
     PricingOptionSerializer,
@@ -94,14 +95,20 @@ class ProductWriteViewSet(BaseProductViewSet, ModelViewSet):
         return self.get_base_queryset().filter(user=self.request.user)
 
     def perform_create(self, serializer):
+        if not self.request.user.is_verified:
+            raise PermissionDenied("Only verified users can post advertisements.")
         serializer.save(user=self.request.user)
 
     def perform_update(self, serializer):
+        if not self.request.user.is_verified:
+            raise PermissionDenied("Only verified users can update advertisements.")
         if serializer.instance.user != self.request.user:
             raise PermissionDenied("You can only update your own products.")
         serializer.save()
         
     def perform_destroy(self, instance):
+        if not self.request.user.is_verified:
+            raise PermissionDenied("Only verified users can delete advertisements.")
         if instance.user != self.request.user:
             raise PermissionDenied("You can only delete your own products.")
         instance.delete()
@@ -118,6 +125,8 @@ class ProductWriteViewSet(BaseProductViewSet, ModelViewSet):
 
     @action(detail=True, methods=["post"])
     def toggle_status(self, request, pk=None):
+        if not self.request.user.is_verified:
+            raise PermissionDenied("Only verified users can update advertisements.")
         product = self.get_object()
         new_status = request.data.get("status")
         if new_status in dict(Product._meta.get_field("status").choices):

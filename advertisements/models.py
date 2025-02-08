@@ -118,6 +118,15 @@ class Product(models.Model):
             self.is_available and self.status == "active" and hasattr(self, "pricing")
         )
 
+    def check_availability(self, start_time, end_time):
+        periods = self.availability_periods.filter(is_available=True)
+        if periods.exists():
+            return any(
+                period.start_date <= start_time.date() and period.end_date >= end_time.date()
+                for period in periods
+            )
+        return self.is_available
+
     def update_average_rating(self):
         avg = (
             Review.objects.filter(
@@ -140,7 +149,7 @@ class PricingOption(models.Model):
         ("month", _("Per Month")),
     ]
 
-    product = models.OneToOneFieldn(
+    product = models.OneToOneField(  # fixed typo here
         "Product",
         on_delete=models.CASCADE,
         related_name="pricing_options"

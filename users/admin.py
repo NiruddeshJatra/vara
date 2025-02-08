@@ -28,7 +28,6 @@ class UserAdmin(admin.ModelAdmin):
                     "profile_picture",
                     "bio",
                     "date_of_birth",
-                    "social_links",
                 ),
             },
         ),

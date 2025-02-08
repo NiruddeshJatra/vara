@@ -229,3 +229,15 @@ SSLCOMMERZ_STORE_PASSWORD = env('SSLCOMMERZ_STORE_PASSWORD')
 
 SSLCOMMERZ_SANDBOX_MODE = True  # Set to False when moving to production
 SSLCOMMERZ_API_URL = 'https://sandbox.sslcommerz.com' if SSLCOMMERZ_SANDBOX_MODE else 'https://securepay.sslcommerz.com'
+
+
+LOGGING = {
+    'version': 1,
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler'}
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING'
+    }
+}

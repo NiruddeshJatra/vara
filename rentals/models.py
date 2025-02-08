@@ -5,13 +5,11 @@ from payments.models import Payment
 from advertisements.models import Product
 from django.utils import timezone
 from decimal import Decimal
+import uuid                       
+from payments.models import Dispute
 
 
 class Rental(models.Model):
-    """
-    Model representing a rental.
-    """
-
     STATUS_CHOICES = [
         ("pending", "Pending"),
         ("accepted", "Accepted"),
@@ -126,18 +124,17 @@ class Rental(models.Model):
             escrow_payment = self.escrow_payment
             escrow_payment.release_to_owner()
 
-    def check_availability(self):
+    def check_overlapping_rentals(self):
         """
-        Check if the product is available for the requested time period.
+        Check if there are overlapping rentals for the product.
         """
-        overlapping_rentals = Rental.objects.filter(
+        overlapping = Rental.objects.filter(
             product=self.product,
             status__in=["accepted", "in_progress"],
             start_time__lt=self.end_time,
             end_time__gt=self.start_time,
         ).exclude(id=self.id)
-
-        return not overlapping_rentals.exists()
+        return not overlapping.exists()
 
 
 class EscrowPayment(models.Model):

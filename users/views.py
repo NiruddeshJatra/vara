@@ -12,8 +12,9 @@ from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework.views import APIView
 from .models import CustomUser
-from .serializers import UserProfileSerializer
+from .serializers import UserProfileSerializer, ProfilePictureSerializer
 from .filters import UserFilter
+from django.contrib.sessions.models import Session
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -67,7 +68,14 @@ class UserViewSet(viewsets.ModelViewSet):
 
 @throttle_classes([AuthenticationThrottle])
 class CustomLoginView(DefaultLoginView):
-    pass
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data.get('user')
+        if user and not user.is_verified:
+            from rest_framework.exceptions import AuthenticationFailed
+            raise AuthenticationFailed("Email address is not verified.")
+        return super().post(request, *args, **kwargs)
   
   
 class VerifyEmailView(APIView):
