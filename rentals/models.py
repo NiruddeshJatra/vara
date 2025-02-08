@@ -5,8 +5,9 @@ from payments.models import Payment
 from advertisements.models import Product
 from django.utils import timezone
 from decimal import Decimal
-import uuid                       
+import uuid
 from payments.models import Dispute
+
 
 class Rental(models.Model):
     # Define available status options for rentals.
@@ -35,9 +36,13 @@ class Rental(models.Model):
     end_time = models.DateTimeField(help_text="When renting period ends")
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="pending")
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
-    security_deposit = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
+    security_deposit = models.DecimalField(
+        max_digits=10, decimal_places=2, editable=False, default=0
+    )
     # Connection to the escrow payment.
-    escrow_payment = models.OneToOneField('EscrowPayment', on_delete=models.CASCADE, related_name='rental')
+    escrow_payment = models.OneToOneField(
+        "EscrowPayment", on_delete=models.CASCADE, related_name="rental"
+    )
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -147,6 +152,7 @@ class EscrowPayment(models.Model):
     """
     Represents an escrow payment for a rental.
     """
+
     ESCROW_STATUS_CHOICES = [
         ("HELD", "Payment Held in Escrow"),
         ("RELEASED", "Released to Owner"),

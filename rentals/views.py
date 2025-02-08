@@ -9,14 +9,22 @@ from .serializers import RentalSerializer, EscrowPaymentSerializer
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.core.cache import cache
-from rest_framework.exceptions import PermissionDenied 
-from payments.views import PaymentViewSet        
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import IsAuthenticated, BasePermission
+from payments.views import PaymentViewSet
 
-@method_decorator(cache_page(60 * 15), name='list')
+
+class IsProductOwner(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return obj.product.user == request.user
+      
+      
+@method_decorator(cache_page(60 * 15), name="list")
 class RentalViewSet(viewsets.ModelViewSet):
     """
     ViewSet for handling rental operations.
     """
+
     # Main queryset for all rentals.
     queryset = Rental.objects.all()
     # Serializer to handle Rental objects.
@@ -26,29 +34,29 @@ class RentalViewSet(viewsets.ModelViewSet):
         """Customize queryset based on action and current user."""
         user = self.request.user
         # Filter rentals for the renter.
-        if self.action == 'my_rentals':
+        if self.action == "my_rentals":
             return Rental.objects.filter(renter=user)  # Rentals where user is renter
         # Filter rentals for the owner.
-        elif self.action == 'my_listings_rentals':
+        elif self.action == "my_listings_rentals":
             return Rental.objects.filter(owner=user)  # Rentals where user is owner
         # Default to the base queryset.
         return super().get_queryset()
 
-    @action(detail=False, methods=['get'], url_path='my-rentals')
+    @action(detail=False, methods=["get"], url_path="my-rentals")
     def my_rentals(self, request):
         # Retrieve and serialize rentals for the renter.
         rentals = self.get_queryset()
         serializer = self.get_serializer(rentals, many=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['get'], url_path='my-listings-rentals')
+    @action(detail=False, methods=["get"], url_path="my-listings-rentals")
     def my_listings_rentals(self, request):
         # Retrieve and serialize rentals for the owner.
         rentals = self.get_queryset()
         serializer = self.get_serializer(rentals, many=True)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post'], url_path='accept')
+    @action(detail=True, methods=["post"], permission_classes=[IsProductOwner], url_path="accept")
     def accept(self, request, pk=None):
         # Accept rental and begin escrow payment process.
         rental = self.get_object()
@@ -56,38 +64,39 @@ class RentalViewSet(viewsets.ModelViewSet):
             with transaction.atomic():
                 # Extract payment data from the request.
                 payment_data = {
-                    'payment_method': request.data.get('payment_method', 'CARD'),
-                    'billing_address': request.data.get('billing_address', {}),
-                    'payment_details': request.data.get('payment_details', {})
+                    "payment_method": request.data.get("payment_method", "CARD"),
+                    "billing_address": request.data.get("billing_address", {}),
+                    "payment_details": request.data.get("payment_details", {}),
                 }
                 # Approve the rental, which creates a Payment record.
-                payment = rental.approve_rental(payment_data)  # Approve rental and create payment
+                payment = rental.approve_rental(
+                    payment_data
+                )  # Approve rental and create payment
                 # Start a payment session.
                 payment_response = self._create_sslcommerz_session(payment)
-                return Response({
-                    "status": "Rental accepted",
-                    "payment": payment_response.data
-                })
+                return Response(
+                    {"status": "Rental accepted", "payment": payment_response.data}
+                )
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response(
                 {"error": "Failed to process rental acceptance"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(detail=True, methods=['post'], url_path='reject')
+    @action(detail=True, methods=["post"], url_path="reject")
     def reject(self, request, pk=None):
         # Reject rental request with an optional reason.
         rental = self.get_object()
         try:
             # Invoke rejection logic.
-            rental.reject_rental(reason=request.data.get('reason'))
+            rental.reject_rental(reason=request.data.get("reason"))
             return Response({"status": "Rental rejected"})
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=['post'], url_path='complete')
+    @action(detail=True, methods=["post"], url_path="complete")
     def complete(self, request, pk=None):
         # Complete rental and trigger escrow release.
         rental = self.get_object()
@@ -96,8 +105,8 @@ class RentalViewSet(viewsets.ModelViewSet):
             return Response({"status": "Rental completed and payment released"})
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-          
-    @action(detail=True, methods=['post'], url_path='cancel')
+
+    @action(detail=True, methods=["post"], url_path="cancel")
     def cancel(self, request, pk=None):
         # Cancel rental if in pending status.
         rental = self.get_object()
@@ -109,7 +118,7 @@ class RentalViewSet(viewsets.ModelViewSet):
             return Response({"status": "Rental cancelled"})
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-          
+
     def perform_update(self, serializer):
         # Only allow owners to update their own rentals.
         if serializer.instance.owner != self.request.user:

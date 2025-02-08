@@ -14,6 +14,7 @@ from .utils import compress_image
 from .constants import CATEGORY_CHOICES, CATEGORY_GROUPS
 from django.db.models import Avg, F
 
+
 # Model representing a product/advertisement.
 class Product(models.Model):
     title = models.CharField(
@@ -68,13 +69,13 @@ class Product(models.Model):
         "PricingOption",
         on_delete=models.CASCADE,
         related_name="product_pricing",
-        null=True
+        null=True,
     )
     security_deposit = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         validators=[MinValueValidator(0)],
-        help_text=_("Security deposit required for renting")
+        help_text=_("Security deposit required for renting"),
     )
 
     class Meta:
@@ -95,11 +96,7 @@ class Product(models.Model):
     # Override save to include image compression and cache invalidation.
     def save(self, *args, **kwargs):
         self.clean()
-        cache_keys = [
-            f"product_detail_{self.pk}",
-            f"product_list_{self.category}_{self.location}",
-        ]
-        cache.delete_many(cache_keys)
+        cache.delete_many(keys=cache.keys("product_list_*"))  # Wildcard deletion
         if (
             self.pk is None
             or self._state.adding
@@ -126,17 +123,21 @@ class Product(models.Model):
 
     # Check if the product is available within specified dates.
     def check_availability(self, start_time, end_time):
+        if not self.is_available:
+            return False
         periods = self.availability_periods.filter(is_available=True)
         if periods.exists():
             return any(
-                period.start_date <= start_time.date() and period.end_date >= end_time.date()
+                period.start_date <= start_time.date()
+                and period.end_date >= end_time.date()
                 for period in periods
             )
-        return self.is_available
+        return True
 
     # Updates the average rating based on related reviews.
     def update_average_rating(self):
         from reviews.models import Review
+
         avg = (
             Review.objects.filter(
                 review_type="property", rental__product=self
@@ -148,6 +149,7 @@ class Product(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.get_status_display()})"
+
 
 # Model representing pricing options for a product.
 class PricingOption(models.Model):
@@ -199,6 +201,9 @@ class PricingOption(models.Model):
 
     # Ensure maximum rental period is not less than minimum rental period.
     def clean(self):
+        super().clean()
+        if not self.base_price:
+            raise ValidationError("Base price must be set.")
         if (
             self.maximum_rental_period
             and self.maximum_rental_period < self.minimum_rental_period
@@ -215,6 +220,7 @@ class PricingOption(models.Model):
 
     def __str__(self):
         return f"{self.product.title} - {self.get_duration_unit_display()}"
+
 
 # Model for defining availability periods of a product.
 class AvailabilityPeriod(models.Model):

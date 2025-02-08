@@ -17,6 +17,7 @@ from .models import CustomUser
 from .serializers import UserProfileSerializer, ProfilePictureSerializer
 from .filters import UserFilter
 from django.contrib.sessions.models import Session
+from .utils import email_verification_token
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -102,7 +103,7 @@ class VerifyEmailView(APIView):
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = CustomUser.objects.get(pk=uid)
 
-            if default_token_generator.check_token(user, token):
+            if email_verification_token.check_token(user, token):
                 user.is_verified = True
                 user.save()
                 return Response({"detail": "Email verified successfully!"})
