@@ -3,13 +3,14 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.urls import reverse
+from django.db import transaction
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from rentals.models import EscrowPayment
 from .models import Payment
 from .serializers import PaymentSerializer
 from .sslcommerz import SSLCommerzPayment
 import uuid
-from django.db import transaction
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
 
 
 @method_decorator(cache_page(60 * 15), name='list')

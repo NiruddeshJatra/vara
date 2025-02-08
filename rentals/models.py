@@ -158,7 +158,9 @@ class EscrowPayment(models.Model):
         Rental, on_delete=models.PROTECT, related_name="escrow_payment"
     )
     # Related payment record.
-    payment = models.OneToOneField(Payment, on_delete=models.PROTECT)
+    payment = models.OneToOneField(
+        Payment, on_delete=models.PROTECT, related_name="escrow_payment"
+    )
     status = models.CharField(
         max_length=20, choices=ESCROW_STATUS_CHOICES, default="HELD"
     )
