@@ -18,35 +18,44 @@ from .serializers import UserProfileSerializer, ProfilePictureSerializer
 from .filters import UserFilter
 from django.contrib.sessions.models import Session
 
+
 class UserViewSet(viewsets.ModelViewSet):
     # Manages user data endpoints with filtering, ordering, and custom actions.
     queryset = CustomUser.objects.filter(is_active=True)
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
     filterset_class = UserFilter
-    search_fields = ['username', 'email', 'first_name', 'last_name', 'location']
-    ordering_fields = ['created_at']
-    ordering = ['-created_at']
+    search_fields = ["username", "email", "first_name", "last_name", "location"]
+    ordering_fields = ["created_at"]
+    ordering = ["-created_at"]
 
-    @action(detail=False, methods=['get', 'put', 'patch'])
+    @action(detail=False, methods=["get", "put", "patch"])
     def me(self, request):
-        # GET: Retrieve user profile 
+        # GET: Retrieve user profile
         # PUT/PATCH: Update user profile (partial update supported)
-        if request.method == 'GET':
+        if request.method == "GET":
             serializer = self.get_serializer(request.user)
             return Response(serializer.data)
-        
+
         serializer = self.get_serializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser])
+
+    @action(
+        detail=False, methods=["post"], parser_classes=[MultiPartParser, FormParser]
+    )
     def upload_picture(self, request):
         # POST: Upload a new profile picture and delete the old one if exists.
-        serializer = ProfilePictureSerializer(request.user, data=request.data, partial=True)
+        serializer = ProfilePictureSerializer(
+            request.user, data=request.data, partial=True
+        )
         if serializer.is_valid():
             if request.user.profile_picture:
                 request.user.profile_picture.delete()
@@ -54,48 +63,51 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
 
-    @action(detail=False, methods=['delete'])
+    @action(detail=False, methods=["delete"])
     def delete_account(self, request):
         # DELETE: Soft delete the user account and remove the session.
         user = request.user
-        if not user.check_password(request.data.get('password')):
+        if not user.check_password(request.data.get("password")):
             return Response({"error": "Invalid password"}, status=400)
-        
+
         # Soft delete: Mark user as inactive.
         user.is_active = False
         user.save()
-        
+
         # Hard delete option commented out.
         # user.delete()
         Session.objects.filter(session_key=request.session.session_key).delete()
-        
+
         return Response({"detail": "Account deleted successfully"}, status=204)
-      
+
+
 @throttle_classes([AuthenticationThrottle])
 class CustomLoginView(DefaultLoginView):
     # Customized login view with an extra check on email verification.
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data.get('user')
+        user = serializer.validated_data.get("user")
         if user and not user.is_verified:
             from rest_framework.exceptions import AuthenticationFailed
+
             raise AuthenticationFailed("Email address is not verified.")
         return super().post(request, *args, **kwargs)
-  
+
+
 class VerifyEmailView(APIView):
     # Verifies the user's email using uid and token from the URL.
     def get(self, request, uidb64, token):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = CustomUser.objects.get(pk=uid)
-            
+
             if default_token_generator.check_token(user, token):
                 user.is_verified = True
                 user.save()
                 return Response({"detail": "Email verified successfully!"})
-            
+
             return Response({"error": "Invalid token"}, status=400)
-            
+
         except Exception as e:
             return Response({"error": "Verification failed"}, status=400)
