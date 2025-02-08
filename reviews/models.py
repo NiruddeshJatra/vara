@@ -25,10 +25,17 @@ class Review(models.Model):
         max_length=10,
         choices=REVIEW_TYPES
     )
-    rating = models.PositiveSmallIntegerField(
+    rating = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
     comment = models.TextField()
+    reviewed_user = models.ForeignKey(
+        CustomUser,
+        null=True,
+        blank=True,
+        related_name='reviews_received',
+        on_delete=models.CASCADE
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -37,26 +44,26 @@ class Review(models.Model):
         # Ensure one review per rental per type per reviewer
         unique_together = ['reviewer', 'rental', 'review_type']
         indexes = [
-            models.Index(fields=['review_type', 'created_at']),
-            models.Index(fields=['reviewer', 'rental']),
+            models.Index(fields=['review_type', 'rating']),
+            models.Index(fields=['reviewer', 'reviewed_user']),
         ]
 
     def clean(self):
         from django.core.exceptions import ValidationError
         
-        # Ensure rental is completed
+        # Validate that the rental is completed.
         if self.rental.status != 'completed':
             raise ValidationError("Can only review completed rentals")
         
-        # Ensure reviewer was part of the rental
+        # Validate that the reviewer was involved in the rental.
         if self.reviewer not in [self.rental.renter, self.rental.owner]:
             raise ValidationError("Only rental participants can leave reviews")
         
-        # For property reviews, only renters can review
+        # For property reviews, ensure only renters can submit.
         if self.review_type == 'property' and self.reviewer != self.rental.renter:
             raise ValidationError("Only renters can review properties")
         
-        # For user reviews, ensure reviewing the other party
+        # For user reviews, automatically assign the reviewed user.
         if self.review_type == 'user':
             if self.reviewer == self.rental.renter:
                 self.reviewed_user = self.rental.owner
@@ -64,13 +71,11 @@ class Review(models.Model):
                 self.reviewed_user = self.rental.renter
 
     def save(self, *args, **kwargs):
-        self.clean()
+        self.clean()  # Ensure data integrity before saving
         super().save(*args, **kwargs)
 
-        # Update average ratings
+        # Update average ratings after saving the review.
         if self.review_type == 'property':
-            self.rental.product.update_average_rating()
-        elif self.reviewer == self.rental.renter:
-            self.rental.owner.update_average_rating()
-        else:
-            self.rental.renter.update_average_rating()
+            self.rental.product.update_average_rating()  # Update product rating
+        elif self.review_type == 'user':
+            self.reviewed_user.update_average_rating()  # Update user rating

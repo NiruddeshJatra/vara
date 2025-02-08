@@ -1,15 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import ReviewViewSet
-from rest_framework.throttling import UserRateThrottle
+from .throttles import ReviewListThrottle  # imported throttle
 
-class ReviewListThrottle(UserRateThrottle):
-    rate = '100/hour'
-    
-    
 router = DefaultRouter()
-router.register(r'reviews', ReviewViewSet, basename='review')
+router.register(r'reviews', ReviewViewSet, basename='review')  # Register ReviewViewSet endpoints
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('', include(router.urls)),  # Include router URLs
 ]

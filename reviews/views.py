@@ -4,12 +4,13 @@ from .models import Review
 from .serializers import ReviewSerializer
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-
+from .throttles import ReviewListThrottle  # imported throttle
 
 @method_decorator(cache_page(60 * 15), name='list')
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = [ReviewListThrottle]  # added throttle
 
     def get_queryset(self):
         return Review.objects.all()

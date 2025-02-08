@@ -22,7 +22,6 @@ class Payment(models.Model):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    # currency = models.CharField(max_length=3, default='BDT')
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='PENDING')
     transaction_id = models.CharField(max_length=100, unique=True, null=True, blank=True)

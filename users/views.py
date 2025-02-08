@@ -1,3 +1,5 @@
+# Module: views - Contains API views for user management and authentication.
+
 from rest_framework.decorators import throttle_classes
 from .throttles import AuthenticationThrottle
 from dj_rest_auth.views import LoginView as DefaultLoginView
@@ -16,8 +18,8 @@ from .serializers import UserProfileSerializer, ProfilePictureSerializer
 from .filters import UserFilter
 from django.contrib.sessions.models import Session
 
-
 class UserViewSet(viewsets.ModelViewSet):
+    # Manages user data endpoints with filtering, ordering, and custom actions.
     queryset = CustomUser.objects.filter(is_active=True)
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
@@ -29,6 +31,8 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get', 'put', 'patch'])
     def me(self, request):
+        # GET: Retrieve user profile 
+        # PUT/PATCH: Update user profile (partial update supported)
         if request.method == 'GET':
             serializer = self.get_serializer(request.user)
             return Response(serializer.data)
@@ -41,6 +45,7 @@ class UserViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser])
     def upload_picture(self, request):
+        # POST: Upload a new profile picture and delete the old one if exists.
         serializer = ProfilePictureSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
             if request.user.profile_picture:
@@ -51,23 +56,24 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['delete'])
     def delete_account(self, request):
+        # DELETE: Soft delete the user account and remove the session.
         user = request.user
         if not user.check_password(request.data.get('password')):
             return Response({"error": "Invalid password"}, status=400)
         
-        # Soft delete
+        # Soft delete: Mark user as inactive.
         user.is_active = False
         user.save()
         
-        # Or hard delete
+        # Hard delete option commented out.
         # user.delete()
         Session.objects.filter(session_key=request.session.session_key).delete()
         
         return Response({"detail": "Account deleted successfully"}, status=204)
       
-
 @throttle_classes([AuthenticationThrottle])
 class CustomLoginView(DefaultLoginView):
+    # Customized login view with an extra check on email verification.
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -77,8 +83,8 @@ class CustomLoginView(DefaultLoginView):
             raise AuthenticationFailed("Email address is not verified.")
         return super().post(request, *args, **kwargs)
   
-  
 class VerifyEmailView(APIView):
+    # Verifies the user's email using uid and token from the URL.
     def get(self, request, uidb64, token):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))

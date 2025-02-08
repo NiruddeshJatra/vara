@@ -8,8 +8,8 @@ from decimal import Decimal
 import uuid                       
 from payments.models import Dispute
 
-
 class Rental(models.Model):
+    # Define available status options for rentals.
     STATUS_CHOICES = [
         ("pending", "Pending"),
         ("accepted", "Accepted"),
@@ -19,12 +19,15 @@ class Rental(models.Model):
         ("in_progress", "In Progress"),
     ]
 
+    # User who rents the product.
     renter = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, related_name="rentals_as_renter"
     )
+    # Owner of the product being rented.
     owner = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, related_name="rentals_as_owner"
     )
+    # The product involved in the rental.
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name="rentals"
     )
@@ -32,6 +35,8 @@ class Rental(models.Model):
     end_time = models.DateTimeField(help_text="When renting period ends")
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="pending")
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    security_deposit = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
+    # Connection to the escrow payment.
     escrow_payment = models.OneToOneField('EscrowPayment', on_delete=models.CASCADE, related_name='rental')
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -45,6 +50,7 @@ class Rental(models.Model):
         ]
 
     def clean(self):
+        # Validate rental: ensure product availability.
         super().clean()
         if not self.product.check_availability(self.start_time, self.end_time):
             raise ValidationError(
@@ -52,12 +58,14 @@ class Rental(models.Model):
             )
 
     def calculate_total_price(self):
-        duration = self.end_time - self.start_time
-        price = self.product.pricing.calculate_base_price
-        total_price = duration * price
+        # Calculate total price using rental duration in days and product base price.
+        duration_days = (self.end_time - self.start_time).days
+        price = self.product.pricing.base_price  # use base_price directly
+        total_price = duration_days * price
         return round(total_price, 2)
 
     def save(self, *args, **kwargs):
+        # Run validations and assign owner/security_deposit before saving.
         self.clean()
         self.owner = self.product.owner
         self.security_deposit = self.product.security_deposit
@@ -67,16 +75,17 @@ class Rental(models.Model):
     @property
     def is_active(self):
         now = timezone.now()
+        # Determine if the rental is currently active.
         return self.status == "accepted" and self.start_time <= now <= self.end_time
 
     def approve_rental(self, payment_data):
         """
-        Approve a rental request and create escrow payment.
+        Approve a rental request and initiate the escrow payment process.
         """
         if self.status != "pending":
             raise ValidationError("Can only approve pending rental requests")
-
         with transaction.atomic():
+            # Create a payment record.
             payment = Payment.objects.create(
                 user=self.renter,
                 amount=self.total_price + self.security_deposit,
@@ -86,25 +95,23 @@ class Rental(models.Model):
                 billing_address=payment_data.get("billing_address"),
                 payment_details=payment_data.get("payment_details"),
             )
-
-            EscrowPayment.objects.create(
+            # Create an escrow payment linked to this rental.
+            escrow_payment = EscrowPayment.objects.create(
                 rental=self,
                 payment=payment,
                 held_amount=self.total_price + self.security_deposit,
             )
-
+            self.escrow_payment = escrow_payment  # assign escrow payment
             self.status = "accepted"
             self.save()
-
             return payment
 
     def reject_rental(self, reason=None):
         """
-        Reject a rental request.
+        Reject a rental request with an optional reason.
         """
         if self.status != "pending":
             raise ValidationError("Can only reject pending rental requests")
-
         self.status = "rejected"
         if reason:
             self.notes = reason
@@ -112,21 +119,20 @@ class Rental(models.Model):
 
     def complete_rental(self):
         """
-        Complete a rental and release payment from escrow.
+        Complete a rental and release the escrow payment.
         """
         if self.status != "in_progress":
             raise ValidationError("Can only complete rentals that are in progress")
-
         with transaction.atomic():
             self.status = "completed"
             self.save()
-
+            # Proceed with releasing payment from escrow.
             escrow_payment = self.escrow_payment
             escrow_payment.release_to_owner()
 
     def check_overlapping_rentals(self):
         """
-        Check if there are overlapping rentals for the product.
+        Verify that there are no overlapping rentals for the same product.
         """
         overlapping = Rental.objects.filter(
             product=self.product,
@@ -139,19 +145,19 @@ class Rental(models.Model):
 
 class EscrowPayment(models.Model):
     """
-    Model representing an escrow payment.
+    Represents an escrow payment for a rental.
     """
-
     ESCROW_STATUS_CHOICES = [
         ("HELD", "Payment Held in Escrow"),
         ("RELEASED", "Released to Owner"),
         ("REFUNDED", "Refunded to Renter"),
         ("DISPUTED", "Payment Disputed"),
     ]
-
+    # Link escrow to a rental.
     rental = models.OneToOneField(
         Rental, on_delete=models.PROTECT, related_name="escrow_payment"
     )
+    # Related payment record.
     payment = models.OneToOneField(Payment, on_delete=models.PROTECT)
     status = models.CharField(
         max_length=20, choices=ESCROW_STATUS_CHOICES, default="HELD"
@@ -162,6 +168,7 @@ class EscrowPayment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def release_to_owner(self):
+        # Release funds held in escrow to the product owner.
         with transaction.atomic():
             if self.status != "HELD":
                 raise ValidationError(
@@ -170,7 +177,6 @@ class EscrowPayment(models.Model):
             self.status = "RELEASED"
             self.release_date = timezone.now()
             self.save()
-
             Payment.objects.create(
                 user=self.rental.owner,
                 amount=self.held_amount,
@@ -181,13 +187,13 @@ class EscrowPayment(models.Model):
             )
 
     def refund_to_renter(self):
+        # Refund the held escrow funds to the renter.
         with transaction.atomic():
             if self.status != "HELD":
                 raise ValidationError("Cannot refund funds that are not held in escrow")
             self.status = "REFUNDED"
             self.release_date = timezone.now()
             self.save()
-
             Payment.objects.create(
                 user=self.rental.renter,
                 amount=self.held_amount,
@@ -198,6 +204,7 @@ class EscrowPayment(models.Model):
             )
 
     def dispute_payment(self, reason=None):
+        # Mark the payment as disputed.
         with transaction.atomic():
             if self.status != "HELD":
                 raise ValidationError(
@@ -205,5 +212,4 @@ class EscrowPayment(models.Model):
                 )
             self.status = "DISPUTED"
             self.save()
-
             Dispute.objects.create(escrow_payment=self, reason=reason, status="OPEN")

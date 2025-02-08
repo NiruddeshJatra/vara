@@ -1,3 +1,5 @@
+# Advertisement models for products, pricing options, and availability periods.
+
 from django.db import models
 from django.conf import settings
 from django.core.validators import (
@@ -7,11 +9,12 @@ from django.core.validators import (
 )
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from django.core.cache import cache
 from .utils import compress_image
 from .constants import CATEGORY_CHOICES, CATEGORY_GROUPS
 from django.db.models import Avg, F
 
-
+# Model representing a product/advertisement.
 class Product(models.Model):
     title = models.CharField(
         max_length=100,
@@ -36,9 +39,7 @@ class Product(models.Model):
         help_text=_("Upload a product image (max 5MB)"),
     )
     location = models.CharField(max_length=255, null=True, blank=True, db_index=True)
-    is_available = models.BooleanField(
-        default=True,
-    )
+    is_available = models.BooleanField(default=True)
     views_count = models.PositiveIntegerField(default=0, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -86,10 +87,12 @@ class Product(models.Model):
             models.Index(fields=["created_at", "status"]),
         ]
 
+    # Validate the product before saving.
     def clean(self):
         if self.security_deposit < 0:
             raise ValidationError(_("Security deposit cannot be negative"))
 
+    # Override save to include image compression and cache invalidation.
     def save(self, *args, **kwargs):
         self.clean()
         cache_keys = [
@@ -102,15 +105,18 @@ class Product(models.Model):
             or self._state.adding
             or Product.objects.get(pk=self.pk).image != self.image
         ) and self.image:
+            # Compress the image before saving
             if compressed_image := compress_image(self.image):
                 self.image = compressed_image
         super().save(*args, **kwargs)
 
+    # Increment view count for the product.
     def increment_views(self):
         """Increment the view count for this product"""
         self.views_count += 1
         self.save(update_fields=["views_count"])
 
+    # Property to check if a product is rentable.
     @property
     def is_rentable(self):
         """Check if the product can be rented"""
@@ -118,6 +124,7 @@ class Product(models.Model):
             self.is_available and self.status == "active" and hasattr(self, "pricing")
         )
 
+    # Check if the product is available within specified dates.
     def check_availability(self, start_time, end_time):
         periods = self.availability_periods.filter(is_available=True)
         if periods.exists():
@@ -127,7 +134,9 @@ class Product(models.Model):
             )
         return self.is_available
 
+    # Updates the average rating based on related reviews.
     def update_average_rating(self):
+        from reviews.models import Review
         avg = (
             Review.objects.filter(
                 review_type="property", rental__product=self
@@ -140,7 +149,7 @@ class Product(models.Model):
     def __str__(self):
         return f"{self.title} ({self.get_status_display()})"
 
-
+# Model representing pricing options for a product.
 class PricingOption(models.Model):
     DURATION_CHOICES = [
         ("hour", _("Per Hour")),
@@ -149,10 +158,10 @@ class PricingOption(models.Model):
         ("month", _("Per Month")),
     ]
 
-    product = models.OneToOneField(  # fixed typo here
+    product = models.OneToOneField(
         "Product",
         on_delete=models.CASCADE,
-        related_name="pricing_options"
+        related_name="pricing",
     )
     base_price = models.DecimalField(
         max_digits=10,
@@ -188,6 +197,7 @@ class PricingOption(models.Model):
         verbose_name = _("Pricing Option")
         verbose_name_plural = _("Pricing Options")
 
+    # Ensure maximum rental period is not less than minimum rental period.
     def clean(self):
         if (
             self.maximum_rental_period
@@ -197,6 +207,7 @@ class PricingOption(models.Model):
                 _("Maximum rental period must be greater than minimum rental period")
             )
 
+    # Calculate price after applying discount.
     def calculate_price(self):
         """Calculate the total price for a given duration"""
         discount = (self.base_price * self.discount_percentage) / 100
@@ -205,7 +216,7 @@ class PricingOption(models.Model):
     def __str__(self):
         return f"{self.product.title} - {self.get_duration_unit_display()}"
 
-
+# Model for defining availability periods of a product.
 class AvailabilityPeriod(models.Model):
     product = models.ForeignKey(
         "Product", on_delete=models.CASCADE, related_name="availability_periods"
@@ -225,6 +236,7 @@ class AvailabilityPeriod(models.Model):
             models.Index(fields=["start_date", "end_date"]),
         ]
 
+    # Validate date range and ensure no overlapping periods exist.
     def clean(self):
         if self.end_date < self.start_date:
             raise ValidationError(

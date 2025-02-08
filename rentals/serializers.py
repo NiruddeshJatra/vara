@@ -5,9 +5,11 @@ from .models import Rental, EscrowPayment
 
 class RentalSerializer(serializers.ModelSerializer):
     """
-    Serializer for Rental model.
+    Serializer for the Rental model.
     """
+    # Calculate rental duration in days.
     duration = serializers.SerializerMethodField()
+    # Get the status of escrow payment.
     escrow_status = serializers.SerializerMethodField()
 
     class Meta:
@@ -19,17 +21,17 @@ class RentalSerializer(serializers.ModelSerializer):
         read_only_fields = ['owner', 'total_price', 'created_at', 'updated_at', 'escrow_status']
 
     def get_duration(self, obj):
-        """Calculate rental duration in days."""
+        # Compute the duration based on start and end dates.
         return (obj.end_time - obj.start_time).days
 
     def get_escrow_status(self, obj):
-        """Get the status of the escrow payment."""
+        # Return escrow status if available.
         return obj.escrow_payment.status if hasattr(obj, 'escrow_payment') else None
       
       
 class EscrowPaymentSerializer(serializers.ModelSerializer):
     """
-    Serializer for EscrowPayment model.
+    Serializer for the EscrowPayment model.
     """
     class Meta:
         model = EscrowPayment
