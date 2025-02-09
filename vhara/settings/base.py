@@ -232,9 +232,9 @@ MEDIA_URL = '/media/'
 # SSLCOMMERZ_API_URL = 'https://sandbox.sslcommerz.com' if SSLCOMMERZ_SANDBOX_MODE else 'https://securepay.sslcommerz.com'
 
 # Add BKash settings:
-BKASH_APP_KEY = env('BKASH_APP_KEY')
-BKASH_APP_SECRET = env('BKASH_APP_SECRET')
-BKASH_MODE = env('BKASH_MODE', default='sandbox')
+BKASH_API_KEY = "your_api_key"
+BKASH_API_URL = "https://api.bkash.com"
+BKASH_WEBHOOK_SECRET = "your_webhook_secret"
 
 
 LOGGING = {
