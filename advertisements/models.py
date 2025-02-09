@@ -160,10 +160,10 @@ class PricingOption(models.Model):
         ("month", _("Per Month")),
     ]
 
-    product = models.OneToOneField(
-        "Product",
+    product = models.ForeignKey(
+        Product,
         on_delete=models.CASCADE,
-        related_name="pricing",
+        related_name="pricing_options"  # added related_name to fix reverse accessor clash
     )
     base_price = models.DecimalField(
         max_digits=10,

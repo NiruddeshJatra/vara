@@ -37,11 +37,11 @@ class Rental(models.Model):
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="pending")
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
     security_deposit = models.DecimalField(
-        max_digits=10, decimal_places=2, editable=False, default=0
+        max_digits=10, decimal_places=2, editable=False, default=Decimal('0.00')
     )
     # Connection to the escrow payment.
     escrow_payment = models.OneToOneField(
-        "EscrowPayment", on_delete=models.CASCADE, related_name="rental"
+        "EscrowPayment", on_delete=models.CASCADE, related_name="rental_escrow", null=True, blank=True
     )
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -52,6 +52,7 @@ class Rental(models.Model):
         indexes = [
             models.Index(fields=["status", "created_at"]),
             models.Index(fields=["owner", "renter"]),
+            models.Index(fields=['product', 'status']),
         ]
 
     def clean(self):
@@ -84,32 +85,31 @@ class Rental(models.Model):
         return self.status == "accepted" and self.start_time <= now <= self.end_time
 
     def approve_rental(self, payment_data):
-        """
-        Approve a rental request and initiate the escrow payment process.
-        """
         if self.status != "pending":
             raise ValidationError("Can only approve pending rental requests")
+        
         with transaction.atomic():
-            # Create a payment record.
             payment = Payment.objects.create(
                 user=self.renter,
                 amount=self.total_price + self.security_deposit,
                 payment_method=payment_data["payment_method"],
                 status="PROCESSING",
                 description=f"Payment for rental #{self.id}",
-                billing_address=payment_data.get("billing_address"),
-                payment_details=payment_data.get("payment_details"),
             )
-            # Create an escrow payment linked to this rental.
+            
+            # Create escrow payment first
             escrow_payment = EscrowPayment.objects.create(
                 rental=self,
                 payment=payment,
-                held_amount=self.total_price + self.security_deposit,
+                held_amount=self.total_price + self.security_deposit
             )
-            self.escrow_payment = escrow_payment  # assign escrow payment
+            
+            # Then update the rental
+            self.escrow_payment = escrow_payment
             self.status = "accepted"
             self.save()
-            return payment
+            
+        return payment
 
     def reject_rental(self, reason=None):
         """
@@ -135,7 +135,7 @@ class Rental(models.Model):
             escrow_payment = self.escrow_payment
             escrow_payment.release_to_owner()
 
-    def check_overlapping_rentals(self):
+    def check_availability(self):
         """
         Verify that there are no overlapping rentals for the same product.
         """
@@ -146,6 +146,9 @@ class Rental(models.Model):
             end_time__gt=self.start_time,
         ).exclude(id=self.id)
         return not overlapping.exists()
+      
+    def __str__(self):
+        return f"Rental #{self.id} - {self.product.title} ({self.status})"
 
 
 class EscrowPayment(models.Model):
@@ -160,8 +163,10 @@ class EscrowPayment(models.Model):
         ("DISPUTED", "Payment Disputed"),
     ]
     # Link escrow to a rental.
-    rental = models.OneToOneField(
-        Rental, on_delete=models.PROTECT, related_name="escrow_payment"
+    rental = models.ForeignKey(
+        Rental,
+        on_delete=models.CASCADE,
+        related_name="EscrowPayment"  # added related_name to avoid clash with Rental.escrow_payment
     )
     # Related payment record.
     payment = models.OneToOneField(

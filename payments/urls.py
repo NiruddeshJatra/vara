@@ -14,5 +14,5 @@ urlpatterns = [
     path('', include(router.urls)),
     path('payment-success/', views.payment_success, name='payment-success'),
     path('payment-fail/', views.payment_fail, name='payment-fail'),
-    path('payment-cancel/', views.payment_cancel, name='payment-cancel'),
+    path('payment-cancel/', views.payment_fail, name='payment-cancel'),
 ]

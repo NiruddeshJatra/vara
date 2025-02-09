@@ -4,6 +4,29 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Product, PricingOption, AvailabilityPeriod
 
+# Serializer for PricingOption model with a method to calculate discounted price.
+class PricingOptionSerializer(serializers.ModelSerializer):
+    discounted_price = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PricingOption
+        fields = [
+            "id", "base_price", "duration_unit", 
+            "minimum_rental_period", "maximum_rental_period", 
+            "discount_percentage", "discounted_price"
+        ]
+
+    # Returns the calculated discounted price.
+    def get_discounted_price(self, obj):
+        return obj.calculate_price()
+
+# Serializer for AvailabilityPeriod model.
+class AvailabilityPeriodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AvailabilityPeriod
+        exclude = ["product"]
+        
+        
 # Base serializer for Product providing common fields and extra URL properties.
 class BaseProductSerializer(serializers.ModelSerializer):
     user_name = serializers.SerializerMethodField()
@@ -73,24 +96,3 @@ class ProductSerializer(BaseProductSerializer):
             "average_rating",
         ]
 
-# Serializer for PricingOption model with a method to calculate discounted price.
-class PricingOptionSerializer(serializers.ModelSerializer):
-    discounted_price = serializers.SerializerMethodField()
-
-    class Meta:
-        model = PricingOption
-        fields = [
-            "id", "base_price", "duration_unit", 
-            "minimum_rental_period", "maximum_rental_period", 
-            "discount_percentage", "discounted_price"
-        ]
-
-    # Returns the calculated discounted price.
-    def get_discounted_price(self, obj):
-        return obj.calculate_price()
-
-# Serializer for AvailabilityPeriod model.
-class AvailabilityPeriodSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AvailabilityPeriod
-        exclude = ["product"]

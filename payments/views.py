@@ -14,6 +14,8 @@ import hashlib
 from django.conf import settings
 import uuid
 import logging
+from django.http import HttpResponse
+from django.shortcuts import render, HttpResponse
 
 logger = logging.getLogger(__name__)
 
@@ -127,3 +129,11 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 escrow.rental.save()
         except Exception as e:
             logger.error(f"Failed to handle successful payment: {str(e)}")
+
+def payment_success(request):
+    # A simple response for successful payment.
+    return HttpResponse("Payment successful.")
+
+def payment_fail(request):
+    # A simple response or render a payment failure template
+    return HttpResponse("Payment Failed. Please try again.")

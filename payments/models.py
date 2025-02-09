@@ -78,7 +78,7 @@ class Dispute(models.Model):
     """
     Model representing a dispute for an escrow payment.
     """
-    escrow_payment = models.ForeignKey('rentals.models.EscrowPayment', on_delete=models.PROTECT, related_name='disputes')
+    escrow_payment = models.ForeignKey('rentals.EscrowPayment', on_delete=models.PROTECT, related_name='disputes')
     reason = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=20, default="OPEN")
     created_at = models.DateTimeField(auto_now_add=True)
