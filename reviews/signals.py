@@ -11,3 +11,10 @@ def update_rating_on_delete(sender, instance, **kwargs):
         instance.rental.product.update_average_rating()  # Update product rating
     elif instance.review_type == 'user' and instance.reviewed_user:
         instance.reviewed_user.update_average_rating()  # Update user rating
+        
+@receiver([post_save, post_delete], sender=Review)
+def update_ratings(sender, instance, **kwargs):
+    if instance.review_type == "property":
+        instance.rental.product.update_average_rating()
+    elif instance.review_type == "user" and instance.reviewed_user:
+        instance.reviewed_user.update_average_rating()

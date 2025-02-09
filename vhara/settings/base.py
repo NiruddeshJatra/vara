@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'reviews.apps.ReviewsConfig',
     "payments",
     "messaging",
+    "notifications",
     # extra
     "django_filters",
     "channels",

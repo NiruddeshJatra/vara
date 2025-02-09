@@ -8,6 +8,10 @@ from django.views.decorators.cache import cache_page
 from rentals.models import EscrowPayment
 from .models import Payment
 from .serializers import PaymentSerializer
+import requests
+import hmac
+import hashlib
+from django.conf import settings
 import uuid
 import logging
 
@@ -33,21 +37,51 @@ class PaymentViewSet(viewsets.ModelViewSet):
         return self._create_bkash_session(payment)
 
     def _create_bkash_session(self, payment):
-        """Simulate Bkash session creation."""
+        """Create a real Bkash payment session."""
         try:
-            payment.bkash_trx_id = f"BKASH-{uuid.uuid4().hex[:8]}"
-            payment.save(update_fields=['bkash_trx_id'])
-            
-            return Response({
-                'redirect_url': self._get_bkash_checkout_url(payment),
-                'bkash_trx_id': payment.bkash_trx_id
-            })
-        except Exception as e:
-            logger.error(f"Bkash session creation failed: {str(e)}")
-            return Response(
-                {"error": "Failed to create payment session"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            headers = {
+                "Authorization": f"Bearer {settings.BKASH_API_KEY}",
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "mode": "0011",
+                "payerReference": str(payment.user.id),
+                "callbackURL": f"{settings.BACKEND_URL}/payments/handle-callback/",
+                "amount": str(payment.amount),
+                "currency": "BDT",
+                "intent": "sale",
+                "merchantInvoiceNumber": payment.transaction_id
+            }
+            response = requests.post(
+                f"{settings.BKASH_API_URL}/checkout/create",
+                json=payload,
+                headers=headers
             )
+            response.raise_for_status()
+            
+            data = response.json()
+            payment.bkash_trx_id = data["paymentID"]
+            payment.save(update_fields=["bkash_trx_id"])
+            
+            return Response({"redirect_url": data["bkashURL"]})
+        
+        except Exception as e:
+            logger.error(f"Bkash API error: {str(e)}")
+            return Response(
+                {"error": "Payment gateway error"},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+
+    def _validate_bkash_webhook(self, request):
+        """Validate HMAC signature for Bkash callbacks."""
+        signature = request.headers.get("X-BKASH-SIGNATURE")
+        payload = request.body.decode("utf-8")
+        generated_signature = hmac.new(
+            settings.BKASH_WEBHOOK_SECRET.encode(),
+            payload.encode(),
+            hashlib.sha256
+        ).hexdigest()
+        return hmac.compare_digest(generated_signature, signature)
 
     def _get_bkash_checkout_url(self, payment):
         """Generate Bkash checkout URL (simulated for MVP)."""
