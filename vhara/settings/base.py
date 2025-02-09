@@ -224,20 +224,31 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
-SSLCOMMERZ_STORE_ID = env('SSLCOMMERZ_STORE_ID')
-SSLCOMMERZ_STORE_PASSWORD = env('SSLCOMMERZ_STORE_PASSWORD')
+# Remove SSLCOMMERZ settings:
+# SSLCOMMERZ_STORE_ID = env('SSLCOMMERZ_STORE_ID')
+# SSLCOMMERZ_STORE_PASSWORD = env('SSLCOMMERZ_STORE_PASSWORD')
+# SSLCOMMERZ_SANDBOX_MODE = True  # Set to False when moving to production
+# SSLCOMMERZ_API_URL = 'https://sandbox.sslcommerz.com' if SSLCOMMERZ_SANDBOX_MODE else 'https://securepay.sslcommerz.com'
 
-SSLCOMMERZ_SANDBOX_MODE = True  # Set to False when moving to production
-SSLCOMMERZ_API_URL = 'https://sandbox.sslcommerz.com' if SSLCOMMERZ_SANDBOX_MODE else 'https://securepay.sslcommerz.com'
+# Add BKash settings:
+BKASH_APP_KEY = env('BKASH_APP_KEY')
+BKASH_APP_SECRET = env('BKASH_APP_SECRET')
+BKASH_MODE = env('BKASH_MODE', default='sandbox')
 
 
 LOGGING = {
     'version': 1,
     'handlers': {
-        'console': {'class': 'logging.StreamHandler'}
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': 'payment_errors.log',
+        },
     },
-    'root': {
-        'handlers': ['console'],
-        'level': 'WARNING'
-    }
+    'loggers': {
+        'payments': {
+            'handlers': ['file'],
+            'level': 'ERROR',
+        },
+    },
 }
