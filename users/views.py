@@ -79,7 +79,7 @@ class UserViewSet(viewsets.ModelViewSet):
         # user.delete()
         Session.objects.filter(session_key=request.session.session_key).delete()
 
-        return Response({"detail": "Account deleted successfully"}, status=204)
+        return Response({"detail": "Account deleted successfully"}, status=200)
 
 
 @throttle_classes([AuthenticationThrottle])
@@ -100,8 +100,9 @@ class VerifyEmailView(APIView):
     # Verifies the user's email using uid and token from the URL.
     def get(self, request, uidb64, token):
         try:
-            uid = force_str(urlsafe_base64_decode(uidb64))
-            user = CustomUser.objects.get(pk=uid)
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user_id = int(uid)
+            user = CustomUser.objects.get(pk=user_id)
 
             if email_verification_token.check_token(user, token):
                 user.is_verified = True

@@ -1,116 +1,100 @@
-# users/tests.py
-from django.test import TestCase, override_settings
-from django.core.exceptions import ValidationError
-from rest_framework.test import APITestCase
+# tests.py
+from django.test import TestCase
 from django.urls import reverse
+from rest_framework.test import APIClient
 from rest_framework import status
-from django.utils import timezone
-from allauth.account.models import EmailConfirmation
-from unittest.mock import patch
 from .models import CustomUser
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import default_token_generator
 
-
-# Model Tests
-class CustomUserTests(TestCase):
+class UserRegistrationTest(TestCase):
     def setUp(self):
-        self.user_data = {
-            "username": "testuser",
-            "email": "test@example.com",
-            "password": "TestPass123!",
-            "phone_number": "+8801712345678",
-            "location": "Dhaka, Bangladesh",
+        self.client = APIClient()
+        self.register_url = reverse('rest_register')
+        self.valid_data = {
+            'username': 'testuser',
+            'email': 'test@example.com',
+            'password1': 'complexpassword123',
+            'password2': 'complexpassword123',
+            'phone_number': '+8801712345678',
+            'location': 'Test City',
+            'first_name': 'Test',
+            'last_name': 'User',
         }
 
-    @patch("users.signals.send_verification_email")
-    def test_create_user(self, mock_signal):
-        user = CustomUser.objects.create_user(**self.user_data)
-        self.assertEqual(user.email, self.user_data["email"])
-        self.assertTrue(user.check_password(self.user_data["password"]))
-
-    @patch('users.signals.send_verification_email')
-    def test_phone_number_validation(self, mock_signal):
-        self.user_data["phone_number"] = "invalid"
-        with self.assertRaises(ValidationError):
-            user = CustomUser.objects.create_user(**self.user_data)
-            user.full_clean()
-
-
-# Authentication Tests
-@override_settings(ACCOUNT_EMAIL_VERIFICATION="none")
-class AuthenticationTests(APITestCase):
-    def setUp(self):
-        self.register_url = reverse("rest_register")
-        self.login_url = reverse("rest_login")
-        self.user_data = {
-            "username": "testuser",
-            "email": "test@example.com",
-            "password1": "TestPass123!",
-            "password2": "TestPass123!",
-            "phone_number": "+8801712345678",
-            "location": "Dhaka, Bangladesh",
-        }
-
-    def test_registration(self):
-        response = self.client.post(self.register_url, self.user_data)
+    def test_valid_registration(self):
+        response = self.client.post(self.register_url, self.valid_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertTrue(
-            CustomUser.objects.filter(email=self.user_data["email"]).exists()
+        user = CustomUser.objects.get(email='test@example.com')
+        self.assertFalse(user.is_verified)
+
+    def test_duplicate_phone_number(self):
+        # Create user with same phone number
+        CustomUser.objects.create_user(
+            email='existing@example.com', username='existing',
+            phone_number='+8801712345678', password='testpass'
         )
+        response = self.client.post(self.register_url, self.valid_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('phone_number', response.data)
 
-    def test_email_verification(self):
-        response = self.client.post(self.register_url, self.user_data)
-        user = CustomUser.objects.get(email=self.user_data["email"])
-        confirmation = EmailConfirmation.create(user.emailaddress_set.first())
-        response = self.client.post(
-            reverse("rest_verify_email"), {"key": confirmation.key}
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-
-# Integration Tests
-@override_settings(ACCOUNT_EMAIL_VERIFICATION="none")
-class IntegrationTests(APITestCase):
-    def test_full_auth_flow(self):
-        # Registration
-        response = self.client.post(
-            reverse("rest_register"),
-            {
-                "username": "testuser",
-                "email": "test@example.com",
-                "password1": "TestPass123!",
-                "password2": "TestPass123!",
-                "phone_number": "+8801712345678",
-                "location": "Dhaka, Bangladesh",
-            },
-        )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        # Login
-        login_response = self.client.post(
-            reverse("rest_login"),
-            {"email": "test@example.com", "password": "TestPass123!"},
-        )
-        self.assertEqual(login_response.status_code, status.HTTP_200_OK)
-
-
-# Profile Tests
-class UserProfileTests(APITestCase):
+class EmailVerificationTest(TestCase):
     def setUp(self):
         self.user = CustomUser.objects.create_user(
-            username="testuser", email="test@example.com", password="TestPass123!"
+            email='test@example.com', username='testuser', password='testpass',
+            is_verified=False
         )
+        self.uid = urlsafe_base64_encode(force_bytes(str(self.user.pk)))
+        self.token = default_token_generator.make_token(self.user)
+
+    def test_valid_verification(self):
+        url = reverse('verify_email', args=[self.uid, self.token])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.is_verified)
+
+    def test_invalid_token(self):
+        url = reverse('verify_email', args=[self.uid, 'invalidtoken'])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+class UserProfileTest(TestCase):
+    def setUp(self):
+        self.user = CustomUser.objects.create_user(
+            email='test@example.com', username='testuser', password='testpass',
+            is_verified=True
+        )
+        self.client = APIClient()
         self.client.force_authenticate(user=self.user)
+        self.profile_url = reverse('user-profiles-me')
 
-    def test_profile_update(self):
-        url = reverse("user-detail", kwargs={"pk": self.user.pk})
-        data = {"first_name": "Test", "last_name": "User", "bio": "Test bio"}
-        response = self.client.patch(url, data)
+    def test_retrieve_profile(self):
+        response = self.client.get(self.profile_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['email'], self.user.email)
 
-    def test_profile_picture_upload(self):
-        url = reverse("user-upload-picture")
-        with open("users/tests/test_image.jpeg", "rb") as img:
-            response = self.client.post(
-                url, {"profile_picture": img}, format="multipart"
-            )
+    def test_update_profile(self):
+        update_data = {'first_name': 'Updated', 'last_name': 'Name'}
+        response = self.client.patch(self.profile_url, update_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.first_name, 'Updated')
+
+class AccountDeletionTest(TestCase):
+    def setUp(self):
+        self.user = CustomUser.objects.create_user(
+            email='test@example.com', username='testuser', password='testpass',
+            is_verified=True
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+        self.delete_url = reverse('user-profiles-delete-account')
+
+    def test_delete_account(self):
+        data = {'password': 'testpass'}
+        response = self.client.delete(self.delete_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.is_active)

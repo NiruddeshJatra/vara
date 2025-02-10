@@ -1,10 +1,3 @@
-"""
-URL configuration for vhara project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.1/topics/http/urls/
-"""
-
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -35,7 +28,7 @@ urlpatterns = [
     path('auth/', include('dj_rest_auth.urls')),
     path('auth/registration/', include('dj_rest_auth.registration.urls')),
     path('auth/password/reset/', PasswordResetView.as_view(), name='password_reset'),
-    path('auth/password/reset/confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('auth/password/reset/confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     
     # API endpoints
     path('api/', include(api_patterns)),
