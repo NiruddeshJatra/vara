@@ -9,24 +9,28 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from .models import CustomUser
 
+
 @receiver(post_save, sender=CustomUser)
 def send_verification_email(sender, instance, created, **kwargs):
     # Trigger email verification only for new unverified users.
     if created and not instance.is_verified:
         token = default_token_generator.make_token(instance)
         uid = urlsafe_base64_encode(force_bytes(instance.pk))
-        
+
         subject = "Verify Your Email Address"
-        message = render_to_string('emails/verification_email.txt', {
-            'user': instance,
-            'uid': uid,
-            'token': token,
-        })
-        
+        message = render_to_string(
+            "emails/verification_email.txt",
+            {
+                "user": user,
+                "verification_url": verification_url,
+            },
+            using="users",
+        )
+
         send_mail(
             subject,
             message,
-            'noreply@yourdomain.com',  # Sender email address.
+            "noreply@yourdomain.com",  # Sender email address.
             [instance.email],
             fail_silently=False,
         )

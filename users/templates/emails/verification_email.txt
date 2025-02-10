@@ -1,0 +1,7 @@
+Hi {{ user.username }},
+
+Please verify your email by clicking this link:
+{{ verification_url }}
+
+Thanks,
+Vhara Team
