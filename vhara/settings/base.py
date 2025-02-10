@@ -69,11 +69,11 @@ SOCIALACCOUNT_PROVIDERS = {
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    'users.middleware.SessionManagementMiddleware',
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    'users.middleware.SessionManagementMiddleware',
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
     'django.middleware.cache.UpdateCacheMiddleware',

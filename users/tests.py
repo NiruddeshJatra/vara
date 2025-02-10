@@ -27,7 +27,8 @@ class CustomUserTests(TestCase):
         self.assertEqual(user.email, self.user_data["email"])
         self.assertTrue(user.check_password(self.user_data["password"]))
 
-    def test_phone_number_validation(self):
+    @patch('users.signals.send_verification_email')
+    def test_phone_number_validation(self, mock_signal):
         self.user_data["phone_number"] = "invalid"
         with self.assertRaises(ValidationError):
             user = CustomUser.objects.create_user(**self.user_data)
@@ -66,29 +67,6 @@ class AuthenticationTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-# Profile Tests
-class UserProfileTests(APITestCase):
-    def setUp(self):
-        self.user = CustomUser.objects.create_user(
-            username="testuser", email="test@example.com", password="TestPass123!"
-        )
-        self.client.force_authenticate(user=self.user)
-
-    def test_profile_update(self):
-        url = reverse("user-detail", kwargs={"pk": self.user.pk})
-        data = {"first_name": "Test", "last_name": "User", "bio": "Test bio"}
-        response = self.client.patch(url, data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_profile_picture_upload(self):
-        url = reverse("user-upload-picture")
-        with open("users/tests/test_image.jpeg", "rb") as img:
-            response = self.client.post(
-                url, {"profile_picture": img}, format="multipart"
-            )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-
 # Integration Tests
 @override_settings(ACCOUNT_EMAIL_VERIFICATION="none")
 class IntegrationTests(APITestCase):
@@ -113,3 +91,26 @@ class IntegrationTests(APITestCase):
             {"email": "test@example.com", "password": "TestPass123!"},
         )
         self.assertEqual(login_response.status_code, status.HTTP_200_OK)
+
+
+# Profile Tests
+class UserProfileTests(APITestCase):
+    def setUp(self):
+        self.user = CustomUser.objects.create_user(
+            username="testuser", email="test@example.com", password="TestPass123!"
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_profile_update(self):
+        url = reverse("user-detail", kwargs={"pk": self.user.pk})
+        data = {"first_name": "Test", "last_name": "User", "bio": "Test bio"}
+        response = self.client.patch(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_profile_picture_upload(self):
+        url = reverse("user-upload-picture")
+        with open("users/tests/test_image.jpeg", "rb") as img:
+            response = self.client.post(
+                url, {"profile_picture": img}, format="multipart"
+            )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
