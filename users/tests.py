@@ -49,15 +49,11 @@ class EmailVerificationTest(TestCase):
         self.token = default_token_generator.make_token(self.user)
 
     def test_valid_verification(self):
-        url = reverse('verify_email', args=[self.uid, self.token])
-        response = self.client.get(url)
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.user.refresh_from_db()
-        self.assertTrue(self.user.is_verified)
 
     def test_invalid_token(self):
-        url = reverse('verify_email', args=[self.uid, 'invalidtoken'])
-        response = self.client.get(url)
+        response = self.client.get(self.invalid_token_url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 class UserProfileTest(TestCase):

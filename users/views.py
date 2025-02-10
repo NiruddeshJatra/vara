@@ -13,6 +13,7 @@ from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework.views import APIView
+from rest_framework import status
 from .models import CustomUser
 from .serializers import UserProfileSerializer, ProfilePictureSerializer
 from .filters import UserFilter
@@ -97,19 +98,17 @@ class CustomLoginView(DefaultLoginView):
 
 
 class VerifyEmailView(APIView):
-    # Verifies the user's email using uid and token from the URL.
     def get(self, request, uidb64, token):
         try:
-            uid = urlsafe_base64_decode(uidb64).decode()
+            uid = force_str(urlsafe_base64_decode(uidb64))
             user_id = int(uid)
             user = CustomUser.objects.get(pk=user_id)
-
-            if email_verification_token.check_token(user, token):
-                user.is_verified = True
-                user.save()
-                return Response({"detail": "Email verified successfully!"})
-
-            return Response({"error": "Invalid token"}, status=400)
-
-        except Exception as e:
-            return Response({"error": "Verification failed"}, status=400)
+        except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+            user = None
+        
+        # token_generator for token validation
+        if user and email_verification_token.check_token(user, token):
+            user.is_verified = True
+            user.save()
+            return Response({"detail": "Email verified successfully!"}, status=status.HTTP_200_OK)
+        return Response({"error": "Invalid verification link"}, status=status.HTTP_400_BAD_REQUEST)
