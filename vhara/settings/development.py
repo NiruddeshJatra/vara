@@ -17,3 +17,8 @@ INSTALLED_APPS += [
 MIDDLEWARE += [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
+
+# REST_FRAMEWORK = {
+#     'DEFAULT_THROTTLE_CLASSES': [],
+#     'DEFAULT_THROTTLE_RATES': {},
+# }

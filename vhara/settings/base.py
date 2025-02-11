@@ -141,11 +141,11 @@ REST_FRAMEWORK = {
         'rest_framework.filters.OrderingFilter',
     ],
     'DEFAULT_THROTTLE_CLASSES': [
-        # 'rest_framework.throttling.AnonRateThrottle',
-        # 'rest_framework.throttling.UserRateThrottle'
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '300/day',
+        'anon': '5/hour',
         'user': '3000/day',
         'auth': '5/minute',
     },
@@ -158,7 +158,7 @@ CSRF_COOKIE_HTTPONLY = False
 X_FRAME_OPTIONS = 'DENY'
 
 
-REST_AUTH_REGISTER_SERIALIZERS = {
+REST_AUTH = {
     "REGISTER_SERIALIZER": "users.serializers.CustomRegisterSerializer",
 }
 

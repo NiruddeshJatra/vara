@@ -2,7 +2,19 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 from dj_rest_auth.views import PasswordResetView, PasswordResetConfirmView
+
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Vhara API",
+        default_version="v1",
+        description="API documentation for Vhara",
+    ),
+    public=True,
+)
 
 # API URL patterns
 api_patterns = [
@@ -35,6 +47,9 @@ urlpatterns = [
     
     # Optional: Default advertisement routes at root level
     path('', include('advertisements.urls')),
+    
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
 
 # Serve media files in development

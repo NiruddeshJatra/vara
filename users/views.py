@@ -11,7 +11,9 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
-from django.contrib.auth.tokens import default_token_generator
+from django.utils import timezone
+from datetime import timedelta
+from .utils import email_verification_token
 from rest_framework.views import APIView
 from rest_framework import status
 from .models import CustomUser
@@ -98,6 +100,9 @@ class CustomLoginView(DefaultLoginView):
 
 
 class VerifyEmailView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
     def get(self, request, uidb64, token):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
@@ -105,10 +110,21 @@ class VerifyEmailView(APIView):
             user = CustomUser.objects.get(pk=user_id)
         except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
             user = None
-        
+
+        # Check if the token is expired (e.g., 24 hours)
+        if user and (timezone.now() - user.date_joined) > timedelta(hours=24):
+            return Response(
+                {"error": "Verification link expired"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         # token_generator for token validation
         if user and email_verification_token.check_token(user, token):
             user.is_verified = True
             user.save()
-            return Response({"detail": "Email verified successfully!"}, status=status.HTTP_200_OK)
-        return Response({"error": "Invalid verification link"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Email verified successfully!"}, status=status.HTTP_200_OK
+            )
+        return Response(
+            {"error": "Invalid verification link"}, status=status.HTTP_400_BAD_REQUEST
+        )

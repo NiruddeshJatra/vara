@@ -45,10 +45,15 @@ class CustomRegisterSerializer(RegisterSerializer):
 
     def validate_phone_number(self, phone_number):
         # Validate phone number against Bangladeshi format.
-        if not re.match(r"^\+?88?01[5-9]\d{8}$", phone_number):
+        if not re.match(r"^(\+?88)?01[5-9]\d{8}$", phone_number):
             raise serializers.ValidationError("Invalid phone number format")
-        if CustomUser.objects.filter(phone_number=phone_number).exists():  # Uniqueness check
-            raise serializers.ValidationError("A user with this phone number already exists.")
+
+        if CustomUser.objects.filter(
+            phone_number=phone_number
+        ).exists():  # Uniqueness check
+            raise serializers.ValidationError(
+                "A user with this phone number already exists."
+            )
         return phone_number
 
     def validate_email(self, email):
