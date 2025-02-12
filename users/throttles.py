@@ -1,7 +1,6 @@
-# Module: throttles - Implements custom rate throttling for authentication.
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
-from rest_framework.throttling import SimpleRateThrottle, AnonRateThrottle, UserRateThrottle
-
+# BLACKBOX - enhances the default throttle classes. to limit the number of requests per minute for added security.
 class AuthenticationThrottle(AnonRateThrottle):
     # Limit each user to 5 requests per minute for authentication endpoints.
     rate = '5/minute'
@@ -13,6 +12,7 @@ class AuthenticationThrottle(AnonRateThrottle):
         else:
             ident = request.user.pk
         return f"throttle_auth_{ident}"
+
 
 class UserProfileThrottle(UserRateThrottle):
     rate = '10/minute'

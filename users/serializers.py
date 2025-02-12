@@ -1,5 +1,3 @@
-# Module: serializers - Defines serializers for user profile and registration.
-
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from rest_framework import serializers
 import re
@@ -7,29 +5,30 @@ from .models import CustomUser
 
 
 class ProfilePictureSerializer(serializers.ModelSerializer):
-    # Serializer for handling profile picture uploads.
     class Meta:
         model = CustomUser
         fields = ["profile_picture"]
 
     def validate_profile_picture(self, value):
-        # Validate file size and type.
         try:
             if value.size > 5 * 1024 * 1024:  # 5MB limit
                 raise serializers.ValidationError("Image size cannot exceed 5MB")
+
             if value.content_type not in ["image/jpg", "image/jpeg", "image/png"]:
                 raise serializers.ValidationError(
                     "Only JPG, JPEG and PNG files are allowed"
                 )
         except AttributeError as e:
-            raise serializers.ValidationError("Invalid file upload") from e
+            raise serializers.ValidationError(
+                "Invalid file upload"
+            ) from e  # TODO: have to check why e is used here
+
         return value
 
 
-class CustomRegisterSerializer(RegisterSerializer):
-    # Serializer extended for custom registration fields.
+class CustomRegisterSerializer(RegisterSerializer): 
+    # Overrided to add custom functionality because the default create method only has fields like username, email, and password.
     username = serializers.CharField(required=True, max_length=150)
-    email = serializers.EmailField(required=True)
     phone_number = serializers.CharField(required=True, max_length=15)
     location = serializers.CharField(required=True, max_length=255)
     first_name = serializers.CharField(required=True, max_length=150)
@@ -48,25 +47,12 @@ class CustomRegisterSerializer(RegisterSerializer):
         if not re.match(r"^(\+?88)?01[5-9]\d{8}$", phone_number):
             raise serializers.ValidationError("Invalid phone number format")
 
-        if CustomUser.objects.filter(
-            phone_number=phone_number
-        ).exists():  # Uniqueness check
-            raise serializers.ValidationError(
-                "A user with this phone number already exists."
-            )
         return phone_number
-
-    def validate_email(self, email):
-        # Ensure email uniqueness.
-        if CustomUser.objects.filter(email=email).exists():
-            raise serializers.ValidationError("A user with this email already exists.")
-        return email
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
     # Serializer for reading user profile details.
     full_name = serializers.SerializerMethodField()
-    bio = serializers.CharField(required=False, max_length=500)
 
     class Meta:
         model = CustomUser
@@ -88,5 +74,4 @@ class UserProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "email", "is_verified", "created_at"]
 
     def get_full_name(self, obj):
-        # Returns a concatenated string of first and last names.
         return f"{obj.first_name} {obj.last_name}".strip()

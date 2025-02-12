@@ -4,7 +4,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from dj_rest_auth.views import PasswordResetView, PasswordResetConfirmView
 
 
 schema_view = get_schema_view(
@@ -37,10 +36,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # Authentication
+    path('accounts/', include('allauth.urls')),
     path('auth/', include('dj_rest_auth.urls')),
     path('auth/registration/', include('dj_rest_auth.registration.urls')),
-    path('auth/password/reset/', PasswordResetView.as_view(), name='password_reset'),
-    path('auth/password/reset/confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     
     # API endpoints
     path('api/', include(api_patterns)),

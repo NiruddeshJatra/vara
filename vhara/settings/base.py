@@ -159,7 +159,12 @@ X_FRAME_OPTIONS = 'DENY'
 
 
 REST_AUTH = {
-    "REGISTER_SERIALIZER": "users.serializers.CustomRegisterSerializer",
+    'REGISTER_SERIALIZER': 'users.serializers.CustomRegisterSerializer',
+    'USER_DETAILS_SERIALIZER': 'users.serializers.UserProfileSerializer',
+    'USE_EMAIL_VERIFICATION': True,
+    'EMAIL_VERIFICATION_REQUIRED': True,
+    'OLD_PASSWORD_FIELD_ENABLED': True,
+    'LOGOUT_ON_PASSWORD_CHANGE': False,
 }
 
 

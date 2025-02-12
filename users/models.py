@@ -1,5 +1,3 @@
-# Module: models - Contains the CustomUser model extending Django's AbstractUser.
-
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models import Avg
@@ -14,9 +12,7 @@ class CustomUser(AbstractUser):
     )
     date_of_birth = models.DateField(null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_verified = models.BooleanField(default=False)
     average_rating = models.DecimalField(
@@ -35,7 +31,7 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.username
 
-    # Black box - depends on "reviews_received" relationship
+    # BLACKBOX - depends on "reviews_received" relationship
     def update_average_rating(self):
         avg = self.reviews_received.aggregate(Avg("rating"))["rating__avg"] or 0
         self.average_rating = round(avg, 2)
