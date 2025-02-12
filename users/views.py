@@ -107,3 +107,5 @@ class CustomLoginView(LoginView):
             raise AuthenticationFailed("Email address is not verified.")
           
         return super().post(request, *args, **kwargs)
+      
+# added a manager to delete unverified users who registered more than a week ago.
