@@ -15,6 +15,7 @@ class CustomUser(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_verified = models.BooleanField(default=False)
+    is_trusted = models.BooleanField(default=False)
     average_rating = models.DecimalField(
         max_digits=3,
         decimal_places=2,

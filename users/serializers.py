@@ -70,8 +70,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "bio",
             "is_verified",
             "created_at",
+            "is_trusted_seller",
         ]
-        read_only_fields = ["id", "email", "is_verified", "created_at"]
+        read_only_fields = ["id", "email", "is_verified", "created_at","is_trusted"]
 
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}".strip()

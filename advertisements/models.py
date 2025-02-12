@@ -1,5 +1,3 @@
-# Advertisement models for products, pricing options, and availability periods.
-
 from django.db import models
 from django.conf import settings
 from django.core.validators import (
@@ -15,7 +13,6 @@ from .constants import CATEGORY_CHOICES, CATEGORY_GROUPS
 from django.db.models import Avg, F
 
 
-# Model representing a product/advertisement.
 class Product(models.Model):
     title = models.CharField(
         max_length=100,
@@ -163,7 +160,7 @@ class PricingOption(models.Model):
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
-        related_name="pricing_options"  # added related_name to fix reverse accessor clash
+        related_name="pricing_options",  # added related_name to fix reverse accessor clash
     )
     base_price = models.DecimalField(
         max_digits=10,

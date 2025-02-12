@@ -1,17 +1,8 @@
-# Module: admin - Customizes Django admin interface for managing users.
-
 from django.contrib import admin
 
+
 class UserAdmin(admin.ModelAdmin):
-    # Configured list view, search, filters, and actions for user management.
-    list_display = [
-        "username",
-        "full_name",
-        "phone_number",
-        "location",
-        "is_verified",
-        "created_at",
-    ]
+    list_display = ["username", "full_name", "email", "phone_number", "location", "is_verified", "average_rating", "is_active", "is_trusted"]
     search_fields = ["username", "email", "first_name", "last_name", "location"]
     list_filter = ["is_verified", "location", "is_active", "created_at"]
     ordering = ("-created_at",)
@@ -41,6 +32,7 @@ class UserAdmin(admin.ModelAdmin):
                     "is_staff",
                     "is_superuser",
                     "is_verified",
+                    "is_trusted",
                     "groups",
                     "user_permissions",
                 ),
@@ -48,21 +40,18 @@ class UserAdmin(admin.ModelAdmin):
         ),
     )
     list_per_page = 25
-    actions = ["mark_verified", "ban_account"]
+    actions = ["mark_trusted", "ban_account"]
 
-    def mark_verified(self, request, queryset):
-        # Mark selected users as verified.
-        queryset.update(is_verified=True)
+    def mark_trusted(self, request, queryset):
+        queryset.update(is_trusted=True)
 
-    mark_verified.short_description = "Mark selected users as verified"
-    
+    mark_trusted.short_description = "Mark selected users as trusted"
+
     def ban_account(self, request, queryset):
-        # Ban selected user accounts.
         queryset.update(is_active=False)
 
     ban_account.short_description = "Ban selected users"
 
     @admin.display(description="Full Name")
     def full_name(self):
-        # Concatenates first and last names to display full name.
         return f"{self.first_name} {self.last_name}"

@@ -23,7 +23,7 @@ class UserViewSet(viewsets.ModelViewSet):
         filters.OrderingFilter,
     ]
     filterset_class = UserFilter
-    search_fields = ["username", "email", "first_name", "last_name", "location"]
+    search_fields = ["username", "email", "first_name", "last_name", "location", "is_trusted"]
     ordering_fields = ["created_at"]
     ordering = ["-created_at"]
 
