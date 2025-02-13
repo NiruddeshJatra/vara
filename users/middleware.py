@@ -1,10 +1,9 @@
-# Module: middleware - Manages old session cleanup for authenticated users.
-
 from django.contrib.sessions.models import Session
 from django.utils import timezone
 
+
+# BLACKBOX - use whenever you need to manage sessions.
 class SessionManagementMiddleware:
-    # Middleware to delete expired sessions and limit active sessions.
     def __init__(self, get_response):
         self.get_response = get_response
 

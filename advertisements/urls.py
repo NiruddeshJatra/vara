@@ -1,5 +1,3 @@
-# URL routing for advertisement endpoints using DRF DefaultRouter.
-
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
@@ -10,7 +8,7 @@ from .views import (
 )
 from rest_framework.throttling import UserRateThrottle
 
-# Custom throttle class for products list endpoint.
+
 class ProductListThrottle(UserRateThrottle):
     rate = '100/hour'
 

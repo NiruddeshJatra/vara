@@ -54,12 +54,7 @@ class Product(models.Model):
     )
     status = models.CharField(
         max_length=20,
-        choices=[
-            ("draft", _("Draft")),
-            ("active", _("Active")),
-            ("maintenance", _("Under Maintenance")),
-            ("suspended", _("Suspended")),
-        ],
+        choices=[("active", _("Active")), ("suspended", _("Suspended"))],
         default="active",
     )
     pricing = models.OneToOneField(
@@ -85,15 +80,13 @@ class Product(models.Model):
             models.Index(fields=["created_at", "status"]),
         ]
 
-    # Validate the product before saving.
     def clean(self):
         if self.security_deposit < 0:
             raise ValidationError(_("Security deposit cannot be negative"))
 
-    # Override save to include image compression and cache invalidation.
     def save(self, *args, **kwargs):
         self.clean()
-        cache.delete_many(keys=cache.keys("product_list_*"))  # Wildcard deletion
+        cache.delete_many(keys=cache.keys("product_list_*"))
         if (
             self.pk is None
             or self._state.adding
@@ -104,21 +97,16 @@ class Product(models.Model):
                 self.image = compressed_image
         super().save(*args, **kwargs)
 
-    # Increment view count for the product.
     def increment_views(self):
-        """Increment the view count for this product"""
         self.views_count += 1
         self.save(update_fields=["views_count"])
 
-    # Property to check if a product is rentable.
     @property
     def is_rentable(self):
-        """Check if the product can be rented"""
         return (
             self.is_available and self.status == "active" and hasattr(self, "pricing")
         )
 
-    # Check if the product is available within specified dates.
     def check_availability(self, start_time, end_time):
         if not self.is_available:
             return False
@@ -131,7 +119,6 @@ class Product(models.Model):
             )
         return True
 
-    # Updates the average rating based on related reviews.
     def update_average_rating(self):
         from reviews.models import Review
 
@@ -148,7 +135,6 @@ class Product(models.Model):
         return f"{self.title} ({self.get_status_display()})"
 
 
-# Model representing pricing options for a product.
 class PricingOption(models.Model):
     DURATION_CHOICES = [
         ("hour", _("Per Hour")),
@@ -156,11 +142,10 @@ class PricingOption(models.Model):
         ("week", _("Per Week")),
         ("month", _("Per Month")),
     ]
-
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
-        related_name="pricing_options",  # added related_name to fix reverse accessor clash
+        related_name="pricing_options",
     )
     base_price = models.DecimalField(
         max_digits=10,
@@ -184,19 +169,11 @@ class PricingOption(models.Model):
             "Maximum rental period in selected duration units (leave blank for no limit)"
         ),
     )
-    discount_percentage = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        validators=[MinValueValidator(0), MaxValueValidator(100)],
-        default=0,
-        help_text=_("Discount percentage (0-100)"),
-    )
 
     class Meta:
         verbose_name = _("Pricing Option")
         verbose_name_plural = _("Pricing Options")
 
-    # Ensure maximum rental period is not less than minimum rental period.
     def clean(self):
         super().clean()
         if not self.base_price:
@@ -209,17 +186,10 @@ class PricingOption(models.Model):
                 _("Maximum rental period must be greater than minimum rental period")
             )
 
-    # Calculate price after applying discount.
-    def calculate_price(self):
-        """Calculate the total price for a given duration"""
-        discount = (self.base_price * self.discount_percentage) / 100
-        return self.base_price - discount
-
     def __str__(self):
         return f"{self.product.title} - {self.get_duration_unit_display()}"
 
 
-# Model for defining availability periods of a product.
 class AvailabilityPeriod(models.Model):
     product = models.ForeignKey(
         "Product", on_delete=models.CASCADE, related_name="availability_periods"
@@ -239,7 +209,6 @@ class AvailabilityPeriod(models.Model):
             models.Index(fields=["start_date", "end_date"]),
         ]
 
-    # Validate date range and ensure no overlapping periods exist.
     def clean(self):
         if self.end_date < self.start_date:
             raise ValidationError(

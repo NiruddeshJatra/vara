@@ -1,9 +1,7 @@
-# Filters for querying products based on price, rating, category, etc.
-
 from django_filters import rest_framework as filters
 from .models import Product
 
-# FilterSet for products with range and multiple choice filters.
+
 class ProductFilter(filters.FilterSet):
     min_price = filters.NumberFilter(
         field_name="pricing__base_price", lookup_expr="gte"

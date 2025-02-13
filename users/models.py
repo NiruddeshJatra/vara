@@ -33,6 +33,7 @@ class CustomUser(AbstractUser):
         return self.username
 
     # BLACKBOX - depends on "reviews_received" relationship
+    # TODO: recheck this later
     def update_average_rating(self):
         avg = self.reviews_received.aggregate(Avg("rating"))["rating__avg"] or 0
         self.average_rating = round(avg, 2)

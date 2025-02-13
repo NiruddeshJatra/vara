@@ -43,7 +43,7 @@ urlpatterns = [
     # API endpoints
     path('api/', include(api_patterns)),
     
-    # Optional: Default advertisement routes at root level
+    # Default advertisement routes at root level
     path('', include('advertisements.urls')),
     
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
