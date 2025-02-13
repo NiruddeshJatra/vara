@@ -53,7 +53,7 @@ class Product(models.Model):
         default=0,
         editable=False,
     )
-    pricing = models.OneToOneField(
+    pricing = models.ForeignKey(
         "PricingOption",
         on_delete=models.CASCADE,
         related_name="product_pricing",
@@ -127,7 +127,7 @@ class Product(models.Model):
         self.save(update_fields=["average_rating"])
 
     def __str__(self):
-        return f"{self.title} ({self.get_status_display()})"
+        return f"{self.title} - ({self.category})"
 
 
 class PricingOption(models.Model):
@@ -137,11 +137,6 @@ class PricingOption(models.Model):
         ("week", _("Per Week")),
         ("month", _("Per Month")),
     ]
-    product = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-        related_name="pricing_options",
-    )
     base_price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -197,7 +192,7 @@ class AvailabilityPeriod(models.Model):
     )
 
     class Meta:
-        ordering = ["start_date"]
+        ordering = ["-start_date"]
         verbose_name = _("Availability Period")
         verbose_name_plural = _("Availability Periods")
         indexes = [
