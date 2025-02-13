@@ -102,6 +102,7 @@ class RentalViewSet(viewsets.ModelViewSet):
         rental = self.get_object()
         try:
             rental.complete_rental()
+            rental.product.increment_rentals()
             return Response({"status": "Rental completed and payment released"})
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

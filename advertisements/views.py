@@ -62,7 +62,7 @@ class ProductReadOnlyViewSet(BaseProductViewSet, ReadOnlyModelViewSet):
     ordering = ["-created_at", "-average_rating", "pricing__base_price"]
 
     def get_queryset(self):
-        return self.get_base_queryset().filter(status="active")
+        return self.get_base_queryset().filter(is_available=True)
 
     def list(self, request, *args, **kwargs):
         category = request.query_params.get("category")
@@ -121,18 +121,6 @@ class ProductWriteViewSet(BaseProductViewSet, ModelViewSet):
             return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-
-    @action(detail=True, methods=["post"])
-    def toggle_status(self, request, pk=None):
-        if not self.request.user.is_verified:
-            raise PermissionDenied("Only verified users can update advertisements.")
-        product = self.get_object()
-        new_status = request.data.get("status")
-        if new_status in dict(Product._meta.get_field("status").choices):
-            product.status = new_status
-            product.save()
-            return Response({"status": new_status})
-        return Response({"error": "Invalid status"}, status=400)
 
 
 class BaseUserRestrictedViewSet(ModelViewSet):

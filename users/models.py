@@ -1,6 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models import Avg
+from django.core.validators import (
+    MinValueValidator,
+    FileExtensionValidator,
+    MaxValueValidator,
+)
 
 
 class CustomUser(AbstractUser):
@@ -8,7 +13,7 @@ class CustomUser(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True, null=True, unique=True)
     location = models.CharField(max_length=255, blank=True, null=True)
     profile_picture = models.ImageField(
-        upload_to="profile_pictures/", null=True, blank=True
+        upload_to="profile_pictures/", null=True, blank=True, validators=[FileExtensionValidator(["jpg", "jpeg", "png"])]
     )
     date_of_birth = models.DateField(null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
@@ -32,9 +37,16 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.username
 
-    # BLACKBOX - depends on "reviews_received" relationship
+    # BLACKBOX - depends on "reviews_received" relationship, don't know how aggregate and Avg work together
     # TODO: recheck this later
     def update_average_rating(self):
-        avg = self.reviews_received.aggregate(Avg("rating"))["rating__avg"] or 0
+        from reviews.models import Review
+
+        avg = (
+            Review.objects.filter(
+                review_type="user", reviewed_user=self
+            ).aggregate(Avg("rating"))["rating__avg"]
+            or 0
+        )
         self.average_rating = round(avg, 2)
         self.save(update_fields=["average_rating"])

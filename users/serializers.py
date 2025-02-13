@@ -13,11 +13,7 @@ class ProfilePictureSerializer(serializers.ModelSerializer):
         try:
             if value.size > 5 * 1024 * 1024:  # 5MB limit
                 raise serializers.ValidationError("Image size cannot exceed 5MB")
-
-            if value.content_type not in ["image/jpg", "image/jpeg", "image/png"]:
-                raise serializers.ValidationError(
-                    "Only JPG, JPEG and PNG files are allowed"
-                )
+        
         except AttributeError as e:
             raise serializers.ValidationError(
                 "Invalid file upload"

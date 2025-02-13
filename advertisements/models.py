@@ -39,9 +39,10 @@ class Product(models.Model):
     location = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     is_available = models.BooleanField(default=True)
     views_count = models.PositiveIntegerField(default=0, editable=False)
+    rental_count = models.PositiveIntegerField(default=0, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    user = models.ForeignKey(
+    owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="advertisements",
@@ -51,11 +52,6 @@ class Product(models.Model):
         decimal_places=2,
         default=0,
         editable=False,
-    )
-    status = models.CharField(
-        max_length=20,
-        choices=[("active", _("Active")), ("suspended", _("Suspended"))],
-        default="active",
     )
     pricing = models.OneToOneField(
         "PricingOption",
@@ -75,37 +71,36 @@ class Product(models.Model):
         verbose_name = _("Property")
         verbose_name_plural = _("Properties")
         indexes = [
+            # BLACKBOX - don't know how this works but it's important for performance.
+            # Indexes are used to optimize database queries.
+            # By default, Django creates an index for the primary key of the model.
             models.Index(fields=["category", "is_available", "status"]),
-            models.Index(fields=["location", "user"]),
+            models.Index(fields=["location", "owner"]),
             models.Index(fields=["created_at", "status"]),
         ]
 
-    def clean(self):
-        if self.security_deposit < 0:
-            raise ValidationError(_("Security deposit cannot be negative"))
-
     def save(self, *args, **kwargs):
-        self.clean()
+        # used to clear cached data related to product listings whenever a Product instance is saved. This ensures that the cache is updated to reflect the latest product data, preventing outdated information from being served to users.
         cache.delete_many(keys=cache.keys("product_list_*"))
         if (
-            self.pk is None
-            or self._state.adding
+            self.pk is None # means that this Product instance is being created for the first time
+            or self._state.adding # checks if the Product instance is in the process of being added to the database.
             or Product.objects.get(pk=self.pk).image != self.image
         ) and self.image:
             # Compress the image before saving
             if compressed_image := compress_image(self.image):
                 self.image = compressed_image
         super().save(*args, **kwargs)
+        if not hasattr(self, 'pricing'): # ensure that a PricingOption is created whenever a Product is created.
+            PricingOption.objects.create(product=self, base_price=0)
 
     def increment_views(self):
-        self.views_count += 1
+        self.views_count = F('views_count') + 1 # F() expressions are used to reference a model field’s value in the database. This ensures that the views_count field is updated directly in the database in a single query.
         self.save(update_fields=["views_count"])
 
-    @property
-    def is_rentable(self):
-        return (
-            self.is_available and self.status == "active" and hasattr(self, "pricing")
-        )
+    def increment_rentals(self):
+        self.rental_count = F('rental_count') + 1
+        self.save(update_fields=["rental_count"])
 
     def check_availability(self, start_time, end_time):
         if not self.is_available:
