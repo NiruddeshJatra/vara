@@ -6,10 +6,7 @@ from .models import Product, PricingOption, AvailabilityPeriod
 class PricingOptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = PricingOption
-        fields = [
-            "id", "base_price", "duration_unit", 
-            "minimum_rental_period", "maximum_rental_period", 
-        ]
+        fields = '__all__'
 
 
 class AvailabilityPeriodSerializer(serializers.ModelSerializer):
@@ -24,14 +21,17 @@ class BaseProductSerializer(serializers.ModelSerializer):
     location_url = serializers.SerializerMethodField()
 
     def get_user_name(self, obj):
-        return obj.user.get_full_name() or obj.user.username
+        return obj.owner.get_full_name() or obj.owner.username
 
+    # BLACKBOX - use it whenever you need to provide the absolute URL for an image in a serialized response.
+    # needed to provide the absolute URL for the product image in the serialized response. 
     def get_image_url(self, obj):
-        request = self.context.get("request")
+        request = self.context.get("request") # context is a dictionary that can be passed to the serializer to provide additional information. The context is automatically passed to the serializer when it is instantiated within a view. The context typically includes the request object.
         if (obj.image and request):
-            return request.build_absolute_uri(obj.image.url)
+            return request.build_absolute_uri(obj.image.url) # This method does not require any additional imports because it uses the request object, which is part of the Django framework
         return None
-          
+        
+    # BLACKBOX - use it whenever you need to provide the absolute URL for a location in a serialized response.
     def get_location_url(self, obj):
         if obj.location:
             return f"https://www.google.com/maps/search/?api=1&query={obj.location}"

@@ -49,6 +49,7 @@ class CustomRegisterSerializer(RegisterSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     # Serializer for reading user profile details.
     full_name = serializers.SerializerMethodField()
+    profile_picture_url = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
@@ -62,6 +63,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "phone_number",
             "location",
             "profile_picture",
+            'profile_picture_url',
             "date_of_birth",
             "bio",
             "is_verified",
@@ -72,3 +74,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}".strip()
+    
+    # ensures that the profile picture URLs are correctly generated and accessible from the frontend.
+    def get_profile_picture_url(self, obj):
+        request = self.context.get("request")
+        if obj.profile_picture and request:
+            return request.build_absolute_uri(obj.profile_picture.url)
+        return None

@@ -177,7 +177,7 @@ class PricingOption(models.Model):
             )
 
     def __str__(self):
-        return f"{self.product.title} - {self.get_duration_unit_display()}"
+        return f"{self.product.title} - {self.base_price} Taka for each {self.duration_unit}"
 
 
 class AvailabilityPeriod(models.Model):
@@ -204,6 +204,8 @@ class AvailabilityPeriod(models.Model):
             raise ValidationError(
                 _("End date must be greater than or equal to start date.")
             )
+        
+        # TODO: Revision needed, can't understand what overlapping is useful for.
         overlapping = AvailabilityPeriod.objects.filter(
             product=self.product,
             start_date__lte=self.end_date,
