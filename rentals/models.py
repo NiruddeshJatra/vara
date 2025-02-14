@@ -1,5 +1,6 @@
 from django.db import models, transaction
 from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
 from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
@@ -7,8 +8,6 @@ import uuid
 from django.utils.translation import gettext_lazy as _
 from users.models import CustomUser
 from advertisements.models import Product
-# from payments.models import Dispute
-# from payments.models import Payment
 
 
 class Rental(models.Model):
@@ -28,13 +27,15 @@ class Rental(models.Model):
         CustomUser, on_delete=models.CASCADE, related_name="rentals_as_owner"
     )
     product = models.ForeignKey(
-        Product, on_delete=models.CASCADE, related_name="rentals" # a single product can be rented multiple times by different users. Each rental instance represents a separate rental period for the same product.
+        Product,
+        on_delete=models.CASCADE,
+        related_name="rentals",  # a single product can be rented multiple times by different users. Each rental instance represents a separate rental period for the same product.
     )
     start_time = models.DateTimeField(help_text=_("When renting period starts"))
     end_time = models.DateTimeField(help_text=_("When renting period ends"))
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="pending")
     security_deposit = models.DecimalField(
-        max_digits=5, decimal_places=2, editable=False, default=Decimal('0.00')
+        max_digits=5, decimal_places=2, editable=False, default=Decimal("0.00")
     )
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -49,7 +50,7 @@ class Rental(models.Model):
         indexes = [
             models.Index(fields=["status", "created_at"]),
             models.Index(fields=["owner", "renter"]),
-            models.Index(fields=['product', 'status']),
+            models.Index(fields=["product", "status"]),
         ]
 
     def clean(self):
@@ -92,19 +93,22 @@ class Rental(models.Model):
     @property
     def is_active(self):
         now = timezone.now()
-        return self.status == "accepted" and self.start_time <= now <= self.end_time
+        return (
+            self.status in ["in_progress", "accepted"]
+            and self.start_time <= now <= self.end_time
+        )
 
     def approve_rental(self):
         if self.status != "pending":
             raise ValidationError("Can only approve pending rental requests")
-        
+
         self.status = "accepted"
         self.save()
 
     def reject_rental(self, reason=None):
         if self.status != "pending":
             raise ValidationError("Can only reject pending rental requests")
-        
+
         self.status = "rejected"
         if reason:
             self.notes = reason
@@ -113,10 +117,10 @@ class Rental(models.Model):
     def complete_rental(self):
         if self.status != "in_progress":
             raise ValidationError("Can only complete rentals that are in progress")
-        
+
         self.status = "completed"
         self.save()
-      
+
     def __str__(self):
         return f"Rental #{self.id} - {self.product.title} ({self.status})"
 

@@ -1,39 +1,36 @@
 from rest_framework import serializers
-from django.utils.timezone import now
-from .models import Rental, EscrowPayment
+from .models import Rental, RentalPhoto
 
 
 class RentalSerializer(serializers.ModelSerializer):
-    """
-    Serializer for the Rental model.
-    """
-    # Calculate rental duration in days.
-    duration = serializers.SerializerMethodField()
-    # Get the status of escrow payment.
-    escrow_status = serializers.SerializerMethodField()
-
     class Meta:
         model = Rental
         fields = [
-            'id', 'renter', 'owner', 'product', 'start_time', 'end_time', 'status',
-            'total_price', 'notes', 'created_at', 'updated_at', 'duration', 'escrow_status'
+            "id",
+            "renter",
+            "owner",
+            "product",
+            "start_time",
+            "end_time",
+            "status",
+            "total_price",
+            "notes",
+            "created_at",
+            "updated_at",
         ]
-        read_only_fields = ['owner', 'total_price', 'created_at', 'updated_at', 'escrow_status']
+        read_only_fields = [
+            "id",
+            "renter",
+            "owner",
+            "product",
+            "total_price",
+            "created_at",
+            "updated_at",
+        ]
 
-    def get_duration(self, obj):
-        # Compute the duration based on start and end dates.
-        return (obj.end_time - obj.start_time).days
 
-    def get_escrow_status(self, obj):
-        # Return escrow status if available.
-        return obj.escrow_payment.status if hasattr(obj, 'escrow_payment') else None
-      
-      
-class EscrowPaymentSerializer(serializers.ModelSerializer):
-    """
-    Serializer for the EscrowPayment model.
-    """
+class RentalPhotoSerializer(serializers.ModelSerializer):
     class Meta:
-        model = EscrowPayment
-        fields = ['id', 'status', 'held_amount', 'release_date', 'created_at']
-        read_only_fields = ['id', 'status', 'held_amount', 'release_date', 'created_at']
+        model = RentalPhoto
+        fields = ['id', 'photo', 'photo_type', 'created_at']
+        read_only_fields = ['created_at']

@@ -1,17 +1,13 @@
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import RentalViewSet
-from rest_framework.throttling import UserRateThrottle
+from rest_framework_nested import routers
 
-class RentalListThrottle(UserRateThrottle):
-    # Throttle limit for rental requests.
-    rate = '100/hour'
+router = routers.DefaultRouter()
+router.register(r'rentals', RentalViewSet)
 
-router = DefaultRouter()
-# Register RentalViewSet to generate endpoints for rental operations.
-router.register(r'rentals', RentalViewSet, basename='rental')
+rentals_router = routers.NestedSimpleRouter(router, r'rentals', lookup='rental')
+rentals_router.register(r'photos', RentalPhotoViewSet, basename='rental-photos')
 
 urlpatterns = [
-    # Include all automatically generated rental URLs.
     path('', include(router.urls)),
+    path('', include(rentals_router.urls)),
 ]
