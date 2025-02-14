@@ -36,9 +36,6 @@ CATEGORY_CHOICES = [
     
     # Electronics & Gadgets
     ('drone', 'Drone'),
-    ('gaming', 'Gaming Console'),
-    ('vr_equip', 'VR Equipment'),
-    ('tablet', 'Tablet'),
     ('power_bank', 'Power Bank'),
     ('laptop', 'Laptop'),
     
@@ -52,7 +49,6 @@ CATEGORY_CHOICES = [
     ('power_tool', 'Power Tools'),
     ('hand_tool', 'Hand Tools'),
     ('garden_tool', 'Gardening Equipment'),
-    ('pressure_washer', 'Pressure Washer'),
     ('ladder', 'Ladder'),
     ('paint_sprayer', 'Paint Sprayer'),
 ]
@@ -62,7 +58,7 @@ CATEGORY_GROUPS = {
     'Sports & Fitness': ['bicycle', 'safety_gear', 'cricket', 'football', 'basketball', 'tennis', 'gym_equip'],
     'Outdoor & Camping': ['tent', 'sleeping_bag', 'camp_furniture', 'hiking_gear', 'camp_stove', 'cooler', 'bag'],
     'Audio & Entertainment': ['speaker', 'dj_equip', 'musical_inst', 'karaoke', 'party_lights', 'projector'],
-    'Electronics & Gadgets': ['drone', 'gaming', 'vr_equip', 'tablet', 'power_bank', 'laptop'],
-    'Event & Party': ['party_furniture', 'decorations', 'grill', 'bounce_house', 'stage'],
-    'Tools & Equipment': ['power_tool', 'hand_tool', 'garden_tool', 'pressure_washer', 'ladder', 'paint_sprayer'],
+    'Electronics & Gadgets': ['drone', 'power_bank', 'laptop'],
+    'Event & Party': ['party_furniture', 'decorations', 'grill', 'stage'],
+    'Tools & Equipment': ['power_tool', 'hand_tool', 'garden_tool', 'ladder', 'paint_sprayer'],
 }
