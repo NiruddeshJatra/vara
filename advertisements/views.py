@@ -1,51 +1,32 @@
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import filters
-from django.conf import settings
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
+from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-from django.db.models import F, Prefetch
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.exceptions import PermissionDenied
-from django.core.cache import cache
+from .models import Product, PricingOption, AvailabilityPeriod, ProductImage
 from .serializers import (
     ProductSerializer,
     PricingOptionSerializer,
     AvailabilityPeriodSerializer,
+    ProductImageSerializer,
 )
 from .filters import ProductFilter
-from .models import Product, AvailabilityPeriod, PricingOption
 
 
-class BaseProductViewSet:
-    permission_classes = [IsAuthenticated]
+class ProductViewSet(ReadOnlyModelViewSet):
+    """
+    Read-only endpoint for all users
+    """
+
+    queryset = Product.objects.select_related("owner", "pricing").filter(
+        is_available=True
+    )
     serializer_class = ProductSerializer
-
-    def get_base_queryset(self):
-        return (
-            Product.objects.select_related("user", "pricing")
-            .prefetch_related(
-                Prefetch(
-                    "availability_periods",
-                    queryset=AvailabilityPeriod.objects.filter(is_available=True),
-                )
-            )
-            .only(
-                "title",
-                "category",
-                "description",
-                "location",
-                "is_available",
-                "user__username",
-                "pricing__base_price",
-            )
-        )
-
-
-@method_decorator(cache_page(60 * 15), name="list")
-class ProductReadOnlyViewSet(BaseProductViewSet, ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -53,103 +34,60 @@ class ProductReadOnlyViewSet(BaseProductViewSet, ReadOnlyModelViewSet):
     ]
     filterset_class = ProductFilter
     search_fields = ["title", "category", "description", "location"]
-    ordering_fields = [
-        "pricing__base_price",
-        "created_at",
-        "average_rating",
-        "views_count",
-    ]
-    ordering = ["-created_at", "-average_rating", "pricing__base_price"]
+    ordering_fields = ["pricing__base_price", "created_at", "average_rating"]
+    ordering = ["-created_at"]
 
-    def get_queryset(self):
-        return self.get_base_queryset().filter(is_available=True)
-
+    @method_decorator(cache_page(60 * 15))
     def list(self, request, *args, **kwargs):
-        category = request.query_params.get("category")
-        location = request.query_params.get("location")
-        page = request.query_params.get("page", 1)
-        cache_key = f"product_list_{category}_{location}_page_{page}_v{settings.CACHE_VERSION}"
-        cached_products = cache.get(cache_key)
-        if not cached_products:
-            queryset = self.filter_queryset(self.get_queryset())
-            page = self.paginate_queryset(queryset)
-            serializer = self.get_serializer(page, many=True)
-            cached_products = serializer.data
-            cache.set(cache_key, cached_products, timeout=60 * 15)
-        return Response(cached_products)
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        cache_key = f"product_detail_{instance.pk}_v{settings.CACHE_VERSION}"
-        if cached_data := cache.get(cache_key):
-            return Response(cached_data)
-        instance.increment_views()
-        serializer = self.get_serializer(instance)
-        cache.set(cache_key, serializer.data, timeout=60 * 15)
-        return Response(serializer.data)
+        return super().list(request, *args, **kwargs)
 
 
-class ProductWriteViewSet(BaseProductViewSet, ModelViewSet):
-    def get_queryset(self):
-        return self.get_base_queryset().filter(user=self.request.user)
+class UserProductViewSet(ModelViewSet):
+    """
+    Write operations for authenticated owners
+    """
 
-    def perform_create(self, serializer):
-        if not self.request.user.is_verified:
-            raise PermissionDenied("Only verified users can post advertisements.")
-        serializer.save(user=self.request.user)
-
-    def perform_update(self, serializer):
-        if not self.request.user.is_verified:
-            raise PermissionDenied("Only verified users can update advertisements.")
-        if serializer.instance.user != self.request.user:
-            raise PermissionDenied("You can only update your own products.")
-        serializer.save()
-
-    def perform_destroy(self, instance):
-        if not self.request.user.is_verified:
-            raise PermissionDenied("Only verified users can delete advertisements.")
-        if instance.user != self.request.user:
-            raise PermissionDenied("You can only delete your own products.")
-        instance.delete()
-
-    @action(detail=False, methods=["get"])
-    def my_advertisements(self, request):
-        queryset = self.get_queryset()
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-
-class BaseUserRestrictedViewSet(ModelViewSet):
+    serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]
 
-    def check_user_permission(self, product_id):
-        if not Product.objects.filter(id=product_id, user=self.request.user).exists():
-            raise PermissionDenied("You can only modify your own products' data.")
+    def get_queryset(self):
+        return Product.objects.filter(owner=self.request.user)
+
+    def perform_create(self, serializer):
+        if not self.request.user.is_verified:
+            raise PermissionDenied("Verification required for product management")
+        serializer.save(owner=self.request.user)
+        
+    # these two actions are needed because DRF doesn't create endpoint without viewsets and we are not creating a viewset for image. Ownership check is also needed.
+    @action(detail=True, methods=["post"], url_path="add-image")
+    def add_image(self, request, pk=None):
+        product = self.get_object()
+        serializer = ProductImageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(product=product)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["delete"], url_path="delete-image/(?P<image_id>\d+)")
+    def delete_image(self, request, pk=None, image_id=None):
+        product = self.get_object()
+        image = product.images.filter(id=image_id).first()
+        if not image:
+            return Response({"error": "Image not found"}, status=status.HTTP_404_NOT_FOUND)
+        image.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class PricingOptionViewSet(BaseUserRestrictedViewSet):
+class PricingOptionViewSet(ModelViewSet):
     serializer_class = PricingOptionSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return PricingOption.objects.filter(product__user=self.request.user)
-
-    def perform_create(self, serializer):
-        product_id = self.request.data.get("product")
-        self.check_user_permission(product_id)
-        serializer.save()
+        return PricingOption.objects.filter(product__owner=self.request.user)
 
 
-class AvailabilityPeriodViewSet(BaseUserRestrictedViewSet):
+class AvailabilityPeriodViewSet(ModelViewSet):
     serializer_class = AvailabilityPeriodSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return AvailabilityPeriod.objects.filter(product__user=self.request.user)
-
-    def perform_create(self, serializer):
-        product_id = self.request.data.get("product")
-        self.check_user_permission(product_id)
-        serializer.save()
+        return AvailabilityPeriod.objects.filter(product__owner=self.request.user)
