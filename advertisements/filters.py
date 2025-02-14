@@ -20,6 +20,5 @@ class ProductFilter(filters.FilterSet):
             "category": ["exact", "in"],
             "location": ["exact", "icontains"],
             "is_available": ["exact"],
-            "status": ["exact"],
             "average_rating": ["gte", "lte"],
         }

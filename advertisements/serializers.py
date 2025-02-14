@@ -1,12 +1,32 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Product, PricingOption, AvailabilityPeriod
+from .models import Product, PricingOption, AvailabilityPeriod, ProductImage
+
+
+class ProductImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+    
+    # BLACKBOX - use it whenever you need to provide the absolute URL for an image in a serialized response.
+    # needed to provide the absolute URL for the product image in the serialized response.
+    def get_image_url(self, obj):
+        request = self.context.get(
+            "request"
+        )  # context is a dictionary that can be passed to the serializer to provide additional information. The context is automatically passed to the serializer when it is instantiated within a view. The context typically includes request object.
+        if obj.image and request:
+            return request.build_absolute_uri(
+                obj.image.url
+            )  # This method doesn't require any additional imports as it uses request object, which is part of the Django framework
+        return None
+    
+    class Meta:
+        model = ProductImage
+        fields = ['id', 'image', 'image_url', 'created_at']
 
 
 class PricingOptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = PricingOption
-        fields = '__all__'
+        fields = "__all__"
 
 
 class AvailabilityPeriodSerializer(serializers.ModelSerializer):
@@ -16,21 +36,12 @@ class AvailabilityPeriodSerializer(serializers.ModelSerializer):
 
 
 class BaseProductSerializer(serializers.ModelSerializer):
-    user_name = serializers.SerializerMethodField()
-    image_url = serializers.SerializerMethodField()
+    owner_name = serializers.SerializerMethodField()
     location_url = serializers.SerializerMethodField()
 
-    def get_user_name(self, obj):
+    def get_owner_name(self, obj):
         return obj.owner.get_full_name() or obj.owner.username
 
-    # BLACKBOX - use it whenever you need to provide the absolute URL for an image in a serialized response.
-    # needed to provide the absolute URL for the product image in the serialized response. 
-    def get_image_url(self, obj):
-        request = self.context.get("request") # context is a dictionary that can be passed to the serializer to provide additional information. The context is automatically passed to the serializer when it is instantiated within a view. The context typically includes the request object.
-        if (obj.image and request):
-            return request.build_absolute_uri(obj.image.url) # This method does not require any additional imports because it uses the request object, which is part of the Django framework
-        return None
-        
     # BLACKBOX - use it whenever you need to provide the absolute URL for a location in a serialized response.
     def get_location_url(self, obj):
         if obj.location:
@@ -43,7 +54,7 @@ class ProductSerializer(BaseProductSerializer):
     availability = AvailabilityPeriodSerializer(
         source="availability_periods", many=True, read_only=True
     )
-    is_rentable = serializers.BooleanField(read_only=True)
+    images = ProductImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
@@ -51,35 +62,23 @@ class ProductSerializer(BaseProductSerializer):
             "id",
             "title",
             "category",
+            "owner_name"
             "description",
-            "image",
-            "image_url",
-            "security_deposit",
+            "images",
             "location",
-            "location_url",
+            "location_url"
             "is_available",
-            "views_count",
-            "status",
             "average_rating",
-            "created_at",
-            "updated_at",
-            "user",
-            "user_name",
+            "security_deposit",
             "pricing_details",
             "availability",
-            "is_rentable",
-            "base_price",
+            "views_count",
+            "rental_count",
         ]
         read_only_fields = [
             "id",
-            "created_at",
-            "updated_at",
-            "user",
-            "user_name",
-            "location",
-            "location_url",
-            "is_rentable",
             "views_count",
+            "rental_count"
             "average_rating",
+            "owner_name",
         ]
-

@@ -6,8 +6,8 @@ from .models import Product, PricingOption, AvailabilityPeriod
 class ProductAdmin(admin.ModelAdmin):
     # Display fields in the product list view.
     list_display = [
-        'title', 'category', 'user', 'status', 
-        'is_available', 'views_count', 'average_rating'
+        'title', 'category', 'owner', 'status', 
+        'is_available', 'views_count', 'rental_count', 'average_rating'
     ]
     # Filters to narrow down the product list.
     list_filter = [
@@ -37,14 +37,20 @@ class ProductAdmin(admin.ModelAdmin):
 
     # Action to mark selected products as active.
     def mark_as_active(self, request, queryset):
-        queryset.update(status='active')
+        queryset.update(is_available=True)
     mark_as_active.short_description = "Mark selected products as active"
 
     # Action to mark selected products as suspended.
     def mark_as_suspended(self, request, queryset):
-        queryset.update(status='suspended')
+        queryset.update(is_available=False)
     mark_as_suspended.short_description = "Mark selected products as suspended"
-    
+
+
+@admin.register(ProductImage)
+class ProductImageAdmin(admin.ModelAdmin):
+    list_display = ['product', 'image', 'created_at']
+    list_filter = ['product']
+
 
 @admin.register(PricingOption)
 class PricingOptionAdmin(admin.ModelAdmin):

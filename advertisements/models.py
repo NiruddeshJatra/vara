@@ -31,11 +31,6 @@ class Product(models.Model):
         verbose_name=_("Description"),
         help_text=_("Detailed description of the property"),
     )
-    image = models.ImageField(
-        upload_to="product_images/",
-        validators=[FileExtensionValidator(["jpg", "jpeg", "png"])],
-        help_text=_("Upload a product image (max 5MB)"),
-    )
     location = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     is_available = models.BooleanField(default=True)
     views_count = models.PositiveIntegerField(default=0, editable=False)
@@ -128,6 +123,28 @@ class Product(models.Model):
 
     def __str__(self):
         return f"{self.title} - ({self.category})"
+
+
+# created to allow multiple images for a product
+class ProductImage(models.Model):
+    product = models.ForeignKey(
+        Product, 
+        on_delete=models.CASCADE, 
+        related_name="images"
+    )
+    image = models.ImageField(
+        upload_to="product_images/",
+        validators=[FileExtensionValidator(["jpg", "jpeg", "png"])],
+        help_text=_("Upload a product image (max 5MB)"),
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Image for {self.product.title}"
+
+    class Meta:
+        verbose_name = _("Product Image")
+        verbose_name_plural = _("Product Images")
 
 
 class PricingOption(models.Model):
