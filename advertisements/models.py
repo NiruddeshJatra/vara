@@ -100,14 +100,13 @@ class Product(models.Model):
     def check_availability(self, start_time, end_time):
         if not self.is_available:
             return False
-        periods = self.availability_periods.filter(is_available=True)
-        if periods.exists():
-            return any(
-                period.start_date <= start_time.date()
-                and period.end_date >= end_time.date()
-                for period in periods
-            )
-        return True
+        
+        overlapping_rentals = self.rentals.filter(
+            status__in=["accepted", "in_progress"],
+            start_time__lt=end_time,
+            end_time__gt=start_time,
+        )
+        return not overlapping_rentals.exists()
 
     def update_average_rating(self):
         from reviews.models import Review
@@ -197,6 +196,7 @@ class PricingOption(models.Model):
         return f"{self.product.title} - {self.base_price} Taka for each {self.duration_unit}"
 
 
+# There is some ambiguity about the necessity of this model. Keeping it for now.
 class AvailabilityPeriod(models.Model):
     product = models.ForeignKey(
         "Product", on_delete=models.CASCADE, related_name="availability_periods"
