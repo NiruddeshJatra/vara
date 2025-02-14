@@ -41,6 +41,7 @@ class Product(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="advertisements",
+        null=True,
     )
     average_rating = models.DecimalField(
         max_digits=3,
@@ -69,9 +70,9 @@ class Product(models.Model):
             # BLACKBOX - don't know how this works but it's important for performance.
             # Indexes are used to optimize database queries.
             # By default, Django creates an index for the primary key of the model.
-            models.Index(fields=["category", "is_available", "status"]),
+            models.Index(fields=["category", "is_available"]),
             models.Index(fields=["location", "owner"]),
-            models.Index(fields=["created_at", "status"]),
+            models.Index(fields=["created_at"]),
         ]
 
     def save(self, *args, **kwargs):

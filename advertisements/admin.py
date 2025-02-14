@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
-from .models import Product, PricingOption, AvailabilityPeriod
+from .models import Product, PricingOption, AvailabilityPeriod, ProductImage
 
 
 @admin.register(Product)
@@ -14,6 +14,7 @@ class ProductAdmin(admin.ModelAdmin):
         "views_count",
         "rental_count",
         "average_rating",
+        "pricing__base_price",
     ]
     list_filter = [
         "category",
@@ -68,9 +69,8 @@ class ProductImageAdmin(admin.ModelAdmin):
 
 @admin.register(PricingOption)
 class PricingOptionAdmin(admin.ModelAdmin):
-    list_display = ["product", "base_price", "duration_unit", "discount_percentage"]
+    list_display = ["base_price", "duration_unit"]
     list_filter = ["duration_unit"]
-    search_fields = ["product__title"]
 
 
 @admin.register(AvailabilityPeriod)

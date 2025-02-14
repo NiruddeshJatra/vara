@@ -27,7 +27,6 @@ api_patterns = [
     # Additional features
     path('complaints/', include('complaints.urls')),
     path('messages/', include('messaging.urls')),
-    path('payments/', include('payments.urls')),
 ]
 
 # Main URL patterns
