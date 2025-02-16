@@ -28,3 +28,20 @@
 - POST /api/rentals/{id}/reject/ - Reject rental request
 - POST /api/rentals/{id}/complete/ - Complete rental
 - POST /api/rentals/{id}/cancel/ - Cancel a pending rental request
+
+## Reviews
+- GET /api/reviews/ - List all reviews
+- POST /api/reviews/ - Create a new review
+- GET /api/reviews/{id}/ - Get review details
+- PUT /api/reviews/{id}/ - Update review
+- DELETE /api/reviews/{id}/ - Delete review
+
+## Payments
+- POST /api/payments/ - Process a payment
+- GET /api/payments/{id}/ - Get payment details
+- GET /api/payments/history/ - List payment history
+
+## Notifications
+- GET /api/notifications/ - List all notifications
+- POST /api/notifications/mark-as-read/ - Mark notifications as read
+- DELETE /api/notifications/{id}/ - Delete a notification
