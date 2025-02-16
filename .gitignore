@@ -1,8 +1,8 @@
 # Virtual Environment
-vhara_venv/
+backend/vhara_venv/
 
 # Environment Variables
-.env
+backend/.env
 
 # Python
 __pycache__/
@@ -12,5 +12,9 @@ __pycache__/
 # Django
 *.log
 local_settings.py
-db.sqlite3
-db.sqlite3-journal
+backend/db.sqlite3
+
+# React
+frontend/node_modules/
+frontend/.env
+frontend/build/
