@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     # extra
     "django_filters",
     "channels",
+    'corsheaders',
 ]
 
 # Social auth settings
@@ -67,6 +68,7 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -92,7 +94,7 @@ ROOT_URLCONF = "vhara.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [BASE_DIR / '../frontend/build'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -123,6 +125,9 @@ CHANNEL_LAYERS = {
 #     },
 # }
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]
 
 SITE_ID = 1
 
@@ -218,11 +223,13 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files
+STATICFILES_DIRS = [BASE_DIR / '../frontend/build/static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Media files
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = BASE_DIR / 'backend/media'
 MEDIA_URL = '/media/'
 
 # Remove SSLCOMMERZ settings:
