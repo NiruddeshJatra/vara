@@ -1,38 +1,65 @@
-.App {
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em rgba(74, 222, 128, 0.6));
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em rgba(74, 222, 128, 0.6));
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
+@keyframes logo-spin {
   from {
     transform: rotate(0deg);
   }
   to {
     transform: rotate(360deg);
   }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* Nature theme additions */
+.glass-card {
+  backdrop-filter: blur(12px);
+  background-color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(220, 252, 231, 0.3);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+}
+
+.eco-gradient {
+  background: linear-gradient(90deg, hsla(139, 70%, 75%, 1) 0%, hsla(63, 90%, 76%, 1) 100%);
+}
+
+.nature-pattern {
+  background-color: rgba(255, 255, 255, 0.4);
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54.627 0l.83.828-1.415 1.415L51.8 0h2.827zM5.373 0l-.83.828L5.96 2.243 8.2 0H5.374zM48.97 0l3.657 3.657-1.414 1.414L46.143 0h2.828zM11.03 0L7.372 3.657l1.415 1.414L13.857 0H11.03zm32.284 0l6.9 6.9-1.414 1.414-6.9-6.9h1.414zM12.686 0L5.787 6.9l1.415 1.414 6.9-6.9h-1.415zM0 9.543l9.543 9.543-1.415 1.414L0 8.43V5.6zm60 .7L49.7 0h3.8l6.5 6.5v3.743zm0 3.8V36.3l-5.9-5.9v-3.8l5.9 5.9zM49.7 60L0 10.3v-3.8a63.45 63.45 0 0 1 5.9 5.9h3.8L0 0h60l-4.73 4.73 4.73 4.73h-3.8l-3.55-3.55a63.322 63.322 0 0 1 3.55-3.55v3.8a62.918 62.918 0 0 1-5.9 5.9l5.9 5.9v3.8l-5.9-5.9v-3.8l5.9 5.9v3.8l-5.9-5.9v-3.8l5.9 5.9v3.8l-6.5-6.5-9.4 9.4 9.4 9.4v3.8L29.6 29.6l-9.4 9.4 9.4 9.4v3.8l-9.4-9.4-9.4 9.4v-3.8l5.9-5.9h3.8L10.8 42.3a62.358 62.358 0 0 1-5.9-5.9l5.9-5.9h3.8L8.85 36.3a62.358 62.358 0 0 1-5.9 5.9l5.9 5.9v3.8L3.4 46.4 0 49.8V36.3l.9-.9a58.422 58.422 0 0 0 5.9 5.9l5.9-5.9v3.8l-5.9 5.9a58.422 58.422 0 0 0-5.9-5.9v-3.8l4.3 4.3 5.9-5.9 5.9 5.9v3.8l-5.9-5.9v-3.8l5.9 5.9v3.8l-5.9-5.9v-3.8l5.9 5.9v3.8l-5.9-5.9v-3.8l5.9 5.9 4.3-4.3v3.8l-4.3 4.3a58.776 58.776 0 0 0-5.9-5.9L6.7 54.3a58.776 58.776 0 0 0 5.9 5.9c-.64-.64-1.214-1.273-1.824-1.9l-4.076-4.073v-3.8l5.9 5.9v3.8a63.945 63.945 0 0 1-5.9-5.9L1.975 55v3.8L4.28 56.4 0 52.12V49.3l.975.97c.513-.3 1.073-.723 1.825-1.25t1.825-1.25a61.638 61.638 0 0 1-3.65 3.65v3.17L0 53.8v3.878l.97-.97 5.9 5.9v-3.8l-5.9-5.9L0 49.756V60h48.025l-6.175-6.175-9.4 9.4v-3.8l9.4-9.4-6.175-6.175H48.025L60 56.15v3.8L48.025 48.025 60 36.05v3.8L48.025 51.775l9.4 9.4L60 58.25v1.75H27.85l9.4-9.4H41l-9.4 9.4h12.75l-6.175-6.175L60 32l-5.9-5.9v-3.8l5.9 5.9v-3.8l-5.9-5.9 5.9-5.9v-3.8l-7.6 7.6h-3.8l7.6-7.6h-3.8l-7.6 7.6v3.8l7.6-7.6h3.8L42.3 29.6l7.6-7.6v3.8l-7.6 7.6v-3.8l7.6-7.6v3.8L41 34.7l-9.4-9.4v-3.8l9.4 9.4v-3.8l-9.4-9.4 9.4-9.4v-3.8l-12.75 12.75h-3.8l12.75-12.75h3.8L29.6 14.7l9.4-9.4h3.8L29.6 18.5l9.4 9.4v3.8l-9.4-9.4v3.8l9.4 9.4v-3.8l-9.4-9.4h-3.8l9.4 9.4v-3.8l-9.4-9.4-7.6 7.6v-3.8l7.6-7.6h-3.8l-7.6 7.6h3.8l7.6-7.6v3.8l-7.6 7.6v-3.8l7.6-7.6h-3.8l-7.6 7.6v-3.8l7.6-7.6-5.9-5.9h3.8l9.4 9.4-9.4 9.4v-3.8l9.4-9.4-5.9-5.9H18.5L12.53 6.13 12 5.6h3.8l2.25 2.25L24.9 0h3.8L12.1 16.65 0 4.55V0h60L48.35 11.65 60 23.295V27.1L48.35 15.45 60 3.8V0zM0 23.294l3.8-3.8v3.8l-3.8 3.8v-3.8z' fill='%2322c55e' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+}
+
+/* Enhanced Backgrounds */
+.deep-green-bg {
+  background: linear-gradient(135deg, var(--green-800), var(--green-700));
 }
