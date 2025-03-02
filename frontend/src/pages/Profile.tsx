@@ -11,7 +11,7 @@ import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import { Bell, CheckCircle, Edit, Star, Upload, X } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-
+// New
 const Profile = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("profile");
