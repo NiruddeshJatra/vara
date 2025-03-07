@@ -27,7 +27,7 @@ const ValueProposition = () => {
       <div className="container">
         <div className="section-title">
           <span className="badge">Our Benefits</span>
-          <h2 className="text-green-800">Why Choose Vhara?</h2>
+          <h2 className="text-green-800">Why Choose Bhara?</h2>
           <p>Join thousands of people saving money and living more sustainably.</p>
         </div>
 

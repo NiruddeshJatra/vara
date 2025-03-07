@@ -43,7 +43,7 @@ const TrustSafety = () => {
         <div style={{maxWidth: '48rem', margin: '0 auto', textAlign: 'center'}}>
           <span className="badge">Peace of Mind</span>
           <h2 style={{fontSize: '2rem', fontWeight: 'bold', marginBottom: '1.5rem'}}>Your Trust Is Our Priority</h2>
-          <p style={{color: 'var(--gray-500)', marginBottom: '3rem'}}>We've built Vhara with your safety and security as our top priorities. Here's how we protect you:</p>
+          <p style={{color: 'var(--gray-500)', marginBottom: '3rem'}}>We've built Bhara with your safety and security as our top priorities. Here's how we protect you:</p>
         </div>
 
         <div className="card-grid">

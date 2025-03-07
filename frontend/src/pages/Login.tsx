@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, ShieldCheck, LifeBuoy } from "lucide-react";
@@ -5,73 +6,70 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
+
   const validateEmail = (email: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
   };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Reset errors
     const newErrors: { email?: string; password?: string; general?: string } = {};
 
-    // Validate email
     if (!email) {
       newErrors.email = "Email is required";
     } else if (!validateEmail(email)) {
       newErrors.email = "Please enter a valid email address";
     }
 
-    // Validate password
     if (!password) {
       newErrors.password = "Password is required";
     }
-    // If there are errors, don't proceed
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-    // For demo purposes, just show a success message
+
     console.log("Login submitted:", { email, password, rememberMe });
 
-    // Simulate an authentication error for demonstration
-    // In a real app, this would be handled by your auth service
     if (email === "test@example.com" && password !== "password") {
       setErrors({ general: "Invalid email or password" });
     } else if (email === "unverified@example.com") {
       setErrors({ general: "Email address is not verified" });
     }
   };
+
   return (
     <div className="flex flex-col min-h-screen">
       <NavBar />
 
-      <main className="flex-grow pt-20">
+      <main className="flex-grow pt-16">
         <div className="bg-gradient-to-b from-green-300 to-lime-100/20">
-          <div className="container max-w-md mx-auto px-4 py-16">
+          <div className="container max-w-md mx-auto px-4 py-12">
             <div className="bg-white/90 backdrop-blur-sm shadow-lg rounded-xl p-8 relative">
 
               <div className="relative z-10">
                 <div className="text-center mb-8">
                   <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
-                  <p className="text-gray-600">Sign in to your Vhara account</p>
+                  <p className="text-gray-600">Sign in to your Bhara account</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* General error message */}
                   {errors.general && (
                     <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
                       <p className="text-red-700 text-sm">{errors.general}</p>
                     </div>
                   )}
 
-                  {/* Email Field */}
                   <div className="space-y-2">
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                       Email Address
@@ -92,7 +90,6 @@ const Login = () => {
                     {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                   </div>
 
-                  {/* Password Field */}
                   <div className="space-y-2">
                     <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                       Password
@@ -120,7 +117,6 @@ const Login = () => {
                     {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
                   </div>
 
-                  {/* Remember Me */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <input
@@ -142,7 +138,6 @@ const Login = () => {
                     </div>
                   </div>
 
-                  {/* Submit Button */}
                   <div>
                     <Button
                       type="submit"
@@ -152,7 +147,6 @@ const Login = () => {
                     </Button>
                   </div>
 
-                  {/* Register Link */}
                   <div className="text-center mt-6">
                     <p className="text-sm text-gray-600">
                       Don't have an account?{" "}
@@ -165,7 +159,6 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Trust Indicators */}
             <div className="mt-8 flex justify-center items-center space-x-6">
               <div className="flex items-center text-gray-500 text-sm">
                 <ShieldCheck className="h-5 w-5 text-green-600 mr-2" />
@@ -184,4 +177,5 @@ const Login = () => {
     </div>
   );
 };
+
 export default Login;

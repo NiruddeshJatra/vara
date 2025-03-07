@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Menu, X, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ const NavBar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const isHomePage = location.pathname === '/';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,23 +29,21 @@ const NavBar = () => {
     }
   }, [location.pathname]);
 
+  // Determine header style: transparent only on homepage when not scrolled
+  const headerStyle = (!isHomePage || isScrolled) 
+    ? 'py-3 bg-green-50/90 backdrop-blur-md shadow-subtle' 
+    : 'py-5 bg-transparent';
+
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'py-3 bg-green-50/90 backdrop-blur-md shadow-subtle' : 'py-5 bg-transparent'}`}>
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${headerStyle}`}>
       <div className="container mx-auto px-4 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center">
-          <Link to="/" className={`text-xl md:text-2xl font-bold text-foreground flex items-center ${isScrolled ? "text-green-900" : "text-green-300"}`}>
-            <span className="text-lime-500 mr-1">V</span>hara
+          <Link to="/" className={`text-xl md:text-2xl font-bold text-foreground flex items-center ${(!isHomePage || isScrolled) ? "text-green-900" : "text-green-300"}`}>
+            <span className="text-lime-500 mr-1">B</span>hara
           </Link>
-          <p className={`hidden md:block text-xs ml-8 mt-1 ${isScrolled ? "text-green-600" : "text-green-400/80"}`}>Borrow What You Need, Lend What You Don't</p>
+          <p className={`hidden md:block text-xs ml-8 mt-1 ${(!isHomePage || isScrolled) ? "text-green-600" : "text-green-400/80"}`}>Borrow What You Need, Lend What You Don't</p>
         </div>
-
-        {/* Desktop Navigation
-        <nav className="hidden md:flex items-center space-x-10">
-          <a href="/" className="text-sm font-medium text-green-900 hover:text-green-400 transition-colors">Home</a>
-          <a href="#how-it-works" className="text-sm font-medium text-green-900 hover:text-green-400 transition-colors">How It Works</a>
-          <a href="#browse-items" className="text-sm font-medium text-green-900 hover:text-green-400 transition-colors">Browse Items</a> */}
-        {/* </nav> */}
 
         {/* Desktop Action Buttons */}
         <div className="hidden md:flex items-center space-x-4">

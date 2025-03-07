@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Shield, AlertCircle } from 'lucide-react';
@@ -6,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import Footer from '@/components/Footer';
 import NavBar from '@/components/NavBar';
+
 type FormData = {
   email: string;
   username: string;
@@ -20,9 +22,11 @@ type FormData = {
   dataConsent: boolean;
   marketingConsent: boolean;
 };
+
 type FormErrors = {
   [K in keyof FormData]?: string;
 };
+
 const Register = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
@@ -41,6 +45,7 @@ const Register = () => {
     marketingConsent: false
   });
   const [errors, setErrors] = useState<FormErrors>({});
+
   const validateStep1 = () => {
     const stepErrors: FormErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -71,6 +76,7 @@ const Register = () => {
     
     return stepErrors;
   };
+
   const validateStep2 = () => {
     const stepErrors: FormErrors = {};
     
@@ -86,7 +92,6 @@ const Register = () => {
       stepErrors.lastName = 'Last name must be less than 150 characters';
     }
     
-    // Bangladesh phone number validation
     if (!formData.phoneNumber) {
       stepErrors.phoneNumber = 'Phone number is required';
     } else if (!/^\+8801[3-9]\d{8}$/.test(formData.phoneNumber)) {
@@ -112,6 +117,7 @@ const Register = () => {
     
     return stepErrors;
   };
+
   const validateStep3 = () => {
     const stepErrors: FormErrors = {};
     
@@ -125,6 +131,7 @@ const Register = () => {
     
     return stepErrors;
   };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -132,11 +139,11 @@ const Register = () => {
       [name]: type === 'checkbox' ? checked : value
     }));
     
-    // Clear the error for this field when user starts typing
     if (errors[name as keyof FormData]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
   };
+
   const handleNextStep = () => {
     let stepErrors = {};
     
@@ -153,23 +160,20 @@ const Register = () => {
       setErrors(stepErrors);
     }
   };
+
   const handlePrevStep = () => {
     setCurrentStep(prev => prev - 1);
     window.scrollTo(0, 0);
   };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     const stepErrors = validateStep3();
     
     if (Object.keys(stepErrors).length === 0) {
-      // Here you would typically send the data to your backend
       console.log('Form submitted with data:', formData);
-      
-      // Show success message
       toast.success("Account created successfully! Please verify your email.");
-      
-      // Redirect to home or login page after some delay
       setTimeout(() => {
         navigate('/');
       }, 3000);
@@ -177,6 +181,7 @@ const Register = () => {
       setErrors(stepErrors);
     }
   };
+
   const renderPasswordStrength = () => {
     const { password } = formData;
     if (!password) return null;
@@ -216,20 +221,19 @@ const Register = () => {
       </div>
     );
   };
+
   return (
     <div className="flex flex-col min-h-screen">
       <NavBar />
       
-      <main className="flex-grow pt-20 pb-16">
+      <main className="flex-grow pt-16 pb-16">
         <div className="bg-gradient-to-b from-green-300 to-lime-100/20">
           <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-subtle p-6 md:p-8">
-            {/* Header */}
             <div className="text-center mb-8">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Create Your Account</h1>
-              <p className="text-gray-600">Join the Vhara community to rent and lend items</p>
+              <p className="text-gray-600">Join the Bhara community to rent and lend items</p>
             </div>
             
-            {/* Progress Steps */}
             <div className="mb-8">
               <div className="flex items-center">
                 <div className={`flex-1 h-1 ${currentStep >= 1 ? 'bg-green-500' : 'bg-gray-200'}`}></div>
@@ -561,7 +565,6 @@ const Register = () => {
             </form>
           </div>
           
-          {/* Trust Section */}
           <div className="max-w-3xl mx-auto mt-8 flex flex-col md:flex-row justify-center items-center space-y-2 md:space-y-0 md:space-x-6 text-gray-600 text-sm">
             <div className="flex items-center">
               <Shield size={16} className="text-green-600 mr-2" />
@@ -582,4 +585,5 @@ const Register = () => {
     </div>
   );
 };
+
 export default Register;

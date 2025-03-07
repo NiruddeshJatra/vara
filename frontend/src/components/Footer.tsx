@@ -10,7 +10,7 @@ const Footer = () => {
           {/* Logo & Description */}
           <div>
             <a href="/" className="footer-logo">
-              <span className="footer-logo-highlight">V</span>hara
+              <span className="footer-logo-highlight">B</span>hara
             </a>
             <p className="footer-description">
               The trusted community marketplace for lending and borrowing everyday items. Save money, earn income, and live more sustainably.
