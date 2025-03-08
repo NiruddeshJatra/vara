@@ -27,7 +27,7 @@ const Hero = () => {
       <div className="container mx-auto px-4 text-center">
         {/* Text content */}
         <div className="flex flex-col items-center animate-fade-up max-w-3xl mx-auto">
-          <span className="text-sm font-medium bg-white/10 text-white px-4 py-1.5 rounded-full mb-6">Welcome to Vhara</span>
+          <span className="text-sm font-medium bg-white/10 text-white px-4 py-1.5 rounded-full mb-6">Welcome to Bhara</span>
           <h1 className="font-bold text-4xl sm:text-5xl md:text-6xl mb-6 leading-tight text-white">
             Rent Anything, <span className="text-lime-300">Anywhere</span>
           </h1>
