@@ -1,11 +1,10 @@
-
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, ShieldCheck, LifeBuoy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import NavBar from "@/components/NavBar";
-import Footer from "@/components/Footer";
+import NavBar from "@/components/home/NavBar";
+import Footer from "@/components/home/Footer";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -13,13 +12,14 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
+  const navigate = useNavigate();
 
   const validateEmail = (email: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const newErrors: { email?: string; password?: string; general?: string } = {};
@@ -39,12 +39,32 @@ const Login = () => {
       return;
     }
 
-    console.log("Login submitted:", { email, password, rememberMe });
+    try {
+      const response = await fetch('/api/auth/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include',
+      });
 
-    if (email === "test@example.com" && password !== "password") {
-      setErrors({ general: "Invalid email or password" });
-    } else if (email === "unverified@example.com") {
-      setErrors({ general: "Email address is not verified" });
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : {};
+
+      if (!response.ok) {
+        console.error('Login failed:', data);
+        const errorMessage = data.detail ||
+          data.non_field_errors?.[0] ||
+          'Invalid email or password';
+        throw new Error(errorMessage);
+      } else {
+        console.log("Login successful:", data);
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setErrors({ general: error instanceof Error ? error.message : 'Login failed' });
     }
   };
 

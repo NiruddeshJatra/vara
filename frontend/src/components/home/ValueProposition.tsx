@@ -1,7 +1,7 @@
 
 import { DollarSign, TrendingUp, Leaf } from 'lucide-react';
-import '../styles/main.css';
-import { Button } from './ui/button';
+import '../../styles/main.css';
+import { Button } from '../ui/button';
 
 const features = [
   {

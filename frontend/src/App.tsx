@@ -9,7 +9,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import Advertisements from "./pages/Advertisements";
+import Rentals from "./pages/Rentals";
 import NotFound from "./pages/NotFound";
+import VerifyEmailNotice from "./pages/VerifyEmailNotice";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +27,8 @@ const App = () => (
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/advertisements" element={<Advertisements />} />
+          <Route path="/rentals" element={<Rentals />} />
+          <Route path="/verify-email" element={<VerifyEmailNotice />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

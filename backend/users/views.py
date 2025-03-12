@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from dj_rest_auth.views import LoginView
+from dj_rest_auth.registration.views import VerifyEmailView
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.sessions.models import Session
 from .models import CustomUser
@@ -96,16 +97,32 @@ class UserViewSet(viewsets.ModelViewSet):
 @throttle_classes([AuthenticationThrottle])
 class CustomLoginView(LoginView):
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data.get("user")
-        
-        # This part is customized to check if the user is verified or not.
-        if user and not user.is_verified:
-            from rest_framework.exceptions import AuthenticationFailed
-
-            raise AuthenticationFailed("Email address is not verified.")
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user = serializer.validated_data.get("user")
+            
+            # This part is customized to check if the user is verified or not.
+            if user and not user.is_verified:
+                from rest_framework.exceptions import AuthenticationFailed
+                
+                print(f"Unverified login attempt: {user.email}")
+                raise AuthenticationFailed("Email address is not verified.")
+            
+            return super().post(request, *args, **kwargs)
+                
+        except Exception as e:
+            print(f"Login error: {str(e)}")
+            raise e
           
-        return super().post(request, *args, **kwargs)
+        
       
 # added a manager to delete unverified users who registered more than a week ago.
+
+class CustomVerifyEmailView(VerifyEmailView):
+    def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.GET)
+        serializer.is_valid(raise_exception=True)
+        self.kwargs['key'] = serializer.validated_data['key']
+        self.confirm_email(self.request)
+        return Response({"detail": "Email confirmed successfully."}, status=status.HTTP_200_OK)

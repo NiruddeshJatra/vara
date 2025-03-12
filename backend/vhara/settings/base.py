@@ -5,6 +5,12 @@ Contains common settings used in all environments.
 
 import environ
 from pathlib import Path
+from datetime import timedelta
+from dotenv import load_dotenv
+import os
+
+
+load_dotenv()
 
 # Initialize environment variables
 env = environ.Env()
@@ -17,6 +23,8 @@ environ.Env.read_env(BASE_DIR / ".env")
 
 # False by default, overridden in local settings
 DEBUG = True
+
+ALLOWED_HOSTS = ["*"]
 
 # Use env var for secret key with no default (will raise error if not set)
 SECRET_KEY = env("SECRET_KEY")
@@ -68,9 +76,10 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.cache.UpdateCacheMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -78,7 +87,6 @@ MIDDLEWARE = [
     'users.middleware.SessionManagementMiddleware',
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
-    'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.cache.FetchFromCacheMiddleware',
 ]
 
@@ -94,7 +102,7 @@ ROOT_URLCONF = "vhara.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / '../frontend/build'],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -125,17 +133,21 @@ CHANNEL_LAYERS = {
 #     },
 # }
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-]
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:8080",
+#     "http://127.0.0.1:8080",
+# ]
 
 SITE_ID = 1
 
 # Rest framework settings
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
-        "rest_framework.authentication.TokenAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
@@ -156,27 +168,42 @@ REST_FRAMEWORK = {
     },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 12,
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        "rest_framework.renderers.BrowsableAPIRenderer",
+    ],
+    'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 }
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+}
+
+REST_USE_JWT = True
 
 CSRF_COOKIE_NAME = "csrftoken"
 CSRF_COOKIE_HTTPONLY = False
 X_FRAME_OPTIONS = 'DENY'
-
 
 REST_AUTH = {
     'REGISTER_SERIALIZER': 'users.serializers.CustomRegisterSerializer',
     'USER_DETAILS_SERIALIZER': 'users.serializers.UserProfileSerializer',
     'USE_EMAIL_VERIFICATION': True,
     'EMAIL_VERIFICATION_REQUIRED': True,
+    'USE_JWT': False,
+    'SESSION_LOGIN': True,
     'OLD_PASSWORD_FIELD_ENABLED': True,
     'LOGOUT_ON_PASSWORD_CHANGE': False,
 }
 
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'test_db.sqlite3',  # or ':memory:'
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
@@ -210,8 +237,11 @@ ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='no-reply@example.com')
 VERIFICATION_EXPIRE_DAYS = 3
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/login'
+ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = '/login?verified=1'
 CACHE_VERSION = 1
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/login/"
@@ -223,7 +253,7 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files
-STATICFILES_DIRS = [BASE_DIR / '../frontend/build/static']
+STATICFILES_DIRS = [BASE_DIR / '../frontend']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -231,6 +261,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Media files
 MEDIA_ROOT = BASE_DIR / 'backend/media'
 MEDIA_URL = '/media/'
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+]
+
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
 
 # Remove SSLCOMMERZ settings:
 # SSLCOMMERZ_STORE_ID = env('SSLCOMMERZ_STORE_ID')
@@ -244,22 +282,20 @@ BKASH_API_URL = "https://api.bkash.com"
 BKASH_WEBHOOK_SECRET = "your_webhook_secret"
 
 
-LOGGING = {
-    'version': 1,
-    'handlers': {
-        'file': {
-            'level': 'ERROR',
-            'class': 'logging.FileHandler',
-            'filename': 'payment_errors.log',
-        },
-    },
-    'loggers': {
-        'payments': {
-            'handlers': ['file'],
-            'level': 'ERROR',
-        },
-    },
-}
+# LOGGING = {
+#     'version': 1,
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['console'],
+#             'level': 'INFO',
+#         },
+#     },
+# }
 
 
 CACHES = {

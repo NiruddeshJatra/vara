@@ -5,9 +5,23 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  optimizeDeps: {
+    esbuildOptions: {
+      target: 'es2020' 
+    }
+  },
+  build: {
+    target: 'es2020'
+  },
   server: {
-    host: "::",
-    port: 8080,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+        secure: false,
+      }
+    }
   },
   plugins: [
     react(),

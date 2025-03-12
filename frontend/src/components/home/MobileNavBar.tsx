@@ -1,6 +1,6 @@
 
 import { Home, Search, LayoutGrid, User } from 'lucide-react';
-import '../styles/main.css';
+import '../../styles/main.css';
 
 const MobileNavBar = () => {
   return (

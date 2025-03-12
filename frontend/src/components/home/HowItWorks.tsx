@@ -1,6 +1,6 @@
 
 import { UserPlus, Search, MessageSquare, CreditCard, RotateCw } from 'lucide-react';
-import '../styles/main.css';
+import '../../styles/main.css';
 
 const steps = [
   {

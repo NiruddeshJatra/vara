@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import NavBar from '@/components/NavBar';
-import Footer from '@/components/Footer';
+import NavBar from '@/components/home/NavBar';
+import Footer from '@/components/home/Footer';
 import { Bell, CheckCircle, Edit, Star, Upload, X } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 // New

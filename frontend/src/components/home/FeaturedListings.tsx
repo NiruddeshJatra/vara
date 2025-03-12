@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Star, MapPin } from 'lucide-react';
-import '../styles/main.css';
+import '../../styles/main.css';
 
 // Sample data for featured listings
 const featuredItems = [

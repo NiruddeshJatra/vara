@@ -1,6 +1,6 @@
 
 import { ShieldCheck, Lock, ShieldPlus, Bell } from 'lucide-react';
-import '../styles/main.css';
+import '../../styles/main.css';
 
 const trustFeatures = [
   {

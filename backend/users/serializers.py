@@ -29,6 +29,7 @@ class CustomRegisterSerializer(RegisterSerializer):
     location = serializers.CharField(required=True, max_length=255)
     first_name = serializers.CharField(required=True, max_length=150)
     last_name = serializers.CharField(required=True, max_length=150)
+    date_of_birth = serializers.DateField(required=False)
 
     def custom_signup(self, request, user):
         # Saves additional attributes during registration.
@@ -36,6 +37,7 @@ class CustomRegisterSerializer(RegisterSerializer):
         user.location = self.validated_data.get("location", "")
         user.first_name = self.validated_data.get("first_name", "")
         user.last_name = self.validated_data.get("last_name", "")
+        user.date_of_birth = self.validated_data.get('date_of_birth', None)
         user.save()
 
     def validate_phone_number(self, phone_number):
@@ -44,6 +46,18 @@ class CustomRegisterSerializer(RegisterSerializer):
             raise serializers.ValidationError("Invalid phone number format")
 
         return phone_number
+      
+    def get_cleaned_data(self):
+        return {
+            'username': self.validated_data.get('username', ''),
+            'password1': self.validated_data.get('password1', ''),
+            'email': self.validated_data.get('email', ''),
+            'first_name': self.validated_data.get('first_name', ''),
+            'last_name': self.validated_data.get('last_name', ''),
+            'phone_number': self.validated_data.get('phone_number', ''),
+            'location': self.validated_data.get('location', ''),
+            'date_of_birth': self.validated_data.get('date_of_birth', None)
+        }
 
 
 class UserProfileSerializer(serializers.ModelSerializer):

@@ -1,15 +1,15 @@
 import { useEffect } from 'react';
-import NavBar from '@/components/NavBar';
-import Hero from '@/components/Hero';
-import ValueProposition from '@/components/ValueProposition';
-import HowItWorks from '@/components/HowItWorks';
-import FeaturedListings from '@/components/FeaturedListings';
-import PopularCategories from '@/components/PopularCategories';
-import Testimonials from '@/components/Testimonials';
-import TrustSafety from '@/components/TrustSafety';
-import FooterCTA from '@/components/FooterCTA';
-import Footer from '@/components/Footer';
-import MobileNavBar from '@/components/MobileNavBar';
+import NavBar from '@/components/home/NavBar';
+import Hero from '@/components/home/Hero';
+import ValueProposition from '@/components/home/ValueProposition';
+import HowItWorks from '@/components/home/HowItWorks';
+import FeaturedListings from '@/components/home/FeaturedListings';
+import PopularCategories from '@/components/home/PopularCategories';
+import Testimonials from '@/components/home/Testimonials';
+import TrustSafety from '@/components/home/TrustSafety';
+import FooterCTA from '@/components/home/FooterCTA';
+import Footer from '@/components/home/Footer';
+import MobileNavBar from '@/components/home/MobileNavBar';
 import '../styles/main.css';
 
 const Index = () => {
