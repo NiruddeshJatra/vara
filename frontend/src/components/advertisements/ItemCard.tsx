@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { MapPin, Star, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +8,7 @@ export type ItemCardProps = {
   id: number;
   name: string;
   image: string;
+  images?: string[]; // Array of images for carousel
   category: string;
   price: number;
   duration: string;
@@ -15,6 +17,7 @@ export type ItemCardProps = {
   reviewCount: number;
   onQuickView: (id: number) => void;
   style?: React.CSSProperties;
+  rentalCount?: number;
 };
 
 const ItemCard = ({ 

@@ -15,8 +15,8 @@ type CategoriesSectionProps = {
 
 const CategoriesSection = ({ categories }: CategoriesSectionProps) => {
   return (
-    <section className="bg-gradient-to-b from-green-100 to-white py-0">
-      <div className="container mx-auto px-4 py-[64px]">
+    <section className="bg-white py-0">
+      <div className="container mx-auto px-4 bg-gradient-to-b from-green-50 to-white py-[64px]">
         <div className="text-center mb-10">
           <h2 className="text-2xl md:text-3xl font-bold text-green-800 mb-2">Browse by Category</h2>
           <p className="text-green-700">Find exactly what you need from our wide range of categories</p>

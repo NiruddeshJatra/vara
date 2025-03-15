@@ -4,19 +4,26 @@ import { Star, Heart, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ItemCardProps } from './ItemCard';
+import { Link } from 'react-router-dom';
 
-type ItemType = Omit<ItemCardProps, 'onQuickView'> & {
-  rentalCount?: number;
-};
-
-type ItemModalProps = {
+// This type accommodates both the original ItemCard (with single image) and EnhancedItemCard (with images array)
+// We're removing the onQuickView requirement since it's not needed in the modal context
+export type ItemModalProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedItem: ItemType | null;
 };
 
+export type ItemType = Omit<ItemCardProps, 'onQuickView'> & {
+  rentalCount?: number;
+  images?: string[]; // Optional array of images for EnhancedItemCard
+};
+
 const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
   if (!selectedItem) return null;
+  
+  // Use the first image from the images array if available, otherwise use the single image
+  const displayImage = selectedItem.images?.[0] || selectedItem.image;
   
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -30,7 +37,7 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
         <div className="flex flex-col md:flex-row gap-6">
           <div className="md:w-1/2">
             <div className="rounded-lg overflow-hidden">
-              <img src={selectedItem.image} alt={selectedItem.name} className="w-full h-auto object-cover" />
+              <img src={displayImage} alt={selectedItem.name} className="w-full h-auto object-cover" />
             </div>
           </div>
           <div className="md:w-1/2 space-y-4">
@@ -73,8 +80,14 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
                 Request Rental
               </Button>
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1 border-green-200">
-                  View Full Details
+                <Button 
+                  variant="outline" 
+                  className="flex-1 border-green-200"
+                  asChild
+                >
+                  <Link to={`/item/${selectedItem.id}`}>
+                    View Full Details
+                  </Link>
                 </Button>
                 <Button variant="outline" className="border-green-200">
                   <Heart className="h-4 w-4" />

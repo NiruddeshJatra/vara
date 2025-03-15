@@ -54,20 +54,19 @@ const NavBar = () => {
       <div className="container mx-auto px-4 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center">
-          <Link to="/" className={`text-xl md:text-2xl font-bold text-foreground flex items-center ${(!isHomePage && !isAdvertismentsPage || isScrolled) ? "text-green-900" : "text-green-300"}`}>
+          <Link to="/" className={`text-xl md:text-2xl font-bold text-foreground flex items-center ${(!isHomePage || isScrolled) ? "text-green-900" : "text-green-300"}`}>
             <span className="text-lime-500 mr-1">V</span>hara
           </Link>
-          <p className={`hidden md:block text-xs ml-8 mt-1 ${(!isHomePage && !isAdvertismentsPage || isScrolled) ? "text-green-600" : "text-green-400/80"}`}>Borrow What You Need, Lend What You Don't</p>
+          <p className={`hidden md:block text-xs ml-8 mt-1 ${(!isHomePage || isScrolled) ? "text-green-600" : "text-green-400/80"}`}>Borrow What You Need, Lend What You Don't</p>
         </div>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-8 ml-auto mr-[80px]">
           {isLoggedIn && (
             <>
-              <Link to="/advertisements" className={`text-sm font-medium ${(!isHomePage && !isAdvertismentsPage || isScrolled) ? "text-green-700 hover:text-lime-500" : "text-green-200 hover:text-lime-300"} `}>Browse Items</Link>
-              <Link to="#" className={`text-sm font-medium ${(!isHomePage && !isAdvertismentsPage || isScrolled) ? "text-green-700 hover:text-lime-500" : "text-green-200 hover:text-lime-300"} `}>My Items</Link>
-              <Link to="/rentals" className="text-sm font-medium text-green-700 hover:text-green-800">My Rentals</Link>
-              <Link to="#" className={`text-sm font-medium ${(!isHomePage && !isAdvertismentsPage || isScrolled) ? "text-green-700 hover:text-lime-500" : "text-green-200 hover:text-lime-300"} `}>Messages</Link>
+              <Link to="/advertisements" className={`text-sm font-medium ${(!isHomePage || isScrolled) ? "text-green-700 hover:text-lime-500" : "text-green-200 hover:text-lime-300"} `}>Browse Items</Link>
+              <Link to="#" className={`text-sm font-medium ${(!isHomePage || isScrolled) ? "text-green-700 hover:text-lime-500" : "text-green-200 hover:text-lime-300"} `}>My Items</Link>
+              <Link to="/rentals" className={`text-sm font-medium ${(!isHomePage || isScrolled) ? "text-green-700 hover:text-lime-500" : "text-green-200 hover:text-lime-300"} `}>My Rentals</Link>
             </>
           )}
         </div>

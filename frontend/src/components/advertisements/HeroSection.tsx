@@ -25,21 +25,17 @@ const HeroSection = ({
   setPriceRange,
   categories
 }: HeroSectionProps) => {
-  return <section className="relative min-h-[80vh] flex items-center justify-center pt-36 pb-16 overflow-hidden py-0">
+  return <section className="relative min-h-[80vh] flex items-center justify-center pt-24 pb-16 overflow-hidden py-0">
       {/* Nature-inspired background with gradients and overlay */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-green-800 to-green-600"></div>
       
       {/* Forest light effect overlay */}
       <div className="absolute inset-0 -z-10 opacity-20 bg-center bg-cover"></div>
       
-      {/* Organic shapes inspired by the design images */}
-      <div className="fluid-shape fluid-shape-1"></div>
-      <div className="fluid-shape fluid-shape-2"></div>
-      <div className="dots-pattern dots-pattern-1"></div>
-      <div className="dots-pattern dots-pattern-2"></div>
-      <div className="triangle-element triangle-element-1"></div>
-      <div className="wavy-line wavy-line-1"></div>
-      <div className="wavy-line wavy-line-2"></div>
+      {/* Organic shapes inspired by the design */}
+      <div className="absolute top-0 left-0 w-64 h-64 bg-green-600/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-lime-400/10 rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
+      <div className="absolute top-1/2 left-1/2 w-72 h-72 bg-green-500/10 rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2"></div>
       
       <div className="container mx-auto relative z-10">
         <div className="text-center mb-10">

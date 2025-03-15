@@ -192,7 +192,8 @@ const Rentals = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 to-white">
       <NavBar />
-      <div className="container mx-auto px-4 -mt-8 mb-16">
+      
+      <div className="container mx-auto py-8 px-4 mt-8 mb-16">
         <div className="bg-white rounded-xl shadow-md p-6">
           {/* Tab navigation */}
           <RentalsTabs 

@@ -75,7 +75,7 @@ const RentalsStatusFilter = ({
           <Search className="absolute left-3 top-3 h-4 w-4 text-green-600/60" />
           <Input
             placeholder="Search by item title or rental ID"
-            className="pl-9 h-10 border-green-100 focus:border-green-300 focus:ring-green-200"
+            className="pl-9 h-10 border-green-200 focus:border-green-300 focus:ring-green-200"
             value={searchTerm}
             onChange={(e) => onSearchTermChange(e.target.value)}
           />
@@ -86,7 +86,7 @@ const RentalsStatusFilter = ({
           <PopoverTrigger asChild>
             <Button 
               variant="outline" 
-              className="flex items-center gap-2 h-10 border-green-100"
+              className="flex items-center gap-2 h-10 border-green-200"
             >
               <CalendarIcon className="h-4 w-4 text-green-600" />
               {dateRange.from ? (
@@ -137,7 +137,7 @@ const RentalsStatusFilter = ({
         
         {/* Sort dropdown */}
         <Select value={sortOption} onValueChange={onSortOptionChange}>
-          <SelectTrigger className="w-[200px] h-10 border-green-100">
+          <SelectTrigger className="w-[200px] h-10 border-green-200">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>

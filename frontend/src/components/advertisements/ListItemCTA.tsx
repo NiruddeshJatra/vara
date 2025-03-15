@@ -4,10 +4,9 @@ import { Button } from '@/components/ui/button';
 
 const ListItemCTA = () => {
   return (
-    <section className="py-16 bg-gradient-to-r from-green-700 to-green-900 text-white">
+    <section className="py-16 bg-gradient-to-b from-green-700 to-green-900 text-white">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center">
-        <span className="text-sm font-medium bg-white/10 text-white px-4 py-1.5 rounded-full mb-6 inline-block">Find What You Need</span>
           <h2 className="text-2xl md:text-3xl font-bold mb-4">Have Items to Share?</h2>
           <p className="text-lg text-green-100 mb-8">Start earning by lending your unused items</p>
           
@@ -27,7 +26,7 @@ const ListItemCTA = () => {
           </div>
           
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-            <Button className="px-8 h-auto text-lg font-bold py-[10px] bg-lime-500 hover:bg-lime-400 text-green-950">
+            <Button className="px-8 h-auto text-lg font-medium py-[10px] bg-lime-500 hover:bg-lime-400 text-green-950">
               List an Item
             </Button>
             <a href="#" className="text-green-100 hover:text-white underline">Learn how it works</a>

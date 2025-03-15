@@ -24,7 +24,7 @@ const RentalSection = ({
 }: RentalSectionProps) => {
   return (
     <section>
-      <div className="text-center mb-6">
+      <div className="text-center mb-6 p-6">
         <h2 className="text-2xl font-semibold text-gray-800">{title}</h2>
         <p className="text-gray-600">{description}</p>
       </div>

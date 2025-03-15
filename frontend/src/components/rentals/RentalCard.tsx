@@ -72,7 +72,7 @@ const RentalCard = ({
   const statusConfig = getStatusConfig(rental.status);
 
   return (
-    <div className="flex flex-col lg:flex-row border border-green-100 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white animate-fade-in">
+    <div className="flex flex-col lg:flex-row border border-green-100 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-gradient-to-b from-lime-100/80 to-white animate-fade-in">
       {/* Item image */}
       <div className="lg:w-1/4 h-48 lg:h-auto relative">
         <img 

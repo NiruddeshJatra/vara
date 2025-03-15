@@ -12,7 +12,7 @@ type RecentListingsProps = {
 
 const RecentListings = ({ items, onQuickView }: RecentListingsProps) => {
   return (
-    <section className="py-24 bg-gradient-to-b from-green-50 to-white">
+    <section className="py-16 bg-gradient-to-b from-green-50 to-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-10">
           <h2 className="text-2xl md:text-3xl font-bold text-green-800 mb-1">Recently Added Items</h2>
