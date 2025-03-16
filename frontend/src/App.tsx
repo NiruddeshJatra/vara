@@ -10,6 +10,8 @@ import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import Advertisements from "./pages/Advertisements";
 import Rentals from "./pages/Rentals";
+import CreateListingPage from "./pages/CreateListing";
+import MyListings from "./pages/MyListings";
 import NotFound from "./pages/NotFound";
 import VerifyEmailNotice from "./pages/VerifyEmailNotice";
 
@@ -28,6 +30,8 @@ const App = () => (
           <Route path="/profile" element={<Profile />} />
           <Route path="/advertisements" element={<Advertisements />} />
           <Route path="/rentals" element={<Rentals />} />
+          <Route path="/create-listing" element={<CreateListingPage />} />
+          <Route path="/my-listings" element={<MyListings />} />
           <Route path="/verify-email" element={<VerifyEmailNotice />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

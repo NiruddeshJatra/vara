@@ -4,6 +4,10 @@ import { Check } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+type CheckboxProps = React.ComponentProps<typeof CheckboxPrimitive.Root> & {
+  onCheckedChange?: (checked: boolean) => void
+}
+
 const Checkbox = React.forwardRef<
   React.ElementRef<typeof CheckboxPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>
@@ -11,13 +15,13 @@ const Checkbox = React.forwardRef<
   <CheckboxPrimitive.Root
     ref={ref}
     className={cn(
-      "peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
+      "w-4 h-4 accent-green-600 border-2 border-green-400 rounded focus:ring-green-500",
       className
     )}
     {...props}
   >
     <CheckboxPrimitive.Indicator
-      className={cn("flex items-center justify-center text-current")}
+      className={cn("flex items-center justify-center")}
     >
       <Check className="h-4 w-4" />
     </CheckboxPrimitive.Indicator>
