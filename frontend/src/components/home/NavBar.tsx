@@ -41,7 +41,7 @@ const NavBar = () => {
   }, [filepath.pathname]);
 
   // Determine header style: transparent only on homepage when not scrolled
-  const headerStyle = (!isHomePage && !isAdvertismentsPage || isScrolled) 
+  const headerStyle = (showSearchInNav ||!isHomePage && !isAdvertismentsPage || isScrolled) 
     ? 'py-3 bg-green-50/90 backdrop-blur-md shadow-subtle' 
     : 'py-5 bg-transparent';
 
@@ -75,8 +75,18 @@ const NavBar = () => {
         </div>
         
         {showSearchInNav && (
-          <div className="hidden md:flex flex-1 max-w-2xl mx-8">
-            <CompactSearchBar inNav={true} searchTerm={searchTerm} setSearchTerm={setSearchTerm} location={location} setLocation={setLocation} filtersOpen={filtersOpen} setFiltersOpen={setFiltersOpen} priceRange={priceRange} setPriceRange={setPriceRange} />
+          <div className="hidden md:flex flex-1 mx-4 items-center">
+            <CompactSearchBar 
+              inNav={true}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              location={location}
+              setLocation={setLocation}
+              filtersOpen={filtersOpen}
+              setFiltersOpen={setFiltersOpen}
+              priceRange={priceRange}
+              setPriceRange={setPriceRange}
+            />
           </div>
         )}
 

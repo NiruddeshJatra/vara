@@ -30,31 +30,38 @@ const CompactSearchBar = ({
     e.preventDefault();
     // Search functionality is handled in the parent component
   };
-  return <div className={`sticky top-[64px] mt-[64px] py-4 z-10 backdrop-blur-sm ${inNav ? 'hidden' : 'block'
-      }`}>
-      <div className="container mx-auto">
-        <form onSubmit={handleSearchSubmit} className="flex items-center justify-between">
-          <div className="w-full max-w-2xl p-4 mx-auto rounded-2xl bg-transparent py-[8px]">
-            <div className="flex flex-col md:flex-row gap-3">
+  return <div className={`${inNav ? 'w-full' : 'sticky top-[64px] mt-[64px] py-4 z-10 backdrop-blur-sm'}`}>
+        <div className={`${inNav ? 'px-2' : 'container mx-auto'}`}>
+          <form onSubmit={handleSearchSubmit} className="flex items-center justify-between">
+            <div className={`w-full ${inNav ? '' : 'max-w-2xl p-4 mx-auto rounded-2xl bg-transparent py-[8px]'}`}>
+            <div className={`flex ${inNav ? 'gap-2' : 'flex-col md:flex-row gap-3'}`}>
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-3 h-6 w-4 text-green-500" />
-                <Input type="text" placeholder="What do you need to borrow today?" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="text-xs pl-9 h-12 border-black/20 focus:border-green-300" />
+                <Search className={`absolute left-3 ${inNav ? 'top-2.5 h-5 w-4' : 'top-3 h-6 w-4'} text-green-500`} />
+                <Input type="text" placeholder="What do you need to borrow today?" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className={`text-xs pl-9 ${inNav ? 'h-10' : 'h-12'} border-black/20 focus:border-green-300`} />
               </div>
               <div className="relative flex-1">
-                <MapPin className="absolute left-3 top-3 h-6 w-4 text-green-500" />
-                <Input type="text" placeholder="Select your location" value={location} onChange={e => setLocation(e.target.value)} className="text-xs pl-9 h-12 border-black/20 focus:border-green-300" />
+                <MapPin className={`absolute left-3 ${inNav ? 'top-2.5 h-5 w-4' : 'top-3 h-6 w-4'} text-green-500`} />
+                <Input type="text" placeholder="Select your location" value={location} onChange={e => setLocation(e.target.value)} className={`text-xs pl-9 ${inNav ? 'h-10' : 'h-12'} border-black/20 focus:border-green-300`} />
               </div>
               <Button type="submit" className="h-12 px-8 bg-green-700 hover:bg-green-800 sm:text-md font-medium rounded-md">
                 <Search className="h-4 w-4 mr-2" />
-                Find Items
+                  {inNav ? 'Search' : 'Find Items'}
               </Button>
             </div>
           </div>
           
-          <Button type="button" variant="outline" size="sm" className="border-gray-300 rounded-full px-4 ml-4 mr-10" onClick={() => setFiltersOpen(!filtersOpen)}>
-            <SlidersHorizontal className="w-4 h-4" />
-            <span>Filters</span>
-          </Button>
+          {!inNav && (
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm" 
+              className="border-gray-300 rounded-full px-4 ml-4 mr-10" 
+              onClick={() => setFiltersOpen(!filtersOpen)}
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              <span>Filters</span>
+            </Button>
+          )}
         </form>
       </div>
       
