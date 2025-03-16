@@ -1,18 +1,16 @@
 
-import React from 'react';
-import { MapPin, Star, Eye } from 'lucide-react';
+import React, { useState } from 'react';
+import { Star, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 export type ItemCardProps = {
   id: number;
   name: string;
-  image: string;
-  images?: string[]; // Array of images for carousel
+  images: string[];
   category: string;
   price: number;
   duration: string;
-  distance: number;
   rating: number;
   reviewCount: number;
   onQuickView: (id: number) => void;
@@ -23,23 +21,71 @@ export type ItemCardProps = {
 const ItemCard = ({ 
   id, 
   name, 
-  image, 
+  images, 
   category, 
   price, 
-  duration, 
-  distance, 
+  duration,
   rating, 
   reviewCount, 
   onQuickView,
   style 
 }: ItemCardProps) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [isHovered, setIsHovered] = useState(false);
+  
+    const nextImage = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (currentImageIndex < images.length - 1) {
+        setCurrentImageIndex(currentImageIndex + 1);
+      } else {
+        setCurrentImageIndex(0);
+      }
+    };
+  
+    const prevImage = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (currentImageIndex > 0) {
+        setCurrentImageIndex(currentImageIndex - 1);
+      } else {
+        setCurrentImageIndex(images.length - 1);
+      }
+    };
+
   return (
     <div
-      className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 animate-fade-up"
+      className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 animate-fade-up mb-4 mx-2"
       style={style}
     >
-      <div className="relative h-48 overflow-hidden">
-        <img src={image} alt={name} className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" />
+      <div className="relative h-60 overflow-hidden">
+        <img src={images[currentImageIndex]} alt={name} className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" />
+        {/* Image navigation controls - only shown on hover */}
+        {isHovered && (
+          <>
+            <button 
+              onClick={prevImage}
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 flex items-center justify-center z-10"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button 
+              onClick={nextImage}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 flex items-center justify-center z-10"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </>
+        )}
+        
+        {/* Image pagination dots */}
+        <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
+          {images.map((_, index) => (
+            <div 
+              key={index} 
+              className={`w-1.5 h-1.5 rounded-full ${currentImageIndex === index ? 'bg-white' : 'bg-white/50'}`}
+            />
+          ))}
+        </div>
+
         <Badge variant="secondary" className="absolute top-2 left-2 bg-white/90 text-green-800">
           {category}
         </Badge>
@@ -47,11 +93,6 @@ const ItemCard = ({
       
       <div className="p-4">
         <h3 className="font-semibold text-lg mb-1 text-gray-800">{name}</h3>
-        
-        <div className="flex items-center text-sm text-gray-500 mb-2">
-          <MapPin size={14} className="mr-1" />
-          <span>{distance} miles away</span>
-        </div>
         
         <div className="flex items-center text-sm mb-3">
           <div className="flex items-center text-yellow-500 mr-2">

@@ -6,8 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ItemCardProps } from './ItemCard';
 import { Link } from 'react-router-dom';
 
-// This type accommodates both the original ItemCard (with single image) and EnhancedItemCard (with images array)
-// We're removing the onQuickView requirement since it's not needed in the modal context
+
 export type ItemModalProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -16,14 +15,13 @@ export type ItemModalProps = {
 
 export type ItemType = Omit<ItemCardProps, 'onQuickView'> & {
   rentalCount?: number;
-  images?: string[]; // Optional array of images for EnhancedItemCard
+  images?: string[];
 };
 
 const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
   if (!selectedItem) return null;
   
-  // Use the first image from the images array if available, otherwise use the single image
-  const displayImage = selectedItem.images?.[0] || selectedItem.image;
+  const displayImage = Array.isArray(selectedItem.images) ? selectedItem.images[0] : selectedItem.images;
   
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -48,10 +46,6 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
               <span className="ml-1 text-sm text-gray-500">({selectedItem.reviewCount} reviews)</span>
             </div>
             <p className="text-sm text-gray-600">{selectedItem.category}</p>
-            <div className="flex items-center">
-              <MapPin className="h-4 w-4 text-green-600" />
-              <span className="ml-1 text-sm">{selectedItem.distance} miles away</span>
-            </div>
             
             <div className="bg-green-50 p-4 rounded-lg">
               <div className="text-xl font-bold text-green-800">${selectedItem.price} <span className="text-sm font-normal">per {selectedItem.duration}</span></div>

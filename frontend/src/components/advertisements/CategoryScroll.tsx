@@ -53,8 +53,8 @@ const CategoryScroll = ({
     }
   };
   return <div className="relative border-b border-gray-200 backdrop-blur-sm shadow-sm">
-      <div className="container mx-auto ">
-        <div className="flex items-center">
+      <div className="flex items-center justify-between container mx-auto">
+        <div className="flex items-center justify-center w-full">
           <Button variant="outline" size="icon" className="h-8 w-8 rounded-full border border-gray-200 bg-white mr-3 shadow-sm flex-shrink-0 z-10" onClick={scrollLeft}>
             <ChevronLeft className="h-5 w-5" />
           </Button>
@@ -62,15 +62,15 @@ const CategoryScroll = ({
           <div ref={scrollContainerRef} style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none'
-        }} className="flex space-x-2 overflow-x-auto py-3 scrollbar-hide">
-            <div className={`flex flex-col items-center cursor-pointer min-w-[80px] transition-opacity duration-200 ${selectedCategory === null ? 'opacity-100' : 'opacity-60'}`} onClick={() => setSelectedCategory(null)}>
+        }} className="flex space-x-2 overflow-x-auto py-3 scrollbar-hide justify-center">
+            <div className={`flex flex-col items-center cursor-pointer min-w-[80px] transition-opacity duration-200 ${selectedCategory === null ? 'opacity-100' : 'opacity-70'}`} onClick={() => setSelectedCategory(null)}>
               <div className={`flex items-center justify-center w-12 h-10 mb-1 ${selectedCategory === null ? 'border-b-2 border-vhara-600' : ''}`}>
                 <Wrench className="h-6 w-6 text-vhara-800" />
               </div>
               <span className="text-xs text-green-800 font-medium text-center">All Items</span>
             </div>
             
-            {categories.map(category => <div key={category.id} className={`flex flex-col items-center cursor-pointer min-w-[80px] transition-opacity duration-200 ${selectedCategory === category.id ? 'opacity-100' : 'opacity-60'}`} onClick={() => setSelectedCategory(category.id)}>
+            {categories.map(category => <div key={category.id} className={`flex flex-col items-center cursor-pointer min-w-[80px] transition-opacity duration-200 ${selectedCategory === category.id ? 'opacity-100' : 'opacity-70'}`} onClick={() => setSelectedCategory(category.id)}>
                 <div className={`flex items-center justify-center w-12 h-10 mb-1 ${selectedCategory === category.id ? 'border-b-2 border-vhara-600' : ''}`}>
                   {getCategoryIcon(category.name)}
                 </div>

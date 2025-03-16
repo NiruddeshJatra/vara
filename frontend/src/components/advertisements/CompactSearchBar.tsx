@@ -13,6 +13,7 @@ type CompactSearchBarProps = {
   setFiltersOpen: (open: boolean) => void;
   priceRange: [number, number];
   setPriceRange: (range: [number, number]) => void;
+  inNav: boolean;
 };
 const CompactSearchBar = ({
   searchTerm,
@@ -22,33 +23,35 @@ const CompactSearchBar = ({
   filtersOpen,
   setFiltersOpen,
   priceRange,
-  setPriceRange
+  setPriceRange,
+  inNav
 }: CompactSearchBarProps) => {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Search functionality is handled in the parent component
   };
-  return <div className="sticky top-[60px] mt-[60px] z-10 backdrop-blur-sm shadow-xl">
+  return <div className={`sticky top-[64px] mt-[64px] py-4 z-10 backdrop-blur-sm ${inNav ? 'hidden' : 'block'
+      }`}>
       <div className="container mx-auto">
         <form onSubmit={handleSearchSubmit} className="flex items-center justify-between">
           <div className="w-full max-w-2xl p-4 mx-auto rounded-2xl bg-transparent py-[8px]">
             <div className="flex flex-col md:flex-row gap-3">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-green-500" />
-                <Input type="text" placeholder="What do you need to borrow today?" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="text-xs pl-9 h-10 border-black/20 focus:border-green-300" />
+                <Search className="absolute left-3 top-3 h-6 w-4 text-green-500" />
+                <Input type="text" placeholder="What do you need to borrow today?" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="text-xs pl-9 h-12 border-black/20 focus:border-green-300" />
               </div>
               <div className="relative flex-1">
-                <MapPin className="absolute left-3 top-3 h-4 w-4 text-green-500" />
-                <Input type="text" placeholder="Select your location" value={location} onChange={e => setLocation(e.target.value)} className="text-xs pl-9 h-10 border-black/20 focus:border-green-300" />
+                <MapPin className="absolute left-3 top-3 h-6 w-4 text-green-500" />
+                <Input type="text" placeholder="Select your location" value={location} onChange={e => setLocation(e.target.value)} className="text-xs pl-9 h-12 border-black/20 focus:border-green-300" />
               </div>
-              <Button type="submit" className="h-10 px-8 bg-green-700 hover:bg-green-800 sm:text-md font-medium rounded-md">
+              <Button type="submit" className="h-12 px-8 bg-green-700 hover:bg-green-800 sm:text-md font-medium rounded-md">
                 <Search className="h-4 w-4 mr-2" />
                 Find Items
               </Button>
             </div>
           </div>
           
-          <Button type="button" variant="outline" size="sm" className="flex items-center gap-2 border-gray-300 rounded-full px-4 ml-4" onClick={() => setFiltersOpen(!filtersOpen)}>
+          <Button type="button" variant="outline" size="sm" className="border-gray-300 rounded-full px-4 ml-4 mr-10" onClick={() => setFiltersOpen(!filtersOpen)}>
             <SlidersHorizontal className="w-4 h-4" />
             <span>Filters</span>
           </Button>

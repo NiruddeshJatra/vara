@@ -13,7 +13,7 @@ import '../styles/main.css';
 const allListings = generateListings(40);
 const Advertisements = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [location, setLocation] = useState('San Francisco, CA');
+  const [location, setLocation] = useState('GEC, Chittagong');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
@@ -76,18 +76,14 @@ const Advertisements = () => {
 
       <main className="bg-green-50/65">
         {/* Compact Search Bar */}
-        <CompactSearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} location={location} setLocation={setLocation} filtersOpen={filtersOpen} setFiltersOpen={setFiltersOpen} priceRange={priceRange} setPriceRange={setPriceRange} />
+        <CompactSearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} location={location} setLocation={setLocation} filtersOpen={filtersOpen} setFiltersOpen={setFiltersOpen} priceRange={priceRange} setPriceRange={setPriceRange} inNav={false} />
 
         {/* Horizontal Category Scroll */}
         <CategoryScroll categories={categories} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
 
         {/* Listings Section */}
-        <section className="py-6">
+        <section className="py-10">
           <div className="container mx-auto px-4">
-            <h2 className="text-2xl font-semibold mb-6 text-center">
-              {getPageTitle()}
-            </h2>
-
             <ListingsGrid displayedListings={displayedListings} handleQuickView={handleQuickView} />
 
             <LoadMoreTrigger visible={visibleItems < filteredListings.length} />
