@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 const ConfirmationStep = () => {
   return (
-    <div className="text-center space-y-6">
+    <div className="text-center space-y-8">
       <div className="text-green-600">
         <CheckCircle size={64} className="mx-auto" />
       </div>
@@ -22,7 +22,7 @@ const ConfirmationStep = () => {
         </div>
       </div>
 
-      <div className="text-left max-w-xl mx-auto space-y-2">
+      <div className="text-left max-w-xl mx-auto space-y-4">
         <h3 className="font-medium">What happens next?</h3>
         <ul className="list-disc list-inside space-y-1">
           <li>Your listing is now live and available for rent</li>

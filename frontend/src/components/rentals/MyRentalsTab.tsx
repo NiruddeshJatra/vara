@@ -18,7 +18,7 @@ const MyRentalsTab = ({ rentals, onViewDetails, onStatusAction }: MyRentalsTabPr
   );
 
   return (
-    <div className="space-y-10">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
       {/* Active Rentals */}
       <RentalSection
         title="Active Rentals"

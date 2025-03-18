@@ -106,25 +106,6 @@ const Rentals = () => {
     {
       id: 4,
       itemId: 104,
-      itemTitle: "Lawn Mower",
-      itemImage: "https://images.unsplash.com/photo-1564944843560-3f6822c9d8c0?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
-      itemCategory: "Garden",
-      ownerName: "James Wilson",
-      ownerImage: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
-      renterName: "Alex Smith",
-      renterImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
-      startTime: "2025-06-10T08:00:00Z",
-      endTime: "2025-06-11T18:00:00Z",
-      status: "completed",
-      totalPrice: 45,
-      basePrice: 45,
-      securityDeposit: 50,
-      createdAt: "2025-06-08T15:30:00Z",
-      updatedAt: "2025-06-11T18:30:00Z"
-    },
-    {
-      id: 5,
-      itemId: 105,
       itemTitle: "Toolkit Set (Professional)",
       itemImage: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
       itemCategory: "Tools",
@@ -140,7 +121,26 @@ const Rentals = () => {
       securityDeposit: 0,
       createdAt: "2025-06-01T10:45:00Z",
       updatedAt: "2025-06-02T14:20:00Z"
-    }
+    },
+    {
+      id: 5,
+      itemId: 105,
+      itemTitle: "Lawn Mower",
+      itemImage: "https://images.unsplash.com/photo-1608624076549-9e27ec6fd229?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      itemCategory: "Garden",
+      ownerName: "James Wilson",
+      ownerImage: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
+      renterName: "Alex Smith",
+      renterImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
+      startTime: "2025-06-10T08:00:00Z",
+      endTime: "2025-06-11T18:00:00Z",
+      status: "completed",
+      totalPrice: 45,
+      basePrice: 45,
+      securityDeposit: 50,
+      createdAt: "2025-06-08T15:30:00Z",
+      updatedAt: "2025-06-11T18:30:00Z"
+    },
   ];
 
   // Filter rentals based on active filters
@@ -193,8 +193,8 @@ const Rentals = () => {
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 to-white">
       <NavBar />
       
-      <div className="container mx-auto py-8 px-4 mt-8 mb-16">
-        <div className="bg-white rounded-xl shadow-md p-6">
+      <div className="py-8 mt-8 mb-16">
+        <div className="bg-white py-6 px-20">
           {/* Tab navigation */}
           <RentalsTabs 
             activeTab={activeTab} 

@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Star } from "lucide-react";
+import { Star, Upload, Leaf } from "lucide-react";
 
 interface ReviewFormProps {
   rentalId: number;
@@ -15,17 +14,9 @@ const ReviewForm = ({ rentalId, userRole, onSubmit }: ReviewFormProps) => {
   const [hoveredRating, setHoveredRating] = useState(0);
   const [review, setReview] = useState("");
 
-  const handleRatingClick = (selectedRating: number) => {
-    setRating(selectedRating);
-  };
-
-  const handleRatingHover = (hoveredRating: number) => {
-    setHoveredRating(hoveredRating);
-  };
-
-  const handleRatingLeave = () => {
-    setHoveredRating(0);
-  };
+  const handleRatingClick = (selectedRating: number) => setRating(selectedRating);
+  const handleRatingHover = (hoveredRating: number) => setHoveredRating(hoveredRating);
+  const handleRatingLeave = () => setHoveredRating(0);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,69 +24,80 @@ const ReviewForm = ({ rentalId, userRole, onSubmit }: ReviewFormProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Star rating */}
-      <div className="flex flex-col space-y-2">
-        <div className="text-sm font-medium">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Rating Section */}
+      <div className="space-y-4">
+        <div className="text-sm font-medium text-green-800">
           Rate your experience {userRole === 'renter' ? 'with this item' : 'with this renter'}
         </div>
         <div 
-          className="flex items-center" 
+          className="flex items-center gap-1" 
           onMouseLeave={handleRatingLeave}
         >
           {[1, 2, 3, 4, 5].map((star) => (
-            <Star
+            <button
+              type="button"
               key={star}
-              className={`h-7 w-7 cursor-pointer ${
-                (hoveredRating || rating) >= star
-                  ? "text-yellow-400 fill-yellow-400"
-                  : "text-gray-300"
-              }`}
+              className="p-1 transition-transform hover:scale-110"
               onClick={() => handleRatingClick(star)}
               onMouseEnter={() => handleRatingHover(star)}
-            />
+            >
+              <Star
+                className={`h-8 w-8 ${
+                  (hoveredRating || rating) >= star
+                    ? "text-yellow-400 fill-yellow-400"
+                    : "text-gray-200"
+                }`}
+                strokeWidth={1.5}
+              />
+            </button>
           ))}
-          <span className="ml-2 text-sm text-gray-600">
-            {rating > 0 ? `${rating} out of 5 stars` : "Click to rate"}
+          <span className="ml-3 text-sm font-medium text-green-700">
+            {rating > 0 ? `${rating}/5` : "Tap to rate"}
           </span>
         </div>
       </div>
 
-      {/* Review text */}
-      <div className="space-y-2">
-        <label htmlFor="review" className="text-sm font-medium">
-          Write your review
+      {/* Review Input */}
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-green-800">
+          Share your experience
         </label>
         <Textarea
-          id="review"
-          placeholder={`Share your experience ${userRole === 'renter' ? 'with this item' : 'with this renter'}...`}
           value={review}
           onChange={(e) => setReview(e.target.value)}
-          rows={4}
+          placeholder={`Describe your experience ${userRole === 'renter' ? 'with this item...' : 'with this renter...'}`}
+          className="rounded-xl border-2 border-green-100 focus:border-green-300 focus:ring-1 focus:ring-green-200 h-32"
         />
       </div>
 
-      {/* Photo upload - simplified version */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium">
+      {/* Photo Upload */}
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-green-800">
           Add photos (optional)
         </label>
-        <div className="border-2 border-dashed border-gray-200 rounded-md p-4 text-center">
-          <Button variant="outline" type="button" className="mb-2">
-            Upload Photos
+        <div className="border-2 border-dashed border-green-100 rounded-xl p-6 text-center bg-green-50/30 backdrop-blur-sm">
+          <Button 
+            variant="outline" 
+            type="button" 
+            className="border-green-200 text-green-700 hover:bg-green-50 gap-2"
+          >
+            <Upload className="h-4 w-4" />
+            Upload Images
           </Button>
-          <p className="text-xs text-gray-500">
-            JPG, PNG or GIF, max 5MB each
+          <p className="mt-2 text-xs text-green-600">
+            PNG, JPG up to 5MB
           </p>
         </div>
       </div>
 
-      {/* Submit button */}
+      {/* Submit Button */}
       <Button 
         type="submit" 
-        className="w-full bg-green-600 hover:bg-green-700"
+        className="w-full bg-green-600 hover:bg-green-700 h-12 rounded-xl shadow-sm hover:shadow-md transition-all gap-2"
         disabled={rating === 0}
       >
+        <Leaf className="h-4 w-4" />
         Submit Review
       </Button>
     </form>

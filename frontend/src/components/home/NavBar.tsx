@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, User, LogOut, Settings, Home, Package, MessageSquare, Plus } from 'lucide-react';
+import { Menu, X, User, LogOut, Settings, Home, Package, MessageSquare, Plus, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'react-router-dom';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import CompactSearchBar from '@/components/advertisements/CompactSearchBar';
 
@@ -21,7 +20,7 @@ const NavBar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      const shouldShowSearch = window.scrollY > 100;
+      const shouldShowSearch = window.scrollY > 50;
       setIsScrolled(window.scrollY > 50);
       setShowSearchInNav(shouldShowSearch);
     };
@@ -62,7 +61,7 @@ const NavBar = () => {
         {/* Logo */}
         <div className="flex items-center gap-4">
           <Link to="/" className={`text-xl md:text-2xl font-bold flex items-center ${(!isHomePage || isScrolled) ? "text-green-900" : "text-green-300"}`}>
-            <span className="text-lime-500 mr-1">V</span>hara
+            <span className="text-lime-500 mr-1">V</span>ara
           </Link>
           {/* Conditional Slogan */}
           {!showSearchInNav && (
@@ -75,7 +74,7 @@ const NavBar = () => {
         </div>
         
         {showSearchInNav && (
-          <div className="hidden md:flex flex-1 mx-4 items-center">
+          <div className="hidden md:flex flex-1 mx-4 items-center justify-center">
             <CompactSearchBar 
               inNav={true}
               searchTerm={searchTerm}
@@ -92,14 +91,26 @@ const NavBar = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-8 ml-auto mr-12">
-          {isLoggedIn && (
+          {isLoggedIn && !showSearchInNav && (
             <>
               <Link to="/create-listing">
                 <Button className={"text-sm font-medium text-black/70 hover:text-lime-600 bg-gray-300 hover:bg-transparent border hover:border-1 hover:border-gray-500 px-5"}>
                   <Plus size={16} className="mr-1" />Create Listing
                 </Button>
-                </Link>
+              </Link>
             </>
+          )}
+          {isLoggedIn && showSearchInNav && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="border-gray-300 rounded-full px-4"
+              onClick={() => setFiltersOpen(!filtersOpen)}
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              <span>Filters</span>
+            </Button>
           )}
         </div>
 

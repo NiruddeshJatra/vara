@@ -59,7 +59,7 @@ const RentalDetailModal = ({
 
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-b from-leaf-300 to-white rounded-lg shadow-xl">
         <DialogHeader>
           <DialogTitle className="text-xl flex items-center gap-2">
             Rental Details 

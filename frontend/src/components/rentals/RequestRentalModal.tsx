@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -8,8 +7,8 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import RentalFormStep from './request-modal/RentalFormStep';
 import PaymentSummary from './request-modal/PaymentSummary';
+import { Leaf } from 'lucide-react';
 
-// Create a specific type for the item in RequestRentalModal that doesn't require onQuickView
 type RequestRentalItemProps = {
   id: number;
   name: string;
@@ -42,11 +41,9 @@ const RequestRentalModal = ({ isOpen, onClose, item }: RequestRentalModalProps) 
   const [rentalNotes, setRentalNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Calculate total based on date range
   const calculateTotal = () => {
     if (dateRange.from && dateRange.to) {
       const days = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
-      // Assuming price is per day
       return {
         days,
         basePrice: item.price * days,
@@ -68,8 +65,6 @@ const RequestRentalModal = ({ isOpen, onClose, item }: RequestRentalModalProps) 
   
   const handleSubmit = () => {
     setIsSubmitting(true);
-    
-    // Simulate API call
     setTimeout(() => {
       setIsSubmitting(false);
       onClose();
@@ -78,29 +73,21 @@ const RequestRentalModal = ({ isOpen, onClose, item }: RequestRentalModalProps) 
     }, 1500);
   };
   
-  const handleNext = () => {
-    if (step < 2) {
-      setStep(step + 1);
-    } else {
-      handleSubmit();
-    }
-  };
-  
-  const handleBack = () => {
-    if (step > 1) {
-      setStep(step - 1);
-    } else {
-      onClose();
-    }
-  };
+  const handleNext = () => step < 2 ? setStep(step + 1) : handleSubmit();
+  const handleBack = () => step > 1 ? setStep(step - 1) : onClose();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md md:max-w-xl">
+      <DialogContent className="max-w-xl rounded-2xl border-2 border-green-100 bg-white/95 backdrop-blur-sm">
         <DialogHeader>
-          <DialogTitle className="text-xl text-center">
-            {step === 1 ? "Request Rental Details" : "Confirm & Pay"}
-          </DialogTitle>
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="p-2 bg-green-100 rounded-full">
+              <Leaf className="h-6 w-6 text-green-600" strokeWidth={1.5} />
+            </div>
+            <DialogTitle className="text-2xl font-bold text-green-800 text-center">
+              {step === 1 ? "Request Rental" : "Confirm & Pay"}
+            </DialogTitle>
+          </div>
         </DialogHeader>
         
         {step === 1 ? (
@@ -118,19 +105,32 @@ const RequestRentalModal = ({ isOpen, onClose, item }: RequestRentalModalProps) 
           />
         )}
         
-        <DialogFooter className="flex flex-col sm:flex-row sm:justify-between sm:space-x-2">
+        <DialogFooter className="flex flex-col sm:flex-row sm:justify-between gap-3 mt-6">
           <Button 
             variant="outline" 
             onClick={handleBack}
+            className="border-green-200 text-green-700 hover:bg-green-50 h-12 px-6 rounded-lg"
           >
             {step === 1 ? 'Cancel' : 'Back'}
           </Button>
           <Button 
             onClick={handleNext}
-            className="bg-green-600 hover:bg-green-700"
+            className="bg-green-600 hover:bg-green-700 h-12 px-8 rounded-lg shadow-sm hover:shadow-md transition-all"
             disabled={isSubmitting}
           >
-            {step === 1 ? 'Next' : isSubmitting ? 'Submitting...' : 'Confirm & Request'}
+            {step === 1 ? (
+              <>
+                Continue
+                <Leaf className="ml-2 h-4 w-4" />
+              </>
+            ) : isSubmitting ? (
+              'Submitting...'
+            ) : (
+              <>
+                Confirm & Pay
+                <Leaf className="ml-2 h-4 w-4" />
+              </>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Star, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -55,8 +54,10 @@ const ItemCard = ({
     <div
       className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 animate-fade-up mb-4 mx-2"
       style={style}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="relative h-60 overflow-hidden">
+      <div className="relative h-60 overflow-hidden z-0">
         <img src={images[currentImageIndex]} alt={name} className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" />
         {/* Image navigation controls - only shown on hover */}
         {isHovered && (
@@ -77,7 +78,7 @@ const ItemCard = ({
         )}
         
         {/* Image pagination dots */}
-        <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
+        <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-10">
           {images.map((_, index) => (
             <div 
               key={index} 
@@ -86,7 +87,7 @@ const ItemCard = ({
           ))}
         </div>
 
-        <Badge variant="secondary" className="absolute top-2 left-2 bg-white/90 text-green-800">
+        <Badge variant="secondary" className="absolute top-2 left-2 bg-white/90 text-green-800 z-10">
           {category}
         </Badge>
       </div>

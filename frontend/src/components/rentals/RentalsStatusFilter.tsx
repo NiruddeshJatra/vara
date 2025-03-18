@@ -34,13 +34,13 @@ const RentalsStatusFilter = ({
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const statusOptions: { value: RentalStatus; label: string; color: string }[] = [
-    { value: 'all', label: 'All', color: 'bg-gray-500' },
-    { value: 'pending', label: 'Pending', color: 'bg-yellow-500' },
+    { value: 'all', label: 'All', color: 'bg-gray-600' },
+    { value: 'pending', label: 'Pending', color: 'bg-yellow-600' },
     { value: 'accepted', label: 'Accepted', color: 'bg-blue-500' },
-    { value: 'in_progress', label: 'In Progress', color: 'bg-green-500' },
-    { value: 'completed', label: 'Completed', color: 'bg-purple-500' },
-    { value: 'rejected', label: 'Rejected', color: 'bg-red-500' },
-    { value: 'cancelled', label: 'Cancelled', color: 'bg-orange-500' }
+    { value: 'in_progress', label: 'In Progress', color: 'bg-green-600' },
+    { value: 'completed', label: 'Completed', color: 'bg-lime-600' },
+    { value: 'rejected', label: 'Rejected', color: 'bg-red-600/90' },
+    { value: 'cancelled', label: 'Cancelled', color: 'bg-orange-600' }
   ];
 
   const sortOptions = [
@@ -51,7 +51,7 @@ const RentalsStatusFilter = ({
   ];
 
   return (
-    <div className="mb-8 space-y-4">
+    <div className="mb-8 mx-4 space-y-4">
       {/* Status pills */}
       <div className="flex flex-wrap gap-2">
         {statusOptions.map((status) => (
@@ -63,6 +63,9 @@ const RentalsStatusFilter = ({
             }`}
             onClick={() => onStatusFilterChange(status.value)}
           >
+            {statusFilter === status.value && (
+              <span className="w-2 h-2 rounded-full bg-white/30 mr-2"></span>
+            )}
             {status.label}
           </Badge>
         ))}
@@ -71,7 +74,7 @@ const RentalsStatusFilter = ({
       {/* Search and filters row */}
       <div className="flex flex-col md:flex-row gap-4">
         {/* Search bar */}
-        <div className="relative flex-1">
+        <div className="relative flex">
           <Search className="absolute left-3 top-3 h-4 w-4 text-green-600/60" />
           <Input
             placeholder="Search by item title or rental ID"

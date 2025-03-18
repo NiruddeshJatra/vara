@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Camera, Dumbbell, Tent, Headphones, Smartphone, PartyPopper, Wrench, Car, Bed, Gamepad2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 type Category = {
@@ -36,6 +36,17 @@ const CategoryScroll = ({
   setSelectedCategory
 }: CategoryScrollProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollBy({
@@ -52,7 +63,13 @@ const CategoryScroll = ({
       });
     }
   };
-  return <div className="relative border-b border-gray-200 backdrop-blur-sm shadow-sm">
+
+  const categoryBarStyle = isScrolled 
+    ? 'bg-green-50/90 backdrop-blur-md shadow-subtle' 
+    : 'bg-transparent';
+
+  return (
+    <div className={`sticky top-[68px] border-b border-gray-200 z-50 ${categoryBarStyle}`}>
       <div className="flex items-center justify-between container mx-auto">
         <div className="flex items-center justify-center w-full">
           <Button variant="outline" size="icon" className="h-8 w-8 rounded-full border border-gray-200 bg-white mr-3 shadow-sm flex-shrink-0 z-10" onClick={scrollLeft}>
@@ -83,6 +100,7 @@ const CategoryScroll = ({
           </Button>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
 export default CategoryScroll;
