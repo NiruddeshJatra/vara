@@ -106,13 +106,13 @@ const ItemCard = ({
         <div className="flex justify-between items-center">
           <div>
             <span className="text-lg font-bold text-green-700">${price}</span>
-            <span className="text-sm text-gray-500">/{duration}</span>
+            <span className="text-sm font-semibold text-green-700">/{duration}</span>
           </div>
           
           <Button
             variant="outline"
             size="sm"
-            className="text-green-700 border-green-200 hover:bg-green-50"
+            className="text-green-700 border-green-300 hover:bg-green-50"
             onClick={() => onQuickView(id)}
           >
             <Eye size={14} className="mr-1" />

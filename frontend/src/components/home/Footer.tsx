@@ -10,7 +10,7 @@ const Footer = () => {
           {/* Logo & Description */}
           <div>
             <a href="/" className="footer-logo">
-              <span className="footer-logo-highlight">B</span>hara
+              <span className="footer-logo-highlight">V</span>ara
             </a>
             <p className="footer-description">
               The trusted community marketplace for lending and borrowing everyday items. Save money, earn income, and live more sustainably.
@@ -66,9 +66,7 @@ const Footer = () => {
             <div>
               <select className="footer-language-select">
                 <option value="en">English</option>
-                <option value="es">Español</option>
-                <option value="fr">Français</option>
-                <option value="de">Deutsch</option>
+                <option value="bn">Bangla</option>
               </select>
             </div>
           </div>

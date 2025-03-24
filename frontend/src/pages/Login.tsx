@@ -75,7 +75,7 @@ const Login = () => {
       <main className="flex-grow pt-16">
         <div className="bg-gradient-to-b from-green-300 to-lime-100/20">
           <div className="container max-w-md mx-auto px-4 py-12">
-            <div className="bg-white/90 backdrop-blur-sm shadow-lg rounded-xl p-8 relative">
+            <div className="bg-gradient-to-b from-white to-lime-50 backdrop-blur-sm shadow-lg rounded-xl p-8 relative">
 
               <div className="relative z-10">
                 <div className="text-center mb-8">

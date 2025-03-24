@@ -1,103 +1,54 @@
 
-import { useState } from 'react';
-import { Star, MapPin } from 'lucide-react';
-import '../../styles/main.css';
+import { Button } from '../ui/button';
+import ListingsGrid from '../advertisements/ListingsGrid';
+import { useState, useEffect } from 'react';
+import { categories, generateListings } from '@/utils/mockDataGenerator';
+import ItemModal from '@/components/advertisements/ItemModal';
 
-// Sample data for featured listings
-const featuredItems = [
-  {
-    id: 1,
-    name: 'Sony A7 III Camera Kit',
-    image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-    dailyRate: 45,
-    location: 'San Francisco, CA',
-    rating: 4.9,
-    reviews: 124
-  },
-  {
-    id: 2,
-    name: 'Power Drill Set (Cordless)',
-    image: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-    dailyRate: 18,
-    location: 'Los Angeles, CA',
-    rating: 4.7,
-    reviews: 89
-  },
-  {
-    id: 3,
-    name: 'Mountain Bike (Trek)',
-    image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-    dailyRate: 30,
-    location: 'Portland, OR',
-    rating: 4.8,
-    reviews: 56
-  },
-  {
-    id: 4,
-    name: 'MacBook Pro (2023)',
-    image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-    dailyRate: 55,
-    location: 'Seattle, WA',
-    rating: 5.0,
-    reviews: 42
-  }
-];
 
 const FeaturedListings = () => {
-  // This would come from a real API in a production app
-  const [items] = useState(featuredItems);
+  const allListings = generateListings(4);
+  const [selectedItem, setSelectedItem] = useState<number | null>(null);
+  const [isItemModalOpen, setIsItemModalOpen] = useState(false);
+  const handleQuickView = (itemId: number) => {
+    setSelectedItem(itemId);
+    setIsItemModalOpen(true);
+  };
+
+  const getSelectedItem = () => {
+    return allListings.find(item => item.id === selectedItem) || null;
+  };
 
   return (
-    <section className="section bg-gradient-to-b from-green-100 to-white">
-      <div className="container">
-        <div className="section-title">
-          <span className="badge">Featured</span>
-          <h2>Popular Items Near You</h2>
-          <p>Discover top-rated items available for rent in your area</p>
+    <section className="py-16 md:py-24 bg-gradient-to-b from-green-100 to-white">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <span className="inline-block px-4 py-1.5 text-sm font-medium rounded-full bg-vhara-600/10 text-vhara-600 mb-4">
+            Featured
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold text-vhara-800 mb-4">
+            Popular Items Near You
+          </h2>
+          <p className="text-md text-vhara-700/80 max-w-2xl mx-auto">
+            Discover top-rated items available for rent in your area
+          </p>
         </div>
 
-        <div className="items-grid">
-          {items.map((item, index) => (
-            <div 
-              key={item.id} 
-              className="item-card animate-fade-up"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <div className="item-image-container">
-                <img 
-                  src={item.image} 
-                  alt={item.name} 
-                  className="item-image"
-                />
-                <div className="item-price-tag">
-                  ${item.dailyRate}/day
-                </div>
-              </div>
-              <div className="item-content">
-                <h3 className="item-title">{item.name}</h3>
-                <div className="item-location">
-                  <MapPin className="item-location-icon" />
-                  <span>{item.location}</span>
-                </div>
-                <div className="item-footer">
-                  <div className="item-rating">
-                    <Star className="item-star-icon" />
-                    <span className="item-rating-value">{item.rating}</span>
-                    <span className="item-reviews">({item.reviews} reviews)</span>
-                  </div>
-                  <a href="#" className="item-details-link">
-                    Details
-                  </a>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <section className="py-6">
+          <div className="container mx-auto px-4">
+            <ListingsGrid displayedListings={allListings} handleQuickView={handleQuickView} />
+          </div>
+            <ItemModal isOpen={isItemModalOpen} onOpenChange={setIsItemModalOpen} selectedItem={getSelectedItem()} />
+        </section>
 
-        <div style={{textAlign: 'center', marginTop: '3rem'}}>
-          <button className="btn btn-outline btn-lg animate-fade-up" style={{ animationDelay: '0.5s' }}>
+        <div className="text-center mt-6">
+          <Button
+            variant="outline"
+            className="py-6 px-8 text-md rounded-full font-semibold shadow-lg cursor-pointer transition-transform duration-300 ease-in-out animate-fade-up hover:translate-y-[-2px] hover:shadow-xltext-sm text-black/70 hover:text-white border border-green-600 text-green-700 bg-white hover:bg-lime-600 hover:border-none"
+            style={{ animationDelay: '0.5s' }}
+          >
             See All Available Items
-          </button>
+          </Button>
         </div>
       </div>
     </section>

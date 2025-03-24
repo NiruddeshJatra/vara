@@ -1,25 +1,23 @@
-
 import { Home, Search, LayoutGrid, User } from 'lucide-react';
-import '../../styles/main.css';
 
 const MobileNavBar = () => {
   return (
-    <div className="mobile-nav">
-      <a href="/" className="mobile-nav-item mobile-nav-active">
-        <Home className="mobile-nav-icon" />
-        <span className="mobile-nav-label">Home</span>
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-green-100 shadow-sm md:hidden grid grid-cols-4 gap-1 z-50">
+      <a href="/" className="flex flex-col items-center justify-center py-3 text-green-600">
+        <Home className="w-5 h-5 mb-1" />
+        <span className="text-xs font-medium">Home</span>
       </a>
-      <a href="#browse-items" className="mobile-nav-item mobile-nav-inactive">
-        <LayoutGrid className="mobile-nav-icon" />
-        <span className="mobile-nav-label">Items</span>
+      <a href="#browse-items" className="flex flex-col items-center justify-center py-3 text-gray-500 hover:text-green-600">
+        <LayoutGrid className="w-5 h-5 mb-1" />
+        <span className="text-xs font-medium">Items</span>
       </a>
-      <a href="#search" className="mobile-nav-item mobile-nav-inactive">
-        <Search className="mobile-nav-icon" />
-        <span className="mobile-nav-label">Search</span>
+      <a href="#search" className="flex flex-col items-center justify-center py-3 text-gray-500 hover:text-green-600">
+        <Search className="w-5 h-5 mb-1" />
+        <span className="text-xs font-medium">Search</span>
       </a>
-      <a href="#profile" className="mobile-nav-item mobile-nav-inactive">
-        <User className="mobile-nav-icon" />
-        <span className="mobile-nav-label">Profile</span>
+      <a href="#profile" className="flex flex-col items-center justify-center py-3 text-gray-500 hover:text-green-600">
+        <User className="w-5 h-5 mb-1" />
+        <span className="text-xs font-medium">Profile</span>
       </a>
     </div>
   );

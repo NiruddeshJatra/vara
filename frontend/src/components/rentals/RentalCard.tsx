@@ -48,15 +48,12 @@ const RentalCard = ({
   return (
     <div className="flex h-60 bg-gradient-to-r from-white to-leaf-300 rounded-lg border border-green-100 overflow-hidden shadow-lg backdrop-blur-md">
       {/* Image Section */}
-      <div className="w-2/5 relative">
+      <div className="w-1/2 relative">
         <img 
           src={rental.itemImage} 
           alt={rental.itemTitle}
           className="w-full h-full object-cover"
         />
-        <Badge className={`absolute bottom-2 left-2 ${statusConfig[rental.status].color} px-3 py-1`}>
-          {statusConfig[rental.status].icon}
-        </Badge>
       </div>
 
       {/* Content Section */}

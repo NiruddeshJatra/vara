@@ -58,7 +58,7 @@ const CompactSearchBar = ({
             className="border-gray-300 rounded-full px-4 ml-4 mr-10"
             onClick={() => setFiltersOpen(!filtersOpen)}
           >
-            <SlidersHorizontal className="w-4 h-4" />
+            <SlidersHorizontal className="w-4 h-4 mr-1" />
             <span>Filters</span>
           </Button>
         )}

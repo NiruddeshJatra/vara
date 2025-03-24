@@ -574,6 +574,7 @@
 
 .footer-logo {
   font-size: 1.25rem;
+  color: var(--green-800);
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -614,6 +615,7 @@
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 1rem;
+  color: var(--green-800);
 }
 
 .footer-links {
@@ -643,6 +645,11 @@
   font-size: 0.875rem;
   padding: 0.5rem 0.75rem;
   margin-top: 1.5rem;
+}
+
+.footer-language-select:focus {
+  outline: none;
+  border-color: var(--green-600);
 }
 
 .footer-newsletter {

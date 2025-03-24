@@ -94,7 +94,7 @@ const NavBar = () => {
           {isLoggedIn && !showSearchInNav && (
             <>
               <Link to="/create-listing">
-                <Button className={"text-sm font-medium text-black/70 hover:text-lime-600 bg-gray-300 hover:bg-transparent border hover:border-1 hover:border-gray-500 px-5"}>
+                <Button className={"text-sm font-semibold text-black/70 hover:text-white border border-green-600 text-green-700 bg-green-50/50 hover:bg-lime-600 hover:border-none px-5"}>
                   <Plus size={16} className="mr-1" />Create Listing
                 </Button>
               </Link>
@@ -119,7 +119,7 @@ const NavBar = () => {
           {isLoggedIn ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <div className="flex items-center gap-2 cursor-pointer border-2 border-gray-300 px-4 py-2 rounded-full">
+                <div className="flex items-center gap-2 cursor-pointer border-2 border-gray-300 px-4 py-2 rounded-full hover:bg-gray-50 backdrop:bg-gray-50 hover:shadow-sm hover:scale-105 transition-all duration-200">
                 <Menu size={24} />
                   <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
                     <span className="text-white font-bold text-sm">V</span>
