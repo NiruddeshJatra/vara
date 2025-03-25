@@ -8,9 +8,10 @@ import ItemModal from '@/components/advertisements/ItemModal';
 
 const FeaturedListings = () => {
   const allListings = generateListings(4);
-  const [selectedItem, setSelectedItem] = useState<number | null>(null);
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
-  const handleQuickView = (itemId: number) => {
+
+  const handleQuickView = (itemId: string) => {
     setSelectedItem(itemId);
     setIsItemModalOpen(true);
   };
@@ -36,9 +37,16 @@ const FeaturedListings = () => {
 
         <section className="py-6">
           <div className="container mx-auto px-4">
-            <ListingsGrid displayedListings={allListings} handleQuickView={handleQuickView} />
+            <ListingsGrid
+              displayedListings={allListings}
+              handleQuickView={handleQuickView}
+            />
           </div>
-            <ItemModal isOpen={isItemModalOpen} onOpenChange={setIsItemModalOpen} selectedItem={getSelectedItem()} />
+          <ItemModal
+            isOpen={isItemModalOpen}
+            onOpenChange={setIsItemModalOpen}
+            selectedItem={getSelectedItem()}
+          />
         </section>
 
         <div className="text-center mt-6">

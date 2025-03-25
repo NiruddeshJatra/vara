@@ -122,24 +122,29 @@ export const generateListings = (count: number) => {
     "Audio & Entertainment", "Electronics & Gadgets", "Tools & Equipment"
   ];
   
-  return Array.from({ length: count }, (_, i) => {
-    const catIndex = i % categories.length;
-    const nameIndex = i % names.length;
-    const imageIndex = i % imageCategories.length;
-    
-    return {
-      id: i + 1,
-      name: names[nameIndex],
-      image: imageCategories[imageIndex][0], // Use first image as main image
-      images: imageCategories[imageIndex],
-      category: categories[catIndex],
-      price: 10 + Math.floor(Math.random() * 90),
-      duration: Math.random() > 0.5 ? "day" : "week",
-      distance: +(Math.random() * 10).toFixed(1),
-      rating: +(4 + Math.random()).toFixed(1),
-      reviewCount: Math.floor(Math.random() * 50) + 5
-    };
-  });
+  const DURATION_CHOICES = [
+    { value: 'hour' },
+    { value: 'day' },
+    { value: 'week' },
+    { value: 'month' }
+  ];
+
+  return Array.from({ length: count }, (_, i) => ({
+    id: `item-${i}`,
+    title: `Item ${i + 1}`,
+    owner: `User ${i % 5 + 1}`,
+    category: categories[i % categories.length],
+    description: 'Sample description',
+    location: 'Chittagong',
+    basePrice: 500 + (i * 100),
+    durationUnit: DURATION_CHOICES[i % DURATION_CHOICES.length].value,
+    minRentalPeriod: 1,
+    maxRentalPeriod: i % 2 === 0 ? 14 : undefined,
+    availabilityPeriods: [],
+    images: [/* image URLs */],
+    totalRentals: Math.floor(Math.random() * 100),
+    averageRating: Math.random() * 5,
+  }));
 };
 
 // Export all listings for reuse in other components

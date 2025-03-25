@@ -8,29 +8,32 @@ import ListingsGrid from '@/components/advertisements/ListingsGrid';
 import LoadMoreTrigger from '@/components/advertisements/LoadMoreTrigger';
 import { categories, generateListings } from '@/utils/mockDataGenerator';
 import '../styles/main.css';
+import { Product } from '@/types/listings';
 
 // Generate listings once
-const allListings = generateListings(40);
+const allListings: Product[] = generateListings(40);
 const Advertisements = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [location, setLocation] = useState('GEC, Chittagong');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
-  const [selectedItem, setSelectedItem] = useState<number | null>(null);
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [visibleItems, setVisibleItems] = useState(16);
 
   // Filter listings based on selected category and search term
   const filteredListings = allListings.filter(item => {
-    // Category filter
-    const categoryMatch = selectedCategory ? categories.find(c => c.id === selectedCategory)?.name.toLowerCase() : null;
-    const matchesCategory = !categoryMatch || item.category.toLowerCase().includes(categoryMatch);
-
-    // Search filter
-    const matchesSearch = !searchTerm || item.name.toLowerCase().includes(searchTerm.toLowerCase()) || item.category.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
+    const categoryMatch = selectedCategory ? 
+      categories.find(c => c.id === selectedCategory)?.name : null;
+    return (
+      (!categoryMatch || item.category === categoryMatch) &&
+      (!searchTerm || 
+        item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
   });
+
   const displayedListings = filteredListings.slice(0, visibleItems);
   const handleQuickView = (itemId: number) => {
     setSelectedItem(itemId);

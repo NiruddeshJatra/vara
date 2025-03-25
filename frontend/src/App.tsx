@@ -12,6 +12,8 @@ import Advertisements from "./pages/Advertisements";
 import Rentals from "./pages/Rentals";
 import CreateListingPage from "./pages/CreateListing";
 import MyListings from "./pages/MyListings";
+import RequestRentalPage from "./pages/RequestRental";
+import ItemDetail from "./pages/ItemDetail";
 import NotFound from "./pages/NotFound";
 import VerifyEmailNotice from "./pages/VerifyEmailNotice";
 
@@ -32,6 +34,8 @@ const App = () => (
           <Route path="/rentals" element={<Rentals />} />
           <Route path="/create-listing" element={<CreateListingPage />} />
           <Route path="/my-listings" element={<MyListings />} />
+          <Route path="/items/:productId" element={<ItemDetail />} />
+          <Route path="/request-rental/:productId" element={<RequestRentalPage />} />
           <Route path="/verify-email" element={<VerifyEmailNotice />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
