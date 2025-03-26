@@ -105,7 +105,7 @@ const NavBar = () => {
               type="button"
               variant="outline"
               size="sm"
-              className="border-gray-300 rounded-full px-4"
+              className="border-gray-300 hover:bg-green-50 text-green-800 rounded-full px-3 sm:px-4 mt-3 sm:mt-0 sm:ml-4 sm:mr-10 text-xs sm:text-sm w-full sm:w-auto"
               onClick={() => setFiltersOpen(!filtersOpen)}
             >
               <SlidersHorizontal className="w-4 h-4" />

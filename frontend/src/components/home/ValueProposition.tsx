@@ -1,5 +1,4 @@
-
-import { DollarSign, TrendingUp, Leaf } from 'lucide-react';
+import { DollarSign, TrendingUp, Leaf, Users } from 'lucide-react';
 import '../../styles/main.css';
 import { Button } from '../ui/button';
 
@@ -18,6 +17,11 @@ const features = [
     icon: <Leaf className="card-icon" />,
     title: 'Sustainable Living',
     description: 'Reduce waste and environmental impact by sharing resources within your community.'
+  },
+  {
+    icon: <Users className="card-icon" />,
+    title: 'Build Community',
+    description: 'Connect with neighbors, share experiences, and build lasting relationships in your local area.'
   }
 ];
 

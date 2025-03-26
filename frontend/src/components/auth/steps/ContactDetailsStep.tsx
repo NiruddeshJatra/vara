@@ -7,7 +7,7 @@ interface Props {
   formData: FormData;
   errors: FormErrors;
   onChange: (data: Partial<FormData>) => void;
-  onNext: () => void;
+  onNext: (e: React.FormEvent) => void;
   onPrev: () => void;
 }
 
@@ -27,7 +27,7 @@ const ContactDetailsStep = ({ formData, errors, onChange, onNext, onPrev }: Prop
               name="firstName"
               value={formData.firstName}
               onChange={(e) => onChange({ firstName: e.target.value })}
-              data-error={!!errors.firstName}
+              error={!!errors.firstName}
               className="pl-9"
             />
             <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -49,7 +49,7 @@ const ContactDetailsStep = ({ formData, errors, onChange, onNext, onPrev }: Prop
               name="lastName"
               value={formData.lastName}
               onChange={(e) => onChange({ lastName: e.target.value })}
-              data-error={!!errors.lastName}
+              error={!!errors.lastName}
               className="pl-9"
             />
             <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -73,7 +73,7 @@ const ContactDetailsStep = ({ formData, errors, onChange, onNext, onPrev }: Prop
               placeholder="+8801XXXXXXXXX"
               value={formData.phoneNumber}
               onChange={(e) => onChange({ phoneNumber: e.target.value })}
-              data-error={!!errors.phoneNumber}
+              error={!!errors.phoneNumber}
               className="pl-9"
             />
             <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -98,7 +98,7 @@ const ContactDetailsStep = ({ formData, errors, onChange, onNext, onPrev }: Prop
               placeholder="City, Area"
               value={formData.location}
               onChange={(e) => onChange({ location: e.target.value })}
-              data-error={!!errors.location}
+              error={!!errors.location}
               className="pl-9"
             />
             <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -123,7 +123,7 @@ const ContactDetailsStep = ({ formData, errors, onChange, onNext, onPrev }: Prop
               type="date"
               value={formData.dateOfBirth}
               onChange={(e) => onChange({ dateOfBirth: e.target.value })}
-              data-error={!!errors.dateOfBirth}
+              error={!!errors.dateOfBirth}
               className="pl-9"
             />
             <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />

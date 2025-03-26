@@ -1,6 +1,6 @@
-
 import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 import '../../styles/main.css';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const Footer = () => {
   return (
@@ -63,11 +63,16 @@ const Footer = () => {
             </ul>
             
             {/* Language Selector */}
-            <div>
-              <select className="footer-language-select">
-                <option value="en">English</option>
-                <option value="bn">Bangla</option>
-              </select>
+            <div className="mt-6">
+              <Select defaultValue="en">
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select language" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="bn">Bangla</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>

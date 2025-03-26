@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, ShieldCheck, LifeBuoy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import NavBar from "@/components/home/NavBar";
 import Footer from "@/components/home/Footer";
 
@@ -137,15 +138,13 @@ const Login = () => {
                     {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
                   </div>
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center">
-                      <input
+                      <Checkbox 
                         id="remember-me"
-                        name="remember-me"
-                        type="checkbox"
                         checked={rememberMe}
-                        onChange={(e) => setRememberMe(e.target.checked)}
-                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                        onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                        className="h-4 w-4 border-2 border-green-400 data-[state=checked]:bg-green-600 data-[state=checked]:text-white rounded"
                       />
                       <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
                         Remember me

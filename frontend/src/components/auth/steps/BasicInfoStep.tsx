@@ -7,7 +7,7 @@ interface Props {
   formData: FormData;
   errors: FormErrors;
   onChange: (data: Partial<FormData>) => void;
-  onNext: () => void;
+  onNext: (e: React.FormEvent) => void;
 }
 
 const BasicInfoStep = ({ formData, errors, onChange, onNext }: Props) => {
@@ -68,7 +68,7 @@ const BasicInfoStep = ({ formData, errors, onChange, onNext }: Props) => {
               placeholder="youremail@example.com"
               value={formData.email}
               onChange={(e) => onChange({ email: e.target.value })}
-              data-error={!!errors.email}
+              error={!!errors.email}
               className="pl-9"
             />
             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -93,7 +93,7 @@ const BasicInfoStep = ({ formData, errors, onChange, onNext }: Props) => {
               placeholder="Choose a username"
               value={formData.username}
               onChange={(e) => onChange({ username: e.target.value })}
-              data-error={!!errors.username}
+              error={!!errors.username}
               className="pl-9"
             />
             <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -118,7 +118,7 @@ const BasicInfoStep = ({ formData, errors, onChange, onNext }: Props) => {
               type="password"
               value={formData.password}
               onChange={(e) => onChange({ password: e.target.value })}
-              data-error={!!errors.password}
+              error={!!errors.password}
               className="pl-9"
             />
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -144,7 +144,7 @@ const BasicInfoStep = ({ formData, errors, onChange, onNext }: Props) => {
               type="password"
               value={formData.confirmPassword}
               onChange={(e) => onChange({ confirmPassword: e.target.value })}
-              data-error={!!errors.confirmPassword}
+              error={!!errors.confirmPassword}
               className="pl-9"
             />
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />

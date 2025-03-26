@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, AlertCircle, Shield, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { FormData, FormErrors } from '@/types/auth';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface Props {
   formData: FormData;
@@ -26,14 +27,11 @@ const VerificationStep = ({ formData, errors, onChange, onPrev, onSubmit }: Prop
           <div className="space-y-4">
             <div className="flex items-start">
               <div className="flex items-center h-5">
-                <input
+                <Checkbox 
                   id="termsAgreed"
-                  name="termsAgreed"
-                  type="checkbox"
                   checked={formData.termsAgreed}
-                  onChange={(e) => onChange({ termsAgreed: e.target.checked })}
-                  className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                  data-error={!!errors.termsAgreed}
+                  onCheckedChange={(checked) => onChange({ termsAgreed: checked as boolean })}
+                  className="h-4 w-4 border-2 border-green-400 data-[state=checked]:bg-green-600 data-[state=checked]:text-white rounded"
                 />
               </div>
               <div className="ml-3">
@@ -50,14 +48,11 @@ const VerificationStep = ({ formData, errors, onChange, onPrev, onSubmit }: Prop
 
             <div className="flex items-start">
               <div className="flex items-center h-5">
-                <input
+                <Checkbox 
                   id="dataConsent"
-                  name="dataConsent"
-                  type="checkbox"
                   checked={formData.dataConsent}
-                  onChange={(e) => onChange({ dataConsent: e.target.checked })}
-                  className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                  data-error={!!errors.dataConsent}
+                  onCheckedChange={(checked) => onChange({ dataConsent: checked as boolean })}
+                  className="h-4 w-4 border-2 border-green-400 data-[state=checked]:bg-green-600 data-[state=checked]:text-white rounded"
                 />
               </div>
               <div className="ml-3">
@@ -74,13 +69,11 @@ const VerificationStep = ({ formData, errors, onChange, onPrev, onSubmit }: Prop
 
             <div className="flex items-start">
               <div className="flex items-center h-5">
-                <input
+                <Checkbox 
                   id="marketingConsent"
-                  name="marketingConsent"
-                  type="checkbox"
                   checked={formData.marketingConsent}
-                  onChange={(e) => onChange({ marketingConsent: e.target.checked })}
-                  className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                  onCheckedChange={(checked) => onChange({ marketingConsent: checked as boolean })}
+                  className="h-4 w-4 border-2 border-green-400 data-[state=checked]:bg-green-600 data-[state=checked]:text-white rounded"
                 />
               </div>
               <div className="ml-3">

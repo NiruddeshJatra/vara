@@ -17,21 +17,26 @@ const Advertisements = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [location, setLocation] = useState('GEC, Chittagong');
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000]);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [visibleItems, setVisibleItems] = useState(16);
 
-  // Filter listings based on selected category and search term
+  // Filter listings based on selected category, search term, and price range
   const filteredListings = allListings.filter(item => {
     const categoryMatch = selectedCategory ? 
       categories.find(c => c.id === selectedCategory)?.name : null;
+    
+    // Price range filter - basePrice is a number according to the type definition
+    const priceInRange = item.basePrice >= priceRange[0] && item.basePrice <= priceRange[1];
+    
     return (
       (!categoryMatch || item.category === categoryMatch) &&
       (!searchTerm || 
         item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchTerm.toLowerCase()))
+        item.description.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      priceInRange
     );
   });
 

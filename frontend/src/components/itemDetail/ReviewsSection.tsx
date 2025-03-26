@@ -19,14 +19,14 @@ export default function ReviewsSection({
   averageRating = 4.9,
   totalRentals = 12,
   reviews = [
-    { name: 'Rahim Ahmed', rating: 5, review: 'Excellent product, just as described. Very happy with my rental experience. Vhara made the delivery and pickup process so smooth.', date: '3 weeks ago' },
-    { name: 'Sarah Khan', rating: 4, review: 'Good item, the quality was great. Vhara staff was very helpful with setup. Would definitely rent again from this platform.', date: '2 months ago' }
+    { name: 'Rahim Ahmed', rating: 5, review: 'Excellent product, just as described. Very happy with my rental experience. Vara made the delivery and pickup process so smooth.', date: '3 weeks ago' },
+    { name: 'Sarah Khan', rating: 4, review: 'Good item, the quality was great. Vara staff was very helpful with setup. Would definitely rent again from this platform.', date: '2 months ago' }
   ]
 }: ReviewsSectionProps) {
   return (
     <div className="mb-10">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+        <h2 className="text-xl font-semibold text-green-900 flex items-center">
           <Star className="h-5 w-5 text-yellow-500 fill-yellow-500 mr-2" />
           {averageRating?.toFixed(1)} · {totalRentals} reviews
         </h2>
@@ -50,7 +50,7 @@ export default function ReviewsSection({
               <div className="flex-1">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 mb-2">
                   <div>
-                    <h4 className="font-medium text-gray-900">{review.name}</h4>
+                    <h4 className="text-base font-medium text-gray-900">{review.name}</h4>
                     <div className="flex items-center">
                       <div className="flex">
                         {[...Array(5)].map((_, i) => (

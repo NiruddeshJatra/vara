@@ -131,7 +131,8 @@ const Register = () => {
     }
   };
 
-  const handleNextStep = () => {
+  const handleNextStep = (e: React.FormEvent) => {
+    e.preventDefault();
     let stepErrors = {};
     
     if (currentStep === 1) {
@@ -156,9 +157,19 @@ const Register = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const stepErrors = validateStep3();
-  
-    if (Object.keys(stepErrors).length === 0) {
+    
+    // Validate all steps before submitting
+    const step1Errors = validateStep1();
+    const step2Errors = validateStep2();
+    const step3Errors = validateStep3();
+    
+    const allErrors = {
+      ...step1Errors,
+      ...step2Errors,
+      ...step3Errors
+    };
+    
+    if (Object.keys(allErrors).length === 0) {
       try {
         const response = await fetch('/api/auth/registration/', {
           method: 'POST',
@@ -198,8 +209,16 @@ const Register = () => {
         toast.error(error instanceof Error ? error.message : 'Registration failed');
       }
     } else {
-      setErrors(stepErrors);
-      console.log('Validation errors:', stepErrors);
+      setErrors(allErrors);
+      console.log('Validation errors:', allErrors);
+      // If there are errors in previous steps, go back to the first step with errors
+      if (Object.keys(step1Errors).length > 0) {
+        setCurrentStep(1);
+      } else if (Object.keys(step2Errors).length > 0) {
+        setCurrentStep(2);
+      } else {
+        setCurrentStep(3);
+      }
     }
   };
 
@@ -247,7 +266,7 @@ const Register = () => {
               </div>
             </div>
             
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={currentStep === 3 ? handleSubmit : handleNextStep}>
               {currentStep === 1 && (
                 <BasicInfoStep
                   formData={formData}
