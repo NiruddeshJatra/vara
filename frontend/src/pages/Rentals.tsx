@@ -194,7 +194,7 @@ const Rentals = () => {
       <NavBar />
       
       <div className="py-8 mt-8 mb-16">
-        <div className="bg-white py-6 px-20">
+        <div className="py-6 px-20">
           {/* Tab navigation */}
           <RentalsTabs 
             activeTab={activeTab} 

@@ -59,7 +59,7 @@ const ReviewForm = ({ rentalId, userRole, onSubmit }: ReviewFormProps) => {
       </div>
 
       {/* Review Input */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         <label className="text-sm font-medium text-green-800">
           Share your experience
         </label>
@@ -67,7 +67,7 @@ const ReviewForm = ({ rentalId, userRole, onSubmit }: ReviewFormProps) => {
           value={review}
           onChange={(e) => setReview(e.target.value)}
           placeholder={`Describe your experience ${userRole === 'renter' ? 'with this item...' : 'with this renter...'}`}
-          className="rounded-xl border-2 border-green-100 focus:border-green-300 focus:ring-1 focus:ring-green-200 h-32"
+          className="rounded-xl border-2 border-green-300 focus:border-green-500 focus:ring-1 focus:ring-green-300 h-32"
         />
       </div>
 
@@ -76,11 +76,11 @@ const ReviewForm = ({ rentalId, userRole, onSubmit }: ReviewFormProps) => {
         <label className="text-sm font-medium text-green-800">
           Add photos (optional)
         </label>
-        <div className="border-2 border-dashed border-green-100 rounded-xl p-6 text-center bg-green-50/30 backdrop-blur-sm">
+        <div className="border-2 border-dashed border-green-300 rounded-xl p-6 text-center bg-green-50/30 backdrop-blur-sm">
           <Button 
             variant="outline" 
             type="button" 
-            className="border-green-200 text-green-700 hover:bg-green-50 gap-2"
+            className="border-green-400 text-green-700 hover:bg-green-50 gap-2"
           >
             <Upload className="h-4 w-4" />
             Upload Images

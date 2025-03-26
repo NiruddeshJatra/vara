@@ -1,69 +1,184 @@
-# Welcome to your Lovable project
+# Vara - P2P Rental Marketplace Frontend
 
-## Project info
+## Overview
 
-**URL**: https://lovable.dev/projects/8cf4977d-680f-4962-a18a-3234c012481e
+Vara is a peer-to-peer rental marketplace that allows users to list their items for rent and rent items from others. The platform serves as a trusted intermediary, handling communications, payments, and security deposits to ensure safe and reliable transactions between parties.
 
-## How can I edit this code?
+## Tech Stack
 
-There are several ways of editing your application.
+- **Framework**: React with TypeScript
+- **Styling**: Tailwind CSS with custom components
+- **UI Library**: Custom components built with shadcn/ui
+- **State Management**: React Context and Hooks
+- **Routing**: React Router
+- **Date Handling**: date-fns
+- **Icons**: Lucide React
 
-**Use Lovable**
+## Pages and User Flow
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/8cf4977d-680f-4962-a18a-3234c012481e) and start prompting.
+### 1. Authentication Pages
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Login**: User authentication with email/password
+- **Register**: New user registration with basic profile details
+- **Forgot Password**: Password recovery flow
 
-**Use your preferred IDE**
+### 2. Homepage
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **Hero Section**: Main banner with value proposition
+- **Featured Items**: Showcase of popular rental items
+- **Categories**: Quick navigation to item categories
+- **How It Works**: Step-by-step guide to using the platform
+- **Testimonials**: User reviews of the platform
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### 3. Item Browsing
 
-Follow these steps:
+- **Search Results**: Grid view of items matching search criteria
+- **CompactSearchBar**: Allows filtering by:
+  - Keywords
+  - Location
+  - Price range
+  - Availability
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### 4. Item Details
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- **ItemDetail**: Comprehensive view of an item with:
+  - Images gallery
+  - Description
+  - Specifications
+  - Pricing information
+  - Owner details
+  - Availability calendar
+  - Reviews
+  - "Request to Rent" button
 
-# Step 3: Install the necessary dependencies.
-npm i
+### 5. Item Listing
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+- **Create Listing**: Multi-step form to add a new item:
+  - Basic details (title, category)
+  - Description and specifications
+  - Photos upload
+  - Pricing (daily rate, security deposit)
+  - Availability settings
+
+### 6. Rental Management
+
+- **My Rentals**: Central hub for managing all rental activities
+- **RentalsStatusFilter**: Filter rentals by:
+  - Status (pending, accepted, in_progress, completed, rejected, cancelled)
+  - Date range
+  - Search terms
+  - Sort options
+
+- **RentalCard**: Compact view of rental information:
+  - Item image and title
+  - Rental period and status
+  - Price information
+  - Action buttons
+
+- **RentalDetailModal**: Comprehensive view of a rental with:
+  - Item details and images
+  - Rental timeline
+  - Pricing breakdown with service fees
+  - Documentation photos
+  - Communication options
+  - Status-based actions
+
+### 7. User Profile
+
+- **Profile View**: User information and statistics
+- **Edit Profile**: Update personal information
+- **Preferences**: Notification and privacy settings
+
+### 8. Reviews System
+
+- **ReviewForm**: Submit reviews after completed rentals
+- **ReviewSection**: Display reviews for items and users
+
+## User Journeys
+
+### Renter Journey
+
+1. **Browse & Search**: User searches for needed items using filters
+2. **View Item**: User reviews item details, photos, and pricing
+3. **Request Rental**: User selects dates and submits rental request
+4. **Confirm Rental**: After owner acceptance, user confirms booking
+5. **Pickup/Delivery**: User receives the item and confirms receipt
+6. **Use Item**: User uses the item during the rental period
+7. **Return Item**: User returns the item to the owner
+8. **Complete Rental**: User marks the rental as complete
+9. **Leave Review**: User reviews their experience
+
+### Owner Journey
+
+1. **Create Listing**: User lists an item with details, photos, and pricing
+2. **Manage Requests**: User receives and reviews rental requests
+3. **Accept/Reject**: User decides whether to accept rental requests
+4. **Handover Item**: User provides the item to the renter
+5. **Monitor Rental**: User tracks active rentals
+6. **Receive Item**: User gets the item back from the renter
+7. **Confirm Return**: User confirms item returned in good condition
+8. **Complete Transaction**: User receives payment after rental completion
+9. **Review Renter**: User reviews the renter's behavior
+
+## Component Hierarchy
+
+```
+App
+├── Layout
+│   ├── Navbar
+│   └── Footer
+├── Pages
+│   ├── Home
+│   ├── Search
+│   │   └── CompactSearchBar
+│   ├── ItemDetail
+│   │   ├── Gallery
+│   │   ├── PricingCard
+│   │   └── ReviewSection
+│   ├── CreateListing
+│   │   └── MultiStepForm
+│   └── Rentals
+│       ├── RentalsStatusFilter
+│       ├── RentalCard
+│       └── RentalDetailModal
+│           └── ReviewForm
+└── Shared Components
+    ├── UI Components (Button, Input, etc.)
+    ├── Loaders
+    └── Modals
 ```
 
-**Edit a file directly in GitHub**
+## State Management
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- **Authentication State**: User login status and profile information
+- **Search State**: Current search parameters and results
+- **Rental State**: Active rentals and their statuses
+- **UI State**: Modal visibility, active tabs, etc.
 
-**Use GitHub Codespaces**
+## Data Flow
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+1. **API Requests**: Components fetch data from backend APIs
+2. **Context Providers**: Shared state is managed through React Context
+3. **Props Drilling**: Parent components pass data to children
+4. **Event Handlers**: User interactions trigger state updates and API calls
 
-## What technologies are used for this project?
+## Protected Features
 
-This project is built with .
+Vara implements a middleman model to protect both parties:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Secure Payments**: Vara holds payments until rental completion
+- **Security Deposits**: Deposits are managed by Vara and returned after successful completion
+- **Vara-Protected Communication**: All communications happen through the platform
+- **Documentation Photos**: Required photos before and after rental to prevent disputes
 
-## How can I deploy this project?
+## Color System
 
-Simply open [Lovable](https://lovable.dev/projects/8cf4977d-680f-4962-a18a-3234c012481e) and click on Share -> Publish.
+The application follows a color-coded system for rental statuses:
+- **Pending**: Yellow
+- **Accepted**: Blue
+- **In Progress**: Green
+- **Completed**: Purple
+- **Rejected**: Red
+- **Cancelled**: Orange
 
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+The primary brand colors are shades of green, with neutral grays for base UI elements.

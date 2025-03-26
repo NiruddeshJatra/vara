@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -33,14 +32,14 @@ const RentalsStatusFilter = ({
 }: RentalsStatusFilterProps) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
-  const statusOptions: { value: RentalStatus; label: string; color: string }[] = [
-    { value: 'all', label: 'All', color: 'bg-gray-600' },
-    { value: 'pending', label: 'Pending', color: 'bg-yellow-600' },
-    { value: 'accepted', label: 'Accepted', color: 'bg-blue-500' },
-    { value: 'in_progress', label: 'In Progress', color: 'bg-green-600' },
-    { value: 'completed', label: 'Completed', color: 'bg-lime-600' },
-    { value: 'rejected', label: 'Rejected', color: 'bg-red-600/90' },
-    { value: 'cancelled', label: 'Cancelled', color: 'bg-orange-600' }
+  const statusOptions: { value: RentalStatus; label: string; color: string; borderColor: string }[] = [
+    { value: 'all', label: 'All', color: 'bg-gray-600', borderColor: 'border-gray-300' },
+    { value: 'pending', label: 'Pending', color: 'bg-yellow-600', borderColor: 'border-gray-300' },
+    { value: 'accepted', label: 'Accepted', color: 'bg-blue-500', borderColor: 'border-gray-300' },
+    { value: 'in_progress', label: 'In Progress', color: 'bg-green-600', borderColor: 'border-gray-300' },
+    { value: 'completed', label: 'Completed', color: 'bg-lime-600', borderColor: 'border-gray-300' },
+    { value: 'rejected', label: 'Rejected', color: 'bg-red-600/90', borderColor: 'border-gray-300' },
+    { value: 'cancelled', label: 'Cancelled', color: 'bg-orange-600', borderColor: 'border-gray-300' }
   ];
 
   const sortOptions = [
@@ -51,106 +50,112 @@ const RentalsStatusFilter = ({
   ];
 
   return (
-    <div className="mb-8 mx-4 space-y-4">
-      {/* Status pills */}
-      <div className="flex flex-wrap gap-2">
-        {statusOptions.map((status) => (
-          <Badge
-            key={status.value}
-            variant={statusFilter === status.value ? "default" : "outline"}
-            className={`cursor-pointer px-3 py-1 text-sm ${
-              statusFilter === status.value ? status.color : ''
-            }`}
-            onClick={() => onStatusFilterChange(status.value)}
-          >
-            {statusFilter === status.value && (
-              <span className="w-2 h-2 rounded-full bg-white/30 mr-2"></span>
-            )}
-            {status.label}
-          </Badge>
-        ))}
-      </div>
-      
-      {/* Search and filters row */}
-      <div className="flex flex-col md:flex-row gap-4">
-        {/* Search bar */}
-        <div className="relative flex">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-green-600/60" />
-          <Input
-            placeholder="Search by item title or rental ID"
-            className="pl-9 h-10 border-green-200 focus:border-green-300 focus:ring-green-200"
-            value={searchTerm}
-            onChange={(e) => onSearchTermChange(e.target.value)}
-          />
+    <div className="mb-8 mx-4">
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Status pills */}
+        <div className="flex flex-wrap items-center gap-2 mr-4">
+          {statusOptions.map((status) => (
+            <Badge
+              key={status.value}
+              variant={statusFilter === status.value ? "default" : "outline"}
+              className={`cursor-pointer px-3 py-1 text-sm border ${
+                statusFilter === status.value 
+                  ? status.color
+                  : status.borderColor
+              }`}
+              onClick={() => onStatusFilterChange(status.value)}
+            >
+              {statusFilter === status.value && (
+                <span className="w-2 h-2 rounded-full bg-white/30 mr-2"></span>
+              )}
+              {status.label}
+            </Badge>
+          ))}
         </div>
         
-        {/* Date filter */}
-        <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-          <PopoverTrigger asChild>
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-2 h-10 border-green-200"
-            >
-              <CalendarIcon className="h-4 w-4 text-green-600" />
-              {dateRange.from ? (
-                dateRange.to ? (
-                  <span>
-                    {format(dateRange.from, "MMM d, yyyy")} - {format(dateRange.to, "MMM d, yyyy")}
-                  </span>
-                ) : (
-                  format(dateRange.from, "MMM d, yyyy")
-                )
-              ) : (
-                <span>Select date range</span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="range"
-              selected={{ from: dateRange.from, to: dateRange.to }}
-              onSelect={(range) => {
-                onDateRangeChange(range || {});
-                if (range?.to) {
-                  setIsCalendarOpen(false);
-                }
-              }}
-              initialFocus
+        {/* Search and filters row */}
+        <div className="flex items-center flex-1 gap-3">
+          {/* Search bar */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-green-600/60" />
+            <Input
+              placeholder="Search by item title or rental ID"
+              className="pl-9 h-10 border-green-400 focus:border-green-500 focus:ring-green-300"
+              value={searchTerm}
+              onChange={(e) => onSearchTermChange(e.target.value)}
             />
-            <div className="p-3 border-t border-border flex justify-between">
+          </div>
+          
+          {/* Date filter */}
+          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+            <PopoverTrigger asChild>
               <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => {
-                  onDateRangeChange({});
-                  setIsCalendarOpen(false);
+                variant="outline" 
+                className="flex items-center gap-2 h-10 border-green-400"
+              >
+                <CalendarIcon className="h-4 w-4 text-green-600" />
+                {dateRange.from ? (
+                  dateRange.to ? (
+                    <span className="hidden sm:inline">
+                      {format(dateRange.from, "MMM d")} - {format(dateRange.to, "MMM d")}
+                    </span>
+                  ) : (
+                    <span className="hidden sm:inline">{format(dateRange.from, "MMM d")}</span>
+                  )
+                ) : (
+                  <span className="hidden sm:inline">Date range</span>
+                )}
+                <span className="sm:hidden">Date</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="range"
+                selected={{ from: dateRange.from, to: dateRange.to }}
+                onSelect={(range) => {
+                  onDateRangeChange(range || {});
+                  if (range?.to) {
+                    setIsCalendarOpen(false);
+                  }
                 }}
-              >
-                Clear
-              </Button>
-              <Button 
-                size="sm"
-                onClick={() => setIsCalendarOpen(false)}
-              >
-                Apply
-              </Button>
-            </div>
-          </PopoverContent>
-        </Popover>
-        
-        {/* Sort dropdown */}
-        <Select value={sortOption} onValueChange={onSortOptionChange}>
-          <SelectTrigger className="w-[200px] h-10 border-green-200">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            {sortOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+                initialFocus
+              />
+              <div className="p-3 border-t border-green-200 flex justify-between">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    onDateRangeChange({});
+                    setIsCalendarOpen(false);
+                  }}
+                >
+                  Clear
+                </Button>
+                <Button 
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700"
+                  onClick={() => setIsCalendarOpen(false)}
+                >
+                  Apply
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+          
+          {/* Sort dropdown */}
+          <Select value={sortOption} onValueChange={onSortOptionChange}>
+            <SelectTrigger className="w-[180px] h-10 border-green-400">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              {sortOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
     </div>
   );

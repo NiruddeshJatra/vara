@@ -60,7 +60,7 @@ const CompactSearchBar = ({
                   placeholder="What do you need to borrow today?" 
                   value={searchTerm} 
                   onChange={e => setSearchTerm(e.target.value)} 
-                  className={`text-xs pl-9 ${inNav ? 'h-10' : 'h-11 sm:h-12'} border-black/20 focus:border-green-300`} 
+                  className={`text-xs pl-9 ${inNav ? 'h-10' : 'h-11 sm:h-12'} border-green-400 focus:border-green-500`} 
                 />
               </div>
               <div className="relative flex-1">
@@ -70,7 +70,7 @@ const CompactSearchBar = ({
                   placeholder="Select your location" 
                   value={location} 
                   onChange={e => setLocation(e.target.value)} 
-                  className={`text-xs pl-9 ${inNav ? 'h-10' : 'h-11 sm:h-12'} border-black/20 focus:border-green-300`} 
+                  className={`text-xs pl-9 ${inNav ? 'h-10' : 'h-11 sm:h-12'} border-green-400 focus:border-green-500`} 
                 />
               </div>
               <Button 
@@ -88,7 +88,7 @@ const CompactSearchBar = ({
               type="button"
               variant="outline"
               size="sm"
-              className="border-gray-300 hover:bg-green-50 text-green-800 rounded-full px-3 sm:px-4 mt-3 sm:mt-0 sm:ml-4 sm:mr-10 text-xs sm:text-sm w-full sm:w-auto"
+              className="border-green-400 hover:bg-green-50 text-green-800 rounded-full px-3 sm:px-4 mt-3 sm:mt-0 sm:ml-4 sm:mr-10 text-xs sm:text-sm w-full sm:w-auto"
               onClick={() => setFiltersOpen(!filtersOpen)}
             >
               {filtersOpen ? <X className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> : <SlidersHorizontal className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />}
@@ -100,7 +100,7 @@ const CompactSearchBar = ({
 
       {filtersOpen && (
         <div className="container mx-auto mt-4 pb-2 px-4">
-          <div className="bg-gradient-to-b from-white to-green-50/30 p-5 rounded-lg border border-green-200 shadow-sm">
+          <div className="bg-gradient-to-b from-white to-green-50/30 p-5 rounded-lg border-2 border-green-300 shadow-sm">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-20 px-10">
               <div className="space-y-2">
                 <label className="text-xs sm:text-sm font-medium text-green-800 flex items-center gap-2">
@@ -117,12 +117,12 @@ const CompactSearchBar = ({
                   />
                 </div>
                 <div className="flex justify-between text-xs sm:text-sm text-green-700 mt-2">
-                  <span>
-                    <span className="mr-1">৳</span>{tempPriceRange[0]}
-                  </span>
-                  <span>
-                    <span className="mr-1">৳</span>{tempPriceRange[1]}
-                  </span>
+                  <div className="bg-white px-3 py-1.5 rounded-md border border-green-300 shadow-sm font-semibold">
+                    <span className="mr-1 text-green-800">৳</span>{tempPriceRange[0]}
+                  </div>
+                  <div className="bg-white px-3 py-1.5 rounded-md border border-green-300 shadow-sm font-semibold">
+                    <span className="mr-1 text-green-800">৳</span>{tempPriceRange[1]}
+                  </div>
                 </div>
               </div>
 
@@ -132,7 +132,7 @@ const CompactSearchBar = ({
                   Availability
                 </label>
                 <Select value={availability} onValueChange={setAvailability}>
-                  <SelectTrigger className="w-full border-green-300">
+                  <SelectTrigger className="w-full border-green-400">
                     <SelectValue placeholder="Select availability" />
                   </SelectTrigger>
                   <SelectContent>
@@ -145,11 +145,11 @@ const CompactSearchBar = ({
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:justify-between mt-6 pt-4 border-t border-green-100 gap-2 sm:gap-0">
+            <div className="flex flex-col sm:flex-row sm:justify-between mt-6 pt-4 border-t border-green-300 gap-2 sm:gap-0">
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="text-xs sm:text-sm border-green-200 text-green-700 hover:bg-green-50"
+                className="text-xs sm:text-sm border-green-400 text-green-700 hover:bg-green-50"
                 onClick={clearFilters}
               >
                 Clear all
