@@ -5,7 +5,8 @@ import {
   Users,
   Star,
   Calendar,
-  Clock
+  Clock,
+  ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,8 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { toast } from "@/components/ui/use-toast";
+import { useState } from "react";
 
 interface RentalRequestsTableProps {
   searchTerm: string;
@@ -120,8 +123,10 @@ const MOCK_REQUESTS = [
 ];
 
 const RentalRequestsTable = ({ searchTerm }: RentalRequestsTableProps) => {
+  const [requests, setRequests] = useState(MOCK_REQUESTS);
+  
   // Filter requests based on search term
-  const filteredRequests = MOCK_REQUESTS.filter(
+  const filteredRequests = requests.filter(
     request =>
       request.itemTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
       request.renter.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -146,40 +151,105 @@ const RentalRequestsTable = ({ searchTerm }: RentalRequestsTableProps) => {
     });
   };
 
+  const handleView = (id: number, title: string) => {
+    toast({
+      title: "Viewing Request Details",
+      description: `Viewing rental request for ${title}`,
+      variant: "default",
+    });
+  };
+
+  const handleApprove = (id: number, title: string, renter: string) => {
+    toast({
+      title: "Request Approved",
+      description: `Rental request for ${title} has been approved for ${renter}`,
+      variant: "default",
+    });
+    setRequests(requests.filter(request => request.id !== id));
+  };
+
+  const handleReject = (id: number, title: string, renter: string) => {
+    toast({
+      title: "Request Rejected",
+      description: `Rental request from ${renter} for ${title} has been rejected`,
+      variant: "default",
+    });
+    setRequests(requests.filter(request => request.id !== id));
+  };
+
+  const handleCompare = (id: number, count: number) => {
+    toast({
+      title: "Comparing Requests",
+      description: `Comparing ${count} requests for this item`,
+      variant: "default",
+    });
+  };
+
+  const handleItemClick = (itemId: number, title: string) => {
+    toast({
+      title: "Item Details",
+      description: `Viewing details for ${title} (ID: ${itemId})`,
+      variant: "default",
+    });
+  };
+
+  const handleOwnerClick = (owner: string, rating: number) => {
+    toast({
+      title: "Owner Profile",
+      description: `Viewing profile for ${owner} (Rating: ${rating})`,
+      variant: "default",
+    });
+  };
+
+  const handleRenterClick = (renter: string, rating: number) => {
+    toast({
+      title: "Renter Profile",
+      description: `Viewing profile for ${renter} (Rating: ${rating})`,
+      variant: "default",
+    });
+  };
+
   return (
-    <Card>
+    <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-b from-white to-green-50">
       <CardContent className="p-0">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-green-50">
             <TableRow>
-              <TableHead className="w-[80px]">ID</TableHead>
-              <TableHead>Item</TableHead>
-              <TableHead>Renter</TableHead>
-              <TableHead>Rental Period</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Requested</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="w-[80px] text-green-800 font-semibold">ID</TableHead>
+              <TableHead className="text-green-800 font-semibold">Item</TableHead>
+              <TableHead className="text-green-800 font-semibold">Renter</TableHead>
+              <TableHead className="text-green-800 font-semibold">Rental Period</TableHead>
+              <TableHead className="text-green-800 font-semibold">
+                <div className="flex items-center">
+                  Price (৳) <ChevronDown className="ml-1 h-4 w-4" />
+                </div>
+              </TableHead>
+              <TableHead className="text-green-800 font-semibold">Status</TableHead>
+              <TableHead className="text-green-800 font-semibold">Requested</TableHead>
+              <TableHead className="text-right text-green-800 font-semibold">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredRequests.length > 0 ? (
               filteredRequests.map((request) => (
-                <TableRow key={request.id}>
-                  <TableCell className="font-medium">#{request.id}</TableCell>
+                <TableRow key={request.id} className="hover:bg-green-50/50">
+                  <TableCell className="font-medium text-green-700">#{request.id}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <img 
-                        src={request.itemImage} 
-                        alt={request.itemTitle}
-                        className="h-10 w-10 rounded-md object-cover"
-                      />
                       <div>
-                        <div className="max-w-[200px] truncate font-medium">
+                        <div 
+                          className="max-w-[200px] truncate font-medium text-green-700 cursor-pointer hover:text-green-500 hover:underline"
+                          onClick={() => handleItemClick(request.itemId, request.itemTitle)}
+                        >
                           {request.itemTitle}
                         </div>
-                        <div className="flex items-center text-xs text-gray-500">
-                          <span>Owner: {request.owner}</span>
+                        <div className="flex items-center text-xs text-green-600">
+                          <span 
+                            className="cursor-pointer hover:text-green-500 hover:underline"
+                            onClick={() => handleOwnerClick(request.owner, request.ownerRating)}
+                          >
+                            Owner: {request.owner}
+                          </span>
                           <span className="mx-1">•</span>
                           <div className="flex items-center">
                             <Star className="h-3 w-3 text-yellow-500 fill-yellow-500 mr-0.5" />
@@ -190,29 +260,29 @@ const RentalRequestsTable = ({ searchTerm }: RentalRequestsTableProps) => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback>{request.renter.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">{request.renter}</div>
-                        <div className="flex items-center text-xs text-gray-500">
-                          <Star className="h-3 w-3 text-yellow-500 fill-yellow-500 mr-0.5" />
-                          <span>{request.renterRating}</span>
-                        </div>
+                    <div>
+                      <div 
+                        className="font-medium text-green-700 cursor-pointer hover:text-green-500 hover:underline"
+                        onClick={() => handleRenterClick(request.renter, request.renterRating)}
+                      >
+                        {request.renter}
+                      </div>
+                      <div className="flex items-center text-xs text-green-600">
+                        <Star className="h-3 w-3 text-yellow-500 fill-yellow-500 mr-0.5" />
+                        <span>{request.renterRating}</span>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1 text-sm">
-                      <Calendar className="h-3.5 w-3.5 text-gray-500" />
+                    <div className="flex items-center gap-1 text-sm text-green-700">
+                      <Calendar className="h-3.5 w-3.5 text-green-600" />
                       <span>{formatDate(request.startDate)} - {formatDate(request.endDate)}</span>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
-                      <div>৳{request.totalPrice}</div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-green-700">৳{request.totalPrice}</div>
+                      <div className="text-xs text-green-600">
                         ৳{request.securityDeposit} deposit
                       </div>
                     </div>
@@ -222,12 +292,12 @@ const RentalRequestsTable = ({ searchTerm }: RentalRequestsTableProps) => {
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Badge className="bg-blue-100 text-blue-800 border-blue-300 flex items-center gap-1 cursor-help">
+                            <Badge className="bg-green-100 text-green-800 border-green-300 flex items-center gap-1 cursor-help">
                               <Users className="h-3 w-3" />
-                              <span>{request.requestCount} Requests</span>
+                              <span>{request.requestCount} Reqs</span>
                             </Badge>
                           </TooltipTrigger>
-                          <TooltipContent>
+                          <TooltipContent className="bg-white text-green-800 border border-green-200">
                             <p>This item has multiple rental requests.<br/>Select the best renter.</p>
                           </TooltipContent>
                         </Tooltip>
@@ -239,7 +309,7 @@ const RentalRequestsTable = ({ searchTerm }: RentalRequestsTableProps) => {
                       </Badge>
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-green-700">
                     <div className="text-sm">{formatRequestDate(request.requestDate)}</div>
                   </TableCell>
                   <TableCell className="text-right">
@@ -247,7 +317,8 @@ const RentalRequestsTable = ({ searchTerm }: RentalRequestsTableProps) => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-8 w-8 p-0"
+                        className="h-8 w-8 p-0 border-green-300 hover:bg-green-50 hover:text-green-700"
+                        onClick={() => handleView(request.id, request.itemTitle)}
                       >
                         <Eye className="h-4 w-4" />
                         <span className="sr-only">View details</span>
@@ -255,7 +326,8 @@ const RentalRequestsTable = ({ searchTerm }: RentalRequestsTableProps) => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-8 w-8 p-0 text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700"
+                        className="h-8 w-8 p-0 text-green-600 border-green-300 hover:bg-green-50 hover:text-green-700"
+                        onClick={() => handleApprove(request.id, request.itemTitle, request.renter)}
                       >
                         <Check className="h-4 w-4" />
                         <span className="sr-only">Approve</span>
@@ -263,7 +335,8 @@ const RentalRequestsTable = ({ searchTerm }: RentalRequestsTableProps) => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-8 w-8 p-0 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                        className="h-8 w-8 p-0 text-red-600 border-green-300 hover:bg-green-50 hover:text-red-700"
+                        onClick={() => handleReject(request.id, request.itemTitle, request.renter)}
                       >
                         <X className="h-4 w-4" />
                         <span className="sr-only">Reject</span>
@@ -272,7 +345,8 @@ const RentalRequestsTable = ({ searchTerm }: RentalRequestsTableProps) => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className="text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                          className="text-green-600 border-green-300 hover:bg-green-50 hover:text-green-700"
+                          onClick={() => handleCompare(request.id, request.requestCount)}
                         >
                           <Users className="h-4 w-4 mr-1" />
                           Compare
@@ -284,7 +358,7 @@ const RentalRequestsTable = ({ searchTerm }: RentalRequestsTableProps) => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-6 text-gray-500">
+                <TableCell colSpan={8} className="text-center py-6 text-green-600">
                   No rental requests found matching "{searchTerm}"
                 </TableCell>
               </TableRow>

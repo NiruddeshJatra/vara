@@ -22,6 +22,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "@/components/ui/use-toast";
+import { useState } from "react";
 
 interface PendingListingsTableProps {
   searchTerm: string;
@@ -36,8 +38,7 @@ const MOCK_LISTINGS = [
     owner: "Ahmed Rahman",
     price: 1200,
     securityDeposit: 5000,
-    submittedDate: "2023-06-15T10:30:00Z",
-    images: 4
+    submittedDate: "2023-06-15T10:30:00Z"
   },
   {
     id: 2,
@@ -46,18 +47,16 @@ const MOCK_LISTINGS = [
     owner: "Fatima Khan",
     price: 900,
     securityDeposit: 4500,
-    submittedDate: "2023-06-14T14:15:00Z",
-    images: 6
+    submittedDate: "2023-06-14T14:15:00Z"
   },
   {
     id: 3,
     title: "Canon EOS R5 Camera with RF 24-105mm Lens",
-    category: "Camera Equipment",
+    category: "Camera",
     owner: "Mohammed Ali",
     price: 1800,
     securityDeposit: 10000,
-    submittedDate: "2023-06-13T09:45:00Z",
-    images: 8
+    submittedDate: "2023-06-13T09:45:00Z"
   },
   {
     id: 4,
@@ -66,8 +65,7 @@ const MOCK_LISTINGS = [
     owner: "Noor Ahmed",
     price: 2500,
     securityDeposit: 15000,
-    submittedDate: "2023-06-12T16:20:00Z",
-    images: 5
+    submittedDate: "2023-06-12T16:20:00Z"
   },
   {
     id: 5,
@@ -76,14 +74,15 @@ const MOCK_LISTINGS = [
     owner: "Imran Hossain",
     price: 800,
     securityDeposit: 4000,
-    submittedDate: "2023-06-11T11:10:00Z",
-    images: 3
+    submittedDate: "2023-06-11T11:10:00Z"
   }
 ];
 
 const PendingListingsTable = ({ searchTerm }: PendingListingsTableProps) => {
+  const [listings, setListings] = useState(MOCK_LISTINGS);
+  
   // Filter listings based on search term
-  const filteredListings = MOCK_LISTINGS.filter(
+  const filteredListings = listings.filter(
     listing =>
       listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       listing.owner.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -99,53 +98,86 @@ const PendingListingsTable = ({ searchTerm }: PendingListingsTableProps) => {
     });
   };
 
+  const handleView = (id: number, title: string) => {
+    toast({
+      title: "Viewing Details",
+      description: `Viewing details for ${title}`,
+      variant: "default",
+    });
+  };
+
+  const handleApprove = (id: number, title: string) => {
+    toast({
+      title: "Listing Approved",
+      description: `${title} has been approved and is now live`,
+      variant: "default",
+    });
+    setListings(listings.filter(listing => listing.id !== id));
+  };
+
+  const handleReject = (id: number, title: string) => {
+    toast({
+      title: "Listing Rejected",
+      description: `${title} has been rejected`,
+      variant: "default",
+    });
+    setListings(listings.filter(listing => listing.id !== id));
+  };
+
+  const handleMoreAction = (action: string, owner: string) => {
+    toast({
+      title: action,
+      description: `Action initiated for ${owner}`,
+      variant: "default",
+    });
+  };
+
   return (
-    <Card>
+    <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-b from-white to-green-50">
       <CardContent className="p-0">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-green-50">
             <TableRow>
-              <TableHead className="w-[80px]">ID</TableHead>
-              <TableHead>Item</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Owner</TableHead>
-              <TableHead>
+              <TableHead className="w-[80px] text-green-800 font-semibold">ID</TableHead>
+              <TableHead className="text-green-800 font-semibold">Item</TableHead>
+              <TableHead className="text-green-800 font-semibold">Category</TableHead>
+              <TableHead className="text-green-800 font-semibold">Owner</TableHead>
+              <TableHead className="text-green-800 font-semibold">
                 <div className="flex items-center">
                   Price (৳) <ChevronDown className="ml-1 h-4 w-4" />
                 </div>
               </TableHead>
-              <TableHead>Security Deposit</TableHead>
-              <TableHead>Submitted</TableHead>
-              <TableHead>Images</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-green-800 font-semibold">Security Deposit</TableHead>
+              <TableHead className="text-green-800 font-semibold">Submitted</TableHead>
+              <TableHead className="text-right text-green-800 font-semibold">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredListings.length > 0 ? (
               filteredListings.map((listing) => (
-                <TableRow key={listing.id}>
-                  <TableCell className="font-medium">#{listing.id}</TableCell>
+                <TableRow key={listing.id} className="hover:bg-green-50/50">
+                  <TableCell className="font-medium text-green-700">#{listing.id}</TableCell>
                   <TableCell>
-                    <div className="max-w-[250px] truncate font-medium">
+                    <div className="max-w-[250px] truncate font-medium text-green-700">
                       {listing.title}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="bg-gray-100">
+                    <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
                       {listing.category}
                     </Badge>
                   </TableCell>
-                  <TableCell>{listing.owner}</TableCell>
-                  <TableCell>৳{listing.price}/day</TableCell>
-                  <TableCell>৳{listing.securityDeposit}</TableCell>
-                  <TableCell>{formatDate(listing.submittedDate)}</TableCell>
-                  <TableCell>{listing.images} photos</TableCell>
+                  <TableCell className="text-green-700">{listing.owner}</TableCell>
+                  <TableCell className="text-green-700">৳{listing.price}/day</TableCell>
+                  <TableCell className="text-green-700">৳{listing.securityDeposit}</TableCell>
+                  <TableCell className="text-green-700">{formatDate(listing.submittedDate)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-8 w-8 p-0"
+                        className="h-8 w-8 p-0 border-green-300 hover:bg-green-50 hover:text-green-700"
+                        onClick={() => handleView(listing.id, listing.title)}
                       >
                         <Eye className="h-4 w-4" />
                         <span className="sr-only">View details</span>
@@ -153,7 +185,8 @@ const PendingListingsTable = ({ searchTerm }: PendingListingsTableProps) => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-8 w-8 p-0 text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700"
+                        className="h-8 w-8 p-0 text-green-600 border-green-300 hover:bg-green-50 hover:text-green-700"
+                        onClick={() => handleApprove(listing.id, listing.title)}
                       >
                         <Check className="h-4 w-4" />
                         <span className="sr-only">Approve</span>
@@ -161,7 +194,8 @@ const PendingListingsTable = ({ searchTerm }: PendingListingsTableProps) => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-8 w-8 p-0 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                        className="h-8 w-8 p-0 text-red-600 border-green-300 hover:bg-green-50 hover:text-red-700"
+                        onClick={() => handleReject(listing.id, listing.title)}
                       >
                         <X className="h-4 w-4" />
                         <span className="sr-only">Reject</span>
@@ -171,15 +205,19 @@ const PendingListingsTable = ({ searchTerm }: PendingListingsTableProps) => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0"
+                            className="h-8 w-8 p-0 text-green-700 hover:bg-green-50"
                           >
                             <MoreHorizontal className="h-4 w-4" />
                             <span className="sr-only">More options</span>
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>Request more info</DropdownMenuItem>
-                          <DropdownMenuItem>Contact owner</DropdownMenuItem>
+                        <DropdownMenuContent align="end" className="border-green-200">
+                          <DropdownMenuItem onClick={() => handleMoreAction("Request more info", listing.owner)}>
+                            Request more info
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleMoreAction("Contact owner", listing.owner)}>
+                            Contact owner
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -188,7 +226,7 @@ const PendingListingsTable = ({ searchTerm }: PendingListingsTableProps) => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-6 text-gray-500">
+                <TableCell colSpan={8} className="text-center py-6 text-green-600">
                   No pending listings found matching "{searchTerm}"
                 </TableCell>
               </TableRow>

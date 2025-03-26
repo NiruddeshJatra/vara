@@ -6,7 +6,8 @@ import {
   X,
   MoreHorizontal,
   Star,
-  Shield
+  Shield,
+  ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "@/components/ui/use-toast";
+import { useState } from "react";
 
 interface UserManagementTableProps {
   searchTerm: string;
@@ -121,8 +124,10 @@ const MOCK_USERS = [
 ];
 
 const UserManagementTable = ({ searchTerm }: UserManagementTableProps) => {
+  const [users, setUsers] = useState(MOCK_USERS);
+  
   // Filter users based on search term
-  const filteredUsers = MOCK_USERS.filter(
+  const filteredUsers = users.filter(
     user =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -191,43 +196,102 @@ const UserManagementTable = ({ searchTerm }: UserManagementTableProps) => {
         return null;
     }
   };
+  
+  const handleUserClick = (userId: number, name: string) => {
+    toast({
+      title: "User Profile",
+      description: `Viewing user profile for ${name} (ID: ${userId})`,
+      variant: "default",
+    });
+  };
+  
+  const handleViewDetails = (userId: number, name: string) => {
+    toast({
+      title: "User Details",
+      description: `Viewing detailed information for ${name}`,
+      variant: "default",
+    });
+  };
+  
+  const handleVerifyUser = (userId: number, name: string) => {
+    toast({
+      title: "User Verified",
+      description: `${name} has been verified successfully`,
+      variant: "default",
+    });
+    setUsers(users.map(user => 
+      user.id === userId 
+        ? {...user, verified: true, status: 'active'} 
+        : user
+    ));
+  };
+  
+  const handleSuspendUser = (userId: number, name: string) => {
+    toast({
+      title: "User Suspended",
+      description: `${name} has been suspended`,
+      variant: "default",
+    });
+    setUsers(users.map(user => 
+      user.id === userId 
+        ? {...user, status: 'suspended'} 
+        : user
+    ));
+  };
+  
+  const handleSendMessage = (userId: number, name: string) => {
+    toast({
+      title: "Message Sent",
+      description: `Message initiated to ${name}`,
+      variant: "default",
+    });
+  };
 
   return (
-    <Card>
+    <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-b from-white to-green-50">
       <CardContent className="p-0">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-green-50">
             <TableRow>
-              <TableHead className="w-[60px]">ID</TableHead>
-              <TableHead>User</TableHead>
-              <TableHead>Contact</TableHead>
-              <TableHead>Activity</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Joined</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="w-[60px] text-green-800 font-semibold">ID</TableHead>
+              <TableHead className="text-green-800 font-semibold">User</TableHead>
+              <TableHead className="text-green-800 font-semibold">Contact</TableHead>
+              <TableHead className="text-green-800 font-semibold">
+                <div className="flex items-center">
+                  Activity <ChevronDown className="ml-1 h-4 w-4" />
+                </div>
+              </TableHead>
+              <TableHead className="text-green-800 font-semibold">Status</TableHead>
+              <TableHead className="text-green-800 font-semibold">Type</TableHead>
+              <TableHead className="text-green-800 font-semibold">Joined</TableHead>
+              <TableHead className="text-right text-green-800 font-semibold">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredUsers.length > 0 ? (
               filteredUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">#{user.id}</TableCell>
+                <TableRow key={user.id} className="hover:bg-green-50/50">
+                  <TableCell className="font-medium text-green-700">#{user.id}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <Avatar>
+                      <Avatar className="border border-green-200">
                         <AvatarImage src={user.image} />
-                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                        <AvatarFallback className="bg-green-100 text-green-800">{user.name.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium">{user.name}</div>
-                        <div className="flex items-center text-xs text-gray-500">
+                        <div 
+                          className="font-medium text-green-700 cursor-pointer hover:text-green-500 hover:underline"
+                          onClick={() => handleUserClick(user.id, user.name)}
+                        >
+                          {user.name}
+                        </div>
+                        <div className="flex items-center text-xs text-green-600">
                           <Star className="h-3 w-3 text-yellow-500 fill-yellow-500 mr-0.5" />
                           <span>{user.rating}</span>
                           {user.verified && (
                             <>
                               <span className="mx-1">•</span>
-                              <Badge className="h-4 px-1 bg-blue-100 text-blue-800 text-[10px]">Verified</Badge>
+                              <Badge className="h-4 px-1 bg-green-100 text-green-800 text-[10px] border-green-300">Verified</Badge>
                             </>
                           )}
                         </div>
@@ -236,33 +300,26 @@ const UserManagementTable = ({ searchTerm }: UserManagementTableProps) => {
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
-                      <div className="flex items-center text-sm">
-                        <Mail className="h-3.5 w-3.5 text-gray-500 mr-1.5" />
+                      <div className="flex items-center text-sm text-green-700">
+                        <Mail className="h-3.5 w-3.5 text-green-600 mr-1.5" />
                         <span>{user.email}</span>
                       </div>
-                      <div className="flex items-center text-sm">
-                        <Phone className="h-3.5 w-3.5 text-gray-500 mr-1.5" />
+                      <div className="flex items-center text-sm text-green-700">
+                        <Phone className="h-3.5 w-3.5 text-green-600 mr-1.5" />
                         <span>{user.phone}</span>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
-                      {user.listingsCount > 0 && (
-                        <div className="text-sm">
-                          <span className="font-medium">{user.listingsCount}</span>
-                          <span className="text-gray-500"> listings</span>
-                        </div>
-                      )}
-                      {user.rentalsCount > 0 && (
-                        <div className="text-sm">
-                          <span className="font-medium">{user.rentalsCount}</span>
-                          <span className="text-gray-500"> rentals</span>
-                        </div>
-                      )}
-                      {user.listingsCount === 0 && user.rentalsCount === 0 && (
-                        <div className="text-sm text-gray-500">No activity yet</div>
-                      )}
+                      <div className="flex justify-between items-center text-sm text-green-700">
+                        <span>Listings:</span>
+                        <span>{user.listingsCount}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm text-green-700">
+                        <span>Rentals:</span>
+                        <span>{user.rentalsCount}</span>
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -271,15 +328,16 @@ const UserManagementTable = ({ searchTerm }: UserManagementTableProps) => {
                   <TableCell>
                     {getUserTypeBadge(user.type)}
                   </TableCell>
-                  <TableCell>
-                    <div className="text-sm">{formatDate(user.joined)}</div>
+                  <TableCell className="text-green-700">
+                    {formatDate(user.joined)}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-8 w-8 p-0"
+                        className="h-8 w-8 p-0 border-green-300 hover:bg-green-50 hover:text-green-700"
+                        onClick={() => handleViewDetails(user.id, user.name)}
                       >
                         <Eye className="h-4 w-4" />
                         <span className="sr-only">View profile</span>
@@ -287,31 +345,41 @@ const UserManagementTable = ({ searchTerm }: UserManagementTableProps) => {
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
-                            className="h-8 w-8 p-0"
+                            className="h-8 w-8 p-0 border-green-300 hover:bg-green-50 hover:text-green-700"
                           >
                             <MoreHorizontal className="h-4 w-4" />
                             <span className="sr-only">More options</span>
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            Edit User
+                        <DropdownMenuContent align="end" className="border-green-200">
+                          <DropdownMenuItem 
+                            className="cursor-pointer hover:bg-green-50 hover:text-green-700"
+                            onClick={() => handleSendMessage(user.id, user.name)}
+                          >
+                            Send message
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            {user.verified ? "Revoke Verification" : "Verify User"}
+                          {user.status === 'pending_verification' && (
+                            <DropdownMenuItem 
+                              className="cursor-pointer hover:bg-green-50 hover:text-green-700"
+                              onClick={() => handleVerifyUser(user.id, user.name)}
+                            >
+                              Verify user
+                            </DropdownMenuItem>
+                          )}
+                          {user.status !== 'suspended' && (
+                            <DropdownMenuItem 
+                              className="cursor-pointer hover:bg-red-50 hover:text-red-700"
+                              onClick={() => handleSuspendUser(user.id, user.name)}
+                            >
+                              Suspend user
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuSeparator className="bg-green-100" />
+                          <DropdownMenuItem className="cursor-pointer hover:bg-green-50 hover:text-green-700">
+                            View activity log
                           </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          {user.status === "active" ? (
-                            <DropdownMenuItem className="text-red-600">
-                              Suspend Account
-                            </DropdownMenuItem>
-                          ) : user.status === "suspended" ? (
-                            <DropdownMenuItem className="text-green-600">
-                              Reactivate Account
-                            </DropdownMenuItem>
-                          ) : null}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -320,7 +388,7 @@ const UserManagementTable = ({ searchTerm }: UserManagementTableProps) => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-6 text-gray-500">
+                <TableCell colSpan={8} className="text-center py-6 text-green-600">
                   No users found matching "{searchTerm}"
                 </TableCell>
               </TableRow>

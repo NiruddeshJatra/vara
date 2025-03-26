@@ -34,6 +34,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [searchTerm, setSearchTerm] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [prevTab, setPrevTab] = useState("dashboard");
   const { adminLogout } = useAdminAuth();
   const navigate = useNavigate();
 
@@ -58,7 +59,10 @@ const AdminDashboard = () => {
   };
 
   const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
+    if (tab !== activeTab) {
+      setPrevTab(activeTab);
+      setActiveTab(tab);
+    }
     setMobileMenuOpen(false);
   };
 
@@ -95,8 +99,22 @@ const AdminDashboard = () => {
     });
   };
 
+  const getSlideDirection = (tab: string) => {
+    if (prevTab === tab) return "";
+    
+    const tabOrder = ["dashboard", "listings", "requests", "active-rentals", "users", "reports"];
+    const currentIndex = tabOrder.indexOf(activeTab);
+    const tabIndex = tabOrder.indexOf(tab);
+    
+    if (currentIndex === -1 || tabIndex === -1) return "";
+    
+    return currentIndex > tabIndex 
+      ? "animate-slide-right" 
+      : "animate-slide-left";
+  };
+
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gradient-to-b from-green-50 to-white">
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" onClick={() => setMobileMenuOpen(false)} />
@@ -104,22 +122,22 @@ const AdminDashboard = () => {
 
       {/* Admin Sidebar */}
       <div 
-        className={`fixed md:static inset-y-0 left-0 z-50 w-64 flex-col bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
+        className={`fixed md:static inset-y-0 left-0 z-50 w-64 flex-col bg-gradient-to-r from-green-900 to-green-700 shadow-lg transform transition-transform duration-300 ease-in-out ${
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0 md:flex border-r border-gray-200`}
+        } md:translate-x-0 md:flex border-r border-green-700`}
       >
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-4 border-b border-green-700">
           <div className="flex items-center gap-2">
-            <Shield className="h-8 w-8 text-green-600" />
-            <h1 className="text-xl font-bold text-gray-800">Vara Admin</h1>
+            <Shield className="h-8 w-8 text-white" />
+            <h1 className="text-xl font-bold text-white">Vara Admin</h1>
           </div>
         </div>
         <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-1">
             <li>
               <button
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md ${
-                  activeTab === "dashboard" ? "bg-green-50 text-green-700 font-medium" : "text-gray-700 hover:bg-gray-100"
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md group ${
+                  activeTab === "dashboard" ? "bg-white/20 text-white font-medium" : "text-green-100 hover:bg-white/10"
                 }`}
                 onClick={() => handleTabChange("dashboard")}
               >
@@ -129,36 +147,36 @@ const AdminDashboard = () => {
             </li>
             <li>
               <button
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md ${
-                  activeTab === "listings" ? "bg-green-50 text-green-700 font-medium" : "text-gray-700 hover:bg-gray-100"
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md group ${
+                  activeTab === "listings" ? "bg-white/20 text-white font-medium" : "text-green-100 hover:bg-white/10"
                 }`}
                 onClick={() => handleTabChange("listings")}
               >
                 <Package className="h-5 w-5" />
                 <span>Listings</span>
                 {dashboardStats.pendingApprovals > 0 && (
-                  <Badge className="ml-auto bg-amber-100 text-amber-800 border-amber-300">{dashboardStats.pendingApprovals}</Badge>
+                  <Badge className="text-xs ml-auto bg-amber-100 text-amber-800 border-amber-300 transition-all group-hover:bg-amber-200">{dashboardStats.pendingApprovals}</Badge>
                 )}
               </button>
             </li>
             <li>
               <button
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md ${
-                  activeTab === "requests" ? "bg-green-50 text-green-700 font-medium" : "text-gray-700 hover:bg-gray-100"
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md group ${
+                  activeTab === "requests" ? "bg-white/20 text-white font-medium" : "text-green-100 hover:bg-white/10"
                 }`}
                 onClick={() => handleTabChange("requests")}
               >
                 <ClipboardList className="h-5 w-5" />
-                <span>Rental Requests</span>
+                <span>Requests</span>
                 {dashboardStats.pendingRequests > 0 && (
-                  <Badge className="ml-auto bg-amber-100 text-amber-800 border-amber-300">{dashboardStats.pendingRequests}</Badge>
+                  <Badge className="text-xs ml-auto bg-amber-100 text-amber-800 border-amber-300 transition-all group-hover:bg-amber-200">{dashboardStats.pendingRequests}</Badge>
                 )}
               </button>
             </li>
             <li>
               <button
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-md ${
-                  activeTab === "active-rentals" ? "bg-green-50 text-green-700 font-medium" : "text-gray-700 hover:bg-gray-100"
+                  activeTab === "active-rentals" ? "bg-white/20 text-white font-medium" : "text-green-100 hover:bg-white/10"
                 }`}
                 onClick={() => handleTabChange("active-rentals")}
               >
@@ -169,7 +187,7 @@ const AdminDashboard = () => {
             <li>
               <button
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-md ${
-                  activeTab === "users" ? "bg-green-50 text-green-700 font-medium" : "text-gray-700 hover:bg-gray-100"
+                  activeTab === "users" ? "bg-white/20 text-white font-medium" : "text-green-100 hover:bg-white/10"
                 }`}
                 onClick={() => handleTabChange("users")}
               >
@@ -180,7 +198,7 @@ const AdminDashboard = () => {
             <li>
               <button
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-md ${
-                  activeTab === "reports" ? "bg-green-50 text-green-700 font-medium" : "text-gray-700 hover:bg-gray-100"
+                  activeTab === "reports" ? "bg-white/20 text-white font-medium" : "text-green-100 hover:bg-white/10"
                 }`}
                 onClick={() => handleTabChange("reports")}
               >
@@ -190,22 +208,22 @@ const AdminDashboard = () => {
             </li>
           </ul>
         </nav>
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-green-700">
           <div className="flex items-center gap-3">
             <Avatar>
               <AvatarImage src="/admin-profile.jpg" />
-              <AvatarFallback className="bg-green-100 text-green-700">AD</AvatarFallback>
+              <AvatarFallback className="bg-white text-green-700">AD</AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-medium text-gray-800">Admin User</p>
-              <p className="text-xs text-gray-500">admin@vara.com</p>
+              <p className="font-medium text-leaf-100">Admin User</p>
+              <p className="text-xs text-green-200">admin@vara.com</p>
             </div>
           </div>
           <Button 
-            variant="outline" 
+            variant="default" 
             size="sm" 
             onClick={handleLogout}
-            className="mt-4 w-full border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+            className="mt-4 w-full bg-white text-green-700 hover:bg-green-100 hover:text-green-800 font-semibold"
           >
             Logout
           </Button>
@@ -213,23 +231,23 @@ const AdminDashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col pr-6">
         {/* Header */}
         <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
           <div className="flex justify-between items-center p-4">
             <div className="flex items-center gap-4">
               <button 
-                className="md:hidden text-gray-600 hover:text-gray-900 focus:outline-none"
+                className="md:hidden text-green-700 hover:text-green-900 focus:outline-none"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
                 <Menu className="h-6 w-6" />
               </button>
               <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
                 <Input
                   type="text"
                   placeholder="Search..."
-                  className="pl-10 h-10 border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  className="pl-10 h-10 border-green-500 focus:border-green-500 focus:ring-green-500"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -237,11 +255,11 @@ const AdminDashboard = () => {
             </div>
             <div className="flex items-center gap-4">
               <button 
-                className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full"
+                className="relative p-2 text-green-700 hover:text-green-900 hover:bg-green-100 rounded-full"
                 onClick={handleNotificationClick}
               >
                 <Bell className="h-6 w-6" />
-                <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
+                <span className="absolute top-1 right-1 w-4 h-4 bg-green-500 rounded-full text-xs text-white flex items-center justify-center">
                   5
                 </span>
               </button>
@@ -257,14 +275,14 @@ const AdminDashboard = () => {
 
         {/* Dashboard Content */}
         <main className="flex-1 p-6 overflow-auto">
-          {activeTab === "dashboard" && (
+          <div className={`${activeTab === "dashboard" ? getSlideDirection("dashboard") : "hidden"}`}>
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
+                <h1 className="text-2xl font-bold text-green-800">Dashboard Overview</h1>
                 <Button 
                   variant="outline" 
                   onClick={handleLogout}
-                  className="hidden md:flex border-gray-300 text-gray-700 hover:bg-gray-50"
+                  className="hidden md:flex border-green-500 text-green-700 hover:bg-green-50 hover:text-green-800"
                 >
                   Refresh Data
                 </Button>
@@ -272,41 +290,47 @@ const AdminDashboard = () => {
               
               {/* Stats Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card className="border border-gray-200 hover:shadow-md transition-shadow">
+                <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-white">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-lg font-medium text-gray-700">Total Users</CardTitle>
-                    <CardDescription>All registered users</CardDescription>
+                    <CardTitle className="text-lg font-medium text-green-800">Total Users</CardTitle>
+                    <CardDescription className="text-green-600">All registered users</CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pb-12">
                     <div className="flex items-center gap-2">
-                      <Users className="h-8 w-8 text-blue-500" />
-                      <span className="text-3xl font-bold">{dashboardStats.totalUsers}</span>
+                      <div className="py-2 rounded-full bg-gradient-to-r from-white to-green-50">
+                        <Users className="h-8 w-8 text-green-700" />
+                      </div>
+                      <span className="text-3xl font-medium text-green-600">{dashboardStats.totalUsers}</span>
                     </div>
                   </CardContent>
                 </Card>
                 
-                <Card className="border border-gray-200 hover:shadow-md transition-shadow">
+                <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-white">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-lg font-medium text-gray-700">Active Rentals</CardTitle>
-                    <CardDescription>Currently in progress</CardDescription>
+                    <CardTitle className="text-lg font-medium text-green-800">Active Rentals</CardTitle>
+                    <CardDescription className="text-green-600">Currently in progress</CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pb-12">
                     <div className="flex items-center gap-2">
-                      <Boxes className="h-8 w-8 text-green-500" />
-                      <span className="text-3xl font-bold">{dashboardStats.activeRentals}</span>
+                      <div className="py-2 rounded-full bg-gradient-to-r from-white to-green-50">
+                        <Boxes className="h-8 w-8 text-green-700" />
+                      </div>
+                      <span className="text-3xl font-medium text-green-600">{dashboardStats.activeRentals}</span>
                     </div>
                   </CardContent>
                 </Card>
                 
-                <Card className="border border-gray-200 hover:shadow-md transition-shadow">
+                <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-white">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-lg font-medium text-gray-700">Revenue</CardTitle>
-                    <CardDescription>Total platform revenue</CardDescription>
+                    <CardTitle className="text-lg font-medium text-green-800">Revenue</CardTitle>
+                    <CardDescription className="text-green-600">Total platform revenue</CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pb-12">
                     <div className="flex items-center gap-2">
-                      <DollarSign className="h-8 w-8 text-yellow-500" />
-                      <span className="text-3xl font-bold">৳{dashboardStats.revenue}</span>
+                      <div className="py-2 rounded-full bg-gradient-to-r from-white to-green-50">
+                        <DollarSign className="h-8 w-8 text-green-700" />
+                      </div>
+                      <span className="text-3xl font-medium text-green-600">৳{dashboardStats.revenue}</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -314,29 +338,29 @@ const AdminDashboard = () => {
               
               {/* Action Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="bg-gradient-to-br from-amber-50 to-white border border-amber-100 hover:shadow-md transition-shadow">
+                <Card className="bg-gradient-to-br from-amber-50 to-white border border-amber-100 hover:shadow-md transition-shadow flex flex-col">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-amber-800">
-                      <ClipboardList className="h-5 w-5 text-amber-600" />
+                    <CardTitle className="flex items-center gap-2 text-green-800">
+                      <ClipboardList className="h-5 w-5 text-green-700" />
                       Pending Approvals
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="flex-grow">
                     <div className="flex flex-col gap-2">
                       <div className="flex justify-between items-center">
-                        <span>Listings</span>
+                        <span className="text-green-700">Listings</span>
                         <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">{dashboardStats.pendingApprovals}</Badge>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span>Rental Requests</span>
+                        <span className="text-green-700">Rental Requests</span>
                         <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">{dashboardStats.pendingRequests}</Badge>
                       </div>
                     </div>
                   </CardContent>
-                  <CardFooter>
+                  <CardFooter className="mt-auto">
                     <Button 
                       variant="outline" 
-                      className="w-full border-amber-300 text-amber-800 hover:bg-amber-100"
+                      className="w-full border-green-400 text-green-700 hover:bg-green-50 hover:text-green-800 font-semibold"
                       onClick={() => handleTabChange("listings")}
                     >
                       Review Pending Items
@@ -344,25 +368,25 @@ const AdminDashboard = () => {
                   </CardFooter>
                 </Card>
                 
-                <Card className="bg-gradient-to-br from-blue-50 to-white border border-blue-100 hover:shadow-md transition-shadow">
+                <Card className="bg-gradient-to-br from-lime-50 to-white border border-lime-100 hover:shadow-md transition-shadow flex flex-col">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-blue-800">
-                      <Clock className="h-5 w-5 text-blue-600" />
+                    <CardTitle className="flex items-center gap-2 text-green-800">
+                      <Clock className="h-5 w-5 text-green-700" />
                       Today's Returns
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="flex-grow">
                     <div className="flex flex-col gap-2">
                       <div className="flex justify-between items-center">
-                        <span>Items due today</span>
-                        <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">{dashboardStats.returnsToday}</Badge>
+                        <span className="text-green-700">Items due today</span>
+                        <Badge variant="outline" className="bg-lime-100 text-lime-800 border-lime-300">{dashboardStats.returnsToday}</Badge>
                       </div>
                     </div>
                   </CardContent>
-                  <CardFooter>
+                  <CardFooter className="mt-auto">
                     <Button 
                       variant="outline" 
-                      className="w-full border-blue-300 text-blue-800 hover:bg-blue-100"
+                      className="w-full border-green-400 text-green-700 hover:bg-green-50 hover:text-green-800 font-semibold"
                       onClick={() => handleTabChange("active-rentals")}
                     >
                       Process Returns
@@ -370,18 +394,18 @@ const AdminDashboard = () => {
                   </CardFooter>
                 </Card>
                 
-                <Card className="bg-gradient-to-br from-green-50 to-white border border-green-100 hover:shadow-md transition-shadow">
+                <Card className="bg-gradient-to-br from-leaf-100 to-white border border-green-100 hover:shadow-md transition-shadow flex flex-col">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-green-800">
-                      <Home className="h-5 w-5 text-green-600" />
+                      <Home className="h-5 w-5 text-green-700" />
                       Quick Links
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="flex-grow">
                     <div className="flex flex-col gap-2">
                       <Button 
                         variant="outline" 
-                        className="justify-start w-full text-left border-green-300 text-green-800 hover:bg-green-100"
+                        className="justify-start w-full text-left border-green-300 text-green-700 hover:bg-green-50"
                         onClick={handleUserVerification}
                       >
                         <Users className="h-4 w-4 mr-2" />
@@ -389,7 +413,7 @@ const AdminDashboard = () => {
                       </Button>
                       <Button 
                         variant="outline" 
-                        className="justify-start w-full text-left border-green-300 text-green-800 hover:bg-green-100"
+                        className="justify-start w-full text-left border-green-300 text-green-700 hover:bg-green-50"
                         onClick={handleSystemStatus}
                       >
                         <Activity className="h-4 w-4 mr-2" />
@@ -397,9 +421,10 @@ const AdminDashboard = () => {
                       </Button>
                     </div>
                   </CardContent>
-                  <CardFooter>
+                  <CardFooter className="mt-auto">
                     <Button 
-                      className="w-full bg-green-600 hover:bg-green-700 text-white"
+                      variant="outline"
+                      className="w-full border-green-400 text-green-700 hover:bg-green-50 hover:text-green-800 font-semibold"
                       onClick={handleAdminSettings}
                     >
                       Admin Settings
@@ -409,10 +434,10 @@ const AdminDashboard = () => {
               </div>
               
               {/* Recent Activity */}
-              <Card className="border border-gray-200 hover:shadow-md transition-shadow">
+              <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-b from-white to-green-50">
                 <CardHeader>
-                  <CardTitle>Recent Activity</CardTitle>
-                  <CardDescription>Latest actions on the platform</CardDescription>
+                  <CardTitle className="text-green-800">Recent Activity</CardTitle>
+                  <CardDescription className="text-green-600">Latest actions on the platform</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -453,22 +478,22 @@ const AdminDashboard = () => {
                         action: "started"
                       },
                     ].map((activity, index) => (
-                      <div key={index} className="flex items-start gap-3 pb-3 border-b border-gray-100 last:border-0">
+                      <div key={index} className="flex items-start gap-3 pb-3 border-b border-green-100 last:border-0">
                         <Avatar className="h-8 w-8">
                           <AvatarFallback className={
                             activity.type === "listing" ? "bg-green-100 text-green-800" :
-                            activity.type === "rental" ? "bg-blue-100 text-blue-800" :
-                            "bg-purple-100 text-purple-800"
+                            activity.type === "rental" ? "bg-green-100 text-green-800" :
+                            "bg-green-100 text-green-800"
                           }>
                             {activity.user.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
-                            <p className="font-medium text-gray-800">{activity.user}</p>
-                            <span className="text-xs text-gray-500">{activity.time}</span>
+                            <p className="font-medium text-green-700">{activity.user}</p>
+                            <span className="text-xs text-green-600">{activity.time}</span>
                           </div>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-green-600">
                             {activity.action === "created" && "Created a new listing for"}
                             {activity.action === "requested" && "Requested to rent"}
                             {activity.action === "completed" && "Completed rental return for"}
@@ -481,10 +506,10 @@ const AdminDashboard = () => {
                     ))}
                   </div>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="flex justify-center">
                   <Button 
-                    variant="ghost" 
-                    className="w-full text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    variant="outline" 
+                    className="px-8 bg-green-600 text-white hover:text-green-50 hover:bg-green-700"
                     onClick={() => toast({
                       title: "View all activity",
                       description: "Full activity log will be available soon",
@@ -495,16 +520,16 @@ const AdminDashboard = () => {
                 </CardFooter>
               </Card>
             </div>
-          )}
+          </div>
 
-          {activeTab === "listings" && (
+          <div className={`${activeTab === "listings" ? getSlideDirection("listings") : "hidden"}`}>
             <div className="space-y-6">
-              <h1 className="text-2xl font-bold text-gray-800">Listing Management</h1>
+              <h1 className="text-2xl font-bold text-green-800">Listing Management</h1>
               <Tabs defaultValue="pending" className="w-full">
-                <TabsList className="mb-6 bg-white border border-gray-200 rounded-md p-1">
-                  <TabsTrigger value="pending" className="data-[state=active]:bg-green-50 data-[state=active]:text-green-700">Pending Approval</TabsTrigger>
-                  <TabsTrigger value="active" className="data-[state=active]:bg-green-50 data-[state=active]:text-green-700">Active Listings</TabsTrigger>
-                  <TabsTrigger value="rejected" className="data-[state=active]:bg-green-50 data-[state=active]:text-green-700">Rejected</TabsTrigger>
+                <TabsList className="mb-6 bg-green-600 border border-green-600 rounded-md p-1">
+                  <TabsTrigger value="pending" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Pending Approval</TabsTrigger>
+                  <TabsTrigger value="active" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Active Listings</TabsTrigger>
+                  <TabsTrigger value="rejected" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Rejected</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="pending">
@@ -512,33 +537,33 @@ const AdminDashboard = () => {
                 </TabsContent>
                 
                 <TabsContent value="active">
-                  <Card className="border border-gray-200">
+                  <Card className="border border-green-200 bg-gradient-to-b from-white to-green-50">
                     <CardContent className="pt-6">
-                      <p className="text-center text-gray-500">Active listings would be displayed here.</p>
+                      <p className="text-center text-green-600">Active listings would be displayed here.</p>
                     </CardContent>
                   </Card>
                 </TabsContent>
                 
                 <TabsContent value="rejected">
-                  <Card className="border border-gray-200">
+                  <Card className="border border-green-200 bg-gradient-to-b from-white to-green-50">
                     <CardContent className="pt-6">
-                      <p className="text-center text-gray-500">Rejected listings would be displayed here.</p>
+                      <p className="text-center text-green-600">Rejected listings would be displayed here.</p>
                     </CardContent>
                   </Card>
                 </TabsContent>
               </Tabs>
             </div>
-          )}
+          </div>
 
-          {activeTab === "requests" && (
+          <div className={`${activeTab === "requests" ? getSlideDirection("requests") : "hidden"}`}>
             <div className="space-y-6">
-              <h1 className="text-2xl font-bold text-gray-800">Rental Requests</h1>
+              <h1 className="text-2xl font-bold text-green-800">Rental Requests</h1>
               <Tabs defaultValue="pending" className="w-full">
-                <TabsList className="mb-6 bg-white border border-gray-200 rounded-md p-1">
-                  <TabsTrigger value="pending" className="data-[state=active]:bg-green-50 data-[state=active]:text-green-700">Pending Approval</TabsTrigger>
-                  <TabsTrigger value="multiple" className="data-[state=active]:bg-green-50 data-[state=active]:text-green-700">Multiple Requests</TabsTrigger>
-                  <TabsTrigger value="approved" className="data-[state=active]:bg-green-50 data-[state=active]:text-green-700">Approved</TabsTrigger>
-                  <TabsTrigger value="rejected" className="data-[state=active]:bg-green-50 data-[state=active]:text-green-700">Rejected</TabsTrigger>
+                <TabsList className="mb-6 bg-green-600 border border-green-600 rounded-md p-1">
+                  <TabsTrigger value="pending" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Pending Approval</TabsTrigger>
+                  <TabsTrigger value="multiple" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Multiple Requests</TabsTrigger>
+                  <TabsTrigger value="approved" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Approved</TabsTrigger>
+                  <TabsTrigger value="rejected" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Rejected</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="pending">
@@ -546,40 +571,40 @@ const AdminDashboard = () => {
                 </TabsContent>
                 
                 <TabsContent value="multiple">
-                  <Card className="border border-gray-200">
+                  <Card className="border border-green-200 bg-gradient-to-b from-white to-green-50">
                     <CardContent className="pt-6">
-                      <p className="text-center text-gray-500">Items with multiple rental requests would be displayed here.</p>
+                      <p className="text-center text-green-600">Items with multiple rental requests would be displayed here.</p>
                     </CardContent>
                   </Card>
                 </TabsContent>
                 
                 <TabsContent value="approved">
-                  <Card className="border border-gray-200">
+                  <Card className="border border-green-200 bg-gradient-to-b from-white to-green-50">
                     <CardContent className="pt-6">
-                      <p className="text-center text-gray-500">Approved rental requests would be displayed here.</p>
+                      <p className="text-center text-green-600">Approved rental requests would be displayed here.</p>
                     </CardContent>
                   </Card>
                 </TabsContent>
                 
                 <TabsContent value="rejected">
-                  <Card className="border border-gray-200">
+                  <Card className="border border-green-200 bg-gradient-to-b from-white to-green-50">
                     <CardContent className="pt-6">
-                      <p className="text-center text-gray-500">Rejected rental requests would be displayed here.</p>
+                      <p className="text-center text-green-600">Rejected rental requests would be displayed here.</p>
                     </CardContent>
                   </Card>
                 </TabsContent>
               </Tabs>
             </div>
-          )}
+          </div>
 
-          {activeTab === "active-rentals" && (
+          <div className={`${activeTab === "active-rentals" ? getSlideDirection("active-rentals") : "hidden"}`}>
             <div className="space-y-6">
-              <h1 className="text-2xl font-bold text-gray-800">Active Rentals</h1>
+              <h1 className="text-2xl font-bold text-green-800">Active Rentals</h1>
               <Tabs defaultValue="current" className="w-full">
-                <TabsList className="mb-6 bg-white border border-gray-200 rounded-md p-1">
-                  <TabsTrigger value="current" className="data-[state=active]:bg-green-50 data-[state=active]:text-green-700">Current Rentals</TabsTrigger>
-                  <TabsTrigger value="ending-soon" className="data-[state=active]:bg-green-50 data-[state=active]:text-green-700">Ending Soon</TabsTrigger>
-                  <TabsTrigger value="returns" className="data-[state=active]:bg-green-50 data-[state=active]:text-green-700">Pending Returns</TabsTrigger>
+                <TabsList className="mb-6 bg-green-600 border border-green-600 rounded-md p-1">
+                  <TabsTrigger value="current" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Current Rentals</TabsTrigger>
+                  <TabsTrigger value="ending-soon" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Ending Soon</TabsTrigger>
+                  <TabsTrigger value="returns" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Pending Returns</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="current">
@@ -587,33 +612,33 @@ const AdminDashboard = () => {
                 </TabsContent>
                 
                 <TabsContent value="ending-soon">
-                  <Card className="border border-gray-200">
+                  <Card className="border border-green-200 bg-gradient-to-b from-white to-green-50">
                     <CardContent className="pt-6">
-                      <p className="text-center text-gray-500">Rentals ending within 48 hours would be displayed here.</p>
+                      <p className="text-center text-green-600">Rentals ending within 48 hours would be displayed here.</p>
                     </CardContent>
                   </Card>
                 </TabsContent>
                 
                 <TabsContent value="returns">
-                  <Card className="border border-gray-200">
+                  <Card className="border border-green-200 bg-gradient-to-b from-white to-green-50">
                     <CardContent className="pt-6">
-                      <p className="text-center text-gray-500">Rentals awaiting return processing would be displayed here.</p>
+                      <p className="text-center text-green-600">Rentals awaiting return processing would be displayed here.</p>
                     </CardContent>
                   </Card>
                 </TabsContent>
               </Tabs>
             </div>
-          )}
+          </div>
 
-          {activeTab === "users" && (
+          <div className={`${activeTab === "users" ? getSlideDirection("users") : "hidden"}`}>
             <div className="space-y-6">
-              <h1 className="text-2xl font-bold text-gray-800">User Management</h1>
+              <h1 className="text-2xl font-bold text-green-800">User Management</h1>
               <Tabs defaultValue="all" className="w-full">
-                <TabsList className="mb-6 bg-white border border-gray-200 rounded-md p-1">
-                  <TabsTrigger value="all" className="data-[state=active]:bg-green-50 data-[state=active]:text-green-700">All Users</TabsTrigger>
-                  <TabsTrigger value="lenders" className="data-[state=active]:bg-green-50 data-[state=active]:text-green-700">Lenders</TabsTrigger>
-                  <TabsTrigger value="renters" className="data-[state=active]:bg-green-50 data-[state=active]:text-green-700">Renters</TabsTrigger>
-                  <TabsTrigger value="verification" className="data-[state=active]:bg-green-50 data-[state=active]:text-green-700">Pending Verification</TabsTrigger>
+                <TabsList className="mb-6 bg-green-600 border border-green-600 rounded-md p-1">
+                  <TabsTrigger value="all" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">All Users</TabsTrigger>
+                  <TabsTrigger value="lenders" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Lenders</TabsTrigger>
+                  <TabsTrigger value="renters" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Renters</TabsTrigger>
+                  <TabsTrigger value="verification" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Pending Verification</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="all">
@@ -621,42 +646,75 @@ const AdminDashboard = () => {
                 </TabsContent>
                 
                 <TabsContent value="lenders">
-                  <Card className="border border-gray-200">
+                  <Card className="border border-green-200 bg-gradient-to-b from-white to-green-50">
                     <CardContent className="pt-6">
-                      <p className="text-center text-gray-500">Users with listings would be displayed here.</p>
+                      <p className="text-center text-green-600">Users with listings would be displayed here.</p>
                     </CardContent>
                   </Card>
                 </TabsContent>
                 
                 <TabsContent value="renters">
-                  <Card className="border border-gray-200">
+                  <Card className="border border-green-200 bg-gradient-to-b from-white to-green-50">
                     <CardContent className="pt-6">
-                      <p className="text-center text-gray-500">Users who have rented items would be displayed here.</p>
+                      <p className="text-center text-green-600">Users who have rented items would be displayed here.</p>
                     </CardContent>
                   </Card>
                 </TabsContent>
                 
                 <TabsContent value="verification">
-                  <Card className="border border-gray-200">
+                  <Card className="border border-green-200 bg-gradient-to-b from-white to-green-50">
                     <CardContent className="pt-6">
-                      <p className="text-center text-gray-500">Users pending identity verification would be displayed here.</p>
+                      <p className="text-center text-green-600">Users pending identity verification would be displayed here.</p>
                     </CardContent>
                   </Card>
                 </TabsContent>
               </Tabs>
             </div>
-          )}
+          </div>
 
-          {activeTab === "reports" && (
+          <div className={`${activeTab === "reports" ? getSlideDirection("reports") : "hidden"}`}>
             <div className="space-y-6">
-              <h1 className="text-2xl font-bold text-gray-800">Reports & Analytics</h1>
+              <h1 className="text-2xl font-bold text-green-800">Reports & Analytics</h1>
               <ReportsAndAnalytics />
             </div>
-          )}
+          </div>
         </main>
       </div>
     </div>
   );
 };
 
-export default AdminDashboard; 
+export default AdminDashboard;
+
+// Add this to your CSS or tailwind.config.js extend section
+const styles = `
+@keyframes slideRight {
+  from {
+    transform: translateX(-10%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideLeft {
+  from {
+    transform: translateX(10%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-right {
+  animation: slideRight 0.3s ease-out forwards;
+}
+
+.animate-slide-left {
+  animation: slideLeft 0.3s ease-out forwards;
+}
+`; 

@@ -4,21 +4,43 @@ import {
   LineChart as LineChartIcon,
   BarChart as BarChartIcon,
   PieChart as PieChartIcon,
-  Download
+  Download,
+  TrendingUp,
+  Users,
+  Package,
+  DollarSign,
+  Calendar
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/components/ui/use-toast";
 
 // This is a mock component that would ideally use a real charting library
 // like recharts, chart.js, or visx
 const ReportsAndAnalytics = () => {
+  const handleDownloadReport = (reportType: string) => {
+    toast({
+      title: "Report Download Started",
+      description: `Downloading ${reportType} report as PDF`,
+      variant: "default",
+    });
+  };
+
+  const handlePeriodChange = (period: string) => {
+    toast({
+      title: "Period Changed",
+      description: `Showing data for ${period}`,
+      variant: "default",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold">Reports & Analytics</h2>
+          <h2 className="text-xl font-bold text-green-700">Reports & Analytics</h2>
           <p className="text-sm text-gray-500">View platform performance and generate reports</p>
         </div>
         <div className="flex items-center gap-3">
@@ -45,200 +67,284 @@ const ReportsAndAnalytics = () => {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-white">
           <CardHeader className="pb-2">
-            <CardDescription>Total Revenue</CardDescription>
-            <CardTitle className="text-2xl">৳245,500</CardTitle>
+            <CardTitle className="text-lg font-medium text-green-800">Total Revenue</CardTitle>
+            <CardDescription className="text-green-600">All time earnings</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-500">vs last month</span>
-              <div className="flex items-center text-green-600 text-sm font-medium">
-                <ArrowUpRight className="h-4 w-4 mr-0.5" />
-                <span>12.5%</span>
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-full bg-gradient-to-r from-white to-green-50">
+                  <DollarSign className="h-6 w-6 text-green-700" />
+                </div>
+                <span className="text-2xl font-medium text-green-700">৳125,430</span>
+              </div>
+              <div className="flex items-center text-sm text-green-600">
+                <ArrowUpRight className="h-4 w-4 mr-1" />
+                <span>+12.5%</span>
               </div>
             </div>
           </CardContent>
         </Card>
-
-        <Card>
+        
+        <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-white">
           <CardHeader className="pb-2">
-            <CardDescription>New Users</CardDescription>
-            <CardTitle className="text-2xl">34</CardTitle>
+            <CardTitle className="text-lg font-medium text-green-800">New Users</CardTitle>
+            <CardDescription className="text-green-600">This month</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-500">vs last month</span>
-              <div className="flex items-center text-green-600 text-sm font-medium">
-                <ArrowUpRight className="h-4 w-4 mr-0.5" />
-                <span>8.3%</span>
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-full bg-gradient-to-r from-white to-green-50">
+                  <Users className="h-6 w-6 text-green-700" />
+                </div>
+                <span className="text-2xl font-medium text-green-700">128</span>
+              </div>
+              <div className="flex items-center text-sm text-green-600">
+                <ArrowUpRight className="h-4 w-4 mr-1" />
+                <span>+23.7%</span>
               </div>
             </div>
           </CardContent>
         </Card>
-
-        <Card>
+        
+        <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-white">
           <CardHeader className="pb-2">
-            <CardDescription>Completed Rentals</CardDescription>
-            <CardTitle className="text-2xl">142</CardTitle>
+            <CardTitle className="text-lg font-medium text-green-800">Completed Rentals</CardTitle>
+            <CardDescription className="text-green-600">This month</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-500">vs last month</span>
-              <div className="flex items-center text-green-600 text-sm font-medium">
-                <ArrowUpRight className="h-4 w-4 mr-0.5" />
-                <span>5.7%</span>
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-full bg-gradient-to-r from-white to-green-50">
+                  <Package className="h-6 w-6 text-green-700" />
+                </div>
+                <span className="text-2xl font-medium text-green-700">436</span>
+              </div>
+              <div className="flex items-center text-sm text-green-600">
+                <ArrowUpRight className="h-4 w-4 mr-1" />
+                <span>+8.2%</span>
               </div>
             </div>
           </CardContent>
         </Card>
-
-        <Card>
+        
+        <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-white">
           <CardHeader className="pb-2">
-            <CardDescription>Average Rental Value</CardDescription>
-            <CardTitle className="text-2xl">৳1,730</CardTitle>
+            <CardTitle className="text-lg font-medium text-green-800">Avg. Rental Value</CardTitle>
+            <CardDescription className="text-green-600">Per transaction</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-500">vs last month</span>
-              <div className="flex items-center text-red-600 text-sm font-medium">
-                <ArrowDownRight className="h-4 w-4 mr-0.5" />
-                <span>2.1%</span>
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-full bg-gradient-to-r from-white to-green-50">
+                  <TrendingUp className="h-6 w-6 text-green-700" />
+                </div>
+                <span className="text-2xl font-medium text-green-700">৳2,850</span>
+              </div>
+              <div className="flex items-center text-sm text-green-600">
+                <ArrowUpRight className="h-4 w-4 mr-1" />
+                <span>+4.1%</span>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Charts */}
-      <Tabs defaultValue="revenue">
-        <div className="flex justify-between items-center mb-4">
-          <TabsList>
-            <TabsTrigger value="revenue">Revenue</TabsTrigger>
-            <TabsTrigger value="listings">Listings</TabsTrigger>
-            <TabsTrigger value="rentals">Rentals</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-          </TabsList>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="h-9">
-              <LineChartIcon className="h-4 w-4 mr-2" />
-              Line
-            </Button>
-            <Button variant="outline" size="sm" className="h-9">
-              <BarChartIcon className="h-4 w-4 mr-2" />
-              Bar
-            </Button>
-            <Button variant="outline" size="sm" className="h-9">
-              <PieChartIcon className="h-4 w-4 mr-2" />
-              Pie
-            </Button>
-          </div>
+      {/* Time Period Selection */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold text-green-800">Detailed Reports</h2>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-green-300 text-green-700 hover:bg-green-50 hover:text-green-800"
+            onClick={() => handlePeriodChange("This Week")}
+          >
+            Week
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-green-300 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800"
+            onClick={() => handlePeriodChange("This Month")}
+          >
+            Month
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-green-300 text-green-700 hover:bg-green-50 hover:text-green-800"
+            onClick={() => handlePeriodChange("This Quarter")}
+          >
+            Quarter
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-green-300 text-green-700 hover:bg-green-50 hover:text-green-800"
+            onClick={() => handlePeriodChange("This Year")}
+          >
+            Year
+          </Button>
         </div>
+      </div>
 
+      {/* Report Tabs */}
+      <Tabs defaultValue="revenue" className="w-full">
+        <TabsList className="mb-6 bg-green-600 border border-green-600 rounded-md p-1">
+          <TabsTrigger value="revenue" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Revenue</TabsTrigger>
+          <TabsTrigger value="listings" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Listings</TabsTrigger>
+          <TabsTrigger value="rentals" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Rentals</TabsTrigger>
+          <TabsTrigger value="users" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Users</TabsTrigger>
+        </TabsList>
+        
+        {/* Revenue Report */}
         <TabsContent value="revenue">
-          <Card>
-            <CardHeader>
-              <CardTitle>Revenue Over Time</CardTitle>
-              <CardDescription>
-                Total platform revenue including service fees and security deposits
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {/* Placeholder for chart - in a real app, we'd use a charting library */}
-              <div className="h-80 bg-gray-50 rounded-md border border-gray-200 flex items-center justify-center">
-                <div className="text-center">
-                  <LineChartIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">Revenue chart would be displayed here</p>
-                  <p className="text-xs text-gray-400 mt-1">Using a charting library like Recharts</p>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-2 border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-b from-white to-green-50">
+              <CardHeader>
+                <CardTitle className="text-green-800">Revenue Trends</CardTitle>
+                <CardDescription className="text-green-600">Monthly revenue breakdown</CardDescription>
+              </CardHeader>
+              <CardContent className="px-2">
+                <div className="h-80 w-full flex items-center justify-center">
+                  <div className="flex flex-col items-center text-green-700">
+                    <LineChartIcon className="h-16 w-16 mb-2" />
+                    <p>Revenue chart would be displayed here</p>
+                    <p className="text-sm text-green-600">Showing data for current month</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-between">
-              <div className="text-sm text-gray-500">Last updated: June 18, 2023</div>
-              <Button variant="ghost" size="sm" className="gap-1 text-gray-500">
-                <Download className="h-4 w-4" />
-                Download CSV
-              </Button>
-            </CardFooter>
-          </Card>
+              </CardContent>
+            </Card>
+            
+            <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-b from-white to-green-50">
+              <CardHeader>
+                <CardTitle className="text-green-800">Revenue Sources</CardTitle>
+                <CardDescription className="text-green-600">By category</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-60 w-full flex items-center justify-center mb-4">
+                  <PieChartIcon className="h-16 w-16 text-green-700" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded-full bg-green-600 mr-2"></div>
+                      <span className="text-sm text-green-700">Electronics</span>
+                    </div>
+                    <span className="text-sm font-medium text-green-700">45%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded-full bg-green-400 mr-2"></div>
+                      <span className="text-sm text-green-700">Camera Equipment</span>
+                    </div>
+                    <span className="text-sm font-medium text-green-700">25%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded-full bg-green-300 mr-2"></div>
+                      <span className="text-sm text-green-700">Gaming</span>
+                    </div>
+                    <span className="text-sm font-medium text-green-700">15%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded-full bg-green-200 mr-2"></div>
+                      <span className="text-sm text-green-700">Others</span>
+                    </div>
+                    <span className="text-sm font-medium text-green-700">15%</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
-
+        
+        {/* Listings Report */}
         <TabsContent value="listings">
-          <Card>
-            <CardHeader>
-              <CardTitle>Listings by Category</CardTitle>
-              <CardDescription>
-                Distribution of active listings across different categories
-              </CardDescription>
+          <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-b from-white to-green-50">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-green-800">Listings Performance</CardTitle>
+                <CardDescription className="text-green-600">Top categories and conversion rates</CardDescription>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-green-300 text-green-700 hover:bg-green-50 hover:text-green-800"
+                onClick={() => handleDownloadReport("Listings")}
+              >
+                Download Report
+              </Button>
             </CardHeader>
             <CardContent>
-              <div className="h-80 bg-gray-50 rounded-md border border-gray-200 flex items-center justify-center">
-                <div className="text-center">
-                  <PieChartIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">Listings chart would be displayed here</p>
+              <div className="h-80 w-full flex items-center justify-center">
+                <div className="flex flex-col items-center text-green-700">
+                  <BarChartIcon className="h-16 w-16 mb-2" />
+                  <p>Listings performance chart would be displayed here</p>
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="flex justify-between">
-              <div className="text-sm text-gray-500">Last updated: June 18, 2023</div>
-              <Button variant="ghost" size="sm" className="gap-1 text-gray-500">
-                <Download className="h-4 w-4" />
-                Download CSV
-              </Button>
-            </CardFooter>
           </Card>
         </TabsContent>
-
+        
+        {/* Rentals Report */}
         <TabsContent value="rentals">
-          <Card>
-            <CardHeader>
-              <CardTitle>Rental Activity</CardTitle>
-              <CardDescription>
-                Number of rentals started and completed over time
-              </CardDescription>
+          <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-b from-white to-green-50">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-green-800">Rental Activity</CardTitle>
+                <CardDescription className="text-green-600">Frequency and duration analysis</CardDescription>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-green-300 text-green-700 hover:bg-green-50 hover:text-green-800"
+                onClick={() => handleDownloadReport("Rentals")}
+              >
+                Download Report
+              </Button>
             </CardHeader>
             <CardContent>
-              <div className="h-80 bg-gray-50 rounded-md border border-gray-200 flex items-center justify-center">
-                <div className="text-center">
-                  <BarChartIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">Rental activity chart would be displayed here</p>
+              <div className="h-80 w-full flex items-center justify-center">
+                <div className="flex flex-col items-center text-green-700">
+                  <Calendar className="h-16 w-16 mb-2" />
+                  <p>Rental activity calendar would be displayed here</p>
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="flex justify-between">
-              <div className="text-sm text-gray-500">Last updated: June 18, 2023</div>
-              <Button variant="ghost" size="sm" className="gap-1 text-gray-500">
-                <Download className="h-4 w-4" />
-                Download CSV
-              </Button>
-            </CardFooter>
           </Card>
         </TabsContent>
-
+        
+        {/* Users Report */}
         <TabsContent value="users">
-          <Card>
-            <CardHeader>
-              <CardTitle>User Growth</CardTitle>
-              <CardDescription>
-                New user registrations and active users over time
-              </CardDescription>
+          <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-b from-white to-green-50">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-green-800">User Growth</CardTitle>
+                <CardDescription className="text-green-600">Registration and activity trends</CardDescription>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-green-300 text-green-700 hover:bg-green-50 hover:text-green-800"
+                onClick={() => handleDownloadReport("Users")}
+              >
+                Download Report
+              </Button>
             </CardHeader>
             <CardContent>
-              <div className="h-80 bg-gray-50 rounded-md border border-gray-200 flex items-center justify-center">
-                <div className="text-center">
-                  <LineChartIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">User growth chart would be displayed here</p>
+              <div className="h-80 w-full flex items-center justify-center">
+                <div className="flex flex-col items-center text-green-700">
+                  <LineChartIcon className="h-16 w-16 mb-2" />
+                  <p>User growth chart would be displayed here</p>
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="flex justify-between">
-              <div className="text-sm text-gray-500">Last updated: June 18, 2023</div>
-              <Button variant="ghost" size="sm" className="gap-1 text-gray-500">
-                <Download className="h-4 w-4" />
-                Download CSV
-              </Button>
-            </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>
