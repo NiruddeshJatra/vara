@@ -1,0 +1,10 @@
+export { default as ImageGallery } from './ImageGallery';
+export { default as ProductHeader } from './ProductHeader';
+export { default as PricingCard } from './PricingCard';
+export { default as ProductDescription } from './ProductDescription';
+export { default as VharaService } from './VharaService';
+export { default as ItemDetails } from './ItemDetails';
+export { default as AvailabilitySection } from './AvailabilitySection';
+export { default as ReviewsSection } from './ReviewsSection';
+export { default as SimilarItems } from './SimilarItems';
+export { default as HostInfo } from './HostInfo'; 
