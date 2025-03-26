@@ -154,8 +154,8 @@ export default function ImageCarousel({ images, className }: ImageCarouselProps)
                       }`}
                       onClick={() => handleThumbnailClick(index)}
                     >
-                      <img 
-                        src={img} 
+            <img 
+              src={img} 
                         alt={`Thumbnail ${index + 1}`} 
                         className="w-full h-full object-cover"
                       />

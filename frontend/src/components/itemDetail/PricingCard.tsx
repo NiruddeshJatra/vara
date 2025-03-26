@@ -75,8 +75,22 @@ export default function PricingCard({
 
             <Button
               className="w-full bg-green-600 hover:bg-green-700 h-12 text-base"
+              asChild
             >
-              <Link to={`/request-rental/${productId}`} className="w-full h-full flex items-center justify-center">
+              <Link 
+                to={`/request-rental/${productId}`} 
+                state={{ 
+                  product: {
+                    id: productId,
+                    basePrice,
+                    durationUnit,
+                    minRentalPeriod,
+                    maxRentalPeriod,
+                    securityDeposit
+                  }
+                }}
+                className="w-full h-full flex items-center justify-center"
+              >
                 Request Rental Now
               </Link>
             </Button>

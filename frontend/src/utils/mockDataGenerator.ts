@@ -223,14 +223,14 @@ export const generateListings = (count: number) => {
   return Array.from({ length: count }, (_, i) => {
     const product = products[i % products.length];
     return {
-      id: `item-${i}`,
+    id: `item-${i}`,
       title: product.title,
       owner: owners[i % owners.length],
       category: product.category,
       description: product.description,
       location: locations[i % locations.length],
       basePrice: product.basePrice + (i % 5) * 100,
-      durationUnit: DURATION_CHOICES[i % DURATION_CHOICES.length].value,
+    durationUnit: DURATION_CHOICES[i % DURATION_CHOICES.length].value,
       minRentalPeriod: 1 + (i % 3),
       maxRentalPeriod: i % 2 === 0 ? 7 + (i % 8) : undefined,
       availabilityPeriods: [{

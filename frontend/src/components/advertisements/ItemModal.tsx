@@ -73,7 +73,10 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
                 className="w-full bg-green-600 hover:bg-green-700 text-white"
                 asChild
               >
-                <Link to={`/request-rental/${selectedItem.id}`}>
+                <Link 
+                  to={`/request-rental/${selectedItem.id}`}
+                  state={{ product: selectedItem }}
+                >
                   Request Rental
                 </Link>
               </Button>
