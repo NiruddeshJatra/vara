@@ -1,22 +1,14 @@
-
 import React from 'react';
-import { Star, Heart, MapPin } from 'lucide-react';
+import { Star, Heart, MapPin, Banknote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Link } from 'react-router-dom';
 import { Product } from '@/types/listings';
 
-
 export type ItemModalProps = {
-  product: Product;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedItem: Product | null;
-};
-
-export type ItemType = Omit<ItemCardProps, 'onQuickView'> & {
-  rentalCount?: number;
-  images?: string[];
 };
 
 const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
@@ -29,7 +21,7 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
       <DialogContent className="max-w-3xl bg-gradient-to-b from-white to-lime-50 p-8">
         <DialogHeader>
           <DialogTitle className="px-2 text-xl font-semibold text-green-800">
-            Item Details
+            Item Quick View
           </DialogTitle>
         </DialogHeader>
         
@@ -48,14 +40,15 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
             <div className="flex items-center">
               <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
               <span className="ml-1 text-sm font-medium">{selectedItem.averageRating?.toFixed(1) || 'N/A'}</span>
-              <span className="ml-1 text-xs text-gray-500">({selectedItem.totalRentals} rentals)</span>
+              <span className="ml-1 text-xs text-gray-500">({selectedItem.totalRentals || 0} rentals)</span>
             </div>
             <p className="text-sm text-green-700">{selectedItem.category}</p>
             
             <div className="bg-green-50 p-4 rounded-lg">
-              <div className="text-xl font-bold text-green-800">
-                {selectedItem.basePrice} Taka
-                <span className="text-sm font-normal"> per {selectedItem.durationUnit}</span>
+              <div className="text-xl font-bold text-green-800 flex items-center">
+                <Banknote size={18} className="text-green-700 mr-1" />
+                {selectedItem.basePrice}
+                <span className="text-sm font-normal ml-1"> per {selectedItem.durationUnit}</span>
               </div>
               <div className="mt-3 text-sm">
                 <div className="flex justify-between">

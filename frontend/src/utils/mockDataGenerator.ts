@@ -108,19 +108,110 @@ export const generateListings = (count: number) => {
      'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80']
   ];
   
-  const names = [
-    "DSLR Camera with 2 Lenses", "Electric Mountain Bike", "4-Person Camping Tent", 
-    "Bluetooth Party Speaker", "MacBook Pro 16\"", "Wireless Drill Set",
-    "GoPro HERO10 Black", "Carbon Road Bike", "Backpacking Kit", 
-    "Noise Cancelling Headphones", "iPad Pro 12.9\"", "Professional Lawn Mower",
-    "Sony Alpha a7 III", "Indoor Exercise Bike", "Hammock Set with Stand",
-    "Karaoke Machine", "Gaming Laptop", "Pressure Washer"
+  const products = [
+    {
+      title: "Canon EOS 5D Mark IV DSLR Camera",
+      category: "Photography",
+      description: "Professional-grade DSLR with 30.4MP full-frame sensor. Perfect for events, portraits, and landscapes. Includes 24-70mm and 50mm lenses.",
+      basePrice: 1500,
+      images: imageCategories[0]
+    },
+    {
+      title: "Sony Alpha a7 III Mirrorless Camera",
+      category: "Photography",
+      description: "Full-frame mirrorless camera with exceptional low-light performance. 24.2MP sensor with 5-axis stabilization. Includes charging equipment.",
+      basePrice: 1200,
+      images: imageCategories[0]
+    },
+    {
+      title: "Trek Marlin 7 Mountain Bike",
+      category: "Sports",
+      description: "High-performance mountain bike with lightweight aluminum frame. 29-inch wheels, hydraulic disc brakes, and front suspension.",
+      basePrice: 700,
+      images: imageCategories[1]
+    },
+    {
+      title: "Specialized Road Bike - Carbon Frame",
+      category: "Sports",
+      description: "Carbon fiber road bike for racing or training. Shimano 105 groupset, 22 speeds. Recently serviced and in excellent condition.",
+      basePrice: 900,
+      images: imageCategories[1]
+    },
+    {
+      title: "Coleman 4-Person Dome Tent",
+      category: "Camping",
+      description: "Spacious tent that sets up in under 10 minutes. Weatherproof with reinforced seams. Includes rainfly, stakes, and carrying bag.",
+      basePrice: 300,
+      images: imageCategories[2]
+    },
+    {
+      title: "Complete Backpacking Kit - Tent, Sleeping Bag & Pad",
+      category: "Camping",
+      description: "Everything you need for a weekend adventure. Lightweight 2-person tent, 20°F sleeping bag, and inflatable sleeping pad.",
+      basePrice: 450,
+      images: imageCategories[2]
+    },
+    {
+      title: "JBL PartyBox 300 Bluetooth Speaker",
+      category: "Audio",
+      description: "Powerful portable speaker with vivid light show. 18 hours of battery life, 120W output. Perfect for parties and outdoor events.",
+      basePrice: 250,
+      images: imageCategories[3]
+    },
+    {
+      title: "Sony WH-1000XM4 Noise Cancelling Headphones",
+      category: "Audio",
+      description: "Industry-leading noise cancellation headphones with 30-hour battery life. Bluetooth, touch controls, and exceptional sound quality.",
+      basePrice: 150,
+      images: imageCategories[3]
+    },
+    {
+      title: "MacBook Pro 16\" (2021, M1 Pro)",
+      category: "Electronics",
+      description: "Apple's flagship laptop with M1 Pro chip. 16GB RAM, 512GB SSD. Perfect for professional video editing, design work, or development.",
+      basePrice: 2000,
+      images: imageCategories[4]
+    },
+    {
+      title: "iPad Pro 12.9\" with Apple Pencil",
+      category: "Electronics",
+      description: "Latest iPad Pro with Liquid Retina XDR display. Includes Apple Pencil (2nd gen) for drawing or note-taking. 256GB storage.",
+      basePrice: 1100,
+      images: imageCategories[4]
+    },
+    {
+      title: "DeWalt Cordless Drill Set (20V)",
+      category: "Tools",
+      description: "Professional drill with 2 batteries, charger, and hard case. Includes 30-piece bit set for various projects. Lightweight and powerful.",
+      basePrice: 180,
+      images: imageCategories[5]
+    },
+    {
+      title: "Pressure Washer - 3000 PSI Electric",
+      category: "Tools",
+      description: "Electric pressure washer with 25ft hose and 5 interchangeable nozzles. Perfect for cleaning decks, patios, cars, and more.",
+      basePrice: 220,
+      images: imageCategories[5]
+    },
   ];
   
-  const categories = [
-    "Photography & Videography", "Sports & Fitness", "Outdoor & Camping",
-    "Audio & Entertainment", "Electronics & Gadgets", "Tools & Equipment"
+  const locations = [
+    "GEC, Chittagong", 
+    "Agrabad, Chittagong", 
+    "Khulshi, Chittagong", 
+    "Halishahar, Chittagong",
+    "Nasirabad, Chittagong"
   ];
+  
+  const owners = [
+    "Rohit Sharma", 
+    "Ananya Khan", 
+    "Mahfuz Ahmed", 
+    "Priya Chowdhury",
+    "Safwan Rahman"
+  ];
+  
+  const conditions = ["excellent", "good", "fair"] as const;
   
   const DURATION_CHOICES = [
     { value: 'hour' },
@@ -129,22 +220,33 @@ export const generateListings = (count: number) => {
     { value: 'month' }
   ];
 
-  return Array.from({ length: count }, (_, i) => ({
-    id: `item-${i}`,
-    title: `Item ${i + 1}`,
-    owner: `User ${i % 5 + 1}`,
-    category: categories[i % categories.length],
-    description: 'Sample description',
-    location: 'Chittagong',
-    basePrice: 500 + (i * 100),
-    durationUnit: DURATION_CHOICES[i % DURATION_CHOICES.length].value,
-    minRentalPeriod: 1,
-    maxRentalPeriod: i % 2 === 0 ? 14 : undefined,
-    availabilityPeriods: [],
-    images: [/* image URLs */],
-    totalRentals: Math.floor(Math.random() * 100),
-    averageRating: Math.random() * 5,
-  }));
+  return Array.from({ length: count }, (_, i) => {
+    const product = products[i % products.length];
+    return {
+      id: `item-${i}`,
+      title: product.title,
+      owner: owners[i % owners.length],
+      category: product.category,
+      description: product.description,
+      location: locations[i % locations.length],
+      basePrice: product.basePrice + (i % 5) * 100,
+      durationUnit: DURATION_CHOICES[i % DURATION_CHOICES.length].value,
+      minRentalPeriod: 1 + (i % 3),
+      maxRentalPeriod: i % 2 === 0 ? 7 + (i % 8) : undefined,
+      availabilityPeriods: [{
+        startDate: new Date(Date.now()).toISOString(),
+        endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        available: true,
+        notes: "Available anytime"
+      }],
+      images: product.images,
+      totalRentals: Math.floor(Math.random() * 50) + 5,
+      averageRating: 3.5 + Math.random() * 1.5,
+      condition: conditions[i % conditions.length],
+      itemAge: 1 + i % 5,
+      securityDeposit: Math.round(product.basePrice * 0.3)
+    };
+  });
 };
 
 // Export all listings for reuse in other components

@@ -2,10 +2,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 import { Checkbox } from '@/components/ui/checkbox';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, ChevronRight, Lightbulb } from 'lucide-react';
 import { ListingFormData, FormErrors } from '@/types/listings';
 import { Button } from '@/components/ui/button';
-import { ChevronRight } from 'lucide-react';
 
 type Props = {
   formData: ListingFormData;
@@ -35,6 +34,7 @@ const BasicDetailsStep = ({ formData, errors, categories, onChange, onNext }: Pr
           value={formData.title}
           onChange={handleChange}
           className={`text-sm md:text-base h-8 md:h-10 focus:ring-green-500 focus:border-green-500 ${errors.title ? 'border-red-500' : 'border-gray-300'}`}
+          placeholder="e.g., Canon EOS R6 Camera, Camping Tent 4-Person"
         />
         {errors.title ? (
           <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
@@ -78,6 +78,7 @@ const BasicDetailsStep = ({ formData, errors, categories, onChange, onNext }: Pr
           value={formData.description}
           onChange={handleChange}
           className={`w-full p-2 border rounded-md h-24 md:h-32 transition-colors ${errors.description ? 'border-red-500' : 'border-gray-300'} focus:ring-1 focus:ring-green-500 focus:border-green-500`}
+          placeholder="Describe your item's features, condition, and any special instructions..."
         />
         {errors.description && (
           <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
@@ -121,6 +122,19 @@ const BasicDetailsStep = ({ formData, errors, categories, onChange, onNext }: Pr
         >
           Available for rent
         </label>
+      </div>
+
+      <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-4 rounded-lg border border-amber-200 mt-4">
+        <h3 className="text-sm font-medium text-amber-800 mb-2 flex items-center gap-2">
+          <Lightbulb size={16} className="text-amber-600" />
+          Listing Tips
+        </h3>
+        <ul className="text-sm text-amber-700 space-y-1 list-disc pl-5">
+          <li><strong>Title:</strong> Be specific and include brand names when relevant</li>
+          <li><strong>Description:</strong> Mention condition, dimensions, features, and usage instructions</li>
+          <li><strong>Category:</strong> Choose the most relevant category for better visibility</li>
+          <li><strong>Location:</strong> Provide neighborhood details to help renters plan pickup</li>
+        </ul>
       </div>
 
       <div className="flex justify-end">

@@ -5,24 +5,24 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 const testimonials = [
   {
     id: 1,
-    name: "Sarah J.",
-    location: "New York",
+    name: "Soniar Maa",
+    location: "Bandarban",
     quote: "I borrowed a pressure washer for my driveway and saved $150 compared to buying one. The owner was super helpful with tips too!",
     avatar: "/placeholder.svg",
     rating: 5
   },
   {
     id: 2,
-    name: "Michael T.",
+    name: "Messi",
     location: "San Francisco",
-    quote: "Vhara helped me earn $2,000 last year by renting out my camera gear when I wasn't using it. It's passive income for stuff I already own!",
+    quote: "Vara helped me earn $2,000 last year by renting out my camera gear when I wasn't using it. It's passive income for stuff I already own!",
     avatar: "/placeholder.svg",
     rating: 5
   },
   {
     id: 3,
-    name: "Priya K.",
-    location: "Chicago",
+    name: "Riad V.",
+    location: "Mars",
     quote: "I needed a tent for a weekend camping trip. Found one nearby, picked it up in 20 minutes. So much better than buying something I'll rarely use.",
     avatar: "/placeholder.svg",
     rating: 5

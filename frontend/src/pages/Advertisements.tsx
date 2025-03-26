@@ -10,8 +10,9 @@ import { categories, generateListings } from '@/utils/mockDataGenerator';
 import '../styles/main.css';
 import { Product } from '@/types/listings';
 
-// Generate listings once
-const allListings: Product[] = generateListings(40);
+// Generate listings once - ensure the mock data matches the Product type
+const allListings = generateListings(40) as unknown as Product[];
+
 const Advertisements = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [location, setLocation] = useState('GEC, Chittagong');
@@ -35,13 +36,16 @@ const Advertisements = () => {
   });
 
   const displayedListings = filteredListings.slice(0, visibleItems);
-  const handleQuickView = (itemId: number) => {
+  
+  const handleQuickView = (itemId: string) => {
     setSelectedItem(itemId);
     setIsItemModalOpen(true);
   };
+  
   const getSelectedItem = () => {
     return allListings.find(item => item.id === selectedItem) || null;
   };
+  
   const loadMoreItems = () => {
     setVisibleItems(prev => prev + 8);
   };
@@ -65,6 +69,7 @@ const Advertisements = () => {
       }
     };
   }, [visibleItems, filteredListings.length]);
+  
   const getPageTitle = () => {
     if (selectedCategory) {
       return `${categories.find(c => c.id === selectedCategory)?.name} Items`;
@@ -74,30 +79,73 @@ const Advertisements = () => {
     }
     return 'All Available Items';
   };
-  return <div className="flex flex-col min-h-screen">
+  
+  return (
+    <div className="flex flex-col min-h-screen">
       <NavBar />
 
       <main className="bg-green-50/65">
         {/* Compact Search Bar */}
-        <CompactSearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} location={location} setLocation={setLocation} filtersOpen={filtersOpen} setFiltersOpen={setFiltersOpen} priceRange={priceRange} setPriceRange={setPriceRange} inNav={false} />
+        <CompactSearchBar 
+          searchTerm={searchTerm} 
+          setSearchTerm={setSearchTerm} 
+          location={location} 
+          setLocation={setLocation} 
+          filtersOpen={filtersOpen} 
+          setFiltersOpen={setFiltersOpen} 
+          priceRange={priceRange} 
+          setPriceRange={setPriceRange} 
+          inNav={false} 
+        />
 
         {/* Horizontal Category Scroll */}
-        <CategoryScroll categories={categories} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
+        <CategoryScroll 
+          categories={categories} 
+          selectedCategory={selectedCategory} 
+          setSelectedCategory={setSelectedCategory} 
+        />
 
         {/* Listings Section */}
-        <section className="py-10">
+        <section className="py-4 sm:py-6 md:py-10">
           <div className="container mx-auto px-4">
-            <ListingsGrid displayedListings={displayedListings} handleQuickView={handleQuickView} />
+            <h1 className="text-xl text- sm:text-2xl md:text-3xl font-bold text-green-800 mb-6 sm:mb-8">
+              {getPageTitle()}
+              <span className="text-sm sm:text-base md:text-lg font-normal text-gray-500 ml-2">
+                ({filteredListings.length} items)
+              </span>
+            </h1>
+            
+            {filteredListings.length === 0 ? (
+              <div className="p-6 sm:p-8 md:p-10 text-center">
+                <h2 className="text-lg sm:text-xl font-medium text-gray-700 mb-2">No Items Found</h2>
+                <p className="text-gray-500 text-sm sm:text-base">
+                  Try adjusting your search or filter criteria to find what you're looking for.
+                </p>
+              </div>
+            ) : (
+              <>
+                <ListingsGrid 
+                  displayedListings={displayedListings} 
+                  handleQuickView={handleQuickView} 
+                />
 
-            <LoadMoreTrigger visible={visibleItems < filteredListings.length} />
+                <LoadMoreTrigger visible={visibleItems < filteredListings.length} />
+              </>
+            )}
           </div>
         </section>
 
         {/* Item Detail Modal */}
-        <ItemModal isOpen={isItemModalOpen} onOpenChange={setIsItemModalOpen} selectedItem={getSelectedItem()} />
+        <ItemModal 
+          isOpen={isItemModalOpen} 
+          onOpenChange={setIsItemModalOpen} 
+          selectedItem={getSelectedItem()} 
+        />
       </main>
 
       <Footer />
-    </div>;
+    </div>
+  );
 };
+
 export default Advertisements;

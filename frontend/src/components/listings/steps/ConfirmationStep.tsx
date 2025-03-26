@@ -23,7 +23,7 @@ const ConfirmationStep = () => {
       </div>
 
       <div className="text-left max-w-xl mx-auto space-y-4">
-        <h3 className="font-medium">What happens next?</h3>
+        <h3 className="font-medium text-green-800">What happens next?</h3>
         <ul className="list-disc list-inside space-y-1">
           <li>Your listing is now live and available for rent</li>
           <li>You'll receive notifications when someone requests to rent</li>

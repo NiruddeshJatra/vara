@@ -1,0 +1,142 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+1. Django (Backend) Conventions
+Model Design:
+
+Use UUIDs instead of sequential IDs for security (e.g., models.UUIDField(primary_key=True)).
+
+Add verbose_name and help_text to all model fields for admin clarity.
+
+Use Django’s FileField with storage=cloud_storage for product images.
+
+API Design:
+
+Use Django REST Framework (DRF) viewsets for CRUD operations.
+
+Apply throttling for authentication endpoints.
+
+Always use SelectRelated or Prefetch to optimize database queries.
+
+Security:
+
+Validate all inputs with DRF serializers (e.g., validate_rental_duration()).
+
+Use JWT authentication (djangorestframework-simplejwt) for token handling.
+
+Never expose sensitive fields (e.g., user.password) in API responses.
+
+Business Logic:
+
+Place payment gateway interactions in /transactions/payment_gateways/.
+
+Use Celery for async tasks (e.g., sending SMS/email notifications).
+
+Keep escrow logic separate from payment processing.
+
+Testing:
+
+Write pytest cases for all API endpoints and model methods.
+
+Mock external services (e.g., Stripe API) in tests.
+
+Use factory_boy for test data generation.
+
+
+2. React (Frontend) Conventions
+
+Component Design:
+
+Use functional components with TypeScript.
+
+Prefix component filenames with their domain (e.g., ProductCard.tsx).
+
+Keep component logic small—delegate API calls to hooks or stores.
+
+State Management:
+
+Use Zustand (or Redux) for global state (e.g., user session).
+
+Store API endpoints in src/utils/api.js with JWT interceptors.
+
+Cache frequently used data (e.g., product categories) in local storage.
+
+Styling:
+
+Use CSS Modules or styled-components (no inline styles).
+
+Follow BEM naming for CSS classes (e.g., .product-card__price).
+
+Forms:
+
+Use Formik for complex forms (e.g., product listing creation).
+
+Validate inputs with Yup schemas in formValidation.js.
+
+API Interaction:
+
+Wrap API calls in custom hooks (e.g., useProductSearch()).
+
+Handle errors gracefully with toast notifications (e.g., react-hot-toast).
+
+Always sanitize inputs before sending to the backend.
+
+3. Cross-Cutting Rules
+API Contracts:
+
+Use OpenAPI/Swagger for Django endpoints.
+
+Keep frontend API types (TypeScript) in sync with backend serializers.
+
+Error Handling:
+
+Return standardized error formats from Django:
+
+json
+Copy
+{ "error": { "code": "INVALID_DURATION", "message": "..." } }
+Map error codes to user-friendly messages in React (e.g., errorMessages.ts).
+
+Naming Consistency:
+
+Match frontend and backend naming:
+
+Frontend (React)	Backend (Django)
+rentalRequest	RentalRequest model
+useEscrowRelease()	EscrowManager class
+Feature Flags:
+
+Use Django’s django-constance for features like SMS alerts.
+
+Hide unfinished features (e.g., messaging) in React via environment variables.
+
+Documentation:
+
+Add JSDoc/TSDoc for complex React components.
+
+Use Django’s admindocs for backend utilities.
+
+4. Workflow Rules for AI
+When generating code, the AI should:
+
+Confirm Scope: Ask clarifying questions if a user flow (e.g., "Rental Request Process") is ambiguous.
+
+Follow Feature Boundaries:
+
+Keep payment logic in /transactions/, never in /users/.
+
+Isolate notification templates in /notifications/templates/.
+
+Validate Against User Flows:
+
+For example, ensure the "Product Listing Creation" form matches the described 5-step process.
+
+Include Integration Points:
+
+Note where WebSocket connections will be added later (messaging system).
+
+Add TODOs for Future Features:
+
+Mark incomplete areas with // TODO: Integrate SMS alerts in Q3.

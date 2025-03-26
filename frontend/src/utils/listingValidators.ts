@@ -19,7 +19,7 @@ export const validateImageUpload = (images: File[]) => {
 
 export const validatePricing = (formData: ListingFormData) => {
   const errors: Record<string, string> = {};
-  if (formData.basePrice <= 0) errors.basePrice = 'Must be ≥ 0';
+  if (formData.basePrice <= 0) errors.basePrice = 'Must be > 0';
   if (formData.minRentalPeriod < 1) errors.minRentalPeriod = 'Must be ≥ 1';
   if (formData.maxRentalPeriod && formData.maxRentalPeriod <= formData.minRentalPeriod) {
     errors.maxRentalPeriod = 'Must be greater than minimum period';

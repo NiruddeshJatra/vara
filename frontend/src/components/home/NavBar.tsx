@@ -153,7 +153,7 @@ const NavBar = () => {
             <>
             {filepath.pathname !== '/login' && (
               <Link to="/login">
-                <Button variant="outline" size="sm" className="border-green-600 text-green-600 hover:bg-green-50">Log In</Button>
+                <Button variant="outline" size="sm" className="border-green-500 text-green-700 hover:bg-green-50 hover:text-green-800">Log In</Button>
               </Link>
             )}
             {filepath.pathname !== '/register' && (

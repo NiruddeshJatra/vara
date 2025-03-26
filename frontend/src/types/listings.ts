@@ -1,8 +1,7 @@
-// types/listings.ts
 export type DurationUnit = 'hour' | 'day' | 'week' | 'month';
 
 export type Product = {
-  id: number;
+  id: string;
   title: string;
   owner: string;
   category: string;
@@ -19,7 +18,6 @@ export type Product = {
   totalRentals?: number;
   condition?: 'excellent' | 'good' | 'fair';
   itemAge?: number;
-  lastServiced?: Date;
 };
 
 export type ListingFormData = {
@@ -34,6 +32,7 @@ export type ListingFormData = {
   minRentalPeriod: number;
   maxRentalPeriod?: number;
   availabilityPeriods: AvailabilityPeriod[];
+  securityDeposit?: number;
 };
 
 export type AvailabilityPeriod = {
@@ -43,7 +42,6 @@ export type AvailabilityPeriod = {
   notes: string;
 };
 
-// New rental request types
 export type RentalRequestFormData = {
   startDate: Date | null;
   duration: number;
@@ -89,7 +87,6 @@ export type FormErrors = {
   [key: string]: string;
 };
 
-// Existing constants
 export const DURATION_CHOICES = [
   { value: 'hour', label: 'Per Hour' },
   { value: 'day', label: 'Per Day' },
