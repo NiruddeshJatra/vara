@@ -9,9 +9,10 @@ interface Props {
   onChange: (data: Partial<FormData>) => void;
   onNext: (e: React.FormEvent) => void;
   onPrev: () => void;
+  loading?: boolean;
 }
 
-const ContactDetailsStep = ({ formData, errors, onChange, onNext, onPrev }: Props) => {
+const ContactDetailsStep = ({ formData, errors, onChange, onNext, onPrev, loading = false }: Props) => {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-green-800">Contact Details</h2>

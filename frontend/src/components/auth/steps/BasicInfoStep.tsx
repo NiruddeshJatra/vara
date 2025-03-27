@@ -8,9 +8,10 @@ interface Props {
   errors: FormErrors;
   onChange: (data: Partial<FormData>) => void;
   onNext: (e: React.FormEvent) => void;
+  loading?: boolean;
 }
 
-const BasicInfoStep = ({ formData, errors, onChange, onNext }: Props) => {
+const BasicInfoStep = ({ formData, errors, onChange, onNext, loading = false }: Props) => {
   const renderPasswordStrength = () => {
     const { password } = formData;
     if (!password) return null;

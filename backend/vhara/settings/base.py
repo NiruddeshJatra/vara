@@ -133,13 +133,37 @@ CHANNEL_LAYERS = {
 #     },
 # }
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS Settings
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:8080",
-#     "http://127.0.0.1:8080",
-# ]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",  # Vite.js default
+    "http://127.0.0.1:5173",
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 SITE_ID = 1
 
@@ -193,12 +217,15 @@ REST_AUTH = {
     'USER_DETAILS_SERIALIZER': 'users.serializers.UserProfileSerializer',
     'USE_EMAIL_VERIFICATION': True,
     'EMAIL_VERIFICATION_REQUIRED': True,
-    'USE_JWT': False,
-    'SESSION_LOGIN': True,
+    'USE_JWT': True,
+    'JWT_AUTH_COOKIE': 'vhara-auth',
+    'JWT_AUTH_REFRESH_COOKIE': 'vhara-refresh',
+    'JWT_AUTH_SECURE': False,  # Set to True in production
+    'JWT_AUTH_HTTPONLY': True,
+    'SESSION_LOGIN': False,
     'OLD_PASSWORD_FIELD_ENABLED': True,
     'LOGOUT_ON_PASSWORD_CHANGE': False,
 }
-
 
 DATABASES = {
     "default": {

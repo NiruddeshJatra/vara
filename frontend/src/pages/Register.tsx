@@ -10,9 +10,11 @@ import BasicInfoStep from '@/components/auth/steps/BasicInfoStep';
 import ContactDetailsStep from '@/components/auth/steps/ContactDetailsStep';
 import VerificationStep from '@/components/auth/steps/VerificationStep';
 import { FormData, FormErrors } from '@/types/auth';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Register = () => {
   const navigate = useNavigate();
+  const { register: registerUser, loading } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     email: '',
@@ -171,42 +173,24 @@ const Register = () => {
     
     if (Object.keys(allErrors).length === 0) {
       try {
-        const response = await fetch('/api/auth/registration/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: formData.email,
-            username: formData.username,
-            password1: formData.password,
-            password2: formData.confirmPassword,
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            phone_number: formData.phoneNumber,
-            location: formData.location,
-            date_of_birth: formData.dateOfBirth,
-          }),
-          credentials: 'include',
-        });
+        // Transform formData to match API expectations
+        const apiFormData = {
+          email: formData.email,
+          username: formData.username,
+          password1: formData.password,
+          password2: formData.confirmPassword,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          phone_number: formData.phoneNumber,
+          location: formData.location,
+          date_of_birth: formData.dateOfBirth || undefined,
+        };
         
-        const text = await response.text();
-        const data = text ? JSON.parse(text) : {};
-  
-        if (!response.ok) {
-          const errorMessage = data.non_field_errors?.[0] || 
-                    Object.values(data).flat().find(msg => msg) || 
-                      'Registration failed';
-          throw new Error(errorMessage);
-        }
-  
-        toast.success("Account created successfully! Please check your email to verify.");
-        setTimeout(() => {
-          navigate('/');
-        }, 3000);
+        await registerUser(apiFormData);
+        // The success message and navigation is handled in the auth context
       } catch (error) {
+        // Error handling is already done in the auth context
         console.error('Registration error:', error);
-        toast.error(error instanceof Error ? error.message : 'Registration failed');
       }
     } else {
       setErrors(allErrors);
@@ -277,6 +261,7 @@ const Register = () => {
                   errors={errors}
                   onChange={handleInputChange}
                   onNext={handleNextStep}
+                  loading={loading}
                 />
               )}
               
@@ -287,6 +272,7 @@ const Register = () => {
                   onChange={handleInputChange}
                   onNext={handleNextStep}
                   onPrev={handlePrevStep}
+                  loading={loading}
                 />
               )}
               
@@ -297,6 +283,7 @@ const Register = () => {
                   onChange={handleInputChange}
                   onPrev={handlePrevStep}
                   onSubmit={handleSubmit}
+                  loading={loading}
                 />
               )}
             </form>

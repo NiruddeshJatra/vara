@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, ShieldCheck, LifeBuoy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import NavBar from "@/components/home/NavBar";
 import Footer from "@/components/home/Footer";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -13,7 +14,12 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
+  const { login, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Check if we were redirected from verification
+  const verified = new URLSearchParams(location.search).get('verified') === '1';
 
   const validateEmail = (email: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -41,31 +47,11 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch('/api/auth/login/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include',
-      });
-
-      const text = await response.text();
-      const data = text ? JSON.parse(text) : {};
-
-      if (!response.ok) {
-        console.error('Login failed:', data);
-        const errorMessage = data.detail ||
-          data.non_field_errors?.[0] ||
-          'Invalid email or password';
-        throw new Error(errorMessage);
-      } else {
-        console.log("Login successful:", data);
-        navigate('/dashboard');
-      }
+      await login(email, password, rememberMe);
+      // The navigation is handled by the AuthContext
     } catch (error) {
-      console.error('Login error:', error);
-      setErrors({ general: error instanceof Error ? error.message : 'Login failed' });
+      // Error handling is already done in the AuthContext
+      console.error('Login failed:', error);
     }
   };
 
@@ -85,6 +71,12 @@ const Login = () => {
                 <div className="text-center mb-8 animate-fade-up">
                   <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
                   <p className="text-gray-600">Sign in to your Bhara account</p>
+                  
+                  {verified && (
+                    <div className="mt-3 p-3 bg-green-50 text-green-800 rounded-lg border border-green-200 animate-fade-in">
+                      <p>Your email has been verified successfully! You can now log in.</p>
+                    </div>
+                  )}
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -109,6 +101,7 @@ const Login = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="youremail@example.com"
                         className={`pl-10 ${errors.email ? 'border-red-500' : ''}`}
+                        disabled={loading}
                       />
                     </div>
                     {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
@@ -129,6 +122,7 @@ const Login = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
                         className={`pl-10 ${errors.password ? 'border-red-500' : ''}`}
+                        disabled={loading}
                       />
                       <button
                         type="button"
@@ -148,6 +142,7 @@ const Login = () => {
                         checked={rememberMe}
                         onCheckedChange={(checked) => setRememberMe(checked as boolean)}
                         className="h-4 w-4 border-2 border-green-400 data-[state=checked]:bg-green-600 data-[state=checked]:text-white rounded"
+                        disabled={loading}
                       />
                       <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
                         Remember me
@@ -164,8 +159,9 @@ const Login = () => {
                     <Button
                       type="submit"
                       className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition duration-150 ease-in-out hover-lift"
+                      disabled={loading}
                     >
-                      Sign In
+                      {loading ? 'Signing In...' : 'Sign In'}
                     </Button>
                   </div>
 

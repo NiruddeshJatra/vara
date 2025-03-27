@@ -10,9 +10,10 @@ interface Props {
   onChange: (data: Partial<FormData>) => void;
   onPrev: () => void;
   onSubmit: (e: React.FormEvent) => Promise<void>;
+  loading?: boolean;
 }
 
-const VerificationStep = ({ formData, errors, onChange, onPrev, onSubmit }: Props) => {
+const VerificationStep = ({ formData, errors, onChange, onPrev, onSubmit, loading = false }: Props) => {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-green-800">Verification & Consent</h2>
@@ -32,6 +33,7 @@ const VerificationStep = ({ formData, errors, onChange, onPrev, onSubmit }: Prop
                   checked={formData.termsAgreed}
                   onCheckedChange={(checked) => onChange({ termsAgreed: checked as boolean })}
                   className="h-4 w-4 border-2 border-green-400 data-[state=checked]:bg-green-600 data-[state=checked]:text-white rounded"
+                  disabled={loading}
                 />
               </div>
               <div className="ml-3">
@@ -53,6 +55,7 @@ const VerificationStep = ({ formData, errors, onChange, onPrev, onSubmit }: Prop
                   checked={formData.dataConsent}
                   onCheckedChange={(checked) => onChange({ dataConsent: checked as boolean })}
                   className="h-4 w-4 border-2 border-green-400 data-[state=checked]:bg-green-600 data-[state=checked]:text-white rounded"
+                  disabled={loading}
                 />
               </div>
               <div className="ml-3">
@@ -74,6 +77,7 @@ const VerificationStep = ({ formData, errors, onChange, onPrev, onSubmit }: Prop
                   checked={formData.marketingConsent}
                   onCheckedChange={(checked) => onChange({ marketingConsent: checked as boolean })}
                   className="h-4 w-4 border-2 border-green-400 data-[state=checked]:bg-green-600 data-[state=checked]:text-white rounded"
+                  disabled={loading}
                 />
               </div>
               <div className="ml-3">
@@ -104,14 +108,17 @@ const VerificationStep = ({ formData, errors, onChange, onPrev, onSubmit }: Prop
           variant="outline" 
           onClick={onPrev}
           className="border-green-200 text-green-700 hover:bg-green-50"
+          disabled={loading}
         >
           <ChevronLeft size={16} className="mr-1" /> Back to Contact Details
         </Button>
         <Button 
           className="bg-green-600 hover:bg-green-700 text-white"
           onClick={onSubmit}
+          disabled={loading}
         >
-          Create Account
+          {loading ? 'Creating account...' : 'Create Account'} 
+          {!loading && <CheckCircle size={16} className="ml-1" />}
         </Button>
       </div>
     </div>
