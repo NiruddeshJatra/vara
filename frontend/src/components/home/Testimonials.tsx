@@ -37,6 +37,7 @@ const Testimonials = () => {
       
       <div className="container mx-auto">
         <div className="section-title">
+          <span className="badge">User Testimonials</span>
           <h2 className="text-green-800">What Our Users Say</h2>
           <p className="text-green-700/80">Join thousands of people already saving money and earning extra income with Bhara.</p>
         </div>

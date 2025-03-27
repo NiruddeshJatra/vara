@@ -14,6 +14,13 @@ export default defineConfig(({ mode }) => ({
     target: 'es2020'
   },
   server: {
+    hmr: {
+      overlay: true,
+    },
+    watch: {
+      usePolling: true,
+      interval: 1000,
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:8000',
