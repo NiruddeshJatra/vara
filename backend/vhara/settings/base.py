@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "django_filters",
     "channels",
     'corsheaders',
+    "otp_auth",  # New OTP authentication app
 ]
 
 # Social auth settings
@@ -263,7 +264,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_EMAIL_VERIFICATION = 'optional'  # Changed from 'mandatory' to 'optional'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='no-reply@example.com')
 VERIFICATION_EXPIRE_DAYS = 3
@@ -272,6 +273,10 @@ ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = '/login?verified=1'
 CACHE_VERSION = 1
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/login/"
+
+PHONE_VERIFICATION_ENABLED = True
+OTP_EXPIRY_MINUTES = 10
+OTP_MAX_ATTEMPTS = 3
 
 # Internationalization
 LANGUAGE_CODE = "en-us"

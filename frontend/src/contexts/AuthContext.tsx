@@ -38,8 +38,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       navigate('/');
     } catch (error: any) {
       const errorMessage = error?.response?.data?.detail || 
-                           error?.response?.data?.non_field_errors?.[0] || 
-                           'Invalid email or password';
+                          error?.response?.data?.non_field_errors?.[0] || 
+                          'Invalid email or password';
       toast.error(errorMessage);
       throw error;
     } finally {

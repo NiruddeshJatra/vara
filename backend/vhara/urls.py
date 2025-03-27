@@ -44,6 +44,9 @@ urlpatterns = [
     path("auth/token/", TokenObtainPairView.as_view(), name="get_token"),
     path("auth/token/refresh/", TokenRefreshView.as_view(), name="refresh"),
     
+    # Phone OTP verification
+    path('auth/otp/', include('otp_auth.urls')),
+    
     # API endpoints
     path('api/', include(api_patterns)),
     
