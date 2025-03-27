@@ -1,32 +1,31 @@
-
-import { UserPlus, Search, MessageSquare, CreditCard, RotateCw } from 'lucide-react';
+import { UserPlus, Plus, Search, ShieldCheck, CheckCircle } from 'lucide-react';
 import '../../styles/main.css';
 
 const steps = [
   {
     icon: <UserPlus className="process-step-icon" />,
-    title: 'Sign Up',
-    description: 'Create your free account with basic information to join our trusted community.'
+    title: 'Create Account & Verify',
+    description: 'Register with basic information and verify your email/phone to join our trusted community'
+  },
+  {
+    icon: <Plus className="process-step-icon" />,
+    title: 'List Your Item',
+    description: 'Lenders provide product details, set pricing/availability, and submit for admin approval'
   },
   {
     icon: <Search className="process-step-icon" />,
-    title: 'Browse or List',
-    description: 'Search for items to rent or list your own items to lend to others.'
+    title: 'Request to Rent',
+    description: 'Browse available items, select products, and submit rental requests with preferred parameters'
   },
   {
-    icon: <MessageSquare className="process-step-icon" />,
-    title: 'Request & Approve',
-    description: 'Send rental requests or approve incoming requests from potential borrowers.'
+    icon: <ShieldCheck className="process-step-icon" />,
+    title: 'Admin Approval',
+    description: 'Admins review requests and select suitable renters based on ratings and availability'
   },
   {
-    icon: <CreditCard className="process-step-icon" />,
-    title: 'Secure Payment',
-    description: 'Pay through our secure platform. Funds are held safely until rental is complete.'
-  },
-  {
-    icon: <RotateCw className="process-step-icon" />,
-    title: 'Exchange & Return',
-    description: 'Meet to exchange the item and return it in the same condition when done.'
+    icon: <CheckCircle className="process-step-icon" />,
+    title: 'Complete Rental & Review',
+    description: 'Coordinate handoff/return through company hubs, complete payment, and leave reviews'
   }
 ];
 
@@ -35,13 +34,12 @@ const HowItWorks = () => {
     <section id="how-it-works" className="section bg-gradient-to-b from-green-50 to-white">
       <div className="container">
         <div className="section-title">
-          <span className="badge">The Process</span>
-          <h2>Simple, Secure, Straightforward</h2>
-          <p>Our platform makes borrowing and lending easy, safe, and reliable.</p>
+          <span className="badge">Process Flow</span>
+          <h2>Seamless Rental Experience</h2>
+          <p>From listing to return, we handle every step with care and security</p>
         </div>
 
         <div className="process-container">
-          {/* Connection Line */}
           <div className="process-line"></div>
           
           <div className="process-steps-container">
@@ -69,7 +67,7 @@ const HowItWorks = () => {
 
         <div className="cta-button-container">
           <button className="btn-cta animate-fade-up" style={{ animationDelay: '0.5s' }}>
-            Get Started Now
+            Start Renting Now
           </button>
         </div>
       </div>

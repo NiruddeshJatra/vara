@@ -1,27 +1,26 @@
-
-import { ShieldCheck, Lock, ShieldPlus, Bell } from 'lucide-react';
+import { ShieldCheck, CheckCircle, ShieldOff, MessageSquare } from 'lucide-react';
 import '../../styles/main.css';
 
 const trustFeatures = [
   {
     icon: <ShieldCheck className="card-icon" />,
-    title: 'Verified Users',
-    description: 'All users are verified through our robust identification process.'
+    title: 'Verified Community',
+    description: 'All users undergo ID verification and background checks before participating'
   },
   {
-    icon: <Lock className="card-icon" />,
-    title: 'Secure Payments',
-    description: 'Your transactions are protected with bank-level security and escrow protection.'
+    icon: <CheckCircle className="card-icon" />,
+    title: 'Admin-Approved Listings',
+    description: 'Every listing is manually verified by our team before being published'
   },
   {
-    icon: <ShieldPlus className="card-icon" />,
-    title: 'Insurance Coverage',
-    description: 'Optional coverage available for peace of mind during rentals.'
+    icon: <ShieldOff className="card-icon" />,
+    title: 'Damage Protection',
+    description: 'Security deposits held in escrow until safe return confirmation'
   },
   {
-    icon: <Bell className="card-icon" />,
-    title: '24/7 Support',
-    description: 'Our team is always available to help with any issues or questions.'
+    icon: <MessageSquare className="card-icon" />,
+    title: 'Mediation Support',
+    description: 'Dedicated team resolves disputes and oversees product handoffs/returns'
   }
 ];
 
@@ -41,9 +40,9 @@ const TrustSafety = () => {
       
       <div className="container">
         <div style={{maxWidth: '48rem', margin: '0 auto', textAlign: 'center'}}>
-          <span className="badge">Peace of Mind</span>
-          <h2 style={{fontSize: '2rem', fontWeight: 'bold', marginBottom: '1.5rem'}}>Your Trust Is Our Priority</h2>
-          <p style={{color: 'var(--gray-500)', marginBottom: '3rem'}}>We've built Vara with your safety and security as our top priorities. Here's how we protect you:</p>
+          <span className="badge">Safe Transactions</span>
+          <h2 style={{fontSize: '2rem', fontWeight: 'bold', marginBottom: '1.5rem'}}>Company-Mediated Assurance</h2>
+          <p style={{color: 'var(--gray-500)', marginBottom: '3rem'}}>We handle the complexities so you can rent with confidence:</p>
         </div>
 
         <div className="card-grid">
