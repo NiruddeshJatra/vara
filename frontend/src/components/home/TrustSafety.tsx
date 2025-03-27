@@ -41,8 +41,8 @@ const TrustSafety = () => {
       <div className="container">
         <div style={{maxWidth: '48rem', margin: '0 auto', textAlign: 'center'}}>
           <span className="badge">Safe Transactions</span>
-          <h2 style={{fontSize: '2rem', fontWeight: 'bold', marginBottom: '1.5rem'}}>Company-Mediated Assurance</h2>
-          <p style={{color: 'var(--gray-500)', marginBottom: '3rem'}}>We handle the complexities so you can rent with confidence:</p>
+          <h2 className="text-green-900 mb-4 font-bold">Company-Mediated Assurance</h2>
+          <p className="text-green-700/80 mb-3">We handle the complexities so you can rent with confidence</p>
         </div>
 
         <div className="card-grid">

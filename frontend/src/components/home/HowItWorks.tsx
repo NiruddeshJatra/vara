@@ -35,8 +35,8 @@ const HowItWorks = () => {
       <div className="container">
         <div className="section-title">
           <span className="badge">Process Flow</span>
-          <h2>Seamless Rental Experience</h2>
-          <p>From listing to return, we handle every step with care and security</p>
+          <h2 className="text-green-800 font-bold mb-3">Seamless Rental Experience</h2>
+          <p className="text-green-700/80 mb-3">From listing to return, we handle every step with care and security</p>
         </div>
 
         <div className="process-container">

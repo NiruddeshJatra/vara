@@ -1,5 +1,7 @@
 // Generate mock data for listings and categories
 
+import { DurationUnit } from '@/types/listings';
+
 // Mock categories data
 export const categories = [
   {
@@ -213,7 +215,7 @@ export const generateListings = (count: number) => {
   
   const conditions = ["excellent", "good", "fair"] as const;
   
-  const DURATION_CHOICES = [
+  const DURATION_CHOICES: { value: DurationUnit }[] = [
     { value: 'hour' },
     { value: 'day' },
     { value: 'week' },

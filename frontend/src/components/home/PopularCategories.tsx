@@ -46,8 +46,8 @@ const PopularCategories = () => {
       <div className="container mx-auto">
         <div className="section-title">
           <span className="inline-block text-sm font-medium bg-green-600/10 text-green-600 px-4 py-1.5 rounded-full mb-4">Categories</span>
-          <h2 className="font-bold text-green-800">What Are You Looking For?</h2>
-          <p className="text-green-700">Explore our most popular categories with thousands of items available to rent</p>
+          <h2 className="font-bold text-green-800 mb-3">What Are You Looking For?</h2>
+          <p className="text-green-700/80 mb-3">Explore our most popular categories with thousands of items available to rent</p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">

@@ -35,7 +35,7 @@ const FeaturedListings = () => {
           </p>
         </div>
 
-        <section className="py-6">
+        <section className="py-4">
           <div className="container mx-auto px-4">
             <ListingsGrid
               displayedListings={allListings}

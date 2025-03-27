@@ -31,8 +31,8 @@ const ValueProposition = () => {
       <div className="container">
         <div className="section-title">
           <span className="badge">Our Benefits</span>
-          <h2 className="text-green-800">Why Choose Vara?</h2>
-          <p className='text-green-700/80'>Join thousands of people saving money and living more sustainably.</p>
+          <h2 className="text-green-800 font-bold mb-3">Why Choose Vara?</h2>
+          <p className='text-green-700/80 mb-3'>Join thousands of people saving money and living more sustainably.</p>
         </div>
 
         <div className="card-grid">
