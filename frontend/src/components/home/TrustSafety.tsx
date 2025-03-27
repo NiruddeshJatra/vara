@@ -1,3 +1,4 @@
+import React from 'react';
 import { ShieldCheck, CheckCircle, ShieldOff, MessageSquare } from 'lucide-react';
 import '../../styles/main.css';
 
@@ -26,7 +27,7 @@ const trustFeatures = [
 
 const TrustSafety = () => {
   return (
-    <section className="section bg-gradient-to-b from-green-50 to-white relative" style={{overflow: 'hidden'}}>
+    <section id="trust-safety" className="section relative bg-gradient-to-b from-green-50 to-white" style={{overflow: 'hidden'}}>
       {/* Background Elements */}
       <div className="bg-gradient-radial" style={{
         position: 'absolute',
@@ -39,7 +40,7 @@ const TrustSafety = () => {
       }}></div>
       
       <div className="container">
-        <div style={{maxWidth: '48rem', margin: '0 auto', textAlign: 'center'}}>
+        <div style={{maxWidth: '48rem', margin: '0 auto', textAlign: 'center'}} className="animate-fade-up">
           <span className="badge">Safe Transactions</span>
           <h2 className="text-green-900 mb-4 font-bold">Company-Mediated Assurance</h2>
           <p className="text-green-700/80 mb-3">We handle the complexities so you can rent with confidence</p>
@@ -49,16 +50,22 @@ const TrustSafety = () => {
           {trustFeatures.map((feature, index) => (
             <div 
               key={index} 
-              className="card-card animate-fade-up"
-              style={{ animationDelay: `${index * 0.1}s` }}
+              className="card-card hover-lift animate-fade-up" 
+              style={{ animationDelay: `${(index + 1) * 150}ms` }}
             >
               <div className="card-icon-container">
-                {feature.icon}
+                <div className="card-icon">{feature.icon}</div>
               </div>
               <h3 className="card-title">{feature.title}</h3>
               <p className="card-description">{feature.description}</p>
             </div>
           ))}
+        </div>
+        
+        <div className="flex justify-center mt-12 animate-fade-up" style={{animationDelay: '750ms'}}>
+          <button className="bg-transparent border border-green-600 text-green-700 hover:bg-green-600 hover:text-white transition-colors duration-300 font-medium rounded-full px-8 py-3">
+            Learn More About Our Trust & Safety
+          </button>
         </div>
       </div>
     </section>

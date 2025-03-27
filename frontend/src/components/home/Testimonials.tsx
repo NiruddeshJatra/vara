@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -36,15 +35,19 @@ const Testimonials = () => {
       <div className="absolute inset-0 -z-10 opacity-5 bg-center bg-cover"></div>
       
       <div className="container mx-auto">
-        <div className="section-title">
+        <div className="section-title animate-fade-up">
           <span className="badge">User Testimonials</span>
           <h2 className="text-green-800 font-bold mb-3">What Our Users Say</h2>
-          <p className="text-green-700/80 mb-3">Join thousands of people already saving money and earning extra income with Vara.</p>
+          <p className="text-green-700/80 mb-3">Join thousands of people already saving money and earning extra income with Bhara.</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {testimonials.map((testimonial) => (
-            <div key={testimonial.id} className="bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-sm border border-green-100 transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+          {testimonials.map((testimonial, index) => (
+            <div 
+              key={testimonial.id} 
+              className={`bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-sm border border-green-100 transition-all duration-300 hover:shadow-md hover:-translate-y-1 animate-fade-up hover-lift`} 
+              style={{ animationDelay: `${(index + 1) * 150}ms` }}
+            >
               <div className="flex items-center mb-4">
                 <Avatar className="h-12 w-12 mr-4 border-2 border-green-100">
                   <AvatarImage src={testimonial.avatar} alt={testimonial.name} />

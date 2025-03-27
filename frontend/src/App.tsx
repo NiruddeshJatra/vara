@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AdminAuthProvider } from "./contexts/AdminAuthContext";
 import { ProtectedAdminRoute } from "./components/admin/ProtectedAdminRoute";
+import PageTransition from "./components/common/PageTransition";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import Index from "./pages/Index";
@@ -29,29 +30,31 @@ const App = () => (
       <Sonner />
       <AdminAuthProvider>
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/advertisements" element={<Advertisements />} />
-            <Route path="/rentals" element={<Rentals />} />
-            <Route path="/create-listing" element={<CreateListingPage />} />
-            <Route path="/my-listings" element={<MyListings />} />
-            <Route path="/items/:productId" element={<ItemDetail />} />
-            <Route path="/request-rental/:productId" element={<RequestRentalPage />} />
-            <Route path="/verify-email" element={<VerifyEmailNotice />} />
-            <Route path="/admin/login" element={<AdminLoginPage />} />
-            <Route 
-              path="/admin/dashboard/*" 
-              element={
-                <ProtectedAdminRoute>
-                  <AdminDashboard />
-                </ProtectedAdminRoute>
-              }
-            />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <PageTransition>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/advertisements" element={<Advertisements />} />
+              <Route path="/rentals" element={<Rentals />} />
+              <Route path="/create-listing" element={<CreateListingPage />} />
+              <Route path="/my-listings" element={<MyListings />} />
+              <Route path="/items/:productId" element={<ItemDetail />} />
+              <Route path="/request-rental/:productId" element={<RequestRentalPage />} />
+              <Route path="/verify-email" element={<VerifyEmailNotice />} />
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route 
+                path="/admin/dashboard/*" 
+                element={
+                  <ProtectedAdminRoute>
+                    <AdminDashboard />
+                  </ProtectedAdminRoute>
+                }
+              />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </PageTransition>
         </BrowserRouter>
       </AdminAuthProvider>
     </TooltipProvider>

@@ -1,4 +1,3 @@
-
 import { Button } from '../ui/button';
 import ListingsGrid from '../advertisements/ListingsGrid';
 import { useState, useEffect } from 'react';
@@ -23,7 +22,7 @@ const FeaturedListings = () => {
   return (
     <section className="py-16 md:py-24 bg-gradient-to-b from-green-100 to-white">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
+        <div className="text-center mb-12 animate-fade-up">
           <span className="inline-block px-4 py-1.5 text-sm font-medium rounded-full bg-vhara-600/10 text-vhara-600 mb-4">
             Featured
           </span>
@@ -35,7 +34,7 @@ const FeaturedListings = () => {
           </p>
         </div>
 
-        <section className="py-4">
+        <section className="py-6 animate-fade-up delay-200">
           <div className="container mx-auto px-4">
             <ListingsGrid
               displayedListings={allListings}
@@ -49,10 +48,10 @@ const FeaturedListings = () => {
           />
         </section>
 
-        <div className="text-center mt-6">
+        <div className="text-center mt-6 animate-fade-up delay-300">
           <Button
             variant="outline"
-            className="py-6 px-8 text-md rounded-full font-semibold shadow-lg cursor-pointer transition-transform duration-300 ease-in-out animate-fade-up hover:translate-y-[-2px] hover:shadow-xltext-sm text-black/70 hover:text-white border border-green-600 text-green-700 bg-white hover:bg-lime-600 hover:border-none"
+            className="py-6 px-8 text-md rounded-full font-semibold shadow-lg cursor-pointer transition-transform duration-300 ease-in-out hover:translate-y-[-2px] hover:shadow-xltext-sm text-black/70 hover:text-white border border-green-600 text-green-700 bg-white hover:bg-lime-600 hover:border-none"
             style={{ animationDelay: '0.5s' }}
           >
             See All Available Items

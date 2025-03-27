@@ -91,27 +91,31 @@ const Advertisements = () => {
 
       <main className="bg-green-50/65">
         {/* Compact Search Bar */}
-        <CompactSearchBar 
-          searchTerm={searchTerm} 
-          setSearchTerm={setSearchTerm} 
-          location={location} 
-          setLocation={setLocation} 
-          filtersOpen={filtersOpen} 
-          setFiltersOpen={setFiltersOpen} 
-          priceRange={priceRange} 
-          setPriceRange={setPriceRange} 
-          inNav={false} 
-        />
+        <div className="animate-fade-in">
+          <CompactSearchBar 
+            searchTerm={searchTerm} 
+            setSearchTerm={setSearchTerm} 
+            location={location} 
+            setLocation={setLocation} 
+            filtersOpen={filtersOpen} 
+            setFiltersOpen={setFiltersOpen} 
+            priceRange={priceRange} 
+            setPriceRange={setPriceRange} 
+            inNav={false} 
+          />
+        </div>
 
         {/* Horizontal Category Scroll */}
-        <CategoryScroll 
-          categories={categories} 
-          selectedCategory={selectedCategory} 
-          setSelectedCategory={setSelectedCategory} 
-        />
+        <div className="animate-fade-up delay-200">
+          <CategoryScroll 
+            categories={categories} 
+            selectedCategory={selectedCategory} 
+            setSelectedCategory={setSelectedCategory} 
+          />
+        </div>
 
         {/* Listings Section */}
-        <section className="py-4 sm:py-6 md:py-10">
+        <section className="py-4 sm:py-6 md:py-10 animate-fade-up delay-300">
           <div className="container mx-auto px-4">
             <h1 className="text-xl text- sm:text-2xl md:text-3xl font-bold text-green-800 mb-6 sm:mb-8">
               {getPageTitle()}
@@ -121,7 +125,7 @@ const Advertisements = () => {
             </h1>
             
             {filteredListings.length === 0 ? (
-              <div className="p-6 sm:p-8 md:p-10 text-center">
+              <div className="p-6 sm:p-8 md:p-10 text-center animate-scale-up">
                 <h2 className="text-lg sm:text-xl font-medium text-gray-700 mb-2">No Items Found</h2>
                 <p className="text-gray-500 text-sm sm:text-base">
                   Try adjusting your search or filter criteria to find what you're looking for.
@@ -129,10 +133,12 @@ const Advertisements = () => {
               </div>
             ) : (
               <>
-                <ListingsGrid 
-                  displayedListings={displayedListings} 
-                  handleQuickView={handleQuickView} 
-                />
+                <div className="animate-fade-up delay-400">
+                  <ListingsGrid 
+                    displayedListings={displayedListings} 
+                    handleQuickView={handleQuickView} 
+                  />
+                </div>
 
                 <LoadMoreTrigger visible={visibleItems < filteredListings.length} />
               </>

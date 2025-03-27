@@ -1,4 +1,4 @@
-
+import React from 'react';
 import { MonitorSmartphone, Hammer, Tent, Camera, PartyPopper, Car } from 'lucide-react';
 
 const categories = [
@@ -42,9 +42,13 @@ const categories = [
 
 const PopularCategories = () => {
   return (
-    <section id="browse-items" className="section bg-gradient-to-b from-green-50 to-white nature-pattern">
+    <section id="browse-items" className="section relative bg-gradient-to-b from-green-50 to-white nature-pattern animate-fade-up">
+      {/* Background elements */}
+      <div className="fluid-shape fluid-shape-1"></div>
+      <div className="dots-pattern dots-pattern-1"></div>
+      
       <div className="container mx-auto">
-        <div className="section-title">
+        <div className="section-title animate-fade-up">
           <span className="inline-block text-sm font-medium bg-green-600/10 text-green-600 px-4 py-1.5 rounded-full mb-4">Categories</span>
           <h2 className="font-bold text-green-800 mb-3">What Are You Looking For?</h2>
           <p className="text-green-700/80 mb-3">Explore our most popular categories with thousands of items available to rent</p>
@@ -55,8 +59,8 @@ const PopularCategories = () => {
             <a
               key={index}
               href="#"
-              className="group bg-white/90 backdrop-blur-sm rounded-xl border border-green-100 overflow-hidden shadow-subtle hover:shadow-lg hover:shadow-green-100/40 transition-all duration-300 animate-fade-up"
-              style={{ animationDelay: `${index * 0.1}s` }}
+              className="group bg-white/90 backdrop-blur-sm rounded-xl border border-green-100 overflow-hidden shadow-subtle hover:shadow-lg hover:shadow-green-100/40 transition-all duration-300 animate-fade-up hover-lift"
+              style={{ animationDelay: `${index * 100}ms` }}
             >
               <div className="flex items-center p-6">
                 <div className={`${category.bgColor} w-16 h-16 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform duration-300`}>
@@ -71,7 +75,7 @@ const PopularCategories = () => {
           ))}
         </div>
 
-        <div className="flex justify-center mt-10">
+        <div className="flex justify-center mt-10 animate-fade-up" style={{ animationDelay: '600ms' }}>
           <a href="#" className="text-green-600 font-medium hover:text-green-700 inline-flex items-center transition-all">
             Explore All Categories
             <svg className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

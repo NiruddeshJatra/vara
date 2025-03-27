@@ -76,22 +76,25 @@ const Login = () => {
       <main className="flex-grow pt-16">
         <div className="bg-gradient-to-b from-green-300 to-lime-100/20">
           <div className="container max-w-md mx-auto px-4 py-12">
-            <div className="bg-gradient-to-b from-white to-lime-50 backdrop-blur-sm shadow-lg rounded-xl p-8 relative">
+            <div className="bg-gradient-to-b from-white to-lime-50 backdrop-blur-sm shadow-lg rounded-xl p-8 relative animate-fade-up">
+              {/* Decorative background elements */}
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-green-400/10 rounded-full blur-2xl"></div>
+              <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-lime-300/10 rounded-full blur-2xl"></div>
 
               <div className="relative z-10">
-                <div className="text-center mb-8">
+                <div className="text-center mb-8 animate-fade-up">
                   <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
                   <p className="text-gray-600">Sign in to your Bhara account</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {errors.general && (
-                    <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+                    <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 animate-fade-in">
                       <p className="text-red-700 text-sm">{errors.general}</p>
                     </div>
                   )}
 
-                  <div className="space-y-2">
+                  <div className="space-y-2 animate-fade-up delay-100">
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                       Email Address
                     </label>
@@ -111,7 +114,7 @@ const Login = () => {
                     {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-2 animate-fade-up delay-200">
                     <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                       Password
                     </label>
@@ -138,7 +141,7 @@ const Login = () => {
                     {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
                   </div>
 
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-4 animate-fade-up delay-300">
                     <div className="flex items-center">
                       <Checkbox 
                         id="remember-me"
@@ -157,16 +160,16 @@ const Login = () => {
                     </div>
                   </div>
 
-                  <div>
+                  <div className="animate-fade-up delay-400">
                     <Button
                       type="submit"
-                      className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition duration-150 ease-in-out"
+                      className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition duration-150 ease-in-out hover-lift"
                     >
                       Sign In
                     </Button>
                   </div>
 
-                  <div className="text-center mt-6">
+                  <div className="text-center mt-6 animate-fade-up delay-500">
                     <p className="text-sm text-gray-600">
                       Don't have an account?{" "}
                       <Link to="/register" className="font-medium text-green-600 hover:text-green-500">
@@ -178,7 +181,7 @@ const Login = () => {
               </div>
             </div>
 
-            <div className="mt-8 flex justify-center items-center space-x-6">
+            <div className="mt-8 flex justify-center items-center space-x-6 animate-fade-up delay-600">
               <div className="flex items-center text-gray-500 text-sm">
                 <ShieldCheck className="h-5 w-5 text-green-600 mr-2" />
                 <span>Secure Login</span>

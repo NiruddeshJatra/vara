@@ -228,45 +228,49 @@ const Register = () => {
       
       <main className="flex-grow pt-16 pb-16">
         <div className="bg-gradient-to-b from-green-300 to-lime-100/20 pt-8">
-          <div className="max-w-3xl mx-auto bg-gradient-to-b from-white to-lime-50 rounded-lg shadow-subtle md:p-8">
-            <div className="text-center mb-8">
+          <div className="max-w-3xl mx-auto bg-gradient-to-b from-white to-lime-50 rounded-lg shadow-subtle md:p-8 animate-fade-up">
+            {/* Decorative background elements */}
+            <div className="absolute -top-10 -right-10 w-40 h-40 bg-green-400/10 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-lime-300/10 rounded-full blur-3xl"></div>
+            
+            <div className="text-center mb-8 animate-fade-up">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Create Your Account</h1>
               <p className="text-gray-600">Join the Bhara community to rent and lend items</p>
             </div>
             
-            <div className="mb-8">
+            <div className="mb-8 animate-fade-up delay-100">
               <div className="flex items-center">
-                <div className={`flex-1 h-1 ${currentStep >= 1 ? 'bg-green-500' : 'bg-gray-200'}`}></div>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                <div className={`flex-1 h-1 transition-all duration-500 ease-in-out ${currentStep >= 1 ? 'bg-green-500' : 'bg-gray-200'}`}></div>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 ${
                   currentStep >= 1 ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700'
                 }`}>1</div>
-                <div className={`flex-1 h-1 ${currentStep >= 2 ? 'bg-green-500' : 'bg-gray-200'}`}></div>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                <div className={`flex-1 h-1 transition-all duration-500 ease-in-out ${currentStep >= 2 ? 'bg-green-500' : 'bg-gray-200'}`}></div>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 ${
                   currentStep >= 2 ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700'
                 }`}>2</div>
-                <div className={`flex-1 h-1 ${currentStep >= 3 ? 'bg-green-500' : 'bg-gray-200'}`}></div>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                <div className={`flex-1 h-1 transition-all duration-500 ease-in-out ${currentStep >= 3 ? 'bg-green-500' : 'bg-gray-200'}`}></div>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 ${
                   currentStep >= 3 ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700'
                 }`}>3</div>
-                <div className={`flex-1 h-1 ${currentStep >= 3 ? 'bg-green-500' : 'bg-gray-200'}`}></div>
+                <div className={`flex-1 h-1 transition-all duration-500 ease-in-out ${currentStep >= 3 ? 'bg-green-500' : 'bg-gray-200'}`}></div>
               </div>
               <div className="flex justify-between mt-4 text-sm text-gray-600">
-                <div className="flex flex-col items-center">
+                <div className={`flex flex-col items-center transition-all duration-300 ${currentStep === 1 ? 'text-green-600 scale-105' : ''}`}>
                   <span className="font-medium">Basic Info</span>
                   <span className="text-xs text-gray-500">Email & Password</span>
                 </div>
-                <div className="flex flex-col items-center">
+                <div className={`flex flex-col items-center transition-all duration-300 ${currentStep === 2 ? 'text-green-600 scale-105' : ''}`}>
                   <span className="font-medium">Contact Details</span>
                   <span className="text-xs text-gray-500">Personal Info</span>
                 </div>
-                <div className="flex flex-col items-center">
+                <div className={`flex flex-col items-center transition-all duration-300 ${currentStep === 3 ? 'text-green-600 scale-105' : ''}`}>
                   <span className="font-medium">Verification</span>
                   <span className="text-xs text-gray-500">Terms & Consent</span>
                 </div>
               </div>
             </div>
             
-            <form onSubmit={currentStep === 3 ? handleSubmit : handleNextStep}>
+            <form onSubmit={currentStep === 3 ? handleSubmit : handleNextStep} className="animate-fade-up delay-200">
               {currentStep === 1 && (
                 <BasicInfoStep
                   formData={formData}
@@ -297,6 +301,18 @@ const Register = () => {
               )}
             </form>
           </div>
+          
+          <div className="mt-8 flex justify-center items-center space-x-4 pb-8 animate-fade-up delay-300">
+            <div className="flex items-center text-gray-500 text-sm">
+              <Shield className="h-5 w-5 text-green-600 mr-2" />
+              <span>Secure Registration</span>
+            </div>
+            <div className="text-gray-500 text-sm">
+              <Link to="/login" className="text-green-600 hover:text-green-700 font-medium">
+                Already have an account? Sign in
+              </Link>
+            </div>
+          </div>
         </div>
       </main>
       
@@ -309,7 +325,7 @@ export default Register;
 
 export function ErrorBoundary({ error }: { error: Error }) {
   return (
-    <div className="p-4 text-red-500">
+    <div className="p-4 text-red-500 animate-fade-in">
       <h2>Registration Error:</h2>
       <pre>{error.message}</pre>
     </div>

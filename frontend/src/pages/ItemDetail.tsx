@@ -119,10 +119,10 @@ export default function ItemDetailPage() {
     return (
       <div className="flex flex-col min-h-screen bg-white">
         <NavBar />
-        <div className="flex-grow flex flex-col items-center justify-center py-20 px-4 mt-20 bg-green-50/65">
+        <div className="flex-grow flex flex-col items-center justify-center py-20 px-4 mt-20 bg-green-50/65 animate-fade-in">
           <h1 className="text-2xl font-bold text-red-500 mb-4">Product Not Found</h1>
           <p className="text-gray-600 mb-6">The product you're looking for doesn't exist or has been removed.</p>
-          <Button asChild>
+          <Button asChild className="animate-pulse">
             <Link to="/advertisements">Browse Available Items</Link>
           </Button>
         </div>
@@ -137,7 +137,7 @@ export default function ItemDetailPage() {
 
       <main className="flex-grow pt-20 pb-20 bg-gradient-to-b from-green-50 to-white">
         {/* Title Section */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-8 animate-fade-up">
           <ProductHeader 
             title={product.title} 
             averageRating={product.averageRating} 
@@ -148,7 +148,7 @@ export default function ItemDetailPage() {
         </div>
 
         {/* Image Gallery Section */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 animate-fade-up delay-100">
           <ImageGallery images={product.images} title={product.title} />
         </div>
 
@@ -158,51 +158,67 @@ export default function ItemDetailPage() {
             {/* Left Column - Content */}
             <div className="lg:col-span-2">
               {/* Host/Vhara Section */}
-              <HostInfo />
+              <div className="animate-fade-left delay-200">
+                <HostInfo />
+              </div>
 
               {/* Description Section */}
-              <ProductDescription 
-                description={product.description} 
-                title={product.title} 
-                condition={product.condition} 
-                category={product.category} 
-              />
+              <div className="animate-fade-left delay-300">
+                <ProductDescription 
+                  description={product.description} 
+                  title={product.title} 
+                  condition={product.condition} 
+                  category={product.category} 
+                />
+              </div>
 
               {/* Vhara Service Section */}
-              <VharaService />
+              <div className="animate-fade-left delay-400">
+                <VharaService />
+              </div>
 
               {/* Details & Specifications */}
-              <ItemDetails 
-                condition={product.condition} 
-                category={product.category} 
-                itemAge={product.itemAge} 
-                securityDeposit={product.securityDeposit} 
-              />
+              <div className="animate-fade-left delay-500">
+                <ItemDetails 
+                  condition={product.condition} 
+                  category={product.category} 
+                  itemAge={product.itemAge} 
+                  securityDeposit={product.securityDeposit} 
+                />
+              </div>
 
               {/* Availability Calendar */}
-              <AvailabilitySection availabilityPeriods={product.availabilityPeriods} />
+              <div className="animate-fade-left delay-600">
+                <AvailabilitySection availabilityPeriods={product.availabilityPeriods} />
+              </div>
 
               {/* Reviews Section */}
-              <ReviewsSection 
-                averageRating={product.averageRating} 
-                totalRentals={product.totalRentals} 
-              />
+              <div className="animate-fade-left delay-700">
+                <ReviewsSection 
+                  averageRating={product.averageRating} 
+                  totalRentals={product.totalRentals} 
+                />
+              </div>
             </div>
 
             {/* Right Column - Pricing & CTA */}
-            <PricingCard 
-              productId={product.id}
-              basePrice={product.basePrice}
-              durationUnit={product.durationUnit}
-              minRentalPeriod={product.minRentalPeriod}
-              maxRentalPeriod={product.maxRentalPeriod}
-              securityDeposit={product.securityDeposit}
-            />
+            <div className="animate-fade-right delay-200 hover-lift">
+              <PricingCard 
+                productId={product.id}
+                basePrice={product.basePrice}
+                durationUnit={product.durationUnit}
+                minRentalPeriod={product.minRentalPeriod}
+                maxRentalPeriod={product.maxRentalPeriod}
+                securityDeposit={product.securityDeposit}
+              />
+            </div>
           </div>
         </div>
 
         {/* Similar Items */}
-        <SimilarItems items={similarItems} onQuickView={handleQuickView} />
+        <div className="animate-fade-up delay-1000">
+          <SimilarItems items={similarItems} onQuickView={handleQuickView} />
+        </div>
       </main>
 
       {/* Item Detail Modal */}
