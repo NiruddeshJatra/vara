@@ -42,19 +42,19 @@ const RentalDetailModal = ({
   const getStatusConfig = (status: string) => {
     switch(status) {
       case 'pending':
-        return { color: 'bg-amber-100 text-amber-800 border-amber-300', label: 'Pending Approval' };
+        return { color: 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200', label: 'Pending Approval' };
       case 'accepted':
-        return { color: 'bg-blue-100 text-blue-800 border-blue-300', label: 'Accepted' };
+        return { color: 'bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200', label: 'Accepted' };
       case 'in_progress':
-        return { color: 'bg-green-100 text-green-800 border-green-300', label: 'In Progress' };
+        return { color: 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200', label: 'In Progress' };
       case 'completed':
-        return { color: 'bg-purple-100 text-purple-800 border-purple-300', label: 'Completed' };
+        return { color: 'bg-purple-100 text-purple-800 border-purple-300 hover:bg-purple-200', label: 'Completed' };
       case 'rejected':
-        return { color: 'bg-red-100 text-red-800 border-red-300', label: 'Rejected' };
+        return { color: 'bg-red-100 text-red-800 border-red-300 hover:bg-red-200', label: 'Rejected' };
       case 'cancelled':
-        return { color: 'bg-orange-100 text-orange-800 border-orange-300', label: 'Cancelled' };
+        return { color: 'bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-200 hover:bg-orange-200', label: 'Cancelled' };
       default:
-        return { color: 'bg-gray-100 text-gray-800 border-gray-200', label: 'Unknown' };
+        return { color: 'bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200', label: 'Unknown' };
     }
   };
 
@@ -114,7 +114,7 @@ const RentalDetailModal = ({
           </div>
           
           <div className="flex items-center">
-            <Badge className={`${statusConfig.color} text-xs px-2.5 py-0.5 mr-8 font-medium`}>
+            <Badge className={`${statusConfig.color} text-xs px-2.5 py-0.5 mr-8 font-medium hover:opacity`}>
               {statusConfig.label}
             </Badge>
           </div>

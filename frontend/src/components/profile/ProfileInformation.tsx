@@ -132,7 +132,7 @@ const ProfileInformation = ({
                   value={userData.bio} 
                   onChange={(e) => onInputChange('bio', e.target.value)}
                   disabled={!isEditing}
-                  className={`min-h-32 border-green-300 bg-white text-green-800 ${!isEditing ? "bg-green-50/70 border-green-200" : ""}`}
+                  className={`min-h-32 border-green-300 bg-white text-md text-green-800 ${!isEditing ? "bg-green-50/70 border-green-200" : ""}`}
                 />
                 <p className="text-green-700 text-sm mt-1">Tell others about yourself and your interests</p>
               </div>

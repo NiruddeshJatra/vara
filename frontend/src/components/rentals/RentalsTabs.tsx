@@ -9,7 +9,7 @@ interface RentalsTabsProps {
 
 const RentalsTabs = ({ activeTab, onTabChange }: RentalsTabsProps) => {
   return (
-    <div className="mb-8 relative">
+    <div className="mb-8 mt-8 relative">
       {/* Decorative background elements */}
       <div className="absolute -top-4 -left-4 w-24 h-24 bg-green-100/20 rounded-full blur-lg" />
       <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-lime-100/20 rounded-full blur-lg" />
@@ -19,13 +19,13 @@ const RentalsTabs = ({ activeTab, onTabChange }: RentalsTabsProps) => {
         className="w-full relative"
         onValueChange={(value) => onTabChange(value as 'myRentals' | 'myListingsRentals')}
       >
-        <TabsList className="grid w-full grid-cols-2 h-14 bg-green-300/60 backdrop-blur-sm border-2 border-green-100 rounded-xl p-1">
+        <TabsList className="grid w-full grid-cols-2 h-14 bg-green-200/80 border border-green-100 rounded-xl p-1">
           <TabsTrigger 
             value="myRentals"
             className={`flex items-center gap-3 text-base rounded-lg transition-all ${
               activeTab === 'myRentals' 
-                ? 'bg-green-600 text-white shadow-sm'
-                : 'text-green-800 hover:bg-green-50'
+                ? 'bg-white text-green-800 shadow-sm'
+                : 'text-green-700 hover:bg-green-50'
             }`}
           >
             <Home className="h-5 w-5" strokeWidth={1.5} />
@@ -35,8 +35,8 @@ const RentalsTabs = ({ activeTab, onTabChange }: RentalsTabsProps) => {
             value="myListingsRentals"
             className={`flex items-center gap-3 text-base rounded-lg transition-all ${
               activeTab === 'myListingsRentals' 
-                ? 'bg-green-600 text-white shadow-sm'
-                : 'text-green-800 hover:bg-green-50'
+                ? 'bg-white text-green-800 shadow-sm'
+                : 'text-green-700 hover:bg-green-50'
             }`}
           >
             <Package className="h-5 w-5" strokeWidth={1.5} />
