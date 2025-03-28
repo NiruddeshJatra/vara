@@ -31,9 +31,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
   
   // If user is logged in but tries to access auth pages (login/register), redirect to home
-  if (!requireAuth && isLoggedIn()) {
-    return <Navigate to="/" replace />;
-  }
+  // if (!requireAuth && isLoggedIn() && location.pathname !== '/verify-email') {
+  //   return <Navigate to="/" replace />;
+  // }
   
   // If authentication requirements are met, render children
   return <>{children}</>;
