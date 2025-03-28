@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import authService, { UserData } from '../services/auth.service';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import axios from 'axios';
+import config from '../config';
 
 interface AuthContextType {
   currentUser: UserData | null;
@@ -10,7 +12,7 @@ interface AuthContextType {
   register: (formData: any) => Promise<void>;
   logout: () => void;
   isLoggedIn: () => boolean;
-  verifyEmail: (key: string) => Promise<void>;
+  verifyEmail: (token: string) => Promise<any>;
   requestPasswordReset: (email: string) => Promise<void>;
   confirmPasswordReset: (uid: string, token: string, password1: string, password2: string) => Promise<void>;
 }
@@ -23,7 +25,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if there's a user in local storage on initial load
+    // Check if we're in development mode
+    if (config.isDevelopment) {
+      // Create a mock user for development
+      const mockUser: UserData = {
+        id: '1',
+        email: 'dev@example.com',
+        username: 'dev_user',
+        first_name: 'Dev',
+        last_name: 'User',
+        phone_number: '1234567890',
+        location: 'Development',
+        profile_picture: null,
+        is_verified: true,
+        is_trusted: true,
+        average_rating: 5.0,
+      };
+      
+      // Store the mock user in localStorage
+      localStorage.setItem(config.auth.userStorageKey, JSON.stringify(mockUser));
+      
+      // Set the current user
+      setCurrentUser(mockUser);
+      setLoading(false);
+      return;
+    }
+
+    // For production, check local storage
     const user = authService.getCurrentUser();
     setCurrentUser(user);
     setLoading(false);
@@ -118,17 +146,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return !!currentUser;
   };
 
-  const verifyEmail = async (key: string) => {
+  const verifyEmail = async (token: string) => {
     try {
-      setLoading(true);
-      await authService.verifyEmail(key);
-      toast.success('Email verified successfully! You can now log in.');
-      navigate('/login');
-    } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Email verification failed');
+      const response = await axios.post(`${config.baseUrl}${config.auth.emailVerificationEndpoint}${token}/`);
+      if (response.data.is_verified) {
+        // Update user's verification status in localStorage
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user) {
+          user.is_email_verified = true;
+          localStorage.setItem('user', JSON.stringify(user));
+        }
+      }
+      return response.data;
+    } catch (error) {
       throw error;
-    } finally {
-      setLoading(false);
     }
   };
 

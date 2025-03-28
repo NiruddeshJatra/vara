@@ -6,6 +6,9 @@ const config = {
   // Base URL for the application
   baseUrl: 'http://localhost:8000',
   
+  // Development mode (set to false in production)
+  isDevelopment: true,
+  
   // Authentication settings
   auth: {
     // Local storage keys
@@ -18,14 +21,10 @@ const config = {
     registerEndpoint: '/auth/registration/',
     logoutEndpoint: '/auth/logout/',
     verifyEmailEndpoint: '/auth/registration/verify-email/',
+    emailVerificationEndpoint: '/api/users/verify-email/',
     passwordResetEndpoint: '/auth/password/reset/',
     passwordResetConfirmEndpoint: '/auth/password/reset/confirm/',
-    
-    // URLs for redirecting after auth actions
-    loginRedirectUrl: '/',
-    registerRedirectUrl: '/verify-email',
-    verifyRedirectUrl: '/login?verified=1'
-  }
+  },
 };
 
 export default config;

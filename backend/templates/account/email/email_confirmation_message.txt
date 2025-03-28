@@ -2,7 +2,7 @@
 {% load i18n %}
 {% blocktrans %}
 
-Hello from Vhara!
+Hello from Vara!
 
 You're receiving this email because someone (hopefully you) has registered for an account at Vhara using this email address.
 
@@ -11,5 +11,5 @@ To confirm this is correct, please follow this link: {{ activate_url }}
 If you didn't register for this account, you can safely ignore this email.
 
 Thank you,
-The Vhara Team
+The Vara Team
 {% endblocktrans %}

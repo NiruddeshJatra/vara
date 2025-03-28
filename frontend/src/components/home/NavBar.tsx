@@ -108,7 +108,7 @@ const NavBar = () => {
               className="border-gray-300 hover:bg-green-50 text-green-800 rounded-full px-3 sm:px-4 mt-3 sm:mt-0 sm:ml-4 sm:mr-10 text-xs sm:text-sm w-full sm:w-auto"
               onClick={() => setFiltersOpen(!filtersOpen)}
             >
-              <SlidersHorizontal className="w-4 h-4" />
+              <SlidersHorizontal className="w-4 h-4 mr-1" />
               <span>Filters</span>
             </Button>
           )}
@@ -185,14 +185,8 @@ const NavBar = () => {
                 <Link to="/advertisements" className="text-sm font-medium py-2 hover:text-green-600 transition-colors flex items-center gap-2">
                   <Home size={16} /> Browse Items
                 </Link>
-                <Link to="#" className="text-sm font-medium py-2 hover:text-green-600 transition-colors flex items-center gap-2">
-                  <Package size={16} /> My Items
-                </Link>
                 <Link to="/rentals" className="text-sm font-medium py-2 hover:text-green-600 transition-colors flex items-center gap-2">
                   <Package size={16} /> My Rentals
-                </Link>
-                <Link to="#" className="text-sm font-medium py-2 hover:text-green-600 transition-colors flex items-center gap-2">
-                  <MessageSquare size={16} /> Messages
                 </Link>
                 <Link to="/profile" className="text-sm font-medium py-2 hover:text-green-600 transition-colors flex items-center gap-2">
                   <User size={16} /> Profile

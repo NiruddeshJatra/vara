@@ -1,5 +1,5 @@
 import { useAdminAuth } from "../../contexts/AdminAuthContext";
-import { Shield } from "lucide-react";
+import { Link, Shield } from "lucide-react";
 
 const Navbar = () => {
   const { isAdmin } = useAdminAuth();

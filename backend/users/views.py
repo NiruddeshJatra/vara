@@ -114,15 +114,32 @@ class CustomLoginView(LoginView):
         except Exception as e:
             print(f"Login error: {str(e)}")
             raise e
-          
         
-      
+        
+    
 # added a manager to delete unverified users who registered more than a week ago.
 
 class CustomVerifyEmailView(VerifyEmailView):
     def get(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.GET)
-        serializer.is_valid(raise_exception=True)
-        self.kwargs['key'] = serializer.validated_data['key']
-        self.confirm_email(self.request)
-        return Response({"detail": "Email confirmed successfully."}, status=status.HTTP_200_OK)
+        token = kwargs.get('token')
+        if not token:
+            return Response({'detail': 'Invalid verification token'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        try:
+            # Split the token to get user_id and email
+            user_id, email = token.split('_')
+            user = CustomUser.objects.get(id=user_id, email=email)
+            
+            if user.is_email_verified:
+                return Response({'detail': 'Email already verified'}, status=status.HTTP_200_OK)
+                
+            user.is_email_verified = True
+            user.save()
+            
+            return Response({
+                'detail': 'Email verified successfully',
+                'is_verified': True
+            }, status=status.HTTP_200_OK)
+            
+        except (ValueError, CustomUser.DoesNotExist):
+            return Response({'detail': 'Invalid verification token'}, status=status.HTTP_400_BAD_REQUEST)

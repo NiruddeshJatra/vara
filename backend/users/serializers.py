@@ -47,7 +47,7 @@ class CustomRegisterSerializer(RegisterSerializer):
             raise serializers.ValidationError("Phone number must be 10-15 digits with optional + prefix")
 
         return phone_number
-      
+    
     def get_cleaned_data(self):
         return {
             'username': self.validated_data.get('username', ''),

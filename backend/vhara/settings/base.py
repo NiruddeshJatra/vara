@@ -3,6 +3,7 @@ Base settings for the project.
 Contains common settings used in all environments.
 """
 
+from django.conf.global_settings import EMAIL_HOST_PASSWORD, EMAIL_HOST_USER
 import environ
 from pathlib import Path
 from datetime import timedelta
@@ -60,8 +61,10 @@ INSTALLED_APPS = [
     "django_filters",
     "channels",
     'corsheaders',
-    "otp_auth",  # New OTP authentication app
 ]
+
+# Import signals
+from users.signals import send_verification_email
 
 # Social auth settings
 SOCIALACCOUNT_PROVIDERS = {
@@ -259,12 +262,17 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+# EMAIL_HOST_USER = 'EMAIL'
+# EMAIL_HOST_PASSWORD = 'PASSWORD'
 
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'optional'  # Changed from 'mandatory' to 'optional'
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # Changed from 'mandatory' to 'optional'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='no-reply@example.com')
 VERIFICATION_EXPIRE_DAYS = 3
@@ -274,9 +282,9 @@ CACHE_VERSION = 1
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/login/"
 
-PHONE_VERIFICATION_ENABLED = True
-OTP_EXPIRY_MINUTES = 10
-OTP_MAX_ATTEMPTS = 3
+# PHONE_VERIFICATION_ENABLED = True
+# OTP_EXPIRY_MINUTES = 10
+# OTP_MAX_ATTEMPTS = 3
 
 # Internationalization
 LANGUAGE_CODE = "en-us"
@@ -309,9 +317,9 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 # SSLCOMMERZ_API_URL = 'https://sandbox.sslcommerz.com' if SSLCOMMERZ_SANDBOX_MODE else 'https://securepay.sslcommerz.com'
 
 # Add BKash settings:
-BKASH_API_KEY = "your_api_key"
-BKASH_API_URL = "https://api.bkash.com"
-BKASH_WEBHOOK_SECRET = "your_webhook_secret"
+# BKASH_API_KEY = "your_api_key"
+# BKASH_API_URL = "https://api.bkash.com"
+# BKASH_WEBHOOK_SECRET = "your_webhook_secret"
 
 
 # LOGGING = {

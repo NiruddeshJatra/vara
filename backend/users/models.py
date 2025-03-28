@@ -21,6 +21,8 @@ class CustomUser(AbstractUser):
     updated_at = models.DateTimeField(auto_now=True)
     is_verified = models.BooleanField(default=False)
     is_trusted = models.BooleanField(default=False)
+    is_email_verified = models.BooleanField(default=False)
+    email_verification_token = models.CharField(max_length=255, blank=True, null=True)
     average_rating = models.DecimalField(
         max_digits=3,
         decimal_places=2,
@@ -50,3 +52,5 @@ class CustomUser(AbstractUser):
         )
         self.average_rating = round(avg, 2)
         self.save(update_fields=["average_rating"])
+
+

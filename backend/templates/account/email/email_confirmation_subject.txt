@@ -1,4 +1,4 @@
 {% load i18n %}
 {% autoescape off %}
-{% blocktrans %}Confirm Your Email Address for Vhara{% endblocktrans %}
+{% blocktrans %}Confirm Your Email Address for Vara{% endblocktrans %}
 {% endautoescape %}
