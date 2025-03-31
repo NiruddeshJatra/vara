@@ -1,18 +1,18 @@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, AlertCircle, User, Phone, MapPin, Calendar } from 'lucide-react';
-import { FormData, FormErrors } from '@/types/auth';
+import { ProfileFormData, ProfileFormErrors } from '@/types/auth';
 
 interface Props {
-  formData: FormData;
-  errors: FormErrors;
-  onChange: (data: Partial<FormData>) => void;
+  profileFormData: ProfileFormData;
+  errors: ProfileFormErrors;
+  onChange: (data: Partial<ProfileFormData>) => void;
   onNext: (e: React.FormEvent) => void;
   onPrev: () => void;
   loading?: boolean;
 }
 
-const ContactDetailsStep = ({ formData, errors, onChange, onNext, onPrev, loading = false }: Props) => {
+const ContactDetailsStep = ({ profileFormData, errors, onChange, onNext, onPrev, loading = false }: Props) => {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-green-800">Contact Details</h2>
@@ -26,7 +26,7 @@ const ContactDetailsStep = ({ formData, errors, onChange, onNext, onPrev, loadin
             <Input
               id="firstName"
               name="firstName"
-              value={formData.firstName}
+              value={profileFormData.firstName}
               onChange={(e) => onChange({ firstName: e.target.value })}
               error={!!errors.firstName}
               className="pl-9"
@@ -48,7 +48,7 @@ const ContactDetailsStep = ({ formData, errors, onChange, onNext, onPrev, loadin
             <Input
               id="lastName"
               name="lastName"
-              value={formData.lastName}
+              value={profileFormData.lastName}
               onChange={(e) => onChange({ lastName: e.target.value })}
               error={!!errors.lastName}
               className="pl-9"
@@ -72,7 +72,7 @@ const ContactDetailsStep = ({ formData, errors, onChange, onNext, onPrev, loadin
               name="phoneNumber"
               type="tel"
               placeholder="+8801XXXXXXXXX"
-              value={formData.phoneNumber}
+              value={profileFormData.phoneNumber}
               onChange={(e) => onChange({ phoneNumber: e.target.value })}
               error={!!errors.phoneNumber}
               className="pl-9"
@@ -97,7 +97,7 @@ const ContactDetailsStep = ({ formData, errors, onChange, onNext, onPrev, loadin
               id="location"
               name="location"
               placeholder="City, Area"
-              value={formData.location}
+              value={profileFormData.location}
               onChange={(e) => onChange({ location: e.target.value })}
               error={!!errors.location}
               className="pl-9"
@@ -122,7 +122,7 @@ const ContactDetailsStep = ({ formData, errors, onChange, onNext, onPrev, loadin
               id="dateOfBirth"
               name="dateOfBirth"
               type="date"
-              value={formData.dateOfBirth}
+              value={profileFormData.dateOfBirth}
               onChange={(e) => onChange({ dateOfBirth: e.target.value })}
               error={!!errors.dateOfBirth}
               className="pl-9"

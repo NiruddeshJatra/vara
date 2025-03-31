@@ -1,8 +1,15 @@
 import axios from 'axios';
-import api from './api.service';
 import config from '../config';
+import { RegistrationData, ProfileFormData, LoginData, UserData } from '../types/auth';
+
 
 // Create a separate axios instance for auth endpoints (which don't use the /api prefix)
+// This configuration:
+// 1. Uses the base URL without /api prefix
+// 2. Sends cookies with requests (needed for authentication)
+// 3. Automatically sets JSON content type
+// 4. Includes CSRF token for security
+// 5. Logs all requests for debugging
 const authApi = axios.create({
   baseURL: config.baseUrl,
   withCredentials: true,
@@ -27,9 +34,9 @@ authApi.interceptors.request.use(request => {
   if (csrfToken && request.headers) {
     request.headers['X-CSRFToken'] = csrfToken;
   }
-  
-  console.log('Auth API Request:', { 
-    url: request.url, 
+
+  console.log('Auth API Request:', {
+    url: request.url,
     method: request.method,
     data: request.data,
     headers: request.headers
@@ -58,97 +65,50 @@ authApi.interceptors.response.use(
   }
 );
 
-export interface LoginData {
-  email: string;
-  password: string;
-}
-
-export interface RegisterData {
-  email: string;
-  username: string;
-  password1: string;
-  password2: string;
-  first_name: string;
-  last_name: string;
-  phone_number: string;
-  location: string;
-  date_of_birth?: string;
-}
-
-export interface UserData {
-  id: string;
-  email: string;
-  username: string;
-  first_name: string;
-  last_name: string;
-  phone_number: string;
-  location: string;
-  profile_picture: string | null;
-  is_verified: boolean;
-  is_trusted: boolean;
-  average_rating: number;
-}
-
-export interface AuthResponse {
-  user: UserData;
-  access_token?: string;
-  refresh_token?: string;
-}
-
 class AuthService {
   // Login the user and store user details and token
   async login(data: LoginData): Promise<UserData> {
     try {
-      // Use the dj-rest-auth login endpoint
+      console.log('Attempting login with email:', data.email);
+
       const response = await authApi.post(config.auth.loginEndpoint, {
         email: data.email,
         password: data.password
       });
-      
-      // Store user and tokens in localStorage
-      if (response.data.user) {
-        localStorage.setItem(config.auth.userStorageKey, JSON.stringify(response.data.user));
-        if (response.data.access_token) {
-          localStorage.setItem(config.auth.tokenStorageKey, response.data.access_token);
-        }
-      }
-      
+
+      console.log('Login successful:', response.data);
       return response.data.user;
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch (error: any) {
+      console.error('Login error details:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
       throw error;
     }
   }
 
-  // Register a new user
-  async register(data: RegisterData): Promise<any> {
+  // This function:
+  // 1. Takes user registration data
+  // 2. Makes a secure API call to register the user
+  // 3. Returns the server's response or throws an error
+  // 4. Includes specific error handling for common registration issues
+  async register(data: RegistrationData): Promise<any> {
     try {
       console.log('Attempting registration with data:', {
         ...data,
-        password1: '(hidden for security)',
-        password2: '(hidden for security)'
+        password: '(hidden for security)'
       });
-      
-      // First, get CSRF token if needed
-      try {
-        await authApi.get('/csrf/');
-      } catch (error) {
-        console.log('CSRF token fetch optional, continuing with registration');
-      }
-      
+
       // Use the dj-rest-auth registration endpoint
       const response = await authApi.post(config.auth.registerEndpoint, {
         email: data.email,
         username: data.username,
-        password1: data.password1,
-        password2: data.password2,
-        first_name: data.first_name,
-        last_name: data.last_name,
-        phone_number: data.phone_number,
-        location: data.location,
-        date_of_birth: data.date_of_birth
+        password: data.password,
+        termsAgreed: data.termsAgreed,
+        marketingConsent: data.marketingConsent
       });
-      
+
       console.log('Registration successful:', response.data);
       return response.data;
     } catch (error: any) {
@@ -157,11 +117,11 @@ class AuthService {
         data: error.response?.data,
         message: error.message
       });
-      
+
       // Handle common registration errors
       if (error.response?.status === 400) {
         const errorData = error.response.data;
-        
+
         // Check if the error is about existing email/username
         if (errorData.email && errorData.email[0].includes('already exists')) {
           throw new Error('An account with this email already exists.');
@@ -169,16 +129,16 @@ class AuthService {
         if (errorData.username && errorData.username[0].includes('already exists')) {
           throw new Error('This username is already taken.');
         }
-        
+
         // Handle password errors
-        if (errorData.password1) {
-          throw new Error(errorData.password1[0]);
+        if (errorData.password) {
+          throw new Error(errorData.password[0]);
         }
         if (errorData.non_field_errors) {
           throw new Error(errorData.non_field_errors[0]);
         }
       }
-      
+
       console.error('Registration error:', error);
       throw error;
     }
@@ -211,6 +171,41 @@ class AuthService {
     }
   }
 
+  async updateProfile(data: ProfileFormData): Promise<any> {
+    try {
+      console.log('Updating profile with data:', {
+        ...data,
+        nationalIdFront: '(file data hidden)',
+        nationalIdBack: '(file data hidden)'
+      });
+
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        if (value instanceof File) {
+          formData.append(key, value);
+        } else if (value !== null) {
+          formData.append(key, String(value));
+        }
+      });
+
+      const response = await authApi.patch(config.auth.profileEndpoint, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      console.log('Profile updated successfully:', response.data);
+      return response.data;
+
+    } catch (error) {
+      console.error('Profile update error:', error);
+      if (error.response?.data?.detail) {
+        throw new Error(error.response.data.detail);
+      }
+      throw error;
+    }
+  }
+
   // Get the current user from local storage
   getCurrentUser(): UserData | null {
     const userStr = localStorage.getItem(config.auth.userStorageKey);
@@ -234,7 +229,7 @@ class AuthService {
   async refreshToken(): Promise<string | null> {
     try {
       const response = await authApi.post(config.auth.refreshTokenEndpoint);
-      
+
       if (response.data.access) {
         localStorage.setItem(config.auth.tokenStorageKey, response.data.access);
         return response.data.access;

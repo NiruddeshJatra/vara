@@ -13,17 +13,19 @@ const config = {
   auth: {
     // Local storage keys
     tokenStorageKey: 'access_token',
+    refreshTokenStorageKey: 'refresh_token',
     userStorageKey: 'user',
     
     // Authentication endpoints (note: these don't use the /api prefix)
     refreshTokenEndpoint: '/auth/token/refresh/',
-    loginEndpoint: '/auth/login/',
+    loginEndpoint: '/auth/token/',
     registerEndpoint: '/auth/registration/',
-    logoutEndpoint: '/auth/logout/',
+    logoutEndpoint: '/auth/token/blacklist/',
     verifyEmailEndpoint: '/auth/registration/verify-email/',
     emailVerificationEndpoint: '/api/users/verify-email/',
     passwordResetEndpoint: '/auth/password/reset/',
     passwordResetConfirmEndpoint: '/auth/password/reset/confirm/',
+    profileEndpoint: '/api/users/profile/',
   },
 };
 

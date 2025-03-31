@@ -1,15 +1,18 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import authService, { UserData } from '../services/auth.service';
+import AuthService from '../services/auth.service';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import axios from 'axios';
 import config from '../config';
+import axios from 'axios';
+import { RegistrationData, ProfileFormData, UserData, LoginData } from '../types/auth';
 
 interface AuthContextType {
   currentUser: UserData | null;
+  setCurrentUser: (user: UserData | null) => void;
   loading: boolean;
-  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
-  register: (formData: any) => Promise<void>;
+  updateProfile: (data: ProfileFormData) => Promise<void>;
+  login: (loginData: LoginData) => Promise<void>;
+  register: (formData: RegistrationData) => Promise<void>;
   logout: () => void;
   isLoggedIn: () => boolean;
   verifyEmail: (token: string) => Promise<any>;
@@ -25,49 +28,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if we're in development mode
-    if (config.isDevelopment) {
-      // Create a mock user for development
-      const mockUser: UserData = {
-        id: '1',
-        email: 'dev@example.com',
-        username: 'dev_user',
-        first_name: 'Dev',
-        last_name: 'User',
-        phone_number: '1234567890',
-        location: 'Development',
-        profile_picture: null,
-        is_verified: true,
-        is_trusted: true,
-        average_rating: 5.0,
-      };
-      
-      // Store the mock user in localStorage
-      localStorage.setItem(config.auth.userStorageKey, JSON.stringify(mockUser));
-      
-      // Set the current user
-      setCurrentUser(mockUser);
-      setLoading(false);
-      return;
-    }
+    // // Check if we're in development mode
+    // if (config.isDevelopment) {
+    //   // Create a mock user for development
+    //   const mockUser: UserData = {
+    //     id: '1',
+    //     email: 'dev@example.com',
+    //     username: 'dev_user',
+    //     first_name: 'Dev',
+    //     last_name: 'User',
+    //     phone_number: '1234567890',
+    //     location: 'Development',
+    //     profile_picture: null,
+    //     is_verified: true,
+    //     is_trusted: true,
+    //     average_rating: 5.0,
+    //   };
+
+    //   // Store the mock user in localStorage
+    //   localStorage.setItem(config.auth.userStorageKey, JSON.stringify(mockUser));
+
+    //   // Set the current user
+    //   setCurrentUser(mockUser);
+    //   setLoading(false);
+    //   return;
+    // }
 
     // For production, check local storage
-    const user = authService.getCurrentUser();
+    const user = AuthService.getCurrentUser();
     setCurrentUser(user);
     setLoading(false);
   }, []);
 
-  const login = async (email: string, password: string, rememberMe?: boolean) => {
+  const login = async (loginData: LoginData) => {
     try {
       setLoading(true);
-      const user = await authService.login({ email, password });
+      const user = await AuthService.login(loginData);
       setCurrentUser(user);
       toast.success('Login successful!');
       navigate('/');
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.detail || 
-                          error?.response?.data?.non_field_errors?.[0] || 
-                          'Invalid email or password';
+      const errorMessage = error?.response?.data?.detail ||
+        error?.response?.data?.non_field_errors?.[0] ||
+        'Invalid email or password';
       toast.error(errorMessage);
       throw error;
     } finally {
@@ -75,10 +78,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (formData: any) => {
+  // The register function handles:
+  // 1. Making the API request to register the user
+  // 2. Error handling and displaying error messages
+  // 3. Managing the loading state
+  // 4. Updating the user state after successful registration
+  const register = async (formData: RegistrationData) => {
     try {
-      setLoading(true);
-      await authService.register(formData);
+      setLoading(true); // Loading indicators (like spinners or loading text) will be shown and buttons will be disabled during registration
+      await AuthService.register(formData); // Make API request to register the user
       toast.success(
         'Registration successful! Please check your email to verify your account.',
         { duration: 5000 }
@@ -86,46 +94,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       navigate('/verify-email');
     } catch (error: any) {
       console.error('Registration error in context:', error);
-      
-      // Check if the error is an Error object with a message (from our error handling in service)
+
+      // If the error has a message (from our error handling in service)
       if (error instanceof Error && error.message) {
         toast.error(error.message);
-      }
-      // Check if the error has a response with error data
-      else if (error.response?.data) {
-        const errorMessages = error.response.data;
-        
-        // Handle error object where keys are field names and values are arrays of error messages
-        if (typeof errorMessages === 'object') {
-          let hasShownError = false;
-          
-          Object.keys(errorMessages).forEach((key) => {
-            // Skip non_field_errors as they are often duplicates of other errors
-            if (key === 'non_field_errors') return;
-            
-            const messages = Array.isArray(errorMessages[key]) 
-              ? errorMessages[key] 
-              : [errorMessages[key]];
-            
-            messages.forEach((message: string) => {
-              toast.error(`${key.replace('_', ' ')}: ${message}`);
-              hasShownError = true;
-            });
-          });
-          
-          // If we couldn't extract specific errors, show a general error
-          if (!hasShownError) {
-            toast.error('Registration failed. Please check your information and try again.');
-          }
-        } 
-        // Handle string error message
-        else if (typeof errorMessages === 'string') {
-          toast.error(errorMessages);
-        } 
-        // Fallback error message
-        else {
-          toast.error('Registration failed. Please try again.');
-        }
       } else {
         toast.error('Registration failed. Please try again.');
       }
@@ -136,7 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    authService.logout();
+    AuthService.logout();
     setCurrentUser(null);
     toast.success('Logged out successfully');
     navigate('/login');
@@ -166,7 +138,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const requestPasswordReset = async (email: string) => {
     try {
       setLoading(true);
-      await authService.requestPasswordReset(email);
+      await AuthService.requestPasswordReset(email);
       toast.success('Password reset email sent. Please check your inbox.');
     } catch (error: any) {
       toast.error(error.response?.data?.detail || 'Password reset request failed');
@@ -179,7 +151,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const confirmPasswordReset = async (uid: string, token: string, password1: string, password2: string) => {
     try {
       setLoading(true);
-      await authService.confirmPasswordReset(uid, token, password1, password2);
+      await AuthService.confirmPasswordReset(uid, token, password1, password2);
       toast.success('Password reset successful! You can now log in with your new password.');
       navigate('/login');
     } catch (error: any) {
@@ -190,16 +162,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateProfile = async (data: ProfileFormData) => {
+    try {
+      setLoading(true);
+      const response = await AuthService.updateProfile(data);
+      setCurrentUser(prev => ({ ...prev, ...response }));
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     currentUser,
     loading,
+    updateProfile,
     login,
     register,
     logout,
     isLoggedIn,
     verifyEmail,
     requestPasswordReset,
-    confirmPasswordReset
+    confirmPasswordReset,
+    setCurrentUser
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
