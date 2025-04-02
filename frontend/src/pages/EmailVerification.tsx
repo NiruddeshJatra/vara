@@ -55,7 +55,7 @@ const EmailVerification = () => {
         <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg overflow-hidden px-8 py-20 animate-fade-up">
           {status === 'loading' && (
             <div className="text-center">
-              <Loader2 className="h-16 w-16 text-green-600 mx-auto mb-6 animate-spin" />
+              <Loader2 className="h-16 w-16 text-green-600 mx-auto mt-20 mb-6 animate-spin" />
               <h1 className="text-2xl font-bold mb-4">Verifying Your Email</h1>
               <p className="text-gray-600">Please wait while we verify your email address...</p>
             </div>

@@ -1,7 +1,6 @@
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
-import { Checkbox } from '@/components/ui/checkbox';
 import { AlertCircle, ChevronRight, Lightbulb } from 'lucide-react';
 import { ListingFormData, FormErrors } from '@/types/listings';
 import { Button } from '@/components/ui/button';
@@ -16,11 +15,8 @@ type Props = {
 
 const BasicDetailsStep = ({ formData, errors, categories, onChange, onNext }: Props) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-    const checked = e.target instanceof HTMLInputElement ? e.target.checked : undefined;
-    onChange({ 
-      [name]: type === 'checkbox' ? checked : value 
-    });
+    const { name, value } = e.target;
+    onChange({ [name]: value });
   };
 
   return (
@@ -105,23 +101,6 @@ const BasicDetailsStep = ({ formData, errors, categories, onChange, onNext }: Pr
         ) : (
           <p className="mt-1 text-xs text-gray-500">Where is the item located?</p>
         )}
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <Checkbox 
-          id="available"
-          checked={formData.available}
-          onCheckedChange={(checked) => 
-            onChange({ available: !!checked })
-          }
-          className="peer h-4 w-4 shrink-0 rounded-sm border border-gray-300 focus:ring-green-500 focus:border-green-500 data-[state=checked]:bg-green-600 data-[state=checked]:text-white"
-        />
-        <label
-          htmlFor="available"
-          className="text-sm font-medium text-gray-700"
-        >
-          Available for rent
-        </label>
       </div>
 
       <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-4 rounded-lg border border-amber-200 mt-4">
