@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ListingFormData } from '@/types/listings';
-import { Info } from 'lucide-react';
+import { Info, ChevronRight } from 'lucide-react';
+import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 
 type Props = {
   formData: ListingFormData;
@@ -50,21 +51,21 @@ const ProductHistoryStep = ({ formData, onNext, onBack }: Props) => {
             <Label htmlFor="purchaseYear" className="text-base font-medium text-gray-700">
               Purchase Year
             </Label>
-            <select
-              id="purchaseYear"
-              value={purchaseYear}
-              onChange={(e) => setPurchaseYear(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-700 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
-              required
+            <Select 
+              value={purchaseYear} 
+              onValueChange={setPurchaseYear}
             >
-              {years.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger>
+                {purchaseYear || "Select Year"}
+              </SelectTrigger>
+              <SelectContent>
+                {years.map(year => (
+                  <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <p className="text-sm text-gray-500">
-              Select the year when you purchased this product.
+              The year when you purchased this product.
             </p>
           </div>
 
@@ -87,12 +88,12 @@ const ProductHistoryStep = ({ formData, onNext, onBack }: Props) => {
               />
             </div>
             <p className="text-sm text-gray-500">
-              Enter the price you paid when you purchased this product.
+              The price you paid when you purchased this product.
             </p>
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-4">
           <Label className="text-base font-medium text-gray-700">Ownership History</Label>
           <RadioGroup
             value={ownershipHistory}
@@ -100,21 +101,18 @@ const ProductHistoryStep = ({ formData, onNext, onBack }: Props) => {
             className="flex flex-col space-y-2"
           >
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="firsthand" id="firsthand" />
+              <RadioGroupItem value="firsthand" id="firsthand" className="text-green-600 border-green-600 data-[state=checked]:bg-green-600" />
               <Label htmlFor="firsthand" className="text-gray-700">
                 Firsthand (I am the original owner)
               </Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="secondhand" id="secondhand" />
+              <RadioGroupItem value="secondhand" id="secondhand" className="text-green-600 border-green-600 data-[state=checked]:bg-green-600" />
               <Label htmlFor="secondhand" className="text-gray-700">
                 Secondhand (I purchased it from someone else)
               </Label>
             </div>
           </RadioGroup>
-          <p className="text-sm text-gray-500">
-            Indicate whether you are the original owner or purchased this product from someone else.
-          </p>
         </div>
       </div>
 

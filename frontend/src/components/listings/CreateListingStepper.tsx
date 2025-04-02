@@ -173,11 +173,11 @@ const CreateListingStepper = () => {
                   className="h-full bg-green-500 transition-all duration-300 ease-in-out" 
                   style={{ 
                     width: 
-                      currentStep === 1 ? '0%' : 
-                      currentStep === 2 ? '20%' : 
-                      currentStep === 3 ? '40%' : 
-                      currentStep === 4 ? '60%' : 
-                      '80%' 
+                      currentStep === 1 ? '5%' : 
+                      currentStep === 2 ? '25%' : 
+                      currentStep === 3 ? '50%' : 
+                      currentStep === 4 ? '75%' : 
+                      '100%' 
                   }}
                 ></div>
               </div>
@@ -206,7 +206,10 @@ const CreateListingStepper = () => {
               {currentStep === 3 && (
                 <ProductHistoryStep
                   formData={formData}
-                  onNext={handleNextStep}
+                  onNext={(data) => {
+                    setFormData(prev => ({ ...prev, ...data }));
+                    handleNextStep();
+                  }}
                   onBack={handlePrevStep}
                 />
               )}
