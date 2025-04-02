@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import BasicDetailsStep from './steps/BasicDetailsStep';
 import ImageUploadStep from './steps/ImageUploadStep';
 import PricingStep from './steps/PricingStep';
-import AvailabilityStep from './steps/AvailabilityStep';
+import UnavailabilityStep from './steps/UnavailabilityStep';
 import ConfirmationStep from './steps/ConfirmationStep';
 import {DurationUnit, DURATION_CHOICES, ListingFormData, FormErrors, CATEGORY_CHOICES } from '@/types/listings';
 
@@ -131,8 +131,8 @@ const CreateListingStepper = () => {
         <div className="bg-gradient-to-b from-green-300 to-lime-100/20 pt-4 md:pt-8 px-4">
         <div className="max-w-3xl mx-auto bg-gradient-to-b from-white to-lime-50 rounded-lg shadow-subtle p-4 md:p-6 lg:p-8 overflow-hidden">
           <div className="text-center mb-6 md:mb-8">
-            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-700 mb-2">List Your Product</h1>
-            <p className="text-sm md:text-base text-gray-500">Join the Bhara community to rent and lend items</p>
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-700 mb-2">Upload Your Product</h1>
+            <p className="text-sm md:text-base text-gray-500">Join the Vara community to rent and lend items</p>
             </div>
 
           {/* Stepper navigation */}
@@ -199,10 +199,11 @@ const CreateListingStepper = () => {
               )}
 
               {currentStep === 4 && (
-                <AvailabilityStep
-                unavailableDates={formData.unavailableDates}
-                onChange={(dates) => setFormData(prev => ({ ...prev, unavailableDates: dates }))}
-                  onSubmit={handleSubmit}
+                <UnavailabilityStep
+                  formData={formData}
+                  setFormData={setFormData}
+                  onNext={handleSubmit}
+                  onBack={handlePrevStep}
                 />
               )}
 

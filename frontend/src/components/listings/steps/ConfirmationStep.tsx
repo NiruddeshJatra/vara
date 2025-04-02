@@ -1,6 +1,6 @@
 // components/listings/ConfirmationStep.tsx
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Edit, Calendar } from 'lucide-react';
+import { CheckCircle, Edit, Calendar, Image, MapPin, Tag, DollarSign, CalendarDays } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ListingFormData } from '@/types/listings';
 import { format } from 'date-fns';
@@ -11,89 +11,129 @@ type Props = {
 };
 
 const ConfirmationStep = ({ formData, onEdit }: Props) => {
-  return (
-    <div className="text-center space-y-8">
-      <div className="text-green-600">
-        <CheckCircle size={64} className="mx-auto" />
-      </div>
-      <h2 className="text-2xl font-bold">Listing Created Successfully!</h2>
-      
-      <div className="space-y-4 max-w-md mx-auto">
-        <div className="flex justify-between">
-          <span className="font-medium">Listing Title:</span>
-          <span>{formData.title}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="font-medium">Category:</span>
-          <span>{formData.category}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="font-medium">Location:</span>
-          <span>{formData.location}</span>
-        </div>
-      </div>
+  // Group unavailable dates into ranges
+  const getUnavailableDateRanges = () => {
+    if (!formData.unavailableDates || formData.unavailableDates.length === 0) {
+      return [];
+    }
 
-      <div className="text-left max-w-xl mx-auto space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="font-medium text-green-800">Pricing Tiers</h3>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={onEdit}
-            className="text-green-600 hover:text-green-700 hover:bg-green-50"
-          >
-            <Edit size={16} className="mr-1" /> Edit
-          </Button>
+    // Sort dates
+    const sortedDates = [...formData.unavailableDates].sort((a, b) => a.getTime() - b.getTime());
+    
+    const ranges = [];
+    let rangeStart = sortedDates[0];
+    let rangeEnd = sortedDates[0];
+    
+    for (let i = 1; i < sortedDates.length; i++) {
+      const currentDate = sortedDates[i];
+      const prevDate = sortedDates[i - 1];
+      
+      // Check if dates are consecutive
+      const dayDiff = Math.floor((currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (dayDiff === 1) {
+        // Consecutive date, extend the range
+        rangeEnd = currentDate;
+      } else {
+        // Non-consecutive date, add the current range and start a new one
+        ranges.push({ start: rangeStart, end: rangeEnd });
+        rangeStart = currentDate;
+        rangeEnd = currentDate;
+      }
+    }
+    
+    // Add the last range
+    ranges.push({ start: rangeStart, end: rangeEnd });
+    
+    return ranges;
+  };
+
+  const unavailableRanges = getUnavailableDateRanges();
+
+  return (
+    <div className="space-y-10">
+      <div className="text-center">
+        <div className="text-green-600">
+          <CheckCircle size={48} className="mx-auto" />
         </div>
-        
-        <div className="space-y-2">
-          {formData.pricingTiers.map((tier, index) => (
-            <div key={index} className="bg-gray-50 p-3 rounded-md">
-              <div className="flex justify-between">
-                <span className="font-medium">
-                  {tier.durationUnit.charAt(0).toUpperCase() + tier.durationUnit.slice(1)}ly Rate:
-                </span>
-                <span>{tier.price} Taka</span>
-              </div>
-              {tier.maxPeriod && (
-                <div className="text-sm text-gray-500">
-                  Max: {tier.maxPeriod} {tier.durationUnit}{tier.maxPeriod > 1 ? 's' : ''}
+        <h2 className="text-2xl font-bold text-green-800 mt-4">Listing Created Successfully!</h2>
+      </div>
+      
+      <div className="max-w-lg mx-auto">
+        <div className="space-y-5">
+          <div className="flex items-center justify-between">
+            <div className="w-1/3 text-right pr-8">
+              <span className="text-xl font-medium text-gray-700">Title</span>
+            </div>
+            <div className="w-2/3 text-left">
+              <span className="text-xl font-medium text-green-800">{formData.title}</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center">
+            <div className="w-1/3 text-right pr-8">
+              <span className="text-xl font-medium text-gray-700">Category</span>
+            </div>
+            <div className="w-2/3 text-left">
+              <span className="text-xl font-medium text-green-800">{formData.category}</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center">
+            <div className="w-1/3 text-right pr-8">
+              <span className="text-xl font-medium text-gray-700">Location</span>
+            </div>
+            <div className="w-2/3 text-left">
+              <span className="text-xl font-medium text-green-800">{formData.location}</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center">
+            <div className="w-1/3 text-right pr-8">
+              <span className="text-xl font-medium text-gray-700">Images</span>
+            </div>
+            <div className="w-2/3 text-left">
+              <span className="text-xl font-medium text-green-800">{formData.images.length} uploaded</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center">
+            <div className="w-1/3 text-right pr-8">
+              <span className="text-xl font-medium text-gray-700">Pricing</span>
+            </div>
+            <div className="w-2/3 text-left">
+              {formData.pricingTiers.map((tier, index) => (
+                <div key={index} className="text-xl font-medium text-green-800">
+                  {tier.durationUnit.charAt(0).toUpperCase() + tier.durationUnit.slice(1)}ly: {tier.price} Taka
+                  {tier.maxPeriod && ` (Max: ${tier.maxPeriod} ${tier.durationUnit}${tier.maxPeriod > 1 ? 's' : ''})`}
+                </div>
+              ))}
+              {formData.securityDeposit && (
+                <div className="text-xl font-medium text-green-800 mt-1">
+                  Security Deposit: {formData.securityDeposit} Taka
                 </div>
               )}
             </div>
-          ))}
-        </div>
-        
-        {formData.securityDeposit && (
-          <div className="bg-gray-50 p-3 rounded-md">
-            <div className="flex justify-between">
-              <span className="font-medium">Security Deposit:</span>
-              <span>{formData.securityDeposit} Taka</span>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {formData.unavailableDates && formData.unavailableDates.length > 0 && (
-        <div className="text-left max-w-xl mx-auto space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="font-medium text-green-800 flex items-center">
-              <Calendar size={18} className="mr-2" />
-              Unavailable Dates
-            </h3>
           </div>
           
-          <div className="bg-gray-50 p-3 rounded-md">
-            <div className="flex flex-wrap gap-2">
-              {formData.unavailableDates.map((date, index) => (
-                <span key={index} className="bg-red-50 text-red-700 px-2 py-1 rounded-md text-sm">
-                  {format(date, "PPP")}
-                </span>
-              ))}
+          {unavailableRanges.length > 0 && (
+            <div className="flex items-start">
+              <div className="w-1/3 text-right pr-8 pt-1">
+                <span className="text-xl font-medium text-gray-700">Unavailable Dates</span>
+              </div>
+              <div className="w-2/3 text-left">
+                <div className="flex flex-wrap gap-2">
+                  {unavailableRanges.map((range, index) => (
+                    <div key={index} className="text-sm bg-red-50 text-red-800 px-3 py-1.5 rounded-md">
+                      {format(range.start, "MMM d")} - {format(range.end, "MMM d, yyyy")}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
-      )}
+      </div>
 
       <div className="text-left max-w-xl mx-auto space-y-4">
         <h3 className="font-medium text-green-800">What happens next?</h3>

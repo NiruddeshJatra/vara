@@ -86,7 +86,7 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
           {isUploading ? (
             <div className="space-y-4 w-3/4 max-w-md">
               <p className="font-medium text-gray-700">Uploading images...</p>
-              <Progress value={uploadProgress} className="h-2 w-full" />
+              <Progress value={uploadProgress} className="h-2 w-full [&>div]:bg-green-500" />
               <p className="text-sm text-gray-500">{uploadProgress}% complete</p>
             </div>
           ) : (
@@ -158,10 +158,10 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
               </div>
             ))}
             
-            <div className="border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center h-36">
+            {images.length < 10 && (
               <label 
                 htmlFor="file-upload-additional"
-                className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-gray-50 transition-colors p-4"
+                className="flex flex-col items-center justify-center w-full h-36 cursor-pointer hover:bg-gray-50 transition-colors p-4 border border-dashed border-gray-200 rounded-lg"
               >
                 <Camera size={24} className="text-gray-400 mb-2" />
                 <span className="text-sm text-gray-500 text-center">Add more images</span>
@@ -174,12 +174,12 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
                   className="hidden"
                 />
               </label>
-            </div>
+            )}
           </div>
         </>
       )}
 
-      <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-5 rounded-lg border border-amber-200 mt-6">
+      <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-4 rounded-lg border border-amber-200 mt-4">
         <h6 className="text-md font-medium text-amber-800 mb-3 flex items-center gap-2">
           <Info size={18} className="text-amber-600" />
           Tips for Great Listing Photos

@@ -1,54 +1,69 @@
-// components/listings/AvailabilityStep.tsx
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, Plus, CalendarDays, Info, X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ListingFormData } from '@/types/listings';
+import { AlertCircle, CalendarDays, Info, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
+import AvailabilityCalendar from '@/components/listings/UnavailabilityCalendar';
 import { DateRange } from 'react-day-picker';
-import AvailabilityCalendar from '@/components/listings/AvailabilityCalendar';
 
-type Props = {
+interface ListingFormData {
   unavailableDates: Date[];
-  onChange: (dates: Date[]) => void;
-  onSubmit: () => void;
-};
+  [key: string]: any;
+}
 
-const AvailabilityStep = ({ unavailableDates, onChange, onSubmit }: Props) => {
+interface StepProps {
+  formData: ListingFormData;
+  setFormData: React.Dispatch<React.SetStateAction<ListingFormData>>;
+  onNext: () => void;
+  onBack: () => void;
+}
+
+const UnavailabilityStep = ({ formData, setFormData, onNext, onBack }: StepProps) => {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [error, setError] = useState('');
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+  const [error, setError] = useState<string | null>(null);
 
-  const addUnavailableDate = (selectedDate: Date) => {
+  const handleSingleDateSelect = (selectedDate: Date | undefined) => {
+    if (!selectedDate) return;
+    
+    if (selectedDate < new Date()) {
+      setError("You can't select a date in the past.");
+      return;
+    }
+    
     // Check if date already exists
-    const dateExists = unavailableDates.some(
+    const dateExists = formData.unavailableDates.some(
       date => date.getTime() === selectedDate.getTime()
     );
     
     if (!dateExists) {
-      onChange([...unavailableDates, selectedDate]);
+      setFormData({
+        ...formData,
+        unavailableDates: [...formData.unavailableDates, selectedDate],
+      });
     }
+    
     setDate(undefined);
   };
 
-  const addUnavailableDateRange = (range: DateRange | undefined) => {
+  const handleDateRangeSelect = (range: DateRange | undefined) => {
     if (!range || !range.from) return;
     
     const newDates: Date[] = [];
-    let currentDate = new Date(range.from);
+    const currentDate = new Date(range.from);
     
-    // If there's an end date, add all dates in the range
     if (range.to) {
       while (currentDate <= range.to) {
+        if (currentDate < new Date()) {
+          setError("You can't select a date in the past.");
+          return;
+        }
+        
         // Check if date already exists
-        const dateExists = unavailableDates.some(
+        const dateExists = formData.unavailableDates.some(
           date => date.getTime() === currentDate.getTime()
         );
         
@@ -56,60 +71,45 @@ const AvailabilityStep = ({ unavailableDates, onChange, onSubmit }: Props) => {
           newDates.push(new Date(currentDate));
         }
         
-        // Move to next day
         currentDate.setDate(currentDate.getDate() + 1);
       }
     } else {
-      // If no end date, just add the start date
-      const dateExists = unavailableDates.some(
-        date => date.getTime() === currentDate.getTime()
+      if (range.from < new Date()) {
+        setError("You can't select a date in the past.");
+        return;
+      }
+      
+      // Check if date already exists
+      const dateExists = formData.unavailableDates.some(
+        date => date.getTime() === range.from.getTime()
       );
       
       if (!dateExists) {
-        newDates.push(new Date(currentDate));
+        newDates.push(new Date(range.from));
       }
     }
     
     if (newDates.length > 0) {
-      onChange([...unavailableDates, ...newDates]);
+      setFormData({
+        ...formData,
+        unavailableDates: [...formData.unavailableDates, ...newDates],
+      });
     }
     
     setDateRange(undefined);
   };
 
-  const removeUnavailableDate = (dateToRemove: Date) => {
-    const updatedDates = unavailableDates.filter(
-      date => date.getTime() !== dateToRemove.getTime()
-    );
-    onChange(updatedDates);
-  };
-
-  const goToPreviousMonth = () => {
-    if (currentMonth === 0) {
-      setCurrentYear(currentYear - 1);
-      setCurrentMonth(11);
-    } else {
-      setCurrentMonth(currentMonth - 1);
-    }
-  };
-
-  const goToNextMonth = () => {
-    if (currentMonth === 11) {
-      setCurrentYear(currentYear + 1);
-      setCurrentMonth(0);
-    } else {
-      setCurrentMonth(currentMonth + 1);
-    }
-  };
-
-  const calendarDays = Array.from({ length: 42 }, (_, i) => {
-    const date = new Date(currentYear, currentMonth, i - 21);
-    return date.getDate();
-  });
-
-  const isDateUnavailable = (year: number, month: number, day: number) => {
-    const date = new Date(year, month, day);
-    return unavailableDates.some(d => d.getTime() === date.getTime());
+  const handleRemoveRange = (startDate: Date, endDate: Date) => {
+    // Create a new array without the dates in the range
+    const newUnavailableDates = formData.unavailableDates.filter(date => {
+      const dateTime = date.getTime();
+      return dateTime < startDate.getTime() || dateTime > endDate.getTime();
+    });
+    
+    setFormData({
+      ...formData,
+      unavailableDates: newUnavailableDates,
+    });
   };
 
   return (
@@ -161,10 +161,11 @@ const AvailabilityStep = ({ unavailableDates, onChange, onSubmit }: Props) => {
                   onSelect={(range) => {
                     setDateRange(range);
                     if (range?.from && range?.to) {
-                      addUnavailableDateRange(range);
+                      handleDateRangeSelect(range);
                     }
                   }}
                   numberOfMonths={2}
+                  className="[&_.rdp-day_selected]:bg-red-500 [&_.rdp-day_selected]:text-white [&_.rdp-day_in_range]:bg-red-100 [&_.rdp-day_range_start]:bg-red-500 [&_.rdp-day_range_end]:bg-red-500 [&_.rdp-day_range_middle]:bg-red-100"
                 />
               </PopoverContent>
             </Popover>
@@ -191,10 +192,11 @@ const AvailabilityStep = ({ unavailableDates, onChange, onSubmit }: Props) => {
                   onSelect={(newDate) => {
                     setDate(newDate);
                     if (newDate) {
-                      addUnavailableDate(newDate);
+                      handleSingleDateSelect(newDate);
                     }
                   }}
                   initialFocus
+                  className="[&_.rdp-day_selected]:bg-red-500 [&_.rdp-day_selected]:text-white"
                 />
               </PopoverContent>
             </Popover>
@@ -209,9 +211,12 @@ const AvailabilityStep = ({ unavailableDates, onChange, onSubmit }: Props) => {
       </div>
 
       {/* Display selected unavailable dates in a calendar view */}
-      {unavailableDates.length > 0 && (
+      {formData.unavailableDates.length > 0 && (
         <div className="border border-gray-200 rounded-lg p-4 mt-4 bg-white shadow-sm">
-          <AvailabilityCalendar unavailableDates={unavailableDates} />
+          <AvailabilityCalendar 
+            unavailableDates={formData.unavailableDates} 
+            onRemoveRange={handleRemoveRange}
+          />
         </div>
       )}
 
@@ -231,4 +236,4 @@ const AvailabilityStep = ({ unavailableDates, onChange, onSubmit }: Props) => {
   );
 };
 
-export default AvailabilityStep;
+export default UnavailabilityStep; 

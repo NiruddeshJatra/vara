@@ -1,12 +1,19 @@
-import { useState } from 'react';
-import { CalendarDays, Info, Calendar as CalendarIcon, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { CalendarDays, Info, Calendar as CalendarIcon, X, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 
 interface Props {
   unavailableDates: Date[];
+  onRemoveRange?: (startDate: Date, endDate: Date) => void;
 }
 
-const AvailabilityCalendar = ({ unavailableDates }: Props) => {
+interface DateRange {
+  startDate: Date;
+  endDate: Date;
+}
+
+const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [dateRanges, setDateRanges] = useState<DateRange[]>([]);
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
   
@@ -24,6 +31,55 @@ const AvailabilityCalendar = ({ unavailableDates }: Props) => {
     calendarDays.push(day);
   }
   
+  // Group individual dates into ranges
+  useEffect(() => {
+    if (unavailableDates.length === 0) {
+      setDateRanges([]);
+      return;
+    }
+
+    // Sort dates
+    const sortedDates = [...unavailableDates].sort((a, b) => a.getTime() - b.getTime());
+    
+    // Group consecutive dates into ranges
+    const ranges: DateRange[] = [];
+    let currentRange: DateRange | null = null;
+    
+    sortedDates.forEach((date, index) => {
+      if (!currentRange) {
+        // Start a new range
+        currentRange = {
+          startDate: new Date(date),
+          endDate: new Date(date)
+        };
+      } else {
+        // Check if this date is consecutive with the current range
+        const prevDate = new Date(sortedDates[index - 1]);
+        const currentDate = new Date(date);
+        const dayDiff = (currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
+        
+        if (dayDiff === 1) {
+          // Extend the current range
+          currentRange.endDate = new Date(date);
+        } else {
+          // End the current range and start a new one
+          ranges.push(currentRange);
+          currentRange = {
+            startDate: new Date(date),
+            endDate: new Date(date)
+          };
+        }
+      }
+      
+      // If this is the last date, add the current range
+      if (index === sortedDates.length - 1 && currentRange) {
+        ranges.push(currentRange);
+      }
+    });
+    
+    setDateRanges(ranges);
+  }, [unavailableDates]);
+  
   // Function to check if a date is unavailable
   const isDateUnavailable = (year: number, month: number, day: number) => {
     const checkDate = new Date(year, month, day).getTime();
@@ -40,6 +96,25 @@ const AvailabilityCalendar = ({ unavailableDates }: Props) => {
     const newDate = new Date(currentDate);
     newDate.setMonth(newDate.getMonth() + 1);
     setCurrentDate(newDate);
+  };
+
+  const formatDateRange = (startDate: Date, endDate: Date) => {
+    const formatOptions: Intl.DateTimeFormatOptions = { 
+      month: 'short', 
+      day: 'numeric',
+      year: 'numeric'
+    };
+    
+    const startFormatted = startDate.toLocaleDateString('en-US', formatOptions);
+    const endFormatted = endDate.toLocaleDateString('en-US', formatOptions);
+    
+    return `${startFormatted} - ${endFormatted}`;
+  };
+
+  const handleRemoveRange = (range: DateRange) => {
+    if (onRemoveRange) {
+      onRemoveRange(range.startDate, range.endDate);
+    }
   };
 
   return (
@@ -86,7 +161,7 @@ const AvailabilityCalendar = ({ unavailableDates }: Props) => {
                     text-center p-2 text-sm border-r last:border-r-0
                     ${day === null ? 'bg-white text-gray-300' : 'bg-white text-gray-700'}
                     ${day !== null && isDateUnavailable(currentYear, currentMonth, day) 
-                      ? 'bg-red-200/50 text-red-800 font-medium relative' 
+                      ? 'bg-red-200/50 text-red-800 font-medium' 
                       : day === new Date().getDate() && currentMonth === new Date().getMonth() && currentYear === new Date().getFullYear() 
                         ? 'border border-green-300 font-medium' 
                         : ''}
@@ -101,16 +176,21 @@ const AvailabilityCalendar = ({ unavailableDates }: Props) => {
           <div className="space-y-2">
             <h4 className="font-medium text-sm text-green-700 flex items-center gap-1">
               <CalendarIcon size={14} className="text-green-600" />
-              Unavailable Dates:
+              Unavailable Date Ranges:
             </h4>
             <div className="flex flex-wrap gap-2">
-              {unavailableDates.map((date, index) => (
-                <div key={index} className="text-sm bg-red-50 text-red-800 px-2 py-1 rounded-md">
-                  {date.toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                  })}
+              {dateRanges.map((range, index) => (
+                <div key={index} className="text-sm bg-red-50 text-red-800 px-2 py-1 rounded-md flex items-center gap-2">
+                  <span>{formatDateRange(range.startDate, range.endDate)}</span>
+                  {onRemoveRange && (
+                    <button 
+                      onClick={() => handleRemoveRange(range)}
+                      className="text-red-600 hover:text-red-800"
+                      aria-label="Remove date range"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -125,4 +205,4 @@ const AvailabilityCalendar = ({ unavailableDates }: Props) => {
   );
 };
 
-export default AvailabilityCalendar;
+export default UnavailabilityCalendar;
