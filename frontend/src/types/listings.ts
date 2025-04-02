@@ -18,6 +18,14 @@ export type Product = {
   totalRentals?: number;
   condition?: 'excellent' | 'good' | 'fair';
   itemAge?: number;
+  pricingTiers?: PricingTier[];
+};
+
+export type PricingTier = {
+  durationUnit: DurationUnit;
+  price: number;
+  minPeriod: number;
+  maxPeriod?: number;
 };
 
 export type ListingFormData = {
@@ -27,12 +35,9 @@ export type ListingFormData = {
   location: string;
   available: boolean;
   images: File[];
-  basePrice: number;
-  durationUnit: DurationUnit;
-  minRentalPeriod: number;
-  maxRentalPeriod?: number;
-  availabilityPeriods: AvailabilityPeriod[];
+  pricingTiers: PricingTier[];
   securityDeposit?: number;
+  availabilityPeriods: AvailabilityPeriod[];
 };
 
 export type AvailabilityPeriod = {

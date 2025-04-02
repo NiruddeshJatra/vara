@@ -57,11 +57,20 @@ const CreateListingStepper = () => {
 
   const validatePricing = () => {
     const newErrors: FormErrors = {};
-    if (formData.basePrice <= 0) newErrors.basePrice = 'Must be ≥ 0';
-    if (formData.minRentalPeriod < 1) newErrors.minRentalPeriod = 'Must be ≥ 1';
-    if (formData.maxRentalPeriod && formData.maxRentalPeriod <= formData.minRentalPeriod) {
-      newErrors.maxRentalPeriod = 'Must be greater than minimum period';
+    
+    if (!formData.pricingTiers || formData.pricingTiers.length === 0) {
+      newErrors.pricingTiers = 'At least one pricing tier is required';
+    } else {
+      formData.pricingTiers.forEach((tier, index) => {
+        if (tier.price <= 0) {
+          newErrors[`pricingTiers.${index}.price`] = 'Price must be greater than 0';
+        }
+        if (tier.maxPeriod && tier.maxPeriod <= 1) {
+          newErrors[`pricingTiers.${index}.maxPeriod`] = 'Maximum period must be greater than 1';
+        }
+      });
     }
+    
     return newErrors;
   };
 

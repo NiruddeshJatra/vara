@@ -1,9 +1,15 @@
 // components/listings/ConfirmationStep.tsx
 import { Button } from '@/components/ui/button';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Edit } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { ListingFormData } from '@/types/listings';
 
-const ConfirmationStep = () => {
+type Props = {
+  formData: ListingFormData;
+  onEdit: () => void;
+};
+
+const ConfirmationStep = ({ formData, onEdit }: Props) => {
   return (
     <div className="text-center space-y-8">
       <div className="text-green-600">
@@ -14,12 +20,57 @@ const ConfirmationStep = () => {
       <div className="space-y-4 max-w-md mx-auto">
         <div className="flex justify-between">
           <span className="font-medium">Listing Title:</span>
-          <span>Modern Apartment</span>
+          <span>{formData.title}</span>
         </div>
         <div className="flex justify-between">
-          <span className="font-medium">Listing ID:</span>
-          <span>#12345</span>
+          <span className="font-medium">Category:</span>
+          <span>{formData.category}</span>
         </div>
+        <div className="flex justify-between">
+          <span className="font-medium">Location:</span>
+          <span>{formData.location}</span>
+        </div>
+      </div>
+
+      <div className="text-left max-w-xl mx-auto space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="font-medium text-green-800">Pricing Tiers</h3>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onEdit}
+            className="text-green-600 hover:text-green-700 hover:bg-green-50"
+          >
+            <Edit size={16} className="mr-1" /> Edit
+          </Button>
+        </div>
+        
+        <div className="space-y-2">
+          {formData.pricingTiers.map((tier, index) => (
+            <div key={index} className="bg-gray-50 p-3 rounded-md">
+              <div className="flex justify-between">
+                <span className="font-medium">
+                  {tier.durationUnit.charAt(0).toUpperCase() + tier.durationUnit.slice(1)}ly Rate:
+                </span>
+                <span>{tier.price} Taka</span>
+              </div>
+              {tier.maxPeriod && (
+                <div className="text-sm text-gray-500">
+                  Max: {tier.maxPeriod} {tier.durationUnit}{tier.maxPeriod > 1 ? 's' : ''}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        
+        {formData.securityDeposit && (
+          <div className="bg-gray-50 p-3 rounded-md">
+            <div className="flex justify-between">
+              <span className="font-medium">Security Deposit:</span>
+              <span>{formData.securityDeposit} Taka</span>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="text-left max-w-xl mx-auto space-y-4">
@@ -33,10 +84,10 @@ const ConfirmationStep = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
         <Button asChild className="bg-green-600 hover:bg-green-700">
-          <Link to="/listings/123">View My Listing</Link>
+          <Link to="/listings">View My Listings</Link>
         </Button>
         <Button variant="outline" asChild>
-          <Link to="/advertisements">Back to Dashboard</Link>
+          <Link to="/dashboard">Back to Dashboard</Link>
         </Button>
       </div>
     </div>

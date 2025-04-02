@@ -29,7 +29,7 @@ const BasicDetailsStep = ({ formData, errors, categories, onChange, onNext }: Pr
           name="title"
           value={formData.title}
           onChange={handleChange}
-          className={`text-sm md:text-base h-8 md:h-10 focus:ring-green-500 focus:border-green-500 ${errors.title ? 'border-red-500' : 'border-gray-300'}`}
+          className={`text-sm md:text-base h-8 md:h-10 focus:ring-green-500 focus:border-green-500 placeholder:text-sm ${errors.title ? 'border-red-500' : 'border-gray-300'}`}
           placeholder="e.g., Canon EOS R6 Camera, Camping Tent 4-Person"
         />
         {errors.title ? (
@@ -37,7 +37,7 @@ const BasicDetailsStep = ({ formData, errors, categories, onChange, onNext }: Pr
             <AlertCircle size={14} /> {errors.title}
           </p>
         ) : (
-          <p className="text-xs text-gray-500">Enter a descriptive title for your listing</p>
+          <p className="text-xs text-gray-500">Enter a descriptive title for your product</p>
         )}
       </div>
 
@@ -73,7 +73,7 @@ const BasicDetailsStep = ({ formData, errors, categories, onChange, onNext }: Pr
           name="description"
           value={formData.description}
           onChange={handleChange}
-          className={`w-full p-2 border rounded-md h-24 md:h-32 transition-colors ${errors.description ? 'border-red-500' : 'border-gray-300'} focus:ring-1 focus:ring-green-500 focus:border-green-500`}
+          className={`w-full p-2 border rounded-md h-24 md:h-32 transition-colors placeholder:text-sm ${errors.description ? 'border-red-500' : 'border-gray-300'} focus:ring-1 focus:ring-green-500 focus:border-green-500`}
           placeholder="Describe your item's features, condition, and any special instructions..."
         />
         {errors.description && (
@@ -92,14 +92,14 @@ const BasicDetailsStep = ({ formData, errors, categories, onChange, onNext }: Pr
           placeholder="City, Area"
           value={formData.location}
           onChange={handleChange}
-          className={`text-sm md:text-base h-8 md:h-10 focus:ring-green-500 focus:border-green-500 ${errors.location ? 'border-red-500' : ''}`}
+          className={`text-sm md:text-base h-8 md:h-10 focus:ring-green-500 focus:border-green-500 placeholder:text-sm ${errors.location ? 'border-red-500' : ''}`}
         />
         {errors.location ? (
           <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
             <AlertCircle size={14} /> {errors.location}
           </p>
         ) : (
-          <p className="mt-1 text-xs text-gray-500">Where is the item located?</p>
+          <p className="mt-1 text-xs text-gray-500">Where is the product located?</p>
         )}
       </div>
 
