@@ -60,56 +60,48 @@ const ConfirmationStep = ({ formData, onEdit }: Props) => {
       </div>
       
       <div className="max-w-lg mx-auto">
-        <div className="space-y-5">
-          <div className="flex items-center justify-between">
-            <div className="w-1/3 text-right pr-8">
-              <span className="text-xl font-medium text-gray-700">Title</span>
-            </div>
-            <div className="w-2/3 text-left">
-              <span className="text-xl font-medium text-green-800">{formData.title}</span>
-            </div>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-5">
+          <div className="flex items-center">
+            <span className="text-base font-medium text-green-700">Title</span>
+          </div>
+          <div className="flex items-center">
+            <span className="text-base font-medium text-gray-600">{formData.title}</span>
           </div>
           
           <div className="flex items-center">
-            <div className="w-1/3 text-right pr-8">
-              <span className="text-xl font-medium text-gray-700">Category</span>
-            </div>
-            <div className="w-2/3 text-left">
-              <span className="text-xl font-medium text-green-800">{formData.category}</span>
-            </div>
+            <span className="text-base font-medium text-green-700">Category</span>
+          </div>
+          <div className="flex items-center">
+            <span className="text-base font-medium text-gray-600">{formData.category}</span>
           </div>
           
           <div className="flex items-center">
-            <div className="w-1/3 text-right pr-8">
-              <span className="text-xl font-medium text-gray-700">Location</span>
-            </div>
-            <div className="w-2/3 text-left">
-              <span className="text-xl font-medium text-green-800">{formData.location}</span>
-            </div>
+            <span className="text-base font-medium text-green-700">Location</span>
+          </div>
+          <div className="flex items-center">
+            <span className="text-base font-medium text-gray-600">{formData.location}</span>
           </div>
           
           <div className="flex items-center">
-            <div className="w-1/3 text-right pr-8">
-              <span className="text-xl font-medium text-gray-700">Images</span>
-            </div>
-            <div className="w-2/3 text-left">
-              <span className="text-xl font-medium text-green-800">{formData.images.length} uploaded</span>
-            </div>
+            <span className="text-base font-medium text-green-700">Images</span>
+          </div>
+          <div className="flex items-center">
+            <span className="text-base font-medium text-gray-600">{formData.images.length} uploaded</span>
           </div>
           
           <div className="flex items-center">
-            <div className="w-1/3 text-right pr-8">
-              <span className="text-xl font-medium text-gray-700">Pricing</span>
-            </div>
-            <div className="w-2/3 text-left">
+            <span className="text-base font-medium text-green-700">Pricing</span>
+          </div>
+          <div className="flex items-center">
+            <div>
               {formData.pricingTiers.map((tier, index) => (
-                <div key={index} className="text-xl font-medium text-green-800">
+                <div key={index} className="text-base font-medium text-gray-600">
                   {tier.durationUnit.charAt(0).toUpperCase() + tier.durationUnit.slice(1)}ly: {tier.price} Taka
                   {tier.maxPeriod && ` (Max: ${tier.maxPeriod} ${tier.durationUnit}${tier.maxPeriod > 1 ? 's' : ''})`}
                 </div>
               ))}
               {formData.securityDeposit && (
-                <div className="text-xl font-medium text-green-800 mt-1">
+                <div className="text-base font-medium text-gray-600 mt-1">
                   Security Deposit: {formData.securityDeposit} Taka
                 </div>
               )}
@@ -117,20 +109,20 @@ const ConfirmationStep = ({ formData, onEdit }: Props) => {
           </div>
           
           {unavailableRanges.length > 0 && (
-            <div className="flex items-start">
-              <div className="w-1/3 text-right pr-8 pt-1">
-                <span className="text-xl font-medium text-gray-700">Unavailable Dates</span>
+            <>
+              <div className="flex items-start">
+                <span className="text-base font-medium text-green-700">Unavailable Dates</span>
               </div>
-              <div className="w-2/3 text-left">
+              <div className="flex items-start">
                 <div className="flex flex-wrap gap-2">
                   {unavailableRanges.map((range, index) => (
-                    <div key={index} className="text-sm bg-red-50 text-red-800 px-3 py-1.5 rounded-md">
+                    <div key={index} className="text-sm bg-red-50 text-red-800 px-3 py-1 rounded-md">
                       {format(range.start, "MMM d")} - {format(range.end, "MMM d, yyyy")}
                     </div>
                   ))}
                 </div>
               </div>
-            </div>
+            </>
           )}
         </div>
       </div>
