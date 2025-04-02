@@ -16,7 +16,8 @@ const Register = () => {
   const [formData, setFormData] = useState<RegistrationData>({
     email: '',
     username: '',
-    password: '',
+    password1: '',
+    password2: '',
     termsAgreed: false,
     marketingConsent: false,
     profileCompleted: false
@@ -24,18 +25,19 @@ const Register = () => {
   const [errors, setErrors] = useState<RegistrationFormErrors>({});
   const handlePasswordChange = (value: string) => {
     setPassword(value);
-    handleInputChange({ password: value });
+    handleInputChange({ password1: value });
   };
 
   const handleConfirmPasswordChange = (value: string) => {
     setConfirmPassword(value);
+    handleInputChange({ password2: value });
   };
 
   const validateBasicInfo = () => {
     const stepErrors: RegistrationFormErrors = {
       email: validateEmail(formData.email),
       username: validateUsername(formData.username),
-      password: validatePassword(formData.password),
+      password1: validatePassword(formData.password1),
       termsAgreed: validateTermsAgreed(formData.termsAgreed)
     };
 
@@ -73,14 +75,15 @@ const Register = () => {
 
     if (Object.keys(validationErrors).length === 0) {
       try {
-        // Transform formData to match API expectations
+        // Send data in camelCase, auth service will transform to snake_case
         const apiFormData: RegistrationData = {
           email: formData.email,
           username: formData.username,
-          password: formData.password,
+          password1: formData.password1,
+          password2: formData.password2,
           termsAgreed: formData.termsAgreed,
           marketingConsent: formData.marketingConsent || false,
-          profileCompleted: false // Mark profile as incomplete
+          profileCompleted: false
         };
 
         await registerUser(apiFormData);
@@ -130,7 +133,7 @@ const Register = () => {
               <span>Secure Registration</span>
             </div>
             <div className="text-gray-500 text-sm">
-              <Link to="/auth/token/" className="text-green-600 hover:text-green-700 font-medium">
+              <Link to="/auth/login/" className="text-green-600 hover:text-green-700 font-medium">
                 Already have an account? Sign in
               </Link>
             </div>

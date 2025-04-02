@@ -4,9 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from django.views.generic import TemplateView
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-
+from users.views import CustomLoginView, ResendVerificationEmailView, VerifyEmailView, CustomRegisterView
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -37,12 +35,22 @@ urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
     
-    # Authentication
-    path('accounts/', include('allauth.urls')),
-    path('auth/', include('dj_rest_auth.urls')),
-    path('auth/registration/', include('dj_rest_auth.registration.urls')),
-    path("auth/token/", TokenObtainPairView.as_view(), name="get_token"),
-    path("auth/token/refresh/", TokenRefreshView.as_view(), name="refresh"),
+    # Authentication - only include non-registration endpoints from dj-rest-auth
+    path('auth/password/', include('dj_rest_auth.urls')),  # Only include password-related endpoints
+    
+    # Custom authentication endpoints
+    path("auth/login/", CustomLoginView.as_view(), name="custom_login"),
+    path("auth/registration/", CustomRegisterView.as_view(), name="custom_register"),
+    path(
+        "auth/resend-verification/",
+        ResendVerificationEmailView.as_view(),
+        name="resend_verification",
+    ),
+    path(
+        "auth/verify-email/<str:token>/",
+        VerifyEmailView.as_view(),
+        name="verify_email",
+    ),
     
     # API endpoints
     path('api/', include(api_patterns)),

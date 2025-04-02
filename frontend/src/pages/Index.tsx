@@ -17,11 +17,11 @@ const Index = () => {
   useEffect(() => {
     const handleScroll = () => {
       const elements = document.querySelectorAll('.animate-fade-up, .animate-fade-in, .animate-slide-in-right, .animate-scale-in');
-      
+
       elements.forEach((element) => {
         const elementTop = element.getBoundingClientRect().top;
         const elementBottom = element.getBoundingClientRect().bottom;
-        
+
         // Check if element is in viewport
         if (elementTop < window.innerHeight - 100 && elementBottom > 0) {
           element.classList.add('opacity-100');
@@ -29,25 +29,25 @@ const Index = () => {
         }
       });
     };
-    
+
     // Set initial state
     document.querySelectorAll('.animate-fade-up, .animate-fade-in, .animate-slide-in-right, .animate-scale-in').forEach((element) => {
       if (!element.classList.contains('opacity-0')) {
         element.classList.add('opacity-0', 'translate-y-10');
       }
     });
-    
+
     // Add scroll event listener
     window.addEventListener('scroll', handleScroll);
-    
+
     // Trigger initial check
     handleScroll();
-    
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
-    <div className="bg-gradient-green nature-pattern modern-background" style={{minHeight: '100vh'}}>
+    <div className="bg-gradient-green nature-pattern modern-background" style={{ minHeight: '100vh' }}>
       <NavBar />
       <Hero />
       <FeaturedListings />

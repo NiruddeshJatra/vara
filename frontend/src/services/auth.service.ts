@@ -73,7 +73,8 @@ class AuthService {
 
       const response = await authApi.post(config.auth.loginEndpoint, {
         email: data.email,
-        password: data.password
+        password: data.password,
+        remember: data.rememberMe
       });
 
       console.log('Login successful:', response.data);
@@ -84,6 +85,13 @@ class AuthService {
         data: error.response?.data,
         message: error.message
       });
+
+      // Handle unverified user error
+      if (error.response?.status === 401 && 
+          error.response?.data?.detail === 'Email address is not verified.') {
+        throw new Error('UNVERIFIED_EMAIL');
+      }
+
       throw error;
     }
   }
@@ -97,17 +105,22 @@ class AuthService {
     try {
       console.log('Attempting registration with data:', {
         ...data,
-        password: '(hidden for security)'
+        password1: '(hidden for security)',
+        password2: '(hidden for security)'
       });
 
-      // Use the dj-rest-auth registration endpoint
-      const response = await authApi.post(config.auth.registerEndpoint, {
+      // Transform camelCase to snake_case for backend
+      const apiData = {
         email: data.email,
         username: data.username,
-        password: data.password,
-        termsAgreed: data.termsAgreed,
-        marketingConsent: data.marketingConsent
-      });
+        password1: data.password1,
+        password2: data.password2,
+        terms_agreed: data.termsAgreed,
+        marketing_consent: data.marketingConsent,
+        profile_completed: data.profileCompleted
+      };
+
+      const response = await authApi.post(config.auth.registerEndpoint, apiData);
 
       console.log('Registration successful:', response.data);
       return response.data;
@@ -131,8 +144,11 @@ class AuthService {
         }
 
         // Handle password errors
-        if (errorData.password) {
-          throw new Error(errorData.password[0]);
+        if (errorData.password1) {
+          throw new Error(errorData.password1[0]);
+        }
+        if (errorData.password2) {
+          throw new Error(errorData.password2[0]);
         }
         if (errorData.non_field_errors) {
           throw new Error(errorData.non_field_errors[0]);
@@ -145,28 +161,64 @@ class AuthService {
   }
 
   // Logout the user
-  logout(): void {
-    authApi.post(config.auth.logoutEndpoint)
-      .then(() => {
-        localStorage.removeItem(config.auth.userStorageKey);
-        localStorage.removeItem(config.auth.tokenStorageKey);
-      })
-      .catch(error => {
-        console.error('Logout error:', error);
-        // Still remove the user data from localStorage even if the API call fails
-        localStorage.removeItem(config.auth.userStorageKey);
-        localStorage.removeItem(config.auth.tokenStorageKey);
-      });
+  async logout(): Promise<any> {
+    try {
+      const refreshToken = localStorage.getItem('refresh_token');
+      
+      if (refreshToken) {
+        // Send the refresh token to the blacklist endpoint
+        await axios.post(`${config.baseUrl}${config.auth.logoutEndpoint}`, {
+          refresh: refreshToken
+        });
+      }
+      
+      // Clear local storage regardless of API response
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('user');
+      
+      return { success: true };
+    } catch (error) {
+      // Even if the API call fails, we should clear local storage
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('user');
+      
+      throw error;
+    }
   }
 
-  // Verify email with token
-  async verifyEmail(key: string): Promise<any> {
+  /// Verify email with token
+  async verifyEmail(token: string): Promise<any> {
     try {
-      // Use correct endpoint for email verification
-      const response = await authApi.post(config.auth.verifyEmailEndpoint, { key });
+      // Make a single POST request to verify the email
+      const response = await authApi.post(`${config.auth.verifyEmailEndpoint}${token}/`);
+      
+      // If verification is successful and returns tokens, store them
+      if (response.data.tokens) {
+        localStorage.setItem(config.auth.tokenStorageKey, response.data.tokens.access);
+        localStorage.setItem(config.auth.refreshTokenStorageKey, response.data.tokens.refresh);
+      }
+      
+      // If user data is returned, store it
+      if (response.data.user) {
+        localStorage.setItem(config.auth.userStorageKey, JSON.stringify(response.data.user));
+      }
+      
       return response.data;
     } catch (error) {
       console.error('Email verification error:', error);
+      throw error;
+    }
+  }
+
+  // Resend verification email
+  async resendVerificationEmail(email: string): Promise<any> {
+    try {
+      const response = await authApi.post(config.auth.resendVerificationEndpoint, { email });
+      return response.data;
+    } catch (error) {
+      console.error('Resend verification error:', error);
       throw error;
     }
   }
@@ -223,23 +275,6 @@ class AuthService {
   // Get access token
   getAccessToken(): string | null {
     return localStorage.getItem(config.auth.tokenStorageKey);
-  }
-
-  // Refresh token
-  async refreshToken(): Promise<string | null> {
-    try {
-      const response = await authApi.post(config.auth.refreshTokenEndpoint);
-
-      if (response.data.access) {
-        localStorage.setItem(config.auth.tokenStorageKey, response.data.access);
-        return response.data.access;
-      }
-      return null;
-    } catch (error) {
-      console.error('Token refresh error:', error);
-      this.logout();
-      return null;
-    }
   }
 
   // Request password reset

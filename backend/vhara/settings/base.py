@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.google",
     "rest_framework",
     "rest_framework.authtoken",
+    "rest_framework_simplejwt",
+    'rest_framework_simplejwt.token_blacklist',
     "dj_rest_auth",
     "dj_rest_auth.registration",
     # all apps
@@ -64,7 +66,7 @@ INSTALLED_APPS = [
 ]
 
 # Import signals
-from users.signals import send_verification_email
+# from users.signals import send_verification_email
 
 # Social auth settings
 SOCIALACCOUNT_PROVIDERS = {
@@ -175,7 +177,6 @@ SITE_ID = 1
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
@@ -208,6 +209,7 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
 }
 
 REST_USE_JWT = True
@@ -221,9 +223,10 @@ REST_AUTH = {
     'USER_DETAILS_SERIALIZER': 'users.serializers.UserProfileSerializer',
     'USE_EMAIL_VERIFICATION': True,
     'EMAIL_VERIFICATION_REQUIRED': True,
+    'SESSION_LOGIN': False,
     'USE_JWT': True,
-    'JWT_AUTH_COOKIE': 'vhara-auth',
-    'JWT_AUTH_REFRESH_COOKIE': 'vhara-refresh',
+    'JWT_AUTH_COOKIE': 'access_token',
+    'JWT_AUTH_REFRESH_COOKIE': 'refresh_token',
     'JWT_AUTH_SECURE': False,  # Set to True in production
     'JWT_AUTH_HTTPONLY': True,
     'SESSION_LOGIN': False,
@@ -256,30 +259,33 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTH_USER_MODEL = "users.CustomUser"
+FRONTEND_URL = env('FRONTEND_URL', default='http://localhost:5173')
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_USE_TLS = True
-EMAIL_PORT = 587
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@varabd.com'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_USE_TLS = True
+# EMAIL_PORT = 587
 # EMAIL_HOST_USER = 'EMAIL'
 # EMAIL_HOST_PASSWORD = 'PASSWORD'
 
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # Changed from 'mandatory' to 'optional'
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='no-reply@example.com')
-VERIFICATION_EXPIRE_DAYS = 3
-ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/login'
+VERIFICATION_EXPIRE_DAYS = 1
 ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = '/login?verified=1'
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/advertisements'
+ACCOUNT_EMAIL_SUBJECT_PREFIX = ''
 CACHE_VERSION = 1
-LOGIN_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL = "/advertisements"
 LOGOUT_REDIRECT_URL = "/login/"
 
 # PHONE_VERIFICATION_ENABLED = True

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email - Vara</title>
+    <style>
+        /* Reset styles */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        /* Container styles */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+        /* Header styles */
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            background-color: #f8f9fa;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #22c55e;
+            text-decoration: none;
+        }
+        /* Content styles */
+        .content {
+            padding: 30px 20px;
+        }
+        .greeting {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+        .message {
+            font-size: 16px;
+            color: #4b5563;
+            margin-bottom: 30px;
+        }
+        /* Button styles */
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #22c55e;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+        /* Footer styles */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .social-links {
+            margin: 20px 0;
+        }
+        .social-links a {
+            color: #22c55e;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        /* Responsive styles */
+        @media (max-width: 600px) {
+            .container {
+                width: 100% !important;
+            }
+            .content {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="{{ frontend_url }}" class="logo">Vara</a>
+        </div>
+        
+        <div class="content">
+            <div class="greeting">Welcome to Vara!</div>
+            
+            <div class="message">
+                <p>Hi {{ username }},</p>
+                
+                <p>Thank you for registering with Vara. To complete your registration and start using our platform, please verify your email address by clicking the button below:</p>
+                
+                <div style="text-align: center;">
+                    <a href="{{ verification_url }}" class="button">Verify Email Address</a>
+                </div>
+                
+                <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
+                <p style="word-break: break-all; color: #6b7280; font-size: 14px;">{{ verification_url }}</p>
+                
+                <p>This verification link will expire in 24 hours for security reasons.</p>
+                
+                <p>If you didn't create an account with Vara, please ignore this email or contact support if you have concerns.</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="social-links">
+                <a href="#">Facebook</a>
+                <a href="#">Twitter</a>
+                <a href="#">Instagram</a>
+            </div>
+            <p>© 2024 Vara. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html> 

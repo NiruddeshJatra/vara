@@ -25,15 +25,15 @@ const Advertisements = () => {
 
   // Filter listings based on selected category, search term, and price range
   const filteredListings = allListings.filter(item => {
-    const categoryMatch = selectedCategory ? 
+    const categoryMatch = selectedCategory ?
       categories.find(c => c.id === selectedCategory)?.name : null;
-    
+
     // Price range filter - basePrice is a number according to the type definition
     const priceInRange = item.basePrice >= priceRange[0] && item.basePrice <= priceRange[1];
-    
+
     return (
       (!categoryMatch || item.category === categoryMatch) &&
-      (!searchTerm || 
+      (!searchTerm ||
         item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.description.toLowerCase().includes(searchTerm.toLowerCase())) &&
       priceInRange
@@ -41,16 +41,16 @@ const Advertisements = () => {
   });
 
   const displayedListings = filteredListings.slice(0, visibleItems);
-  
+
   const handleQuickView = (itemId: string) => {
     setSelectedItem(itemId);
     setIsItemModalOpen(true);
   };
-  
+
   const getSelectedItem = () => {
     return allListings.find(item => item.id === selectedItem) || null;
   };
-  
+
   const loadMoreItems = () => {
     setVisibleItems(prev => prev + 8);
   };
@@ -74,7 +74,7 @@ const Advertisements = () => {
       }
     };
   }, [visibleItems, filteredListings.length]);
-  
+
   const getPageTitle = () => {
     if (selectedCategory) {
       return `${categories.find(c => c.id === selectedCategory)?.name} Items`;
@@ -84,7 +84,7 @@ const Advertisements = () => {
     }
     return 'All Available Items';
   };
-  
+
   return (
     <div className="flex flex-col min-h-screen">
       <NavBar />
@@ -92,25 +92,25 @@ const Advertisements = () => {
       <main className="bg-green-50/65">
         {/* Compact Search Bar */}
         <div className="animate-fade-in">
-          <CompactSearchBar 
-            searchTerm={searchTerm} 
-            setSearchTerm={setSearchTerm} 
-            location={location} 
-            setLocation={setLocation} 
-            filtersOpen={filtersOpen} 
-            setFiltersOpen={setFiltersOpen} 
-            priceRange={priceRange} 
-            setPriceRange={setPriceRange} 
-            inNav={false} 
+          <CompactSearchBar
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            location={location}
+            setLocation={setLocation}
+            filtersOpen={filtersOpen}
+            setFiltersOpen={setFiltersOpen}
+            priceRange={priceRange}
+            setPriceRange={setPriceRange}
+            inNav={false}
           />
         </div>
 
         {/* Horizontal Category Scroll */}
         <div className="animate-fade-up delay-200">
-          <CategoryScroll 
-            categories={categories} 
-            selectedCategory={selectedCategory} 
-            setSelectedCategory={setSelectedCategory} 
+          <CategoryScroll
+            categories={categories}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
           />
         </div>
 
@@ -123,7 +123,7 @@ const Advertisements = () => {
                 ({filteredListings.length} items)
               </span>
             </h1>
-            
+
             {filteredListings.length === 0 ? (
               <div className="p-6 sm:p-8 md:p-10 text-center animate-scale-up">
                 <h2 className="text-lg sm:text-xl font-medium text-gray-700 mb-2">No Items Found</h2>
@@ -134,9 +134,9 @@ const Advertisements = () => {
             ) : (
               <>
                 <div className="animate-fade-up delay-400">
-                  <ListingsGrid 
-                    displayedListings={displayedListings} 
-                    handleQuickView={handleQuickView} 
+                  <ListingsGrid
+                    displayedListings={displayedListings}
+                    handleQuickView={handleQuickView}
                   />
                 </div>
 
@@ -147,10 +147,10 @@ const Advertisements = () => {
         </section>
 
         {/* Item Detail Modal */}
-        <ItemModal 
-          isOpen={isItemModalOpen} 
-          onOpenChange={setIsItemModalOpen} 
-          selectedItem={getSelectedItem()} 
+        <ItemModal
+          isOpen={isItemModalOpen}
+          onOpenChange={setIsItemModalOpen}
+          selectedItem={getSelectedItem()}
         />
       </main>
 

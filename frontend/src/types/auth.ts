@@ -1,7 +1,8 @@
 export interface RegistrationData {
   email: string;
   username: string;
-  password: string;
+  password1: string;
+  password2: string;
   termsAgreed: boolean;
   marketingConsent: boolean;
   profileCompleted: boolean;
@@ -64,9 +65,14 @@ export interface RegistrationValidationErrors {
   confirmPassword?: string;
 }
 
-export type RegistrationFormErrors = {
-  [K in keyof RegistrationData]?: string;
-} & RegistrationValidationErrors;
+export interface RegistrationFormErrors {
+  email?: string;
+  username?: string;
+  password1?: string;
+  password2?: string;
+  termsAgreed?: string;
+  confirmPassword?: string;
+}
 
 export type LoginFormErrors = {
   [K in keyof LoginData]?: string;

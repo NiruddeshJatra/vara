@@ -1,7 +1,11 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import axios from "axios";
+import config from "../config";
+import { toast } from "sonner";
 
 interface AdminAuthContextType {
   isAdmin: boolean;
+  loading: boolean;
   adminLogin: (email: string, password: string) => Promise<boolean>;
   adminLogout: () => void;
 }
@@ -9,36 +13,73 @@ interface AdminAuthContextType {
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
 
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
-  const [isAdmin, setIsAdmin] = useState<boolean>(
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
     // Check if admin token exists in localStorage on initialization
-    localStorage.getItem('admin_token') !== null
-  );
+    const adminToken = localStorage.getItem('admin_token');
+    if (adminToken) {
+      // Verify the token with the backend
+      verifyAdminToken(adminToken);
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  const verifyAdminToken = async (token: string) => {
+    try {
+      const response = await axios.get(`${config.baseUrl}/api/admin/verify/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.data.is_admin) {
+        setIsAdmin(true);
+      } else {
+        localStorage.removeItem('admin_token');
+      }
+    } catch (error) {
+      console.error("Admin token verification error:", error);
+      localStorage.removeItem('admin_token');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const adminLogin = async (email: string, password: string) => {
     try {
-      // Call your API to verify admin credentials
-      // const response = await api.post('/admin/login', { email, password });
+      setLoading(true);
+      const response = await axios.post(`${config.baseUrl}/api/admin/login/`, {
+        email,
+        password
+      });
       
-      // For demo, simulate successful login for admin@vara.com
-      if (email === 'admin@vara.com' && password === 'adminpassword') {
+      if (response.data.token) {
+        localStorage.setItem('admin_token', response.data.token);
         setIsAdmin(true);
-        localStorage.setItem('admin_token', 'sample_admin_jwt_token');
+        toast.success('Admin login successful');
         return true;
       }
       return false;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Admin login error:", error);
+      toast.error(error.response?.data?.detail || 'Admin login failed');
       return false;
+    } finally {
+      setLoading(false);
     }
   };
 
   const adminLogout = () => {
     setIsAdmin(false);
     localStorage.removeItem('admin_token');
+    toast.success('Admin logged out successfully');
   };
 
   return (
-    <AdminAuthContext.Provider value={{ isAdmin, adminLogin, adminLogout }}>
+    <AdminAuthContext.Provider value={{ isAdmin, loading, adminLogin, adminLogout }}>
       {children}
     </AdminAuthContext.Provider>
   );

@@ -4,12 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'react-router-dom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import CompactSearchBar from '@/components/advertisements/CompactSearchBar';
+import { useAuth } from '@/contexts/AuthContext';
 
 const NavBar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const filepath = useLocation();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isAuthenticated, logout, user } = useAuth();
   const [showSearchInNav, setShowSearchInNav] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [location, setLocation] = useState('GEC, Chittagong');
@@ -17,6 +18,7 @@ const NavBar = () => {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
   const isHomePage = filepath.pathname === '/';
   const isAdvertismentsPage = filepath.pathname === '/advertisements';
+  const isUploadProductPage = filepath.pathname === '/upload-product';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,30 +31,18 @@ const NavBar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-   // Simulate logged in state for profile, advertisements, and rentals pages
-    const authorizedPages = ['/profile', '/advertisements', '/rentals'];
-    const isAuthorizedPage = authorizedPages.includes(filepath.pathname);
-    
-    if (isAuthorizedPage) {
-      setIsLoggedIn(true);
-    }
-  }, [filepath.pathname]);
-
   // Determine header style: transparent only on homepage when not scrolled
   const headerStyle = (showSearchInNav ||!isHomePage && !isAdvertismentsPage || isScrolled) 
     ? 'py-3 bg-green-50/90 backdrop-blur-md shadow-subtle' 
     : 'py-5 bg-transparent';
 
-  // Handle logout
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    // In a real app, you would clear session/tokens here
-  };
-
-  // Redirect to advertisements page after login
-  const handleLoginSuccess = () => {
-    setIsLoggedIn(true);
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setIsMobileMenuOpen(false);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   return (
@@ -91,16 +81,16 @@ const NavBar = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-8 ml-auto mr-12">
-          {isLoggedIn && !showSearchInNav && (
+          {isAuthenticated && !showSearchInNav && !isUploadProductPage && (
             <>
-              <Link to="/create-listing">
+              <Link to="/upload-product">
                 <Button className={"text-sm font-semibold text-black/70 hover:text-white border border-green-600 text-green-700 bg-green-50/50 hover:bg-lime-600 hover:border-none px-5"}>
-                  <Plus size={16} className="mr-1" />Create Listing
+                  <Plus size={16} className="mr-1" />Upload Product
                 </Button>
               </Link>
             </>
           )}
-          {isLoggedIn && showSearchInNav && (
+          {isAuthenticated && showSearchInNav && (
             <Button
               type="button"
               variant="outline"
@@ -116,13 +106,13 @@ const NavBar = () => {
 
         {/* Desktop Action Buttons */}
         <div className="hidden md:flex items-center space-x-4 mr-8">
-          {isLoggedIn ? (
+          {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <div className="flex items-center gap-2 cursor-pointer border-2 border-gray-300 px-4 py-2 rounded-full hover:bg-gray-50 backdrop:bg-gray-50 hover:shadow-sm hover:scale-105 transition-all duration-200">
                 <Menu size={24} />
                   <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">V</span>
+                    <span className="text-white font-bold text-sm">{user?.username?.charAt(0).toUpperCase()}</span>
                   </div>
                 </div>
               </DropdownMenuTrigger>
@@ -151,27 +141,31 @@ const NavBar = () => {
             </DropdownMenu>
           ) : (
             <>
-            {filepath.pathname !== '/login' && (
-              <Link to="/login">
-                <Button variant="outline" size="sm" className="border-green-500 text-green-700 hover:bg-green-50 hover:text-green-800">Log In</Button>
-              </Link>
-            )}
-            {filepath.pathname !== '/register' && (
-              <Link to="/register">
-                <Button size="sm" className="bg-green-600 hover:bg-green-700">Sign Up</Button>
-              </Link>
-            )}
+              {/* Show login button if we're not on the login page */}
+              {!filepath.pathname.includes('/auth/login/') && (
+                <Link to="/auth/login/">
+                  <Button variant="outline" size="sm" className="border-green-500 text-green-700 hover:bg-green-50 hover:text-green-800">Log In</Button>
+                </Link>
+              )}
+              {/* Show register button if we're not on the register page */}
+              {!filepath.pathname.includes('/auth/registration/') && (
+                <Link to="/auth/registration/">
+                  <Button size="sm" className="bg-green-600 hover:bg-green-700">Sign Up</Button>
+                </Link>
+              )}
             </>
           )}
         </div>
 
-        {/* Mobile Menu Button */}
-        <button 
-          className="md:hidden flex items-center"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        {/* Mobile Menu Button - Moved to the right */}
+        <div className="md:hidden flex items-center ml-auto">
+          <button 
+            className="flex items-center"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
@@ -180,7 +174,7 @@ const NavBar = () => {
           <div className="container mx-auto px-4 py-4 flex flex-col items-center space-y-4">
             <Link to="/" className="text-sm font-medium py-2 hover:text-green-600 transition-colors">Home</Link>
             
-            {isLoggedIn ? (
+            {isAuthenticated ? (
               <>
                 <Link to="/advertisements" className="text-sm font-medium py-2 hover:text-green-600 transition-colors flex items-center gap-2">
                   <Home size={16} /> Browse Items
@@ -200,29 +194,36 @@ const NavBar = () => {
               </>
             ) : (
               <>
-                {filepath.pathname === '/register' ? (
-                  <Link to="/login" className="text-sm font-medium py-2 hover:text-green-600 transition-colors">Login</Link>
-                ) : filepath.pathname === '/login' ? (
-                  <Link to="/register" className="text-sm font-medium py-2 hover:text-green-600 transition-colors">Register</Link>
-                ) : (
+                {/* Show login link if we're on the register page */}
+                {filepath.pathname.includes('/auth/registration/') && (
+                  <Link to="/auth/login/" className="text-sm font-medium py-2 hover:text-green-600 transition-colors">Login</Link>
+                )}
+                {/* Show register link if we're on the login page */}
+                {filepath.pathname.includes('/auth/login/') && (
+                  <Link to="/auth/registration/" className="text-sm font-medium py-2 hover:text-green-600 transition-colors">Register</Link>
+                )}
+                {/* Show these links on other pages */}
+                {!filepath.pathname.includes('/auth/') && (
                   <>
-                    <Link to="/how-it-works" className="text-sm font-medium py-2 hover:text-green-600 transition-colors">How It Works</Link>
-                    <Link to="/browse-items" className="text-sm font-medium py-2 hover:text-green-600 transition-colors">Browse Items</Link>
+                    <Link to="/auth/login/" className="text-sm font-medium py-2 hover:text-green-600 transition-colors">Login</Link>
+                    <Link to="/auth/registration/" className="text-sm font-medium py-2 hover:text-green-600 transition-colors">Register</Link>
                   </>
                 )}
               </>
             )}
             
             <div className="pt-4 flex flex-col items-center space-y-3">
-              {!isLoggedIn && (
+              {!isAuthenticated && (
                 <>
-                  {filepath.pathname !== '/login' && (
-                    <Link to="/login" className="w-full">
+                  {/* Show login button if we're not on the login page */}
+                  {!filepath.pathname.includes('/auth/login/') && (
+                    <Link to="/auth/login/" className="w-full">
                       <Button variant="outline" className="w-full border-green-600 text-green-600 hover:bg-green-50">Log In</Button>
                     </Link>
                   )}
-                  {filepath.pathname !== '/register' && (
-                    <Link to="/register" className="w-full">
+                  {/* Show register button if we're not on the register page */}
+                  {!filepath.pathname.includes('/auth/registration/') && (
+                    <Link to="/auth/registration/" className="w-full">
                       <Button className="w-full bg-green-600 hover:bg-green-700">Sign Up</Button>
                     </Link>
                   )}

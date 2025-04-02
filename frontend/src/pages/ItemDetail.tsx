@@ -37,20 +37,20 @@ export default function ItemDetailPage() {
       try {
         // Find product in mock data
         const foundProduct = allListings.find(item => item.id === productId);
-        
+
         if (foundProduct) {
           // Ensure the product matches the Product type
           const typedProduct: Product = {
             ...foundProduct,
             durationUnit: foundProduct.durationUnit as DurationUnit
           };
-          
+
           setProduct(typedProduct);
-          
+
           // Find similar items with the same category
           const similar = allListings
-            .filter(item => 
-              item.id !== productId && 
+            .filter(item =>
+              item.id !== productId &&
               item.category === foundProduct.category
             )
             .slice(0, 4)
@@ -58,7 +58,7 @@ export default function ItemDetailPage() {
               ...item,
               durationUnit: item.durationUnit as DurationUnit
             }));
-            
+
           setSimilarItems(similar);
         }
       } catch (error) {
@@ -75,11 +75,11 @@ export default function ItemDetailPage() {
     setSelectedItem(itemId);
     setIsItemModalOpen(true);
   };
-  
+
   const getSelectedItem = () => {
     const found = allListings.find(item => item.id === selectedItem);
     if (!found) return null;
-    
+
     // Cast durationUnit to the correct type
     return {
       ...found,
@@ -130,7 +130,7 @@ export default function ItemDetailPage() {
       </div>
     );
   }
-  
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <NavBar />
@@ -138,12 +138,12 @@ export default function ItemDetailPage() {
       <main className="flex-grow pt-20 pb-20 bg-gradient-to-b from-green-50 to-white">
         {/* Title Section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-8 animate-fade-up">
-          <ProductHeader 
-            title={product.title} 
-            averageRating={product.averageRating} 
-            totalRentals={product.totalRentals} 
-            location={product.location} 
-            category={product.category} 
+          <ProductHeader
+            title={product.title}
+            averageRating={product.averageRating}
+            totalRentals={product.totalRentals}
+            location={product.location}
+            category={product.category}
           />
         </div>
 
@@ -164,11 +164,11 @@ export default function ItemDetailPage() {
 
               {/* Description Section */}
               <div className="animate-fade-left delay-300">
-                <ProductDescription 
-                  description={product.description} 
-                  title={product.title} 
-                  condition={product.condition} 
-                  category={product.category} 
+                <ProductDescription
+                  description={product.description}
+                  title={product.title}
+                  condition={product.condition}
+                  category={product.category}
                 />
               </div>
 
@@ -179,11 +179,11 @@ export default function ItemDetailPage() {
 
               {/* Details & Specifications */}
               <div className="animate-fade-left delay-500">
-                <ItemDetails 
-                  condition={product.condition} 
-                  category={product.category} 
-                  itemAge={product.itemAge} 
-                  securityDeposit={product.securityDeposit} 
+                <ItemDetails
+                  condition={product.condition}
+                  category={product.category}
+                  itemAge={product.itemAge}
+                  securityDeposit={product.securityDeposit}
                 />
               </div>
 
@@ -194,16 +194,16 @@ export default function ItemDetailPage() {
 
               {/* Reviews Section */}
               <div className="animate-fade-left delay-700">
-                <ReviewsSection 
-                  averageRating={product.averageRating} 
-                  totalRentals={product.totalRentals} 
+                <ReviewsSection
+                  averageRating={product.averageRating}
+                  totalRentals={product.totalRentals}
                 />
               </div>
             </div>
 
             {/* Right Column - Pricing & CTA */}
             <div className="animate-fade-right delay-200 hover-lift">
-              <PricingCard 
+              <PricingCard
                 productId={product.id}
                 basePrice={product.basePrice}
                 durationUnit={product.durationUnit}
@@ -222,10 +222,10 @@ export default function ItemDetailPage() {
       </main>
 
       {/* Item Detail Modal */}
-      <ItemModal 
-        isOpen={isItemModalOpen} 
-        onOpenChange={setIsItemModalOpen} 
-        selectedItem={getSelectedItem()} 
+      <ItemModal
+        isOpen={isItemModalOpen}
+        onOpenChange={setIsItemModalOpen}
+        selectedItem={getSelectedItem()}
       />
 
       <Footer />

@@ -17,15 +17,14 @@ const config = {
     userStorageKey: 'user',
     
     // Authentication endpoints (note: these don't use the /api prefix)
-    refreshTokenEndpoint: '/auth/token/refresh/',
-    loginEndpoint: '/auth/token/',
-    registerEndpoint: '/auth/registration/',
-    logoutEndpoint: '/auth/token/blacklist/',
-    verifyEmailEndpoint: '/auth/registration/verify-email/',
-    emailVerificationEndpoint: '/api/users/verify-email/',
-    passwordResetEndpoint: '/auth/password/reset/',
-    passwordResetConfirmEndpoint: '/auth/password/reset/confirm/',
-    profileEndpoint: '/api/users/profile/',
+    loginEndpoint: "/auth/login/",
+    registerEndpoint: "/auth/registration/",
+    logoutEndpoint: "/auth/logout/",
+    verifyEmailEndpoint: "/auth/verify-email/",
+    resendVerificationEndpoint: "/auth/resend-verification/",
+    passwordResetEndpoint: "/auth/password/reset/",
+    passwordResetConfirmEndpoint: "/auth/password/reset/confirm/",
+    profileEndpoint: "/api/users/profiles/me/",
   },
 };
 

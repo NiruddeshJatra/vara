@@ -11,31 +11,26 @@ interface ProtectedRouteProps {
 /**
  * ProtectedRoute component to handle authentication-based routing
  * @param children - The components to render if authentication requirements are met
- * @param requireAuth - Whether authentication is required (default: true)
+ * @param requireAuth - If true, requires authentication. If false, requires no authentication.
  */
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
-  children, 
-  requireAuth = true 
-}) => {
-  const { isLoggedIn, loading } = useAuth();
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAuth = true }) => {
+  const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
   
-  // Show loader while checking authentication
   if (loading) {
-    return <PageLoader variant="ripple" />;
+    return <PageLoader />;
   }
   
-  // If auth is required but user is not logged in, redirect to login
-  if (requireAuth && !isLoggedIn()) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  if (requireAuth && !isAuthenticated) {
+    // Redirect to login page but save the attempted location
+    return <Navigate to="/auth/login/" state={{ from: location }} replace />;
   }
   
-  // If user is logged in but tries to access auth pages (login/register), redirect to home
-  // if (!requireAuth && isLoggedIn() && location.pathname !== '/verify-email') {
-  //   return <Navigate to="/" replace />;
-  // }
+  if (!requireAuth && isAuthenticated) {
+    // Redirect to advertisements page if already authenticated
+    return <Navigate to="/advertisements" replace />;
+  }
   
-  // If authentication requirements are met, render children
   return <>{children}</>;
 };
 

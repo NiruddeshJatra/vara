@@ -147,20 +147,20 @@ const Rentals = () => {
   const filteredRentals = sampleRentals.filter(rental => {
     // Status filter
     if (statusFilter !== 'all' && rental.status !== statusFilter) return false;
-    
+
     // Search term filter
     if (searchTerm && !rental.itemTitle.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-    
+
     // Date range filter
     if (dateRange.from && new Date(rental.startTime) < dateRange.from) return false;
     if (dateRange.to && new Date(rental.endTime) > dateRange.to) return false;
-    
+
     return true;
   });
 
   // Sort rentals based on selected sort option
   const sortedRentals = [...filteredRentals].sort((a, b) => {
-    switch(sortOption) {
+    switch (sortOption) {
       case 'oldest':
         return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       case 'priceHighToLow':
@@ -192,17 +192,17 @@ const Rentals = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 to-white">
       <NavBar />
-      
+
       <div className="py-8 mt-8 mb-16">
         <div className="py-6 px-20">
           {/* Tab navigation */}
-          <RentalsTabs 
-            activeTab={activeTab} 
-            onTabChange={setActiveTab} 
+          <RentalsTabs
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
           />
-          
+
           {/* Status filter & search */}
-          <RentalsStatusFilter 
+          <RentalsStatusFilter
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
             searchTerm={searchTerm}
@@ -212,16 +212,16 @@ const Rentals = () => {
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
           />
-          
+
           {/* Tab content */}
           {activeTab === 'myRentals' ? (
-            <MyRentalsTab 
-              rentals={sortedRentals} 
+            <MyRentalsTab
+              rentals={sortedRentals}
               onViewDetails={handleViewRentalDetails}
               onStatusAction={handleStatusAction}
             />
           ) : (
-            <MyListingsRentalsTab 
+            <MyListingsRentalsTab
               rentals={sortedRentals}
               onViewDetails={handleViewRentalDetails}
               onStatusAction={handleStatusAction}
@@ -229,17 +229,17 @@ const Rentals = () => {
           )}
         </div>
       </div>
-      
+
       {/* Rental Detail Modal */}
       {selectedRental && (
-        <RentalDetailModal 
+        <RentalDetailModal
           rental={selectedRental}
           onClose={handleCloseRentalDetails}
           onStatusAction={handleStatusAction}
           userRole={activeTab === 'myRentals' ? 'renter' : 'owner'}
         />
       )}
-      
+
       <Footer />
     </div>
   );

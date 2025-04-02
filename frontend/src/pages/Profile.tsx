@@ -48,7 +48,7 @@ const Profile = () => {
     const timer = setTimeout(() => {
       setUserData(mockUserData);
     }, 500);
-    
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -99,7 +99,7 @@ const Profile = () => {
             ...prev,
             profilePicture: reader.result as string,
           }));
-          
+
           toast({
             title: "Profile picture updated",
             description: "Your new profile picture has been uploaded",
@@ -127,46 +127,46 @@ const Profile = () => {
       <NavBar />
       <div className="min-h-screen bg-gradient-to-b from-green-50 to-white pt-20">
         <div className="w-full ">
-          <ProfileHeader 
+          <ProfileHeader
             userData={userData}
             onEdit={handleEditProfile}
             isEditing={isEditing}
           />
         </div>
-        
+
         <div className="max-w-7xl mx-auto px-6 sm:px-8 md:px-12 lg:px-16 pb-16">
           <Tabs defaultValue="profile" value={activeTab} onValueChange={setActiveTab} className="mt-8">
             <div className="border-b border-green-100">
               <TabsList className="bg-green-100 p-1 rounded-t-lg">
-                <TabsTrigger 
-                  value="profile" 
+                <TabsTrigger
+                  value="profile"
                   className="data-[state=active]:bg-white data-[state=active]:text-green-800 data-[state=active]:shadow-sm text-green-700"
                 >
                   Profile
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="listings" 
+                <TabsTrigger
+                  value="listings"
                   className="data-[state=active]:bg-white data-[state=active]:text-green-800 data-[state=active]:shadow-sm text-green-700"
                 >
                   My Listings
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="rental-history" 
+                <TabsTrigger
+                  value="rental-history"
                   className="data-[state=active]:bg-white data-[state=active]:text-green-800 data-[state=active]:shadow-sm text-green-700"
                 >
                   Rental History
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="reviews" 
+                <TabsTrigger
+                  value="reviews"
                   className="data-[state=active]:bg-white data-[state=active]:text-green-800 data-[state=active]:shadow-sm text-green-700"
                 >
                   Reviews
                 </TabsTrigger>
               </TabsList>
             </div>
-            
+
             <TabsContent value="profile" className="pt-6">
-              <ProfileInformation 
+              <ProfileInformation
                 userData={userData}
                 isEditing={isEditing}
                 onSaveChanges={handleSaveChanges}
@@ -175,7 +175,7 @@ const Profile = () => {
                 onProfilePictureUpload={handleProfilePictureUpload}
               />
             </TabsContent>
-            
+
             <TabsContent value="listings">
               {userData.listings && userData.listings.length > 0 ? (
                 <div>
@@ -183,7 +183,7 @@ const Profile = () => {
                   <p>Your listings...</p>
                 </div>
               ) : (
-                <EmptyState 
+                <EmptyState
                   icon={Package}
                   title="No Listings Found"
                   description="You haven't created any listings yet. Start renting out your items today!"
@@ -196,7 +196,7 @@ const Profile = () => {
                 />
               )}
             </TabsContent>
-            
+
             <TabsContent value="rental-history">
               {userData.rentalHistory && userData.rentalHistory.length > 0 ? (
                 <div>
@@ -204,7 +204,7 @@ const Profile = () => {
                   <p>Your rental history...</p>
                 </div>
               ) : (
-                <EmptyState 
+                <EmptyState
                   icon={History}
                   title="No Rental History"
                   description="You haven't rented any items yet. Explore our catalog to find what you need!"
@@ -217,7 +217,7 @@ const Profile = () => {
                 />
               )}
             </TabsContent>
-            
+
             <TabsContent value="reviews">
               {userData.reviews && userData.reviews.length > 0 ? (
                 <div>
@@ -225,7 +225,7 @@ const Profile = () => {
                   <p>Your reviews...</p>
                 </div>
               ) : (
-                <EmptyState 
+                <EmptyState
                   icon={Star}
                   title="No Reviews Yet"
                   description="You haven't received any reviews yet. Complete some transactions to build your reputation!"

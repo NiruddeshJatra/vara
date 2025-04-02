@@ -165,8 +165,8 @@ const CompleteProfile = () => {
               ></div>
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 ${currentStep >= 1
-                    ? "bg-green-500 text-white"
-                    : "bg-gray-200 text-gray-500"
+                  ? "bg-green-500 text-white"
+                  : "bg-gray-200 text-gray-500"
                   }`}
               >
                 1
@@ -177,8 +177,8 @@ const CompleteProfile = () => {
               ></div>
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 ${currentStep >= 2
-                    ? "bg-green-500 text-white"
-                    : "bg-gray-200 text-gray-500"
+                  ? "bg-green-500 text-white"
+                  : "bg-gray-200 text-gray-500"
                   }`}
               >
                 2

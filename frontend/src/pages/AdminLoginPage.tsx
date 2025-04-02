@@ -16,7 +16,7 @@ export default function AdminLoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    
+
     const success = await adminLogin(email, password);
     if (success) {
       navigate("/admin/dashboard");
@@ -37,7 +37,7 @@ export default function AdminLoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && <p className="text-red-500 text-sm">{error}</p>}
-            
+
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">Email</label>
               <Input
@@ -48,7 +48,7 @@ export default function AdminLoginPage() {
                 required
               />
             </div>
-            
+
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-medium">Password</label>
               <Input
@@ -59,7 +59,7 @@ export default function AdminLoginPage() {
                 required
               />
             </div>
-            
+
             <Button type="submit" className="w-full bg-green-600 hover:bg-green-700">
               Login
             </Button>

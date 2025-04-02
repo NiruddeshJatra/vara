@@ -7,6 +7,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import NavBar from "@/components/home/NavBar";
 import Footer from "@/components/home/Footer";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import AuthService from "@/services/auth.service";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -14,16 +16,30 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
+  const [isResending, setIsResending] = useState(false);
   const { login, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Check if we were redirected from verification
   const verified = new URLSearchParams(location.search).get('verified') === '1';
 
   const validateEmail = (email: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
+  };
+
+  const handleResendVerification = async () => {
+    try {
+      setIsResending(true);
+      await AuthService.resendVerificationEmail(email);
+      toast.success('Verification email sent successfully. Please check your inbox.');
+      navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to send verification email');
+    } finally {
+      setIsResending(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,9 +65,18 @@ const Login = () => {
     try {
       await login(email, password, rememberMe);
       // The navigation is handled by the AuthContext
-    } catch (error) {
-      // Error handling is already done in the AuthContext
-      console.error('Login failed:', error);
+    } catch (error: any) {
+      if (error.message === 'UNVERIFIED_EMAIL') {
+        setErrors({
+          general: 'Please verify your email before logging in.',
+          email: 'Email not verified'
+        });
+        // Show resend verification button
+        return;
+      }
+      setErrors({
+        general: error.response?.data?.detail || 'Invalid email or password'
+      });
     }
   };
 
@@ -70,8 +95,8 @@ const Login = () => {
               <div className="relative z-10">
                 <div className="text-center mb-8 animate-fade-up">
                   <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
-                  <p className="text-gray-600">Sign in to your Bhara account</p>
-                  
+                  <p className="text-gray-600">Sign in to your Vara account</p>
+
                   {verified && (
                     <div className="mt-3 p-3 bg-green-50 text-green-800 rounded-lg border border-green-200 animate-fade-in">
                       <p>Your email has been verified successfully! You can now log in.</p>
@@ -83,6 +108,16 @@ const Login = () => {
                   {errors.general && (
                     <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 animate-fade-in">
                       <p className="text-red-700 text-sm">{errors.general}</p>
+                      {errors.email === 'Email not verified' && (
+                        <button
+                          type="button"
+                          onClick={handleResendVerification}
+                          disabled={isResending}
+                          className="mt-2 text-sm text-green-600 hover:text-green-800 underline"
+                        >
+                          {isResending ? 'Sending...' : 'Resend verification email'}
+                        </button>
+                      )}
                     </div>
                   )}
 
@@ -137,7 +172,7 @@ const Login = () => {
 
                   <div className="flex items-center justify-between mb-4 animate-fade-up delay-300">
                     <div className="flex items-center">
-                      <Checkbox 
+                      <Checkbox
                         id="remember-me"
                         checked={rememberMe}
                         onCheckedChange={(checked) => setRememberMe(checked as boolean)}
@@ -147,11 +182,6 @@ const Login = () => {
                       <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
                         Remember me
                       </label>
-                    </div>
-                    <div className="text-sm">
-                      <Link to="/forgot-password" className="font-medium text-green-600 hover:text-green-500">
-                        Forgot your password?
-                      </Link>
                     </div>
                   </div>
 
@@ -168,7 +198,7 @@ const Login = () => {
                   <div className="text-center mt-6 animate-fade-up delay-500">
                     <p className="text-sm text-gray-600">
                       Don't have an account?{" "}
-                      <Link to="/register" className="font-medium text-green-600 hover:text-green-500">
+                      <Link to="/auth/registration/" className="font-medium text-green-600 hover:text-green-500">
                         Sign up
                       </Link>
                     </p>
@@ -181,10 +211,6 @@ const Login = () => {
               <div className="flex items-center text-gray-500 text-sm">
                 <ShieldCheck className="h-5 w-5 text-green-600 mr-2" />
                 <span>Secure Login</span>
-              </div>
-              <div className="flex items-center text-gray-500 text-sm">
-                <LifeBuoy className="h-5 w-5 text-green-600 mr-2" />
-                <Link to="/support" className="hover:text-green-600">Need help?</Link>
               </div>
             </div>
           </div>

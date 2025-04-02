@@ -101,15 +101,15 @@ const AdminDashboard = () => {
 
   const getSlideDirection = (tab: string) => {
     if (prevTab === tab) return "";
-    
+
     const tabOrder = ["dashboard", "listings", "requests", "active-rentals", "users", "reports"];
     const currentIndex = tabOrder.indexOf(activeTab);
     const tabIndex = tabOrder.indexOf(tab);
-    
+
     if (currentIndex === -1 || tabIndex === -1) return "";
-    
-    return currentIndex > tabIndex 
-      ? "animate-slide-right" 
+
+    return currentIndex > tabIndex
+      ? "animate-slide-right"
       : "animate-slide-left";
   };
 
@@ -121,10 +121,9 @@ const AdminDashboard = () => {
       )}
 
       {/* Admin Sidebar */}
-      <div 
-        className={`fixed md:static inset-y-0 left-0 z-50 w-64 flex-col bg-gradient-to-r from-green-900 to-green-700 shadow-lg transform transition-transform duration-300 ease-in-out ${
-          mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0 md:flex border-r border-green-700`}
+      <div
+        className={`fixed md:static inset-y-0 left-0 z-50 w-64 flex-col bg-gradient-to-r from-green-900 to-green-700 shadow-lg transform transition-transform duration-300 ease-in-out ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          } md:translate-x-0 md:flex border-r border-green-700`}
       >
         <div className="p-4 border-b border-green-700">
           <div className="flex items-center gap-2">
@@ -136,9 +135,8 @@ const AdminDashboard = () => {
           <ul className="space-y-1">
             <li>
               <button
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md group ${
-                  activeTab === "dashboard" ? "bg-white/20 text-white font-medium" : "text-green-100 hover:bg-white/10"
-                }`}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md group ${activeTab === "dashboard" ? "bg-white/20 text-white font-medium" : "text-green-100 hover:bg-white/10"
+                  }`}
                 onClick={() => handleTabChange("dashboard")}
               >
                 <LayoutDashboard className="h-5 w-5" />
@@ -147,9 +145,8 @@ const AdminDashboard = () => {
             </li>
             <li>
               <button
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md group ${
-                  activeTab === "listings" ? "bg-white/20 text-white font-medium" : "text-green-100 hover:bg-white/10"
-                }`}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md group ${activeTab === "listings" ? "bg-white/20 text-white font-medium" : "text-green-100 hover:bg-white/10"
+                  }`}
                 onClick={() => handleTabChange("listings")}
               >
                 <Package className="h-5 w-5" />
@@ -161,9 +158,8 @@ const AdminDashboard = () => {
             </li>
             <li>
               <button
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md group ${
-                  activeTab === "requests" ? "bg-white/20 text-white font-medium" : "text-green-100 hover:bg-white/10"
-                }`}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md group ${activeTab === "requests" ? "bg-white/20 text-white font-medium" : "text-green-100 hover:bg-white/10"
+                  }`}
                 onClick={() => handleTabChange("requests")}
               >
                 <ClipboardList className="h-5 w-5" />
@@ -175,9 +171,8 @@ const AdminDashboard = () => {
             </li>
             <li>
               <button
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md ${
-                  activeTab === "active-rentals" ? "bg-white/20 text-white font-medium" : "text-green-100 hover:bg-white/10"
-                }`}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md ${activeTab === "active-rentals" ? "bg-white/20 text-white font-medium" : "text-green-100 hover:bg-white/10"
+                  }`}
                 onClick={() => handleTabChange("active-rentals")}
               >
                 <Calendar className="h-5 w-5" />
@@ -186,9 +181,8 @@ const AdminDashboard = () => {
             </li>
             <li>
               <button
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md ${
-                  activeTab === "users" ? "bg-white/20 text-white font-medium" : "text-green-100 hover:bg-white/10"
-                }`}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md ${activeTab === "users" ? "bg-white/20 text-white font-medium" : "text-green-100 hover:bg-white/10"
+                  }`}
                 onClick={() => handleTabChange("users")}
               >
                 <Users className="h-5 w-5" />
@@ -197,9 +191,8 @@ const AdminDashboard = () => {
             </li>
             <li>
               <button
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md ${
-                  activeTab === "reports" ? "bg-white/20 text-white font-medium" : "text-green-100 hover:bg-white/10"
-                }`}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md ${activeTab === "reports" ? "bg-white/20 text-white font-medium" : "text-green-100 hover:bg-white/10"
+                  }`}
                 onClick={() => handleTabChange("reports")}
               >
                 <Activity className="h-5 w-5" />
@@ -219,9 +212,9 @@ const AdminDashboard = () => {
               <p className="text-xs text-green-200">admin@vara.com</p>
             </div>
           </div>
-          <Button 
-            variant="default" 
-            size="sm" 
+          <Button
+            variant="default"
+            size="sm"
             onClick={handleLogout}
             className="mt-4 w-full bg-white text-green-700 hover:bg-green-100 hover:text-green-800 font-semibold"
           >
@@ -236,7 +229,7 @@ const AdminDashboard = () => {
         <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
           <div className="flex justify-between items-center p-4">
             <div className="flex items-center gap-4">
-              <button 
+              <button
                 className="md:hidden text-green-700 hover:text-green-900 focus:outline-none"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
@@ -254,7 +247,7 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <button 
+              <button
                 className="relative p-2 text-green-700 hover:text-green-900 hover:bg-green-100 rounded-full"
                 onClick={handleNotificationClick}
               >
@@ -279,15 +272,15 @@ const AdminDashboard = () => {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold text-green-800">Dashboard Overview</h1>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={handleLogout}
                   className="hidden md:flex border-green-500 text-green-700 hover:bg-green-50 hover:text-green-800"
                 >
                   Refresh Data
                 </Button>
               </div>
-              
+
               {/* Stats Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-white">
@@ -304,7 +297,7 @@ const AdminDashboard = () => {
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-white">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-lg font-medium text-green-800">Active Rentals</CardTitle>
@@ -319,7 +312,7 @@ const AdminDashboard = () => {
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-br from-green-50 to-white">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-lg font-medium text-green-800">Revenue</CardTitle>
@@ -335,7 +328,7 @@ const AdminDashboard = () => {
                   </CardContent>
                 </Card>
               </div>
-              
+
               {/* Action Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="bg-gradient-to-br from-amber-50 to-white border border-amber-100 hover:shadow-md transition-shadow flex flex-col">
@@ -358,8 +351,8 @@ const AdminDashboard = () => {
                     </div>
                   </CardContent>
                   <CardFooter className="mt-auto">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="w-full border-green-400 text-green-700 hover:bg-green-50 hover:text-green-800 font-semibold"
                       onClick={() => handleTabChange("listings")}
                     >
@@ -367,7 +360,7 @@ const AdminDashboard = () => {
                     </Button>
                   </CardFooter>
                 </Card>
-                
+
                 <Card className="bg-gradient-to-br from-lime-50 to-white border border-lime-100 hover:shadow-md transition-shadow flex flex-col">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-green-800">
@@ -384,8 +377,8 @@ const AdminDashboard = () => {
                     </div>
                   </CardContent>
                   <CardFooter className="mt-auto">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="w-full border-green-400 text-green-700 hover:bg-green-50 hover:text-green-800 font-semibold"
                       onClick={() => handleTabChange("active-rentals")}
                     >
@@ -393,7 +386,7 @@ const AdminDashboard = () => {
                     </Button>
                   </CardFooter>
                 </Card>
-                
+
                 <Card className="bg-gradient-to-br from-leaf-100 to-white border border-green-100 hover:shadow-md transition-shadow flex flex-col">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-green-800">
@@ -403,16 +396,16 @@ const AdminDashboard = () => {
                   </CardHeader>
                   <CardContent className="flex-grow">
                     <div className="flex flex-col gap-2">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         className="justify-start w-full text-left border-green-300 text-green-700 hover:bg-green-50"
                         onClick={handleUserVerification}
                       >
                         <Users className="h-4 w-4 mr-2" />
                         User Verification
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         className="justify-start w-full text-left border-green-300 text-green-700 hover:bg-green-50"
                         onClick={handleSystemStatus}
                       >
@@ -422,7 +415,7 @@ const AdminDashboard = () => {
                     </div>
                   </CardContent>
                   <CardFooter className="mt-auto">
-                    <Button 
+                    <Button
                       variant="outline"
                       className="w-full border-green-400 text-green-700 hover:bg-green-50 hover:text-green-800 font-semibold"
                       onClick={handleAdminSettings}
@@ -432,7 +425,7 @@ const AdminDashboard = () => {
                   </CardFooter>
                 </Card>
               </div>
-              
+
               {/* Recent Activity */}
               <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-b from-white to-green-50">
                 <CardHeader>
@@ -442,38 +435,38 @@ const AdminDashboard = () => {
                 <CardContent>
                   <div className="space-y-4">
                     {[
-                      { 
-                        type: "listing", 
-                        title: "Samsung Galaxy S21 Ultra", 
-                        user: "Ahmed Rahman", 
+                      {
+                        type: "listing",
+                        title: "Samsung Galaxy S21 Ultra",
+                        user: "Ahmed Rahman",
                         time: "10 minutes ago",
                         action: "created"
                       },
-                      { 
-                        type: "rental", 
-                        title: "Canon EOS R5 Camera", 
-                        user: "Fatima Khan", 
+                      {
+                        type: "rental",
+                        title: "Canon EOS R5 Camera",
+                        user: "Fatima Khan",
                         time: "30 minutes ago",
                         action: "requested"
                       },
-                      { 
-                        type: "return", 
-                        title: "MacBook Pro 16-inch", 
-                        user: "Mohammed Ali", 
+                      {
+                        type: "return",
+                        title: "MacBook Pro 16-inch",
+                        user: "Mohammed Ali",
                         time: "1 hour ago",
                         action: "completed"
                       },
-                      { 
-                        type: "listing", 
-                        title: "DJI Mavic Air 2", 
-                        user: "Imran Hossain", 
+                      {
+                        type: "listing",
+                        title: "DJI Mavic Air 2",
+                        user: "Imran Hossain",
                         time: "2 hours ago",
                         action: "approved"
                       },
-                      { 
-                        type: "rental", 
-                        title: "PlayStation 5", 
-                        user: "Nadia Ahmed", 
+                      {
+                        type: "rental",
+                        title: "PlayStation 5",
+                        user: "Nadia Ahmed",
                         time: "3 hours ago",
                         action: "started"
                       },
@@ -482,8 +475,8 @@ const AdminDashboard = () => {
                         <Avatar className="h-8 w-8">
                           <AvatarFallback className={
                             activity.type === "listing" ? "bg-green-100 text-green-800" :
-                            activity.type === "rental" ? "bg-green-100 text-green-800" :
-                            "bg-green-100 text-green-800"
+                              activity.type === "rental" ? "bg-green-100 text-green-800" :
+                                "bg-green-100 text-green-800"
                           }>
                             {activity.user.charAt(0)}
                           </AvatarFallback>
@@ -507,8 +500,8 @@ const AdminDashboard = () => {
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-center">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="px-8 bg-green-600 text-white hover:text-green-50 hover:bg-green-700"
                     onClick={() => toast({
                       title: "View all activity",
@@ -531,11 +524,11 @@ const AdminDashboard = () => {
                   <TabsTrigger value="active" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Active Listings</TabsTrigger>
                   <TabsTrigger value="rejected" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Rejected</TabsTrigger>
                 </TabsList>
-                
+
                 <TabsContent value="pending">
                   <PendingListingsTable searchTerm={searchTerm} />
                 </TabsContent>
-                
+
                 <TabsContent value="active">
                   <Card className="border border-green-200 bg-gradient-to-b from-white to-green-50">
                     <CardContent className="pt-6">
@@ -543,7 +536,7 @@ const AdminDashboard = () => {
                     </CardContent>
                   </Card>
                 </TabsContent>
-                
+
                 <TabsContent value="rejected">
                   <Card className="border border-green-200 bg-gradient-to-b from-white to-green-50">
                     <CardContent className="pt-6">
@@ -565,11 +558,11 @@ const AdminDashboard = () => {
                   <TabsTrigger value="approved" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Approved</TabsTrigger>
                   <TabsTrigger value="rejected" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Rejected</TabsTrigger>
                 </TabsList>
-                
+
                 <TabsContent value="pending">
                   <RentalRequestsTable searchTerm={searchTerm} />
                 </TabsContent>
-                
+
                 <TabsContent value="multiple">
                   <Card className="border border-green-200 bg-gradient-to-b from-white to-green-50">
                     <CardContent className="pt-6">
@@ -577,7 +570,7 @@ const AdminDashboard = () => {
                     </CardContent>
                   </Card>
                 </TabsContent>
-                
+
                 <TabsContent value="approved">
                   <Card className="border border-green-200 bg-gradient-to-b from-white to-green-50">
                     <CardContent className="pt-6">
@@ -585,7 +578,7 @@ const AdminDashboard = () => {
                     </CardContent>
                   </Card>
                 </TabsContent>
-                
+
                 <TabsContent value="rejected">
                   <Card className="border border-green-200 bg-gradient-to-b from-white to-green-50">
                     <CardContent className="pt-6">
@@ -606,11 +599,11 @@ const AdminDashboard = () => {
                   <TabsTrigger value="ending-soon" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Ending Soon</TabsTrigger>
                   <TabsTrigger value="returns" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Pending Returns</TabsTrigger>
                 </TabsList>
-                
+
                 <TabsContent value="current">
                   <ActiveRentalsTable searchTerm={searchTerm} />
                 </TabsContent>
-                
+
                 <TabsContent value="ending-soon">
                   <Card className="border border-green-200 bg-gradient-to-b from-white to-green-50">
                     <CardContent className="pt-6">
@@ -618,7 +611,7 @@ const AdminDashboard = () => {
                     </CardContent>
                   </Card>
                 </TabsContent>
-                
+
                 <TabsContent value="returns">
                   <Card className="border border-green-200 bg-gradient-to-b from-white to-green-50">
                     <CardContent className="pt-6">
@@ -640,11 +633,11 @@ const AdminDashboard = () => {
                   <TabsTrigger value="renters" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Renters</TabsTrigger>
                   <TabsTrigger value="verification" className="data-[state=active]:bg-white data-[state=active]:text-green-800 text-white">Pending Verification</TabsTrigger>
                 </TabsList>
-                
+
                 <TabsContent value="all">
                   <UserManagementTable searchTerm={searchTerm} />
                 </TabsContent>
-                
+
                 <TabsContent value="lenders">
                   <Card className="border border-green-200 bg-gradient-to-b from-white to-green-50">
                     <CardContent className="pt-6">
@@ -652,7 +645,7 @@ const AdminDashboard = () => {
                     </CardContent>
                   </Card>
                 </TabsContent>
-                
+
                 <TabsContent value="renters">
                   <Card className="border border-green-200 bg-gradient-to-b from-white to-green-50">
                     <CardContent className="pt-6">
@@ -660,7 +653,7 @@ const AdminDashboard = () => {
                     </CardContent>
                   </Card>
                 </TabsContent>
-                
+
                 <TabsContent value="verification">
                   <Card className="border border-green-200 bg-gradient-to-b from-white to-green-50">
                     <CardContent className="pt-6">
