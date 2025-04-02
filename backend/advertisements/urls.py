@@ -4,7 +4,7 @@ from .views import (
     ProductViewSet,
     UserProductViewSet,
     PricingOptionViewSet,
-    AvailabilityPeriodViewSet,
+    ProductImageViewSet,
 )
 
 
@@ -12,7 +12,7 @@ router = DefaultRouter()
 router.register(r"products", ProductViewSet, basename="products")
 router.register(r"my-products", UserProductViewSet, basename="my-products")
 router.register(r"pricing", PricingOptionViewSet, basename="pricing")
-router.register(r"availability", AvailabilityPeriodViewSet, basename="availability")
+router.register(r"images", ProductImageViewSet, basename="images")
 
 urlpatterns = [
     path("", include(router.urls)),

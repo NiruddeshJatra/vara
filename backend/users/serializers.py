@@ -13,7 +13,7 @@ class ProfilePictureSerializer(serializers.ModelSerializer):
         try:
             if value.size > 5 * 1024 * 1024:  # 5MB limit
                 raise serializers.ValidationError("Image size cannot exceed 5MB")
-
+        
         except AttributeError as e:
             raise serializers.ValidationError(
                 "Invalid file upload"
@@ -125,7 +125,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}".strip()
-
+    
     def get_profile_picture_url(self, obj):
         request = self.context.get("request")
         if obj.profile_picture and request:

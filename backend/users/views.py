@@ -75,8 +75,6 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
-        serializer = self.get_serializer(user)
-        return Response(serializer.data)
 
     @action(detail=False, methods=["post"])
     def complete_profile(self, request):

@@ -241,6 +241,11 @@ export const generateListings = (count: number) => {
         available: true,
         notes: "Available anytime"
       }],
+      unavailableDates: i % 3 === 0 ? [
+        new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+        new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+        new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
+      ] : [],
       images: product.images,
       totalRentals: Math.floor(Math.random() * 50) + 5,
       averageRating: 3.5 + Math.random() * 1.5,

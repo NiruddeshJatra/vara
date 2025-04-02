@@ -9,10 +9,8 @@ export type Product = {
   location: string;
   basePrice: number;
   durationUnit: DurationUnit;
-  minRentalPeriod: number;
-  maxRentalPeriod?: number;
   images: string[];
-  availabilityPeriods: AvailabilityPeriod[];
+  unavailableDates: Date[];
   securityDeposit?: number;
   averageRating?: number;
   totalRentals?: number;
@@ -24,7 +22,6 @@ export type Product = {
 export type PricingTier = {
   durationUnit: DurationUnit;
   price: number;
-  minPeriod: number;
   maxPeriod?: number;
 };
 
@@ -37,7 +34,7 @@ export type ListingFormData = {
   images: File[];
   pricingTiers: PricingTier[];
   securityDeposit?: number;
-  availabilityPeriods: AvailabilityPeriod[];
+  unavailableDates: Date[];
 };
 
 export type AvailabilityPeriod = {

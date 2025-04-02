@@ -1,25 +1,14 @@
 import { useState } from 'react';
-import { AvailabilityPeriod } from '@/types/listings';
-import { CalendarDays, Info, Calendar as CalendarIcon, Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarDays, Info, Calendar as CalendarIcon, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Props {
-  availabilityPeriods: AvailabilityPeriod[];
+  unavailableDates: Date[];
 }
 
-const AvailabilityCalendar = ({ availabilityPeriods }: Props) => {
+const AvailabilityCalendar = ({ unavailableDates }: Props) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
-
-  const isLongTermAvailability = availabilityPeriods.some(period => {
-    const start = new Date(period.startDate);
-    const end = new Date(period.endDate);
-
-    // If the period is longer than 90 days, consider it "available anytime"
-    const diffTime = Math.abs(end.getTime() - start.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 90 && period.notes === 'Available anytime';
-  });
   
   // Get first day of month and total days in month
   const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
@@ -35,15 +24,10 @@ const AvailabilityCalendar = ({ availabilityPeriods }: Props) => {
     calendarDays.push(day);
   }
   
-  // Function to check if a date is within any availability period
-  const isDateAvailable = (year: number, month: number, day: number) => {
+  // Function to check if a date is unavailable
+  const isDateUnavailable = (year: number, month: number, day: number) => {
     const checkDate = new Date(year, month, day).getTime();
-    
-    return availabilityPeriods.some(period => {
-      const startDate = new Date(period.startDate).getTime();
-      const endDate = new Date(period.endDate).getTime();
-      return checkDate >= startDate && checkDate <= endDate;
-    });
+    return unavailableDates.some(date => date.getTime() === checkDate);
   };
 
   const goToPreviousMonth = () => {
@@ -62,15 +46,10 @@ const AvailabilityCalendar = ({ availabilityPeriods }: Props) => {
     <div className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
       <h4 className="font-medium flex items-center gap-2 mb-4 text-green-700">
         <CalendarDays size={18} className="text-green-600 mr-1" />
-        Availability Calendar
+        Unavailability Calendar
       </h4>
 
-      {isLongTermAvailability ? (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2">
-          <Info size={18} className="text-green-600" />
-          <span className="text-green-800">Available anytime</span>
-        </div>
-      ) : availabilityPeriods.length > 0 ? (
+      {unavailableDates.length > 0 ? (
         <div>
           <div className="mb-4 bg-white rounded-lg overflow-hidden border border-gray-200">
             <div className="flex items-center justify-between p-2 bg-green-100 text-green-800">
@@ -92,9 +71,10 @@ const AvailabilityCalendar = ({ availabilityPeriods }: Props) => {
                 <ChevronRight size={16} />
               </button>
             </div>
-            <div className="grid grid-cols-7 gap-px bg-gray-200">
+            
+            <div className="grid grid-cols-7 gap-0">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="text-center text-xs py-1 bg-green-50 text-green-800 font-medium">
+                <div key={day} className="text-center text-xs py-1 bg-green-50 text-green-800 font-medium border-r last:border-r-0">
                   {day}
                 </div>
               ))}
@@ -103,52 +83,42 @@ const AvailabilityCalendar = ({ availabilityPeriods }: Props) => {
                 <div 
                   key={index} 
                   className={`
-                    text-center p-2 text-sm 
+                    text-center p-2 text-sm border-r last:border-r-0
                     ${day === null ? 'bg-white text-gray-300' : 'bg-white text-gray-700'}
-                    ${day !== null && isDateAvailable(currentYear, currentMonth, day) 
-                      ? 'bg-green-50 text-green-800 font-medium relative' 
+                    ${day !== null && isDateUnavailable(currentYear, currentMonth, day) 
+                      ? 'bg-red-200/50 text-red-800 font-medium relative' 
                       : day === new Date().getDate() && currentMonth === new Date().getMonth() && currentYear === new Date().getFullYear() 
                         ? 'border border-green-300 font-medium' 
                         : ''}
                   `}
                 >
                   {day}
-                  {day !== null && isDateAvailable(currentYear, currentMonth, day) && (
-                    <span className="absolute bottom-0 right-0">
-                      <Check size={12} className="text-green-600" />
-                    </span>
-                  )}
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="mt-4 space-y-2">
+          <div className="space-y-2">
             <h4 className="font-medium text-sm text-green-700 flex items-center gap-1">
               <CalendarIcon size={14} className="text-green-600" />
-              Available Periods:
+              Unavailable Dates:
             </h4>
-            {availabilityPeriods.map((period, index) => (
-              <div key={index} className="text-sm border-l-2 border-green-500 pl-2 bg-white p-2 rounded shadow-sm">
-                <span className="text-green-800 font-medium">
-                  {new Date(period.startDate).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                  })} - {new Date(period.endDate).toLocaleDateString('en-US', {
+            <div className="flex flex-wrap gap-2">
+              {unavailableDates.map((date, index) => (
+                <div key={index} className="text-sm bg-red-50 text-red-800 px-2 py-1 rounded-md">
+                  {date.toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric'
                   })}
-                </span>
-                {period.notes && <p className="text-green-600 text-xs mt-1">{period.notes}</p>}
-              </div>
-            ))}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       ) : (
         <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-          <span className="text-green-600">No availability periods set</span>
+          <span className="text-green-600">No unavailable dates set</span>
         </div>
       )}
     </div>

@@ -15,7 +15,7 @@ type Props = {
 const PricingStep = ({ formData, errors, durationOptions, onChange }: Props) => {
   // Initialize pricingTiers if it doesn't exist
   if (!formData.pricingTiers || formData.pricingTiers.length === 0) {
-    onChange({ pricingTiers: [{ durationUnit: 'day', price: 0, minPeriod: 1 }] });
+    onChange({ pricingTiers: [{ durationUnit: 'day', price: 0 }] });
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -37,7 +37,7 @@ const PricingStep = ({ formData, errors, durationOptions, onChange }: Props) => 
 
   const addPricingTier = () => {
     const updatedTiers = [...(formData.pricingTiers || [])];
-    updatedTiers.push({ durationUnit: 'day', price: 0, minPeriod: 1 });
+    updatedTiers.push({ durationUnit: 'day', price: 0 });
     onChange({ pricingTiers: updatedTiers });
   };
 
@@ -49,6 +49,33 @@ const PricingStep = ({ formData, errors, durationOptions, onChange }: Props) => 
 
   // Filter out the "hour" option from duration choices
   const filteredDurationOptions = durationOptions.filter(option => option.value !== 'hour');
+
+  // Get placeholder text based on duration unit
+  const getPricePlaceholder = (durationUnit: string) => {
+    switch (durationUnit) {
+      case 'day':
+        return 'Enter price per day in Taka';
+      case 'week':
+        return 'Enter price per week in Taka';
+      case 'month':
+        return 'Enter price per month in Taka';
+      default:
+        return 'Enter price in Taka';
+    }
+  };
+
+  const getMaxPeriodPlaceholder = (durationUnit: string) => {
+    switch (durationUnit) {
+      case 'day':
+        return 'Maximum number of days (optional)';
+      case 'week':
+        return 'Maximum number of weeks (optional)';
+      case 'month':
+        return 'Maximum number of months (optional)';
+      default:
+        return 'Optional';
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -122,7 +149,7 @@ const PricingStep = ({ formData, errors, durationOptions, onChange }: Props) => 
                   value={tier.price === 0 ? '' : tier.price}
                   onChange={(e) => handlePricingTierChange(index, 'price', e.target.value ? Number(e.target.value) : 0)}
                   className={`text-sm md:text-base h-10 md:h-12 placeholder:text-sm ${errors[`pricingTiers.${index}.price`] ? 'border-red-500' : ''}`}
-                  placeholder="Enter per duration unit price"
+                  placeholder={getPricePlaceholder(tier.durationUnit)}
                 />
                 {errors[`pricingTiers.${index}.price`] && (
                   <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
@@ -141,7 +168,7 @@ const PricingStep = ({ formData, errors, durationOptions, onChange }: Props) => 
                   value={tier.maxPeriod || ''}
                   onChange={(e) => handlePricingTierChange(index, 'maxPeriod', e.target.value ? Number(e.target.value) : undefined)}
                   className={`text-sm md:text-base h-10 md:h-12 placeholder:text-sm ${errors[`pricingTiers.${index}.maxPeriod`] ? 'border-red-500' : ''}`}
-                  placeholder="For maximum what period you want to give rent"
+                  placeholder={getMaxPeriodPlaceholder(tier.durationUnit)}
                 />
                 {errors[`pricingTiers.${index}.maxPeriod`] && (
                   <p className="text-red-500 text-sm mt-1 flex items-center gap-1">

@@ -46,7 +46,7 @@ const Register = () => {
     } else if (password !== confirmPassword) {
       stepErrors.confirmPassword = 'Passwords do not match';
     }
-
+    
     return Object.fromEntries(
       Object.entries(stepErrors).filter(([_, value]) => value !== null)
     );
@@ -77,8 +77,8 @@ const Register = () => {
       try {
         // Send data in camelCase, auth service will transform to snake_case
         const apiFormData: RegistrationData = {
-          email: formData.email,
-          username: formData.username,
+            email: formData.email,
+            username: formData.username,
           password1: formData.password1,
           password2: formData.password2,
           termsAgreed: formData.termsAgreed,
@@ -101,7 +101,7 @@ const Register = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <NavBar />
-
+      
       <main className="flex-grow pt-16 pb-16">
         <div className="bg-gradient-to-b from-green-300 to-lime-100/20 pt-8">
           <div className="max-w-3xl mx-auto bg-gradient-to-b from-white to-lime-50 rounded-lg shadow-subtle md:p-8 animate-fade-up">
@@ -110,12 +110,12 @@ const Register = () => {
               <p className="text-gray-600">Join the Vara community to rent and lend items</p>
               <p className="text-sm text-amber-600 mt-2">Quick sign-up! Complete your profile after verification.</p>
             </div>
-
+            
             <form onSubmit={handleSubmit} className="animate-fade-up delay-200">
               <BasicInfoStep
                 formData={formData}
                 errors={errors}
-                onChange={handleInputChange}
+                      onChange={handleInputChange}
                 onNext={handleSubmit}
                 loading={loading}
                 showConsent={true}
@@ -126,7 +126,7 @@ const Register = () => {
               />
             </form>
           </div>
-
+          
           <div className="mt-8 flex justify-center items-center space-x-4 pb-8 animate-fade-up delay-300">
             <div className="flex items-center text-gray-500 text-sm">
               <Shield className="h-5 w-5 text-green-600 mr-2" />
@@ -140,7 +140,7 @@ const Register = () => {
           </div>
         </div>
       </main>
-
+      
       <Footer />
     </div>
   );

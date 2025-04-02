@@ -1,6 +1,13 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Product, PricingOption, AvailabilityPeriod, ProductImage
+from .models import Product, PricingOption, ProductImage
+
+User = get_user_model()
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name']
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -20,65 +27,31 @@ class ProductImageSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ProductImage
-        fields = ['id', 'image', 'image_url', 'created_at']
+        fields = ['id', 'image', 'is_primary', 'created_at']
 
 
 class PricingOptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = PricingOption
-        fields = "__all__"
+        fields = ['id', 'base_price', 'duration_unit', 'minimum_rental_period', 'maximum_rental_period']
 
 
-class AvailabilityPeriodSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AvailabilityPeriod
-        exclude = ["product"]
-
-
-class BaseProductSerializer(serializers.ModelSerializer):
-    owner_name = serializers.SerializerMethodField()
-    location_url = serializers.SerializerMethodField()
-
-    def get_owner_name(self, obj):
-        return obj.owner.get_full_name() or obj.owner.username
-
-    # BLACKBOX - use it whenever you need to provide the absolute URL for a location in a serialized response.
-    def get_location_url(self, obj):
-        if obj.location:
-            return f"https://www.google.com/maps/search/?api=1&query={obj.location}"
-        return None
-
-
-class ProductSerializer(BaseProductSerializer):
-    pricing_details = PricingOptionSerializer(source="pricing", read_only=True)
-    availability = AvailabilityPeriodSerializer(
-        source="availability_periods", many=True, read_only=True
-    )
+class ProductSerializer(serializers.ModelSerializer):
+    owner = UserSerializer(read_only=True)
+    pricing = PricingOptionSerializer(read_only=True)
     images = ProductImageSerializer(many=True, read_only=True)
+    unavailable_dates = serializers.ListField(
+        child=serializers.DateField(),
+        required=False,
+        default=list
+    )
 
     class Meta:
         model = Product
         fields = [
-            "id",
-            "title",
-            "category",
-            "owner_name"
-            "description",
-            "images",
-            "location",
-            "location_url"
-            "is_available",
-            "average_rating",
-            "security_deposit",
-            "pricing_details",
-            "availability",
-            "views_count",
-            "rental_count",
+            'id', 'owner', 'title', 'category', 'description', 'location',
+            'latitude', 'longitude', 'is_available', 'status', 'created_at',
+            'updated_at', 'average_rating', 'unavailable_dates', 'pricing',
+            'images'
         ]
-        read_only_fields = [
-            "id",
-            "views_count",
-            "rental_count"
-            "average_rating",
-            "owner_name",
-        ]
+        read_only_fields = ['owner', 'created_at', 'updated_at', 'average_rating']

@@ -261,8 +261,8 @@ const RentalDetailModal = ({
                           <p className="text-sm font-medium text-gray-800">
                             {format(new Date(rental.startTime), "MMM d, yyyy")}
                           </p>
-                        </div>
-                        
+            </div>
+            
                         <div className="flex-1 bg-white p-3 rounded border border-green-300 text-center">
                           <p className="text-xs text-gray-500 uppercase mb-1">End Date</p>
                           <p className="text-sm font-medium text-gray-800">
@@ -284,9 +284,9 @@ const RentalDetailModal = ({
                   <div className="bg-white rounded-lg border border-green-200 overflow-hidden">
                     <div className="bg-gradient-to-r from-green-50 to-white px-4 py-3 border-b border-green-100">
                       <h3 className="text-base font-semibold text-green-800">Item Details</h3>
-                    </div>
+                </div>
                     <div className="p-4">
-                      <div>
+                  <div>
                         <h4 className="text-xs font-medium text-gray-500 mb-2">Specifications</h4>
                         <ul className="space-y-2.5">
                           <li className="flex justify-between text-sm">
@@ -316,13 +316,13 @@ const RentalDetailModal = ({
                         <div>
                           <p className="font-medium text-gray-800 text-sm mb-1">Special Notes</p>
                           <p className="text-xs text-gray-700">{rental.notes}</p>
-                        </div>
-                    </div>
-                  </div>
+                </div>
+              </div>
+              </div>
                 )}
-                </TabsContent>
-                
-                {/* Timeline Tab */}
+          </TabsContent>
+          
+          {/* Timeline Tab */}
                 <TabsContent value="timeline" className="space-y-5">
                   <div className="bg-gradient-to-r from-green-50 to-white rounded-lg border border-green-200 overflow-hidden">
                     <div className="px-4 py-3 border-b border-green-100">
@@ -343,9 +343,9 @@ const RentalDetailModal = ({
                               Rental request was submitted for {rental.itemTitle}.
                             </p>
                           </div>
-                        </div>
-                        
-                        {(rental.status !== 'pending') && (
+                </div>
+                
+                {(rental.status !== 'pending') && (
                           <div className="relative pl-8 pb-8">
                             <div className={`absolute left-0 top-1 h-5 w-5 rounded-full ${
                               rental.status === 'rejected' ? 'bg-red-500' : 'bg-green-600'
@@ -353,7 +353,7 @@ const RentalDetailModal = ({
                             <div className="absolute left-2.5 top-6 h-full w-px bg-green-100"></div>
                             <div>
                               <h4 className="text-sm font-medium text-green-800">
-                                Request {rental.status === 'rejected' ? 'Rejected' : 'Approved'}
+                      Request {rental.status === 'rejected' ? 'Rejected' : 'Approved'}
                               </h4>
                               <p className="text-xs text-gray-600 mt-1">
                                 {format(new Date(rental.updatedAt), "MMMM d, yyyy")}

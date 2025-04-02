@@ -11,44 +11,40 @@ from django.core.cache import cache
 from .utils import compress_image
 from .constants import CATEGORY_CHOICES, CATEGORY_GROUPS
 from django.db.models import Avg, F
+from django.contrib.auth.models import User
 
 
 class Product(models.Model):
-    title = models.CharField(
-        max_length=100,
-        verbose_name=_("Title"),
-        help_text=_("Enter the property title"),
-        db_index=True,
-    )
-    category = models.CharField(
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="products", null=True, blank=True)
+    title = models.CharField(max_length=200, null=True, blank=True)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    location = models.CharField(max_length=200, null=True, blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    is_available = models.BooleanField(default=True, null=True, blank=True)
+    status = models.CharField(
         max_length=20,
-        choices=CATEGORY_CHOICES,
-        verbose_name=_("Category"),
-        help_text=_("Select the category that best describes your item"),
-        db_index=True,
+        choices=[
+            ('draft', 'Draft'),
+            ('active', 'Active'),
+            ('maintenance', 'Under Maintenance'),
+            ('suspended', 'Suspended')
+        ],
+        default='active',
+        db_index=True
     )
-    description = models.TextField(
-        verbose_name=_("Description"),
-        help_text=_("Detailed description of the property"),
-    )
-    location = models.CharField(max_length=255, null=True, blank=True, db_index=True)
-    is_available = models.BooleanField(default=True)
-    views_count = models.PositiveIntegerField(default=0, editable=False)
-    rental_count = models.PositiveIntegerField(default=0, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="advertisements",
-        null=True,
-    )
     average_rating = models.DecimalField(
         max_digits=3,
         decimal_places=2,
         default=0,
-        editable=False,
+        validators=[MinValueValidator(0), MaxValueValidator(5)]
     )
+    unavailable_dates = models.JSONField(default=list, blank=True)
+    views_count = models.PositiveIntegerField(default=0, editable=False)
+    rental_count = models.PositiveIntegerField(default=0, editable=False)
     pricing = models.ForeignKey(
         "PricingOption",
         on_delete=models.CASCADE,
@@ -63,17 +59,16 @@ class Product(models.Model):
     )
 
     class Meta:
-        ordering = ["-created_at"]
-        verbose_name = _("Property")
-        verbose_name_plural = _("Properties")
+        ordering = ['-created_at']
         indexes = [
-            # BLACKBOX - don't know how this works but it's important for performance.
-            # Indexes are used to optimize database queries.
-            # By default, Django creates an index for the primary key of the model.
-            models.Index(fields=["category", "is_available"]),
-            models.Index(fields=["location", "owner"]),
-            models.Index(fields=["created_at"]),
+            models.Index(fields=['category']),
+            models.Index(fields=['location']),
+            models.Index(fields=['is_available']),
+            models.Index(fields=['status']),
         ]
+
+    def __str__(self):
+        return self.title
 
     def save(self, *args, **kwargs):
         # used to clear cached data related to product listings whenever a Product instance is saved. This ensures that the cache is updated to reflect the latest product data, preventing outdated information from being served to users.
@@ -91,7 +86,7 @@ class Product(models.Model):
             PricingOption.objects.create(product=self, base_price=0)
 
     def increment_views(self):
-        self.views_count = F('views_count') + 1 # F() expressions are used to reference a model field’s value in the database. This ensures that the views_count field is updated directly in the database in a single query.
+        self.views_count = F('views_count') + 1 # F() expressions are used to reference a model field's value in the database. This ensures that the views_count field is updated directly in the database in a single query.
         self.save(update_fields=["views_count"])
 
     def increment_rentals(self):
@@ -109,20 +104,13 @@ class Product(models.Model):
         )
         return not overlapping_rentals.exists()
 
-    def update_average_rating(self):
-        from reviews.models import Review
-
-        avg = (
-            Review.objects.filter(
-                review_type="property", rental__product=self
-            ).aggregate(Avg("rating"))["rating__avg"]
-            or 0
-        )
-        self.average_rating = round(avg, 2)
+    def update_average_rating(self, new_rating):
+        # Calculate new average rating
+        total_ratings = self.rental_count
+        current_total = self.average_rating * total_ratings
+        new_total = current_total + new_rating
+        self.average_rating = new_total / (total_ratings + 1)
         self.save(update_fields=["average_rating"])
-
-    def __str__(self):
-        return f"{self.title} - ({self.category})"
 
 
 # created to allow multiple images for a product
@@ -195,42 +183,3 @@ class PricingOption(models.Model):
 
     def __str__(self):
         return f"{self.product.title} - {self.base_price} Taka for each {self.duration_unit}"
-
-
-# There is some ambiguity about the necessity of this model. Keeping it for now.
-class AvailabilityPeriod(models.Model):
-    product = models.ForeignKey(
-        "Product", on_delete=models.CASCADE, related_name="availability_periods"
-    )
-    start_date = models.DateField()
-    end_date = models.DateField()
-    is_available = models.BooleanField(default=True)
-    notes = models.TextField(
-        blank=True, help_text=_("Optional notes about this availability period")
-    )
-
-    class Meta:
-        ordering = ["-start_date"]
-        verbose_name = _("Availability Period")
-        verbose_name_plural = _("Availability Periods")
-        indexes = [
-            models.Index(fields=["start_date", "end_date"]),
-        ]
-
-    def clean(self):
-        if self.end_date < self.start_date:
-            raise ValidationError(
-                _("End date must be greater than or equal to start date.")
-            )
-        
-        # TODO: Revision needed, can't understand what overlapping is useful for.
-        overlapping = AvailabilityPeriod.objects.filter(
-            product=self.product,
-            start_date__lte=self.end_date,
-            end_date__gte=self.start_date,
-        ).exclude(pk=self.pk)
-        if overlapping.exists():
-            raise ValidationError(_("Availability periods cannot overlap"))
-
-    def __str__(self):
-        return f"{self.product.title}: {self.start_date} to {self.end_date}"

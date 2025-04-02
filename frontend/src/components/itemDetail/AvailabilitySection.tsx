@@ -1,13 +1,12 @@
 import React from 'react';
 import { Calendar } from 'lucide-react';
 import AvailabilityCalendar from '@/components/listings/AvailabilityCalendar';
-import { AvailabilityPeriod } from '@/types/listings';
 
 interface AvailabilitySectionProps {
-  availabilityPeriods?: AvailabilityPeriod[];
+  unavailableDates: Date[];
 }
 
-export default function AvailabilitySection({ availabilityPeriods }: AvailabilitySectionProps) {
+export default function AvailabilitySection({ unavailableDates }: AvailabilitySectionProps) {
   return (
     <div className="mb-10 pb-10 border-b border-gray-200">
       <div className="flex items-center justify-between mb-6">
@@ -18,9 +17,7 @@ export default function AvailabilitySection({ availabilityPeriods }: Availabilit
         </div>
       </div>
       
-      {availabilityPeriods && 
-        <AvailabilityCalendar availabilityPeriods={availabilityPeriods} />
-      }
+      <AvailabilityCalendar unavailableDates={unavailableDates} />
     </div>
   );
 } 

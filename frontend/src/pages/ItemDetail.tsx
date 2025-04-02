@@ -42,7 +42,13 @@ export default function ItemDetailPage() {
           // Ensure the product matches the Product type
           const typedProduct: Product = {
             ...foundProduct,
-            durationUnit: foundProduct.durationUnit as DurationUnit
+            durationUnit: foundProduct.durationUnit as DurationUnit,
+            unavailableDates: foundProduct.unavailableDates || [],
+            pricingTiers: [{
+              durationUnit: foundProduct.durationUnit as DurationUnit,
+              price: foundProduct.basePrice,
+              maxPeriod: foundProduct.maxRentalPeriod
+            }]
           };
 
           setProduct(typedProduct);
@@ -56,7 +62,13 @@ export default function ItemDetailPage() {
             .slice(0, 4)
             .map(item => ({
               ...item,
-              durationUnit: item.durationUnit as DurationUnit
+              durationUnit: item.durationUnit as DurationUnit,
+              unavailableDates: item.unavailableDates || [],
+              pricingTiers: [{
+                durationUnit: item.durationUnit as DurationUnit,
+                price: item.basePrice,
+                maxPeriod: item.maxRentalPeriod
+              }]
             }));
 
           setSimilarItems(similar);
@@ -83,7 +95,13 @@ export default function ItemDetailPage() {
     // Cast durationUnit to the correct type
     return {
       ...found,
-      durationUnit: found.durationUnit as DurationUnit
+      durationUnit: found.durationUnit as DurationUnit,
+      unavailableDates: found.unavailableDates || [],
+      pricingTiers: [{
+        durationUnit: found.durationUnit as DurationUnit,
+        price: found.basePrice,
+        maxPeriod: found.maxRentalPeriod
+      }]
     };
   };
 
@@ -189,7 +207,7 @@ export default function ItemDetailPage() {
 
               {/* Availability Calendar */}
               <div className="animate-fade-left delay-600">
-                <AvailabilitySection availabilityPeriods={product.availabilityPeriods} />
+                <AvailabilitySection unavailableDates={product.unavailableDates} />
               </div>
 
               {/* Reviews Section */}
@@ -208,8 +226,8 @@ export default function ItemDetailPage() {
                   productId={product.id}
                   basePrice={product.basePrice}
                   durationUnit={product.durationUnit}
-                  minRentalPeriod={product.minRentalPeriod}
-                  maxRentalPeriod={product.maxRentalPeriod}
+                  minRentalPeriod={product.pricingTiers?.[0]?.maxPeriod || 1}
+                  maxRentalPeriod={product.pricingTiers?.[0]?.maxPeriod || 30}
                   securityDeposit={product.securityDeposit}
                 />
               </div>

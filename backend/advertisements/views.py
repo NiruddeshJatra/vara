@@ -7,11 +7,10 @@ from rest_framework import filters, status
 from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils.decorators import method_decorator
-from .models import Product, PricingOption, AvailabilityPeriod, ProductImage
+from .models import Product, PricingOption, ProductImage
 from .serializers import (
     ProductSerializer,
     PricingOptionSerializer,
-    AvailabilityPeriodSerializer,
     ProductImageSerializer,
 )
 from .filters import ProductFilter
@@ -41,40 +40,43 @@ class ProductViewSet(ReadOnlyModelViewSet):
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
+    @action(detail=True, methods=['post'])
+    def increment_views(self, request, pk=None):
+        product = self.get_object()
+        product.increment_views()
+        return Response({'status': 'views incremented'})
+
+    @action(detail=True, methods=['post'])
+    def update_rating(self, request, pk=None):
+        product = self.get_object()
+        new_rating = request.data.get('rating')
+        if new_rating is not None:
+            product.update_average_rating(float(new_rating))
+            return Response({'status': 'rating updated'})
+        return Response({'error': 'rating not provided'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class UserProductViewSet(ModelViewSet):
     """
-    Write operations for authenticated owners
+    CRUD endpoint for authenticated users' own products
     """
 
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_class = ProductFilter
+    search_fields = ["title", "category", "description", "location"]
 
     def get_queryset(self):
         return Product.objects.filter(owner=self.request.user)
 
     def perform_create(self, serializer):
-        if not self.request.user.is_verified:
-            raise PermissionDenied("Verification required for product management")
         serializer.save(owner=self.request.user)
-        
-    # these two actions are needed because DRF doesn't create endpoint without viewsets and we are not creating a viewset for image. Ownership check is also needed.
-    @action(detail=True, methods=["post"], url_path="add-image")
-    def add_image(self, request, pk=None):
-        product = self.get_object()
-        serializer = ProductImageSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(product=product)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(detail=True, methods=["delete"], url_path="delete-image/(?P<image_id>\d+)")
-    def delete_image(self, request, pk=None, image_id=None):
-        product = self.get_object()
-        image = product.images.filter(id=image_id).first()
-        if not image:
-            return Response({"error": "Image not found"}, status=status.HTTP_404_NOT_FOUND)
-        image.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def perform_update(self, serializer):
+        if serializer.instance.owner != self.request.user:
+            raise PermissionDenied("You can only update your own products")
+        serializer.save()
 
 
 class PricingOptionViewSet(ModelViewSet):
@@ -85,9 +87,9 @@ class PricingOptionViewSet(ModelViewSet):
         return PricingOption.objects.filter(product__owner=self.request.user)
 
 
-class AvailabilityPeriodViewSet(ModelViewSet):
-    serializer_class = AvailabilityPeriodSerializer
+class ProductImageViewSet(ModelViewSet):
+    serializer_class = ProductImageSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return AvailabilityPeriod.objects.filter(product__owner=self.request.user)
+        return ProductImage.objects.filter(product__owner=self.request.user)

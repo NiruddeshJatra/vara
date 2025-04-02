@@ -1,8 +1,9 @@
 // components/listings/ConfirmationStep.tsx
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Edit } from 'lucide-react';
+import { CheckCircle, Edit, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ListingFormData } from '@/types/listings';
+import { format } from 'date-fns';
 
 type Props = {
   formData: ListingFormData;
@@ -72,6 +73,27 @@ const ConfirmationStep = ({ formData, onEdit }: Props) => {
           </div>
         )}
       </div>
+
+      {formData.unavailableDates && formData.unavailableDates.length > 0 && (
+        <div className="text-left max-w-xl mx-auto space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="font-medium text-green-800 flex items-center">
+              <Calendar size={18} className="mr-2" />
+              Unavailable Dates
+            </h3>
+          </div>
+          
+          <div className="bg-gray-50 p-3 rounded-md">
+            <div className="flex flex-wrap gap-2">
+              {formData.unavailableDates.map((date, index) => (
+                <span key={index} className="bg-red-50 text-red-700 px-2 py-1 rounded-md text-sm">
+                  {format(date, "PPP")}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="text-left max-w-xl mx-auto space-y-4">
         <h3 className="font-medium text-green-800">What happens next?</h3>

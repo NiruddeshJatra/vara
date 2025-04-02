@@ -75,7 +75,7 @@ const Profile = () => {
   const handleCancelEdit = () => {
     setIsEditing(false);
     setUserData(mockUserData); // Reset to original data
-    toast({
+      toast({
       title: "Changes discarded",
       description: "Your profile was not updated",
       variant: "default",
@@ -100,8 +100,8 @@ const Profile = () => {
             profilePicture: reader.result as string,
           }));
 
-          toast({
-            title: "Profile picture updated",
+      toast({
+        title: "Profile picture updated",
             description: "Your new profile picture has been uploaded",
             variant: "default",
             duration: 3000,
@@ -132,8 +132,8 @@ const Profile = () => {
             onEdit={handleEditProfile}
             isEditing={isEditing}
           />
-        </div>
-
+              </div>
+              
         <div className="max-w-7xl mx-auto px-6 sm:px-8 md:px-12 lg:px-16 pb-16">
           <Tabs defaultValue="profile" value={activeTab} onValueChange={setActiveTab} className="mt-8">
             <div className="border-b border-green-100">
@@ -163,7 +163,7 @@ const Profile = () => {
                   Reviews
                 </TabsTrigger>
               </TabsList>
-            </div>
+              </div>
 
             <TabsContent value="profile" className="pt-6">
               <ProfileInformation
@@ -175,13 +175,13 @@ const Profile = () => {
                 onProfilePictureUpload={handleProfilePictureUpload}
               />
             </TabsContent>
-
+            
             <TabsContent value="listings">
               {userData.listings && userData.listings.length > 0 ? (
                 <div>
                   {/* Listings content would go here */}
                   <p>Your listings...</p>
-                </div>
+              </div>
               ) : (
                 <EmptyState
                   icon={Package}
@@ -196,13 +196,13 @@ const Profile = () => {
                 />
               )}
             </TabsContent>
-
+            
             <TabsContent value="rental-history">
               {userData.rentalHistory && userData.rentalHistory.length > 0 ? (
                 <div>
                   {/* Rental history content would go here */}
                   <p>Your rental history...</p>
-                </div>
+              </div>
               ) : (
                 <EmptyState
                   icon={History}
@@ -217,13 +217,13 @@ const Profile = () => {
                 />
               )}
             </TabsContent>
-
+            
             <TabsContent value="reviews">
               {userData.reviews && userData.reviews.length > 0 ? (
                 <div>
                   {/* Reviews content would go here */}
                   <p>Your reviews...</p>
-                </div>
+              </div>
               ) : (
                 <EmptyState
                   icon={Star}
