@@ -25,17 +25,19 @@ export type PricingTier = {
   maxPeriod?: number;
 };
 
-export type ListingFormData = {
+export interface ListingFormData {
   title: string;
-  category: string;
   description: string;
+  category: string;
   location: string;
-  available: boolean;
   images: File[];
   pricingTiers: PricingTier[];
   securityDeposit?: number;
   unavailableDates: Date[];
-};
+  purchaseYear: string;
+  originalPrice?: number;
+  ownershipHistory: 'firsthand' | 'secondhand';
+}
 
 export type AvailabilityPeriod = {
   startDate: string;
