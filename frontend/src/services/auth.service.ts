@@ -291,12 +291,13 @@ class AuthService {
   // Confirm password reset
   async confirmPasswordReset(uid: string, token: string, new_password1: string, new_password2: string): Promise<any> {
     try {
-      const response = await authApi.post(config.auth.passwordResetConfirmEndpoint, {
-        uid,
-        token,
-        new_password1,
-        new_password2
-      });
+      const response = await authApi.post(
+        `${config.auth.passwordResetConfirmEndpoint}${uid}/${token}/`,
+        {
+          new_password1,
+          new_password2
+        }
+      );
       return response.data;
     } catch (error) {
       console.error('Password reset confirmation error:', error);

@@ -156,7 +156,7 @@ export default function ItemDetailPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
             {/* Left Column - Content */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 space-y-8">
               {/* Host/Vhara Section */}
               <div className="animate-fade-left delay-200">
                 <HostInfo />
@@ -201,16 +201,18 @@ export default function ItemDetailPage() {
               </div>
             </div>
 
-            {/* Right Column - Pricing & CTA */}
-            <div className="animate-fade-right delay-200 hover-lift">
-              <PricingCard
-                productId={product.id}
-                basePrice={product.basePrice}
-                durationUnit={product.durationUnit}
-                minRentalPeriod={product.minRentalPeriod}
-                maxRentalPeriod={product.maxRentalPeriod}
-                securityDeposit={product.securityDeposit}
-              />
+            {/* Right Column - Pricing Card */}
+            <div className="lg:col-span-1 relative">
+              <div className="animate-fade-right delay-200">
+                <PricingCard
+                  productId={product.id}
+                  basePrice={product.basePrice}
+                  durationUnit={product.durationUnit}
+                  minRentalPeriod={product.minRentalPeriod}
+                  maxRentalPeriod={product.maxRentalPeriod}
+                  securityDeposit={product.securityDeposit}
+                />
+              </div>
             </div>
           </div>
         </div>

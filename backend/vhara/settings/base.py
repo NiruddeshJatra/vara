@@ -40,60 +40,37 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # for user authentication
     "django.contrib.sites",
-    "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
-    "allauth.socialaccount.providers.google",
     "rest_framework",
     "rest_framework.authtoken",
     "rest_framework_simplejwt",
-    'rest_framework_simplejwt.token_blacklist',
-    "dj_rest_auth",
-    "dj_rest_auth.registration",
+    "rest_framework_simplejwt.token_blacklist",
     # all apps
     "advertisements",
     "complaints",
     "rentals",
-    'users.apps.UsersConfig',
-    'reviews.apps.ReviewsConfig',
+    "users.apps.UsersConfig",
+    "reviews.apps.ReviewsConfig",
     "payments",
     "messaging",
     "notifications.apps.NotificationsConfig",
     # extra
     "django_filters",
     "channels",
-    'corsheaders',
+    "corsheaders",
 ]
 
-# Import signals
-# from users.signals import send_verification_email
-
-# Social auth settings
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': [
-            'profile',
-            'email',
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
-        },
-    }
-}
-
 MIDDLEWARE = [
-    'django.middleware.cache.UpdateCacheMiddleware',
+    "django.middleware.cache.UpdateCacheMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    'users.middleware.SessionManagementMiddleware',
+    "users.middleware.SessionManagementMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "allauth.account.middleware.AccountMiddleware",
-    'django.middleware.cache.FetchFromCacheMiddleware',
+    "django.middleware.cache.FetchFromCacheMiddleware",
 ]
 
 # CACHES = {
@@ -125,11 +102,7 @@ WSGI_APPLICATION = "vhara.wsgi.application"
 
 # WebSocket settings
 ASGI_APPLICATION = "vhara.asgi.application"
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }
-}
+CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 # CHANNEL_LAYERS = {
 #     "default": {
 #         "BACKEND": "channels_redis.core.RedisChannelLayer",
@@ -151,24 +124,24 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_METHODS = [
-    'DELETE',
-    'GET',
-    'OPTIONS',
-    'PATCH',
-    'POST',
-    'PUT',
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
 ]
 
 CORS_ALLOW_HEADERS = [
-    'accept',
-    'accept-encoding',
-    'authorization',
-    'content-type',
-    'dnt',
-    'origin',
-    'user-agent',
-    'x-csrftoken',
-    'x-requested-with',
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
 ]
 
 SITE_ID = 1
@@ -181,58 +154,43 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
-    'DEFAULT_FILTER_BACKENDS': [
-        'django_filters.rest_framework.DjangoFilterBackend',
-        'rest_framework.filters.SearchFilter',
-        'rest_framework.filters.OrderingFilter',
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
     ],
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle'
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
     ],
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': '5/hour',
-        'user': '3000/day',
-        'auth': '5/minute',
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "5/hour",
+        "user": "3000/day",
+        "auth": "5/minute",
     },
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 12,
-    'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 12,
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
     ],
-    'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    "EXCEPTION_HANDLER": "rest_framework.views.exception_handler",
+    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
 }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
 }
 
 REST_USE_JWT = True
 
 CSRF_COOKIE_NAME = "csrftoken"
 CSRF_COOKIE_HTTPONLY = False
-X_FRAME_OPTIONS = 'DENY'
+X_FRAME_OPTIONS = "DENY"
 
-REST_AUTH = {
-    'REGISTER_SERIALIZER': 'users.serializers.CustomRegisterSerializer',
-    'USER_DETAILS_SERIALIZER': 'users.serializers.UserProfileSerializer',
-    'USE_EMAIL_VERIFICATION': True,
-    'EMAIL_VERIFICATION_REQUIRED': True,
-    'SESSION_LOGIN': False,
-    'USE_JWT': True,
-    'JWT_AUTH_COOKIE': 'access_token',
-    'JWT_AUTH_REFRESH_COOKIE': 'refresh_token',
-    'JWT_AUTH_SECURE': False,  # Set to True in production
-    'JWT_AUTH_HTTPONLY': True,
-    'SESSION_LOGIN': False,
-    'OLD_PASSWORD_FIELD_ENABLED': True,
-    'LOGOUT_ON_PASSWORD_CHANGE': False,
-}
 
 DATABASES = {
     "default": {
@@ -259,31 +217,30 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTH_USER_MODEL = "users.CustomUser"
-FRONTEND_URL = env('FRONTEND_URL', default='http://localhost:5173')
+FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:5173")
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
-    "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'noreply@varabd.com'
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "noreply@varabd.com"
 # EMAIL_HOST = 'smtp.gmail.com'
 # EMAIL_USE_TLS = True
 # EMAIL_PORT = 587
 # EMAIL_HOST_USER = 'EMAIL'
 # EMAIL_HOST_PASSWORD = 'PASSWORD'
 
-ACCOUNT_AUTHENTICATION_METHOD = "email"
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-ACCOUNT_CONFIRM_EMAIL_ON_GET = True
-DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='no-reply@example.com')
+# Custom email verification settings
+EMAIL_VERIFICATION_METHOD = "email"
+EMAIL_REQUIRED = True
+USERNAME_REQUIRED = False
+EMAIL_VERIFICATION_MANDATORY = True
+EMAIL_CONFIRM_ON_GET = True
+EMAIL_VERIFICATION_ANONYMOUS_REDIRECT_URL = "/login?verified=1"
+EMAIL_VERIFICATION_AUTHENTICATED_REDIRECT_URL = "/advertisements"
+EMAIL_SUBJECT_PREFIX = ""
 VERIFICATION_EXPIRE_DAYS = 1
-ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = '/login?verified=1'
-ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/advertisements'
-ACCOUNT_EMAIL_SUBJECT_PREFIX = ''
 CACHE_VERSION = 1
 LOGIN_REDIRECT_URL = "/advertisements"
 LOGOUT_REDIRECT_URL = "/login/"
@@ -299,28 +256,23 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files
-STATICFILES_DIRS = [BASE_DIR / '../frontend']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / "../frontend"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Media files
-MEDIA_ROOT = BASE_DIR / 'backend/media'
-MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / "backend/media"
+MEDIA_URL = "/media/"
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8080",
     "http://127.0.0.1:8080",
 ]
 
-SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
 
-# Remove SSLCOMMERZ settings:
-# SSLCOMMERZ_STORE_ID = env('SSLCOMMERZ_STORE_ID')
-# SSLCOMMERZ_STORE_PASSWORD = env('SSLCOMMERZ_STORE_PASSWORD')
-# SSLCOMMERZ_SANDBOX_MODE = True  # Set to False when moving to production
-# SSLCOMMERZ_API_URL = 'https://sandbox.sslcommerz.com' if SSLCOMMERZ_SANDBOX_MODE else 'https://securepay.sslcommerz.com'
 
 # Add BKash settings:
 # BKASH_API_KEY = "your_api_key"
@@ -345,9 +297,9 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 
 
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    "default": {
+        "BACKEND": "django.core.cache.backends.dummy.DummyCache",
     }
 }
 
-TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+TEST_RUNNER = "django.test.runner.DiscoverRunner"

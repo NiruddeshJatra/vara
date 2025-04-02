@@ -4,13 +4,21 @@ from django.conf import settings
 from django.conf.urls.static import static
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from users.views import CustomLoginView, ResendVerificationEmailView, VerifyEmailView, CustomRegisterView
+from users.views import (
+    CustomLoginView,
+    ResendVerificationEmailView,
+    VerifyEmailView,
+    CustomRegisterView,
+    PasswordResetRequestView,
+    PasswordResetConfirmView,
+    LogoutView,
+)
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="Vhara API",
+        title="Vara API",
         default_version="v1",
-        description="API documentation for Vhara",
+        description="API documentation for Vara",
     ),
     public=True,
 )
@@ -35,11 +43,9 @@ urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
     
-    # Authentication - only include non-registration endpoints from dj-rest-auth
-    path('auth/password/', include('dj_rest_auth.urls')),  # Only include password-related endpoints
-    
-    # Custom authentication endpoints
+    # Authentication endpoints
     path("auth/login/", CustomLoginView.as_view(), name="custom_login"),
+    path("auth/logout/", LogoutView.as_view(), name="logout"),
     path("auth/registration/", CustomRegisterView.as_view(), name="custom_register"),
     path(
         "auth/resend-verification/",
@@ -50,6 +56,18 @@ urlpatterns = [
         "auth/verify-email/<str:token>/",
         VerifyEmailView.as_view(),
         name="verify_email",
+    ),
+    
+    # Password reset endpoints
+    path(
+        "auth/password/reset/",
+        PasswordResetRequestView.as_view(),
+        name="password_reset_request",
+    ),
+    path(
+        "auth/password/reset/confirm/<str:uidb64>/<str:token>/",
+        PasswordResetConfirmView.as_view(),
+        name="password_reset_confirm",
     ),
     
     # API endpoints

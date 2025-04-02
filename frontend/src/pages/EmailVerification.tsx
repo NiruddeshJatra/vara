@@ -52,7 +52,7 @@ const EmailVerification = () => {
       <NavBar />
 
       <main className="flex-grow pt-20 pb-20 bg-gradient-to-b from-green-300 to-lime-100/20">
-        <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg overflow-hidden p-8 animate-fade-up">
+        <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg overflow-hidden px-8 py-20 animate-fade-up">
           {status === 'loading' && (
             <div className="text-center">
               <Loader2 className="h-16 w-16 text-green-600 mx-auto mb-6 animate-spin" />

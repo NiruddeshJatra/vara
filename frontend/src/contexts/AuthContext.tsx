@@ -14,6 +14,8 @@ interface AuthContextType {
   verifyEmail: (token: string) => Promise<void>;
   resendVerificationEmail: (email: string) => Promise<void>;
   updateProfile: (data: ProfileFormData) => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<void>;
+  confirmPasswordReset: (uid: string, token: string, newPassword1: string, newPassword2: string) => Promise<void>;
   setUser: React.Dispatch<React.SetStateAction<UserData | null>>;
 }
 
@@ -124,6 +126,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const requestPasswordReset = async (email: string) => {
+    try {
+      setLoading(true);
+      await AuthService.requestPasswordReset(email);
+    } catch (error) {
+      console.error('Error requesting password reset:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const confirmPasswordReset = async (uid: string, token: string, newPassword1: string, newPassword2: string) => {
+    try {
+      setLoading(true);
+      await AuthService.confirmPasswordReset(uid, token, newPassword1, newPassword2);
+    } catch (error) {
+      console.error('Error confirming password reset:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     isAuthenticated,
     user,
@@ -134,6 +160,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logout,
     verifyEmail,
     resendVerificationEmail,
+    requestPasswordReset,
+    confirmPasswordReset,
     setUser
   };
 

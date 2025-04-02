@@ -22,9 +22,8 @@ export default function PricingCard({
   securityDeposit = 0
 }: PricingCardProps) {
   return (
-    <div className="space-y-6">
-      {/* Pricing Card */}
-      <div className="bg-gradient-to-b from-white to-leaf-50 rounded-lg border border-gray-200 shadow-md p-4 sm:p-6 sticky top-24">
+    <div className="sticky top-24 h-fit">
+      <div className="bg-gradient-to-b from-white to-leaf-50 rounded-lg border border-gray-200 shadow-md p-4 sm:p-6">
         <h2 className="text-lg sm:text-xl font-semibold mb-6 pb-3 border-b">Pricing Details</h2>
         <div className="space-y-4">
           <div className="flex justify-between items-center">

@@ -25,6 +25,8 @@ import ItemDetail from "./pages/ItemDetail";
 import NotFound from "./pages/NotFound";
 import VerifyEmailNotice from "./pages/VerifyEmailNotice";
 import EmailVerification from "./pages/EmailVerification";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +68,22 @@ const App = () => {
                 element={
                   <ProtectedRoute requireAuth={false}>
                     <Register />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/auth/forgot-password/"
+                element={
+                  <ProtectedRoute requireAuth={false}>
+                    <ForgotPassword />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/auth/reset-password/:uid/:token"
+                element={
+                  <ProtectedRoute requireAuth={false}>
+                    <ResetPassword />
                   </ProtectedRoute>
                 }
               />

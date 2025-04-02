@@ -9,6 +9,9 @@ from django.contrib.sessions.models import Session
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
 from .models import CustomUser
 from .serializers import (
     UserProfileSerializer,
@@ -19,7 +22,8 @@ from .serializers import (
 )
 from .filters import UserFilter
 from .throttles import AuthenticationThrottle, UserProfileThrottle
-from .email_service import send_verification_email
+from .email_service import send_verification_email, send_password_reset_email
+from django.conf import settings
 
 User = get_user_model()
 
@@ -280,9 +284,9 @@ class CustomRegisterView(APIView):
     throttle_classes = [AuthenticationThrottle]
 
     def post(self, request):
-        serializer = CustomRegisterSerializer(data=request.data)
+        serializer = CustomRegisterSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            user = serializer.save(request)
+            user = serializer.save()
             return Response(
                 {
                     "message": "Registration successful. Please check your email to verify your account.",
@@ -291,3 +295,112 @@ class CustomRegisterView(APIView):
                 status=status.HTTP_201_CREATED,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class PasswordResetRequestView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = [AuthenticationThrottle]
+
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response(
+                {"error": "Email is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = CustomUser.objects.get(email=email)
+            
+            # Generate password reset token
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            
+            # Create reset URL - use a default if FRONTEND_URL is not set
+            frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
+            reset_url = f"{frontend_url}/auth/reset-password/{uid}/{token}/"
+            
+            # Send password reset email
+            send_password_reset_email(user, reset_url, request)
+            
+            return Response({
+                "message": "If your email is registered, you will receive password reset instructions."
+            })
+            
+        except CustomUser.DoesNotExist:
+            # For security reasons, don't reveal if the email exists
+            return Response({
+                "message": "If your email is registered, you will receive password reset instructions."
+            })
+        except Exception as e:
+            print(f"Password reset error: {str(e)}")  # Add debug logging
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+@method_decorator(csrf_exempt, name="dispatch")
+class PasswordResetConfirmView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = [AuthenticationThrottle]
+
+    def post(self, request, uidb64, token):
+        try:
+            # Decode user ID
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = CustomUser.objects.get(pk=uid)
+            
+            # Verify token
+            if not default_token_generator.check_token(user, token):
+                return Response(
+                    {"error": "Invalid or expired reset link"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Get new password from request
+            new_password1 = request.data.get('new_password1')
+            new_password2 = request.data.get('new_password2')
+            
+            if not new_password1 or not new_password2:
+                return Response(
+                    {"error": "Both passwords are required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            if new_password1 != new_password2:
+                return Response(
+                    {"error": "Passwords do not match"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Set new password
+            user.set_password(new_password1)
+            user.save()
+            
+            return Response({
+                "message": "Password has been reset successfully"
+            })
+            
+        except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+            return Response(
+                {"error": "Invalid reset link"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+@method_decorator(csrf_exempt, name="dispatch")
+class LogoutView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        # Clear the user's session
+        if request.session:
+            request.session.flush()
+        
+        # Return success response
+        return Response({"message": "Successfully logged out"})

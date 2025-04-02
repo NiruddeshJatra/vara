@@ -183,6 +183,9 @@ const Login = () => {
                         Remember me
                       </label>
                     </div>
+                    <Link to="/auth/forgot-password/" className="text-sm text-green-600 hover:text-green-800">
+                      Forgot Password?
+                    </Link>
                   </div>
 
                   <div className="animate-fade-up delay-400">

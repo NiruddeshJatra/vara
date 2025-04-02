@@ -1,4 +1,3 @@
-from dj_rest_auth.registration.serializers import RegisterSerializer
 from rest_framework import serializers
 import re
 from .models import CustomUser
@@ -23,37 +22,67 @@ class ProfilePictureSerializer(serializers.ModelSerializer):
         return value
 
 
-class CustomRegisterSerializer(RegisterSerializer):
-    # Only include essential fields for registration
-    username = serializers.CharField(required=True, max_length=150)
+class CustomRegisterSerializer(serializers.ModelSerializer):
+    password1 = serializers.CharField(write_only=True)
+    password2 = serializers.CharField(write_only=True)
     terms_agreed = serializers.BooleanField(required=True)
     marketing_consent = serializers.BooleanField(required=False, default=False)
     profile_completed = serializers.BooleanField(required=False, default=False)
 
-    def custom_signup(self, request, user):
-        # Only save essential fields during registration
-        user.terms_agreed = self.validated_data.get("terms_agreed", False)
-        user.marketing_consent = self.validated_data.get("marketing_consent", False)
-        user.profile_completed = self.validated_data.get("profile_completed", False)
+    class Meta:
+        model = CustomUser
+        fields = [
+            "username",
+            "email",
+            "password1",
+            "password2",
+            "terms_agreed",
+            "marketing_consent",
+            "profile_completed",
+        ]
+
+    def validate(self, data):
+        # Check if passwords match
+        if data["password1"] != data["password2"]:
+            raise serializers.ValidationError("Passwords do not match")
+
+        # Check if username is already taken
+        if CustomUser.objects.filter(username=data["username"]).exists():
+            raise serializers.ValidationError("Username is already taken")
+
+        # Check if email is already taken
+        if CustomUser.objects.filter(email=data["email"]).exists():
+            raise serializers.ValidationError("Email is already registered")
+
+        return data
+
+    def create(self, validated_data):
+        # Remove password2 and other fields from validated_data
+        validated_data.pop("password2", None)
+        terms_agreed = validated_data.pop("terms_agreed", False)
+        marketing_consent = validated_data.pop("marketing_consent", False)
+        profile_completed = validated_data.pop("profile_completed", False)
+
+        # Create user with hashed password
+        user = CustomUser.objects.create_user(
+            username=validated_data["username"],
+            email=validated_data["email"],
+            password=validated_data["password1"],
+            terms_agreed=terms_agreed,
+            marketing_consent=marketing_consent,
+            profile_completed=profile_completed,
+        )
 
         # Generate verification token
         user.generate_verification_token()
         user.save()
 
-        # Import here to avoid circular import
+        # Send verification email
         from .email_service import send_verification_email
 
-        send_verification_email(user, request)
+        send_verification_email(user, self.context.get("request"))
 
-    def get_cleaned_data(self):
-        return {
-            "username": self.validated_data.get("username", ""),
-            "password1": self.validated_data.get("password1", ""),
-            "email": self.validated_data.get("email", ""),
-            "terms_agreed": self.validated_data.get("terms_agreed", False),
-            "marketing_consent": self.validated_data.get("marketing_consent", False),
-            "profile_completed": self.validated_data.get("profile_completed", False),
-        }
+        return user
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
