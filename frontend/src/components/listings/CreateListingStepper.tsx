@@ -41,36 +41,36 @@ const CreateListingStepper = () => {
   return () => window.removeEventListener('beforeunload', handleBeforeUnload);
 }, [formData]);
 
-  const validateBasicDetails = () => {
+  const validateBasicDetails = (data: ListingFormData) => {
     const newErrors: FormErrors = {};
-    if (!formData.title) newErrors.title = 'Title is required';
-    if (!formData.category) newErrors.category = 'Category is required';
-    if (!formData.description) newErrors.description = 'Description is required';
-    if (!formData.location) newErrors.location = 'Location is required';
+    if (!data.title) newErrors.title = 'Title is required';
+    if (!data.category) newErrors.category = 'Category is required';
+    if (!data.description) newErrors.description = 'Description is required';
+    if (!data.location) newErrors.location = 'Location is required';
     return newErrors;
   };
 
-  const validateImageUpload = () => {
+  const validateImageUpload = (data: ListingFormData) => {
     const newErrors: FormErrors = {};
-    if (formData.images.length === 0) newErrors.images = 'At least one image required';
+    if (data.images.length === 0) newErrors.images = 'At least one image required';
     return newErrors;
   };
 
-  const validateProductHistory = () => {
+  const validateProductHistory = (data: ListingFormData) => {
     const newErrors: FormErrors = {};
-    if (!formData.purchaseYear) newErrors.purchaseYear = 'Purchase year is required';
-    if (!formData.originalPrice) newErrors.originalPrice = 'Original price is required';
-    if (!formData.ownershipHistory) newErrors.ownershipHistory = 'Ownership history is required';
+    if (!data.purchaseYear) newErrors.purchaseYear = 'Purchase year is required';
+    if (!data.originalPrice) newErrors.originalPrice = 'Original price is required';
+    if (!data.ownershipHistory) newErrors.ownershipHistory = 'Ownership history is required';
     return newErrors;
   };
 
-  const validatePricing = () => {
+  const validatePricing = (data: ListingFormData) => {
     const newErrors: FormErrors = {};
     
-    if (!formData.pricingTiers || formData.pricingTiers.length === 0) {
+    if (!data.pricingTiers || data.pricingTiers.length === 0) {
       newErrors.pricingTiers = 'At least one pricing tier is required';
     } else {
-      formData.pricingTiers.forEach((tier, index) => {
+      data.pricingTiers.forEach((tier, index) => {
         if (tier.price <= 0) {
           newErrors[`pricingTiers.${index}.price`] = 'Price must be greater than 0';
         }
@@ -83,22 +83,38 @@ const CreateListingStepper = () => {
     return newErrors;
   };
 
+  const validateUnavailability = (data: ListingFormData) => {
+    const newErrors: FormErrors = {};
+    // Implementation of validateUnavailability
+    return newErrors;
+  };
+
   const handleNextStep = () => {
-    let stepErrors = {};
-    
-    switch(currentStep) {
-      case 1: stepErrors = validateBasicDetails(); break;
-      case 2: stepErrors = validateImageUpload(); break;
-      case 3: stepErrors = validateProductHistory(); break;
-      case 4: stepErrors = validatePricing(); break;
+    let newErrors: Record<string, string> = {};
+
+    // Skip validation for ProductHistoryStep since it's handled in the component
+    if (currentStep === 3) {
+      setCurrentStep(prev => prev + 1);
+      return;
     }
 
-    if (Object.keys(stepErrors).length === 0) {
-      setCurrentStep(prev => prev + 1);
-      setErrors({});
-    } else {
-      setErrors(stepErrors);
+    // Validate current step
+    if (currentStep === 1) {
+      newErrors = validateBasicDetails(formData);
+    } else if (currentStep === 2) {
+      newErrors = validateImageUpload(formData);
+    } else if (currentStep === 4) {
+      newErrors = validatePricing(formData);
+    } else if (currentStep === 5) {
+      newErrors = validateUnavailability(formData);
     }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setCurrentStep(prev => prev + 1);
   };
 
   const handlePrevStep = () => {
@@ -107,7 +123,7 @@ const CreateListingStepper = () => {
   };
 
   const handleSubmit = async () => {
-    const pricingErrors = validatePricing();
+    const pricingErrors = validatePricing(formData);
     
     if (Object.keys(pricingErrors).length === 0) {
       setIsSubmitting(true);
@@ -176,7 +192,8 @@ const CreateListingStepper = () => {
                       currentStep === 1 ? '5%' : 
                       currentStep === 2 ? '25%' : 
                       currentStep === 3 ? '50%' : 
-                      currentStep === 4 ? '75%' : 
+                      currentStep === 4 ? '70%' :
+                      currentStep === 5 ? '90%' :
                       '100%' 
                   }}
                 ></div>
@@ -206,6 +223,7 @@ const CreateListingStepper = () => {
               {currentStep === 3 && (
                 <ProductHistoryStep
                   formData={formData}
+                  errors={errors}
                   onNext={(data) => {
                     setFormData(prev => ({ ...prev, ...data }));
                     handleNextStep();
@@ -236,7 +254,7 @@ const CreateListingStepper = () => {
             </form>
 
           <div className="mt-6 md:mt-8 lg:mt-10 flex flex-col-reverse md:flex-row justify-between gap-3 md:gap-4">
-            {currentStep > 1 && currentStep < 6 && (
+            {currentStep > 1 && currentStep < 6 && currentStep !== 3 && (
                 <>
                   <Button 
                     variant="outline" 

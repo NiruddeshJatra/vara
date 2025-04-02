@@ -1,19 +1,20 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ListingFormData } from '@/types/listings';
-import { Info, ChevronRight } from 'lucide-react';
+import { Info, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
+import { Button } from '@/components/ui/button';
 
 type Props = {
   formData: ListingFormData;
   onNext: (data: Partial<ListingFormData>) => void;
   onBack: () => void;
+  errors?: Record<string, string>;
 };
 
-const ProductHistoryStep = ({ formData, onNext, onBack }: Props) => {
+const ProductHistoryStep = ({ formData, onNext, onBack, errors = {} }: Props) => {
   const [purchaseYear, setPurchaseYear] = useState<string>(
     formData.purchaseYear || new Date().getFullYear().toString()
   );
@@ -24,8 +25,16 @@ const ProductHistoryStep = ({ formData, onNext, onBack }: Props) => {
     formData.ownershipHistory || 'firsthand'
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Update local state when formData changes
+  useEffect(() => {
+    if (formData.purchaseYear) setPurchaseYear(formData.purchaseYear);
+    if (formData.originalPrice) setOriginalPrice(formData.originalPrice.toString());
+    if (formData.ownershipHistory) setOwnershipHistory(formData.ownershipHistory);
+  }, [formData]);
+
+  // Handle next button click properly
+  const handleNext = () => {
+    // Call onNext directly without validation
     onNext({
       purchaseYear,
       originalPrice: originalPrice ? parseFloat(originalPrice) : undefined,
@@ -37,7 +46,7 @@ const ProductHistoryStep = ({ formData, onNext, onBack }: Props) => {
   const years = Array.from({ length: 21 }, (_, i) => currentYear - i);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <div className="space-y-8">
       <div className="space-y-2">
         <h2 className="text-2xl font-bold text-gray-800">Product History</h2>
         <p className="text-gray-600">
@@ -55,7 +64,7 @@ const ProductHistoryStep = ({ formData, onNext, onBack }: Props) => {
               value={purchaseYear} 
               onValueChange={setPurchaseYear}
             >
-              <SelectTrigger>
+              <SelectTrigger className={errors.purchaseYear ? "border-red-500" : ""}>
                 {purchaseYear || "Select Year"}
               </SelectTrigger>
               <SelectContent>
@@ -64,6 +73,9 @@ const ProductHistoryStep = ({ formData, onNext, onBack }: Props) => {
                 ))}
               </SelectContent>
             </Select>
+            {errors.purchaseYear && (
+              <p className="text-sm text-red-500">{errors.purchaseYear}</p>
+            )}
             <p className="text-sm text-gray-500">
               The year when you purchased this product.
             </p>
@@ -82,11 +94,14 @@ const ProductHistoryStep = ({ formData, onNext, onBack }: Props) => {
                 step="0.01"
                 value={originalPrice}
                 onChange={(e) => setOriginalPrice(e.target.value)}
-                className="pl-8"
+                className={`pl-8 ${errors.originalPrice ? "border-red-500" : ""}`}
                 placeholder="Enter the original price"
                 required
               />
             </div>
+            {errors.originalPrice && (
+              <p className="text-sm text-red-500">{errors.originalPrice}</p>
+            )}
             <p className="text-sm text-gray-500">
               The price you paid when you purchased this product.
             </p>
@@ -113,6 +128,9 @@ const ProductHistoryStep = ({ formData, onNext, onBack }: Props) => {
               </Label>
             </div>
           </RadioGroup>
+          {errors.ownershipHistory && (
+            <p className="text-sm text-red-500">{errors.ownershipHistory}</p>
+          )}
         </div>
       </div>
 
@@ -126,8 +144,27 @@ const ProductHistoryStep = ({ formData, onNext, onBack }: Props) => {
           <li>This information can build trust and transparency in your listing.</li>
         </ul>
       </div>
-    </form>
+
+      {/* Add navigation buttons inside the component */}
+      <div className="flex justify-between mt-6">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onBack}
+          className="border-green-300 text-green-700 hover:bg-green-50"
+        >
+          <ChevronLeft size={16} className="mr-1" /> Previous
+        </Button>
+        <Button
+          type="button"
+          className="bg-green-600 hover:bg-green-700 text-white"
+          onClick={handleNext}
+        >
+          Continue to Pricing <ChevronRight size={16} className="ml-1" />
+        </Button>
+      </div>
+    </div>
   );
 };
 
-export default ProductHistoryStep; 
+export default ProductHistoryStep;
