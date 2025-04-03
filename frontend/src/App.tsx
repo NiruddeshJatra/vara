@@ -8,6 +8,7 @@ import { useAuth } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { ProtectedAdminRoute } from "./components/admin/ProtectedAdminRoute";
 import PageTransition from "./components/common/PageTransition";
+import CompleteProfile from '@/pages/CompleteProfile';
 
 // Pages
 import AdminLoginPage from "./pages/AdminLoginPage";
@@ -19,7 +20,6 @@ import Profile from "./pages/Profile";
 import Advertisements from "./pages/Advertisements";
 import Rentals from "./pages/Rentals";
 import CreateListing from "./pages/CreateListing";
-import MyListings from "./pages/MyListings";
 import RequestRental from "./pages/RequestRental";
 import ItemDetail from "./pages/ItemDetail";
 import NotFound from "./pages/NotFound";
@@ -27,6 +27,7 @@ import VerifyEmailNotice from "./pages/VerifyEmailNotice";
 import EmailVerification from "./pages/EmailVerification";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import EditListing from "./pages/EditListing";
 
 const queryClient = new QueryClient();
 
@@ -106,18 +107,26 @@ const App = () => {
                 }
               />
               <Route
-                path="/upload-product"
+                path="/auth/complete-profile"
                 element={
                   <ProtectedRoute>
+                    <CompleteProfile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/upload-product"
+                element={
+                  <ProtectedRoute requireCompleteProfile>
                     <CreateListing />
                   </ProtectedRoute>
                 }
               />
               <Route
-                path="/my-listings"
+                path="/edit-listing/:productId"
                 element={
                   <ProtectedRoute>
-                    <MyListings />
+                    <EditListing />
                   </ProtectedRoute>
                 }
               />

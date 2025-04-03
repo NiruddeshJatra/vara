@@ -3,6 +3,8 @@ import AuthService from '../services/auth.service';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ProfileFormData, UserData } from '../types/auth';
+import config from '../config';
+
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -36,6 +38,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     setLoading(false);
   }, []);
+
+  useEffect(() => {
+    console.log("Auth state changed:", {
+      isAuthenticated,
+      hasUser: !!user,
+      hasToken: !!localStorage.getItem(config.auth.tokenStorageKey),
+      hasRefreshToken: !!localStorage.getItem(config.auth.refreshTokenStorageKey)
+    });
+  }, [isAuthenticated, user]);
 
   const login = async (email: string, password: string, rememberMe: boolean) => {
     try {
@@ -89,11 +100,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    await AuthService.logout();
-    setUser(null);
-    setIsAuthenticated(false);
-    toast.success('Logged out successfully');
-    navigate('/auth/login/');
+    try {
+      await AuthService.logout();
+      setUser(null);
+      setIsAuthenticated(false);
+      toast.success('Logged out successfully');
+      navigate('/auth/login/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if logout fails, clear local state
+      setUser(null);
+      setIsAuthenticated(false);
+      navigate('/auth/login/');
+    }
   };
 
   const verifyEmail = async (token: string) => {
@@ -116,10 +135,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateProfile = async (data: ProfileFormData) => {
     try {
       setLoading(true);
+      
+      // Check if we have a token before proceeding
+      const token = localStorage.getItem(config.auth.tokenStorageKey);
+      if (!token) {
+        console.error("No authentication token found in localStorage");
+        toast.error("Authentication error. Please log in again.");
+        logout(); // Force logout and redirect to login
+        throw new Error("No authentication token found");
+      }
+      
       const response = await AuthService.updateProfile(data);
-      setUser(prev => ({ ...prev, ...response }));
-    } catch (error) {
+      
+      // Update user state with new data
+      setUser(prev => {
+        if (!prev) return response;
+        return { ...prev, ...response };
+      });
+      
+      toast.success('Profile updated successfully');
+      return response;
+    } catch (error: any) {
       console.error('Error updating profile:', error);
+      const errorMessage = error.message || 'Failed to update profile';
+      toast.error(errorMessage);
       throw error;
     } finally {
       setLoading(false);

@@ -1,4 +1,4 @@
-export type DurationUnit = 'hour' | 'day' | 'week' | 'month';
+export type DurationUnit = 'day' | 'week' | 'month';
 
 export type Product = {
   id: string;
@@ -27,16 +27,20 @@ export type PricingTier = {
 
 export interface ListingFormData {
   title: string;
-  description: string;
   category: string;
+  description: string;
   location: string;
+  basePrice: number;
+  durationUnit: DurationUnit;
   images: File[];
-  pricingTiers: PricingTier[];
-  securityDeposit?: number;
   unavailableDates: Date[];
+  securityDeposit: number;
+  condition: 'excellent' | 'good' | 'fair';
+  itemAge: number;
   purchaseYear: string;
-  originalPrice?: number;
+  originalPrice: number;
   ownershipHistory: 'firsthand' | 'secondhand';
+  pricingTiers: PricingTier[];
 }
 
 export type AvailabilityPeriod = {
@@ -91,13 +95,6 @@ export type FormErrors = {
   [key: string]: string;
 };
 
-export const DURATION_CHOICES = [
-  { value: 'hour', label: 'Per Hour' },
-  { value: 'day', label: 'Per Day' },
-  { value: 'week', label: 'Per Week' },
-  { value: 'month', label: 'Per Month' },
-] as const;
-
 export const CATEGORY_CHOICES = [
   'Photography',
   'Camping',
@@ -111,3 +108,36 @@ export const CATEGORY_CHOICES = [
   'Sports',
   'Other',
 ] as const;
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export const DURATION_CHOICES = [
+  { value: 'hour', label: 'Per Hour' },
+  { value: 'day', label: 'Per Day' },
+  { value: 'week', label: 'Per Week' },
+  { value: 'month', label: 'Per Month' }
+] as const;
+
+export interface Listing {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  location: string;
+  basePrice: number;
+  durationUnit: DurationUnit;
+  images: string[];
+  unavailableDates: Date[];
+  securityDeposit: number;
+  condition: 'excellent' | 'good' | 'fair';
+  itemAge: number;
+  purchaseYear: string;
+  originalPrice: number;
+  ownershipHistory: 'firsthand' | 'secondhand';
+  pricingTiers: PricingTier[];
+  owner: User;
+}

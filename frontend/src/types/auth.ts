@@ -17,6 +17,7 @@ export interface ProfileFormData {
   nationalIdNumber: string;
   nationalIdFront: File | null;
   nationalIdBack: File | null;
+  profileCompleted?: boolean;
 }
 
 export interface ProfileCompletionData {
@@ -47,6 +48,7 @@ export interface UserData {
   nationalIdNumber?: string;
   nationalIdFront?: string;
   nationalIdBack?: string;
+  profileComplete: boolean;
 }
 
 // API response

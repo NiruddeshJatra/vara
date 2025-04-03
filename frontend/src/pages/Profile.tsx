@@ -10,6 +10,8 @@ import ProfileInformation from "@/components/profile/ProfileInformation";
 import EmptyState from "@/components/profile/EmptyState";
 import NavBar from "@/components/home/NavBar";
 import Footer from "@/components/home/Footer";
+import ProfileListings from "@/components/profile/ProfileListings";
+import { ProfileCompletionBanner } from '@/components/common/ProfileCompletionBanner';
 
 // Mock user data
 const mockUserData = {
@@ -132,9 +134,9 @@ const Profile = () => {
             onEdit={handleEditProfile}
             isEditing={isEditing}
           />
-              </div>
-              
+        </div>
         <div className="max-w-7xl mx-auto px-6 sm:px-8 md:px-12 lg:px-16 pb-16">
+          <ProfileCompletionBanner />
           <Tabs defaultValue="profile" value={activeTab} onValueChange={setActiveTab} className="mt-8">
             <div className="border-b border-green-100">
               <TabsList className="bg-green-100 p-1 rounded-t-lg">
@@ -163,7 +165,7 @@ const Profile = () => {
                   Reviews
                 </TabsTrigger>
               </TabsList>
-              </div>
+            </div>
 
             <TabsContent value="profile" className="pt-6">
               <ProfileInformation
@@ -177,24 +179,7 @@ const Profile = () => {
             </TabsContent>
             
             <TabsContent value="listings">
-              {userData.listings && userData.listings.length > 0 ? (
-                <div>
-                  {/* Listings content would go here */}
-                  <p>Your listings...</p>
-              </div>
-              ) : (
-                <EmptyState
-                  icon={Package}
-                  title="No Listings Found"
-                  description="You haven't created any listings yet. Start renting out your items today!"
-                  actionLabel="Create Listing"
-                  onAction={() => toast({
-                    title: "Create Listing",
-                    description: "Navigating to create listing page",
-                    variant: "default"
-                  })}
-                />
-              )}
+              <ProfileListings />
             </TabsContent>
             
             <TabsContent value="rental-history">

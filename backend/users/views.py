@@ -81,9 +81,18 @@ class UserViewSet(viewsets.ModelViewSet):
         user = request.user
         serializer = self.get_serializer(user, data=request.data)
         serializer.is_valid(raise_exception=True)
+        
+        # Set profile_completed to True before saving
+        serializer.validated_data['profile_completed'] = True
         serializer.save()
+        
         return Response(
-            {"message": "Profile completed successfully", "data": serializer.data}
+            {
+                "message": "Profile completed successfully",
+                "data": serializer.data,
+                "profile_completed": True
+            },
+            status=status.HTTP_200_OK
         )
 
     @action(

@@ -117,13 +117,13 @@ const ProductHistoryStep = ({ formData, onNext, onBack, errors = {} }: Props) =>
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="firsthand" id="firsthand" className="text-green-600 border-green-600 data-[state=checked]:bg-green-600" />
-              <Label htmlFor="firsthand" className="text-gray-700">
+              <Label htmlFor="firsthand" className="text-gray-600">
                 Firsthand (I am the original owner)
               </Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="secondhand" id="secondhand" className="text-green-600 border-green-600 data-[state=checked]:bg-green-600" />
-              <Label htmlFor="secondhand" className="text-gray-700">
+              <Label htmlFor="secondhand" className="text-gray-600">
                 Secondhand (I purchased it from someone else)
               </Label>
             </div>
@@ -135,11 +135,11 @@ const ProductHistoryStep = ({ formData, onNext, onBack, errors = {} }: Props) =>
       </div>
 
       <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-4 rounded-lg border border-amber-200 mt-4">
-        <h4 className="font-medium text-amber-800 mb-2 flex items-center gap-2">
+        <h4 className="text-lg font-semibold text-amber-800 mb-2 flex items-center gap-2">
           <Info size={16} className="text-amber-600" />
           Why we ask for this information
         </h4>
-        <ul className="text-md text-amber-700 space-y-1 list-disc pl-5">
+        <ul className="text-sm text-amber-700 space-y-1 list-disc pl-5">
           <li>Product history helps renters understand the item's background and value.</li>
           <li>This information can build trust and transparency in your listing.</li>
         </ul>

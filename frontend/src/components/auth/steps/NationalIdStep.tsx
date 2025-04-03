@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ChevronLeft, AlertCircle, FileText, Shield } from 'lucide-react';
+import { ChevronRight, ChevronLeft, AlertCircle, FileText, Shield, X } from 'lucide-react';
 import { ProfileFormData, ProfileFormErrors } from '@/types/auth';
 
 interface Props {
@@ -31,6 +31,16 @@ const NationalIdStep = ({ profileFormData, errors, onChange, onFileUpload, onNex
       };
       reader.readAsDataURL(file);
       onFileUpload(e, field);
+    }
+  };
+
+  const handleRemoveFile = (field: 'nationalIdFront' | 'nationalIdBack') => {
+    if (field === 'nationalIdFront') {
+      setPreviewFront(null);
+      onChange({ nationalIdFront: null });
+    } else {
+      setPreviewBack(null);
+      onChange({ nationalIdBack: null });
     }
   };
 
@@ -68,9 +78,9 @@ const NationalIdStep = ({ profileFormData, errors, onChange, onFileUpload, onNex
             <label className="block text-sm font-medium text-gray-700 mb-2">
               National ID Front <span className="text-red-500">*</span>
             </label>
-            <div className="relative">
+            {!previewFront ? (
               <div className="flex items-center justify-center w-full">
-                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50">
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
                     <FileText className="h-6 w-6 text-gray-400 mb-2" />
                     <p className="mb-2 text-sm text-gray-500">
@@ -88,30 +98,38 @@ const NationalIdStep = ({ profileFormData, errors, onChange, onFileUpload, onNex
                   />
                 </label>
               </div>
-              {previewFront && (
-                <div className="mt-4">
-                  <img
-                    src={previewFront}
-                    alt="National ID Front"
-                    className="w-full h-48 object-contain rounded-lg"
-                  />
-                </div>
-              )}
-              {errors.nationalIdFront && (
-                <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-                  <AlertCircle size={14} /> {errors.nationalIdFront}
-                </p>
-              )}
-            </div>
+            ) : (
+              <div className="mt-4 relative">
+                <img
+                  src={previewFront}
+                  alt="National ID Front"
+                  className="w-full h-48 object-contain rounded-lg"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-2 right-2 bg-white/80 hover:bg-white rounded-full p-1"
+                  onClick={() => handleRemoveFile('nationalIdFront')}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+            {errors.nationalIdFront && (
+              <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+                <AlertCircle size={14} /> {errors.nationalIdFront}
+              </p>
+            )}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               National ID Back <span className="text-red-500">*</span>
             </label>
-            <div className="relative">
+            {!previewBack ? (
               <div className="flex items-center justify-center w-full">
-                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50">
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
                     <FileText className="h-6 w-6 text-gray-400 mb-2" />
                     <p className="mb-2 text-sm text-gray-500">
@@ -129,21 +147,29 @@ const NationalIdStep = ({ profileFormData, errors, onChange, onFileUpload, onNex
                   />
                 </label>
               </div>
-              {previewBack && (
-                <div className="mt-4">
-                  <img
-                    src={previewBack}
-                    alt="National ID Back"
-                    className="w-full h-48 object-contain rounded-lg"
-                  />
-                </div>
-              )}
-              {errors.nationalIdBack && (
-                <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-                  <AlertCircle size={14} /> {errors.nationalIdBack}
-                </p>
-              )}
-            </div>
+            ) : (
+              <div className="mt-4 relative">
+                <img
+                  src={previewBack}
+                  alt="National ID Back"
+                  className="w-full h-48 object-contain rounded-lg"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-2 right-2 bg-white/80 hover:bg-white rounded-full p-1"
+                  onClick={() => handleRemoveFile('nationalIdBack')}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+            {errors.nationalIdBack && (
+              <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+                <AlertCircle size={14} /> {errors.nationalIdBack}
+              </p>
+            )}
           </div>
         </div>
 
@@ -174,7 +200,7 @@ const NationalIdStep = ({ profileFormData, errors, onChange, onFileUpload, onNex
           <Button
             type="submit"
             className="bg-green-600 hover:bg-green-700 text-white"
-            disabled={loading}
+            disabled={loading || !profileFormData.nationalIdFront || !profileFormData.nationalIdBack}
           >
             {loading ? 'Verifying...' : 'Verify & Complete'} <ChevronRight size={16} className="ml-2" />
           </Button>

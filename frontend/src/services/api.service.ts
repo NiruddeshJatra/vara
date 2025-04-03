@@ -37,37 +37,48 @@ class ApiService {
       (response: AxiosResponse) => response,
       async (error: AxiosError) => {
         const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
-        
+
         // Handle 401 errors (unauthorized)
         if (
           error.response?.status === 401 &&
-          !originalRequest._retry && 
-          localStorage.getItem(config.auth.userStorageKey) // Check if user is logged in
+          !originalRequest._retry &&
+          localStorage.getItem(config.auth.userStorageKey) && // Check if user is logged in
+          // Skip token refresh for profile completion to prevent logout loops
+          !(originalRequest.url && originalRequest.url.includes('complete_profile'))
         ) {
           originalRequest._retry = true;
 
           try {
-            // Attempt to refresh the token
+            // Attempt to refresh the token using the refresh token
+            const refreshToken = localStorage.getItem(config.auth.refreshTokenStorageKey);
+            if (!refreshToken) {
+              throw new Error('No refresh token available');
+            }
+
             const refreshResponse = await axios.post(
-              `${config.apiUrl}${config.auth.refreshTokenEndpoint}`, 
-              {}, 
+              `${config.baseUrl}${config.auth.refreshTokenEndpoint}`,
+              { refresh: refreshToken },
               { withCredentials: true }
             );
-            
+
             if (refreshResponse.data.access && originalRequest.headers) {
               // Update localStorage with new token
               localStorage.setItem(config.auth.tokenStorageKey, refreshResponse.data.access);
-              
+
               // Update the Authorization header with the new token
               originalRequest.headers.Authorization = `Bearer ${refreshResponse.data.access}`;
               return this.api(originalRequest);
             }
           } catch (refreshError) {
-            // If token refresh fails, logout the user
-            localStorage.removeItem(config.auth.userStorageKey);
-            localStorage.removeItem(config.auth.tokenStorageKey);
-            toast.error('Your session has expired. Please log in again.');
-            window.location.href = '/login';
+            // Only logout for non-profile completion requests
+            if (!(originalRequest.url && originalRequest.url.includes('complete_profile'))) {
+              // If token refresh fails, logout the user
+              localStorage.removeItem(config.auth.userStorageKey);
+              localStorage.removeItem(config.auth.tokenStorageKey);
+              localStorage.removeItem(config.auth.refreshTokenStorageKey);
+              toast.error('Your session has expired. Please log in again.');
+              window.location.href = '/login';
+            }
             return Promise.reject(refreshError);
           }
         }
@@ -75,14 +86,14 @@ class ApiService {
         // Handle other API errors
         if (error.response?.data) {
           const errorData = error.response.data;
-          
+
           // Log detailed error information for debugging
           console.error('API Error:', {
             status: error.response?.status,
             endpoint: originalRequest.url,
             data: errorData
           });
-          
+
           // Format error message for user
           if (typeof errorData === 'string') {
             return Promise.reject(new Error(errorData));
@@ -92,7 +103,7 @@ class ApiService {
             return Promise.reject(new Error(errorData.non_field_errors[0]));
           }
         }
-        
+
         return Promise.reject(error);
       }
     );

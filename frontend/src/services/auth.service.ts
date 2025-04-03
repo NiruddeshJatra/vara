@@ -18,6 +18,15 @@ const authApi = axios.create({
   },
 });
 
+// Create a separate axios instance for API endpoints (which use the /api prefix)
+const api = axios.create({
+  baseURL: config.apiUrl,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
 // Get CSRF token from cookies
 function getCsrfToken() {
   const cookieValue = document.cookie
@@ -27,12 +36,18 @@ function getCsrfToken() {
   return cookieValue;
 }
 
-// Add CSRF token and request debugging for development
+// Add CSRF token, authentication token, and request debugging for development
 authApi.interceptors.request.use(request => {
   // Add CSRF token to headers if available
   const csrfToken = getCsrfToken();
   if (csrfToken && request.headers) {
     request.headers['X-CSRFToken'] = csrfToken;
+  }
+
+  // Add authentication token if available
+  const token = localStorage.getItem(config.auth.tokenStorageKey);
+  if (token && request.headers) {
+    request.headers['Authorization'] = `Bearer ${token}`;
   }
 
   console.log('Auth API Request:', {
@@ -65,6 +80,87 @@ authApi.interceptors.response.use(
   }
 );
 
+// Add request interceptor to include authentication token
+api.interceptors.request.use(request => {
+  // Add authentication token if available
+  const token = localStorage.getItem(config.auth.tokenStorageKey);
+  if (token && request.headers) {
+    request.headers.Authorization = `Bearer ${token}`;
+  }
+
+  // Log request details for debugging
+  console.log('API Request:', {
+    url: request.url,
+    method: request.method,
+    data: request.data,
+    headers: request.headers
+  });
+
+  return request;
+});
+
+// Add response interceptor for token refresh
+api.interceptors.response.use(
+  response => {
+    // Log successful responses for debugging
+    console.log('API Response:', {
+      status: response.status,
+      data: response.data,
+      url: response.config.url
+    });
+    return response;
+  },
+  async error => {
+    const originalRequest = error.config;
+
+    // If the error is 401 and we haven't tried to refresh the token yet
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        // Try to refresh the token
+        const refreshToken = localStorage.getItem(config.auth.refreshTokenStorageKey);
+        if (!refreshToken) {
+          console.error('No refresh token found');
+          return Promise.reject(error);
+        }
+
+        const response = await authApi.post(config.auth.refreshTokenEndpoint, {
+          refresh: refreshToken
+        });
+
+        if (response.data.access) {
+          // Update the access token
+          localStorage.setItem(config.auth.tokenStorageKey, response.data.access);
+
+          // Retry the original request with the new token
+          originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
+          return api(originalRequest);
+        }
+      } catch (refreshError) {
+        console.error('Token refresh failed:', refreshError);
+        // Only clear auth data and redirect if it's not a profile completion request
+        if (!originalRequest.url || !originalRequest.url.includes('complete_profile')) {
+          localStorage.removeItem(config.auth.tokenStorageKey);
+          localStorage.removeItem(config.auth.refreshTokenStorageKey);
+          localStorage.removeItem(config.auth.userStorageKey);
+          window.location.href = config.auth.loginEndpoint;
+        }
+      }
+    }
+
+    // Log error responses for debugging
+    console.error('API Error:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      url: error.config?.url,
+      message: error.message
+    });
+
+    return Promise.reject(error);
+  }
+);
+
 class AuthService {
   // Login the user and store user details and token
   async login(data: LoginData): Promise<UserData> {
@@ -78,6 +174,18 @@ class AuthService {
       });
 
       console.log('Login successful:', response.data);
+
+      // Make sure we properly store tokens
+      if (response.data.tokens) {
+        localStorage.setItem(config.auth.tokenStorageKey, response.data.tokens.access);
+        localStorage.setItem(config.auth.refreshTokenStorageKey, response.data.tokens.refresh);
+      }
+
+      // Store user data
+      if (response.data.user) {
+        localStorage.setItem(config.auth.userStorageKey, JSON.stringify(response.data.user));
+      }
+
       return response.data.user;
     } catch (error: any) {
       console.error('Login error details:', {
@@ -87,8 +195,8 @@ class AuthService {
       });
 
       // Handle unverified user error
-      if (error.response?.status === 401 && 
-          error.response?.data?.detail === 'Email address is not verified.') {
+      if (error.response?.status === 401 &&
+        error.response?.data?.detail === 'Email address is not verified.') {
         throw new Error('UNVERIFIED_EMAIL');
       }
 
@@ -164,26 +272,26 @@ class AuthService {
   async logout(): Promise<any> {
     try {
       const refreshToken = localStorage.getItem('refresh_token');
-      
+
       if (refreshToken) {
         // Send the refresh token to the blacklist endpoint
         await axios.post(`${config.baseUrl}${config.auth.logoutEndpoint}`, {
           refresh: refreshToken
         });
       }
-      
+
       // Clear local storage regardless of API response
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('user');
-      
+
       return { success: true };
     } catch (error) {
       // Even if the API call fails, we should clear local storage
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('user');
-      
+
       throw error;
     }
   }
@@ -193,18 +301,18 @@ class AuthService {
     try {
       // Make a single POST request to verify the email
       const response = await authApi.post(`${config.auth.verifyEmailEndpoint}${token}/`);
-      
+
       // If verification is successful and returns tokens, store them
       if (response.data.tokens) {
         localStorage.setItem(config.auth.tokenStorageKey, response.data.tokens.access);
         localStorage.setItem(config.auth.refreshTokenStorageKey, response.data.tokens.refresh);
       }
-      
+
       // If user data is returned, store it
       if (response.data.user) {
         localStorage.setItem(config.auth.userStorageKey, JSON.stringify(response.data.user));
       }
-      
+
       return response.data;
     } catch (error) {
       console.error('Email verification error:', error);
@@ -225,31 +333,93 @@ class AuthService {
 
   async updateProfile(data: ProfileFormData): Promise<any> {
     try {
+      // Log data for debugging (but hide sensitive file data)
       console.log('Updating profile with data:', {
         ...data,
-        nationalIdFront: '(file data hidden)',
-        nationalIdBack: '(file data hidden)'
+        nationalIdFront: data.nationalIdFront ? '(file data hidden)' : null,
+        nationalIdBack: data.nationalIdBack ? '(file data hidden)' : null
       });
-
+  
+      // Get the current token before proceeding
+      const token = localStorage.getItem(config.auth.tokenStorageKey);
+      if (!token) {
+        console.error("Token missing in updateProfile");
+        // Try to get refresh token and refresh the access token
+        const refreshToken = localStorage.getItem(config.auth.refreshTokenStorageKey);
+        if (refreshToken) {
+          try {
+            const refreshResponse = await authApi.post(config.auth.refreshTokenEndpoint, {
+              refresh: refreshToken
+            });
+            
+            if (refreshResponse.data.access) {
+              // Update token and continue
+              localStorage.setItem(config.auth.tokenStorageKey, refreshResponse.data.access);
+            } else {
+              throw new Error('No authentication token found and refresh failed');
+            }
+          } catch (refreshError) {
+            console.error("Token refresh failed:", refreshError);
+            throw new Error('No authentication token found and refresh failed');
+          }
+        } else {
+          throw new Error('No authentication token found');
+        }
+      }
+  
       const formData = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
+      
+      // Add profileCompleted field
+      const profileCompleted = data.profileCompleted !== undefined ? data.profileCompleted : true;
+      
+      // Transform camelCase to snake_case for backend
+      const transformedData = {
+        first_name: data.firstName,
+        last_name: data.lastName,
+        phone_number: data.phoneNumber,
+        location: data.location,
+        date_of_birth: data.dateOfBirth,
+        national_id_number: data.nationalIdNumber,
+        national_id_front: data.nationalIdFront,
+        national_id_back: data.nationalIdBack,
+        profile_completed: profileCompleted
+      };
+  
+      // Build the form data
+      Object.entries(transformedData).forEach(([key, value]) => {
         if (value instanceof File) {
           formData.append(key, value);
-        } else if (value !== null) {
+        } else if (value !== null && value !== undefined) {
           formData.append(key, String(value));
         }
       });
-
-      const response = await authApi.patch(config.auth.profileEndpoint, formData, {
+  
+      // Get the updated token after possible refresh
+      const updatedToken = localStorage.getItem(config.auth.tokenStorageKey);
+      if (!updatedToken) {
+        throw new Error('No authentication token found after refresh attempt');
+      }
+  
+      // Make the API request
+      console.log('Making profile update request with token:', updatedToken.substring(0, 10) + '...');
+      const response = await api.post(config.auth.completeProfileEndpoint, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${updatedToken}`
         },
       });
-
+  
       console.log('Profile updated successfully:', response.data);
+      
+      // Update local storage with new user data
+      const currentUser = this.getCurrentUser();
+      if (currentUser) {
+        const updatedUser = { ...currentUser, ...response.data, profile_completed: profileCompleted };
+        localStorage.setItem(config.auth.userStorageKey, JSON.stringify(updatedUser));
+      }
+      
       return response.data;
-
-    } catch (error) {
+    } catch (error: any) {
       console.error('Profile update error:', error);
       if (error.response?.data?.detail) {
         throw new Error(error.response.data.detail);

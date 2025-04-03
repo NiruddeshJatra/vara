@@ -1,16 +1,20 @@
 // components/listings/ConfirmationStep.tsx
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Edit, Calendar, Image, MapPin, Tag, DollarSign, CalendarDays } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ListingFormData } from '@/types/listings';
 import { format } from 'date-fns';
 
-type Props = {
+interface Props {
   formData: ListingFormData;
   onEdit: () => void;
-};
+  isEditing?: boolean;
+}
 
-const ConfirmationStep = ({ formData, onEdit }: Props) => {
+const ConfirmationStep = ({ formData, onEdit, isEditing = false }: Props) => {
+  const navigate = useNavigate();
+
   // Group unavailable dates into ranges
   const getUnavailableDateRanges = () => {
     if (!formData.unavailableDates || formData.unavailableDates.length === 0) {
@@ -56,58 +60,69 @@ const ConfirmationStep = ({ formData, onEdit }: Props) => {
         <div className="text-green-600">
           <CheckCircle size={48} className="mx-auto" />
         </div>
-        <h2 className="text-2xl font-bold text-green-800 mt-4">Listing Created Successfully!</h2>
+        <h2 className="text-2xl font-bold text-green-600 mb-2">
+          {isEditing ? 'Listing Updated Successfully!' : 'Listing Created Successfully!'}
+        </h2>
+        <p className="text-gray-600">
+          {isEditing 
+            ? 'Your product listing has been updated.'
+            : 'Your product is now available for rent.'}
+        </p>
       </div>
       
       <div className="max-w-lg mx-auto">
         <div className="grid grid-cols-2 gap-x-4 gap-y-5">
           <div className="flex items-center">
-            <span className="text-base font-medium text-green-700">Title</span>
+            <span className="text-base font-semibold text-green-700">Title</span>
           </div>
           <div className="flex items-center">
             <span className="text-base font-medium text-gray-600">{formData.title}</span>
           </div>
           
           <div className="flex items-center">
-            <span className="text-base font-medium text-green-700">Category</span>
+            <span className="text-base font-semibold text-green-700">Category</span>
           </div>
           <div className="flex items-center">
             <span className="text-base font-medium text-gray-600">{formData.category}</span>
           </div>
           
           <div className="flex items-center">
-            <span className="text-base font-medium text-green-700">Location</span>
+            <span className="text-base font-semibold text-green-700">Location</span>
           </div>
           <div className="flex items-center">
             <span className="text-base font-medium text-gray-600">{formData.location}</span>
           </div>
           
           <div className="flex items-center">
-            <span className="text-base font-medium text-green-700">Images</span>
+            <span className="text-base font-semibold text-green-700">Images</span>
           </div>
           <div className="flex items-center">
             <span className="text-base font-medium text-gray-600">{formData.images.length} uploaded</span>
           </div>
           
           <div className="flex items-center">
-            <span className="text-base font-medium text-green-700">Pricing</span>
+            <span className="text-base font-semibold text-green-700">Pricing</span>
           </div>
           <div className="flex items-center">
             <div>
               {formData.pricingTiers.map((tier, index) => (
                 <div key={index} className="text-base font-medium text-gray-600">
-                  {tier.durationUnit.charAt(0).toUpperCase() + tier.durationUnit.slice(1)}ly: {tier.price} Taka
+                  {tier.durationUnit.charAt(0).toUpperCase() + tier.durationUnit.slice(1)}ly {tier.price} Taka
                   {tier.maxPeriod && ` (Max: ${tier.maxPeriod} ${tier.durationUnit}${tier.maxPeriod > 1 ? 's' : ''})`}
                 </div>
               ))}
-              {formData.securityDeposit && (
-                <div className="text-base font-medium text-gray-600 mt-1">
-                  Security Deposit: {formData.securityDeposit} Taka
-                </div>
-              )}
             </div>
           </div>
-          
+          {formData.securityDeposit && (
+            <>
+              <div className="flex items-start">
+                <span className="text-base font-medium text-green-700">Security Deposit</span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-base font-medium text-gray-600">{formData.securityDeposit} Taka</span>
+              </div>
+            </>
+          )}
           {unavailableRanges.length > 0 && (
             <>
               <div className="flex items-start">
@@ -128,8 +143,8 @@ const ConfirmationStep = ({ formData, onEdit }: Props) => {
       </div>
 
       <div className="text-left max-w-xl mx-auto space-y-4">
-        <h3 className="font-medium text-green-800">What happens next?</h3>
-        <ul className="list-disc list-inside space-y-1">
+        <h4 className="font-semibold text-gray-600">What happens next?</h4>
+        <ul className="list-disc list-inside space-y-1 text-green-700">
           <li>Your listing is now live and available for rent</li>
           <li>You'll receive notifications when someone requests to rent</li>
           <li>You can edit your listing anytime from your dashboard</li>
@@ -137,11 +152,18 @@ const ConfirmationStep = ({ formData, onEdit }: Props) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
-        <Button asChild className="bg-green-600 hover:bg-green-700">
-          <Link to="/listings">View My Listings</Link>
-        </Button>
-        <Button variant="outline" asChild>
-          <Link to="/dashboard">Back to Dashboard</Link>
+        <Button
+            variant="outline"
+            onClick={onEdit}
+            className="w-full text-gray-600 font-bold border-gray-300 hover:border-green-500 hover:text-green-600"
+          >
+            Edit Again
+          </Button>
+        <Button
+          onClick={() => navigate('/profile')}
+          className="w-full bg-green-600 hover:bg-green-700"
+        >
+          View My Listings
         </Button>
       </div>
     </div>

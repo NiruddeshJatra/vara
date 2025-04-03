@@ -9,22 +9,32 @@ import ProductHistoryStep from './steps/ProductHistoryStep';
 import PricingStep from './steps/PricingStep';
 import UnavailabilityStep from './steps/UnavailabilityStep';
 import ConfirmationStep from './steps/ConfirmationStep';
-import {DurationUnit, DURATION_CHOICES, ListingFormData, FormErrors, CATEGORY_CHOICES } from '@/types/listings';
+import {DURATION_CHOICES, ListingFormData, FormErrors, CATEGORY_CHOICES } from '@/types/listings';
 
+interface Props {
+  initialData?: ListingFormData;
+  isEditing?: boolean;
+  onSubmit?: (data: ListingFormData) => void;
+}
 
-const CreateListingStepper = () => {
+const CreateListingStepper = ({ initialData, isEditing = false, onSubmit }: Props) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<ListingFormData>({
+  const [formData, setFormData] = useState<ListingFormData>(initialData || {
     title: '',
     category: '',
     description: '',
     location: '',
+    basePrice: 0,
+    durationUnit: 'day',
     images: [],
-    pricingTiers: [{ durationUnit: 'day', price: 0 }],
     unavailableDates: [],
+    securityDeposit: 0,
+    condition: 'excellent',
+    itemAge: 0,
     purchaseYear: new Date().getFullYear().toString(),
     originalPrice: undefined,
     ownershipHistory: 'firsthand',
+    pricingTiers: [{ durationUnit: 'day', price: 0, maxPeriod: 30 }]
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -128,12 +138,14 @@ const CreateListingStepper = () => {
     if (Object.keys(pricingErrors).length === 0) {
       setIsSubmitting(true);
       try {
-        // Here you would call the API to submit the form
-        console.log('Submitting form data:', formData);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        // Move to confirmation step
-    setCurrentStep(6);
+        if (onSubmit) {
+          await onSubmit(formData);
+        } else {
+          // Default behavior for creating new listing
+          console.log('Creating new listing:', formData);
+          // TODO: Call API to create listing
+          setCurrentStep(6);
+        }
       } catch (error) {
         console.error('Error submitting form:', error);
       } finally {
@@ -160,8 +172,12 @@ const CreateListingStepper = () => {
         <div className="bg-gradient-to-b from-green-300 to-lime-100/20 pt-4 md:pt-8 px-4">
         <div className="max-w-3xl mx-auto bg-gradient-to-b from-white to-lime-50 rounded-lg shadow-subtle p-4 md:p-6 lg:p-8 overflow-hidden">
           <div className="text-center mb-6 md:mb-8">
-            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-700 mb-2">Upload Your Product</h1>
-            <p className="text-sm md:text-base text-gray-500">Join the Vara community to rent and lend items</p>
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-700 mb-2">
+              {isEditing ? 'Edit Your Product' : 'Upload Your Product'}
+            </h1>
+            <p className="text-sm md:text-base text-gray-500">
+              {isEditing ? 'Update your product details' : 'Join the Vara community to rent and lend items'}
+            </p>
             </div>
 
           {/* Stepper navigation */}
@@ -250,7 +266,13 @@ const CreateListingStepper = () => {
                 />
               )}
 
-            {currentStep === 6 && <ConfirmationStep formData={formData} onEdit={() => setCurrentStep(5)} />}
+            {currentStep === 6 && (
+              <ConfirmationStep 
+                formData={formData} 
+                onEdit={() => setCurrentStep(1)}
+                isEditing={isEditing}
+              />
+            )}
             </form>
 
           <div className="mt-6 md:mt-8 lg:mt-10 flex flex-col-reverse md:flex-row justify-between gap-3 md:gap-4">

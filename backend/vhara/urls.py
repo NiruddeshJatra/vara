@@ -12,21 +12,6 @@ from users.views import (
     LogoutView,
 )
 
-# API URL patterns
-api_patterns = [
-    # User management
-    path('users/', include('users.urls')),
-    
-    # Core functionality
-    path('advertisements/', include('advertisements.urls')),
-    path('rentals/', include('rentals.urls')),
-    path('reviews/', include('reviews.urls')),
-    
-    # Additional features
-    path('complaints/', include('complaints.urls')),
-    path('messages/', include('messaging.urls')),
-]
-
 # Main URL patterns
 urlpatterns = [
     # Admin
@@ -59,8 +44,17 @@ urlpatterns = [
         name="password_reset_confirm",
     ),
     
-    # API endpoints
-    path('api/', include(api_patterns)),
+    # User management
+    path('users/', include('users.urls')),
+    
+    # Core functionality
+    path('advertisements/', include('advertisements.urls')),
+    path('rentals/', include('rentals.urls')),
+    path('reviews/', include('reviews.urls')),
+    
+    # Additional features
+    path('complaints/', include('complaints.urls')),
+    path('messages/', include('messaging.urls')),
 ]
 
 # Serve media files in development

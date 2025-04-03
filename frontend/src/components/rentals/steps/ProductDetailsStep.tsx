@@ -70,7 +70,6 @@ const ProductDetailsStep = ({ product, formData, errors, onChange, onNext }: Pro
           </label>
           <Input
             type="number"
-            min={product.minRentalPeriod}
             max={product.maxRentalPeriod}
             value={formData.duration}
             onChange={(e) => onChange({ duration: Number(e.target.value) })}
@@ -82,7 +81,6 @@ const ProductDetailsStep = ({ product, formData, errors, onChange, onNext }: Pro
             </p>
           ) : (
             <p className="text-xs text-gray-500">
-              {`Minimum ${product.minRentalPeriod} ${product.durationUnit}${product.minRentalPeriod > 1 ? 's' : ''}`}
               {product.maxRentalPeriod ? `, maximum ${product.maxRentalPeriod} ${product.durationUnit}s` : ''}
             </p>
           )}
