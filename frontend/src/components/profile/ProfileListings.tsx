@@ -6,13 +6,13 @@ import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2, Eye, Banknote, Star } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Listing } from '@/types/listings';
-
+import { Category } from '@/constants/productTypes';
 // Mock data for testing
 const mockListings: Listing[] = [
   {
     id: '1',
     title: 'Professional DSLR Camera',
-    category: 'Electronics',
+    category: 'Electronics & Gadgets' as Category,
     description: 'Canon EOS 5D Mark IV with 24-70mm lens. Perfect for professional photography.',
     location: 'Dhaka, Bangladesh',
     basePrice: 2000,
@@ -38,7 +38,7 @@ const mockListings: Listing[] = [
   {
     id: '2',
     title: 'Mountain Bike',
-    category: 'Sports',
+    category: 'Sports & Fitness' as Category,
     description: 'Trek Marlin 5 mountain bike, great condition, perfect for trails.',
     location: 'Chittagong, Bangladesh',
     basePrice: 800,
@@ -64,7 +64,7 @@ const mockListings: Listing[] = [
   {
     id: '3',
     title: 'Camping Tent',
-    category: 'Outdoor',
+    category: 'Outdoor & Camping' as Category,
     description: '4-person camping tent with rain cover, barely used.',
     location: 'Sylhet, Bangladesh',
     basePrice: 500,

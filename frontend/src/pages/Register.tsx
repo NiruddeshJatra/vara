@@ -62,8 +62,8 @@ const Register = () => {
       try {
         // Send data in camelCase, auth service will transform to snake_case
         const apiFormData: RegistrationData = {
-          email: formData.email,
-          username: formData.username,
+            email: formData.email,
+            username: formData.username,
           password1: formData.password1,
           password2: formData.password2,
           marketingConsent: formData.marketingConsent || false,
@@ -100,7 +100,7 @@ const Register = () => {
               <BasicInfoStep
                 formData={formData}
                 errors={errors}
-                onChange={handleInputChange}
+                      onChange={handleInputChange}
                 onNext={handleSubmit}
                 loading={loading}
                 showConsent={true}

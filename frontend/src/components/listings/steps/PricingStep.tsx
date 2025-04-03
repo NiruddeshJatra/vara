@@ -1,9 +1,10 @@
 import { Input } from '@/components/ui/input';
 import { AlertCircle, Shield, Info, Plus, Trash2 } from 'lucide-react';
-import { ListingFormData, FormErrors, DURATION_CHOICES, PricingTier } from '@/types/listings';
+import { ListingFormData, FormErrors, PricingTier } from '@/types/listings';
 import '@/styles/input-fixes.css';
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 import { Button } from '@/components/ui/button';
+import { DURATION_CHOICES } from '@/constants/rental';
 
 type Props = {
   formData: ListingFormData;
@@ -46,9 +47,6 @@ const PricingStep = ({ formData, errors, durationOptions, onChange }: Props) => 
     updatedTiers.splice(index, 1);
     onChange({ pricingTiers: updatedTiers });
   };
-
-  // Filter out the "hour" option from duration choices
-  const filteredDurationOptions = durationOptions.filter(option => option.value !== 'hour');
 
   // Get placeholder text based on duration unit
   const getPricePlaceholder = (durationUnit: string) => {
@@ -124,10 +122,10 @@ const PricingStep = ({ formData, errors, durationOptions, onChange }: Props) => 
                   onValueChange={(value) => handlePricingTierChange(index, 'durationUnit', value as 'day' | 'week' | 'month')}
                 >
                   <SelectTrigger className={errors[`pricingTiers.${index}.durationUnit`] ? 'border-red-500' : ''}>
-                    {filteredDurationOptions.find(option => option.value === tier.durationUnit)?.label || "Select Duration Unit"}
+                    {durationOptions.find(option => option.value === tier.durationUnit)?.label || "Select Duration Unit"}
                   </SelectTrigger>
                   <SelectContent>
-                    {filteredDurationOptions.map(option => (
+                    {durationOptions.map(option => (
                       <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
                     ))}
                   </SelectContent>

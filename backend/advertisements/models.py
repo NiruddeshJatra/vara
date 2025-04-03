@@ -9,61 +9,158 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.core.cache import cache
 from .utils import compress_image
-from .constants import CATEGORY_CHOICES, CATEGORY_GROUPS
+from .constants import (
+    CATEGORY_CHOICES, 
+    PRODUCT_TYPE_CHOICES, 
+    DURATION_UNITS, 
+    CONDITION_CHOICES, 
+    OWNERSHIP_HISTORY_CHOICES, 
+    STATUS_CHOICES
+)
 from django.db.models import Avg, F
-from django.contrib.auth.models import User
 
 
 class Product(models.Model):
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="products", null=True, blank=True)
-    title = models.CharField(max_length=200, null=True, blank=True)
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
-    location = models.CharField(max_length=200, null=True, blank=True)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    is_available = models.BooleanField(default=True, null=True, blank=True)
-    status = models.CharField(
-        max_length=20,
-        choices=[
-            ('draft', 'Draft'),
-            ('active', 'Active'),
-            ('maintenance', 'Under Maintenance'),
-            ('suspended', 'Suspended')
-        ],
-        default='active',
-        db_index=True
+    """
+    Product model represents a rental item in the marketplace.
+    It contains all the necessary information about the item, its pricing, and availability.
+    """
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name="products",
+        help_text=_("The user who owns this product")
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    average_rating = models.DecimalField(
-        max_digits=3,
+    title = models.CharField(
+        max_length=200,
+        help_text=_("The title of the product listing")
+    )
+    category = models.CharField(
+        max_length=50, 
+        choices=CATEGORY_CHOICES,
+        help_text=_("The main category this product belongs to")
+    )
+    product_type = models.CharField(
+        max_length=50, 
+        choices=PRODUCT_TYPE_CHOICES,
+        help_text=_("The specific type of product within the category")
+    )
+    description = models.TextField(
+        help_text=_("Detailed description of the product")
+    )
+    location = models.CharField(
+        max_length=200,
+        help_text=_("Location where the product is available for pickup/delivery")
+    )
+    base_price = models.DecimalField(
+        max_digits=10,
         decimal_places=2,
-        default=0,
-        validators=[MinValueValidator(0), MaxValueValidator(5)]
+        validators=[MinValueValidator(0)],
+        help_text=_("Base rental price")
     )
-    unavailable_dates = models.JSONField(default=list, blank=True)
-    views_count = models.PositiveIntegerField(default=0, editable=False)
-    rental_count = models.PositiveIntegerField(default=0, editable=False)
-    pricing = models.ForeignKey(
-        "PricingOption",
-        on_delete=models.CASCADE,
-        related_name="product_pricing",
-        null=True,
+    duration_unit = models.CharField(
+        max_length=5,
+        choices=DURATION_UNITS,
+        default="day",
+        help_text=_("The unit of time for rental duration (day, week, month)")
+    )
+    # Many-to-many relationship with ProductImage allows multiple images per product
+    images = models.ManyToManyField(
+        'ProductImage', 
+        related_name='products',
+        help_text=_("Images associated with this product")
+    )
+    # JSONField to store multiple unavailable dates
+    unavailable_dates = models.JSONField(
+        default=list, 
+        blank=True,
+        help_text=_("Dates when the product is not available for rental")
     )
     security_deposit = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         validators=[MinValueValidator(0)],
-        help_text=_("Security deposit required for renting"),
+        help_text=_("Security deposit required for renting")
+    )
+    # Condition field is set to 'pending' initially and updated by admins after review
+    condition = models.CharField(
+        max_length=20,
+        choices=CONDITION_CHOICES,
+        default='pending',
+        help_text=_("The current condition of the product, updated by admins after review")
+    )
+    purchase_year = models.CharField(
+        max_length=4,
+        help_text=_("Year when the item was purchased")
+    )
+    original_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        help_text=_("Original purchase price")
+    )
+    ownership_history = models.CharField(
+        max_length=20,
+        choices=OWNERSHIP_HISTORY_CHOICES,
+        default='firsthand',
+        help_text=_("Whether the item was purchased new or used")
+    )
+    # Status field with default 'draft' - new listings start as drafts
+    # After admin review, they can be 'active', 'maintenance', or 'suspended'
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='draft',
+        db_index=True,
+        help_text=_("Current status of the product listing")
+    )
+    # Status message to inform owner about status changes
+    status_message = models.TextField(
+        blank=True,
+        null=True,
+        help_text=_("Message explaining status change to the owner")
+    )
+    # Track when the status was last changed
+    status_changed_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text=_("When the status was last changed")
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text=_("When the product was first listed")
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text=_("When the product was last updated")
+    )
+    average_rating = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(5)],
+        help_text=_("Average rating from all reviews")
+    )
+    # views_count tracks how many times the product page has been viewed
+    # This is useful for analytics and sorting popular items
+    views_count = models.PositiveIntegerField(
+        default=0, 
+        editable=False,
+        help_text=_("Number of times this product has been viewed")
+    )
+    # rental_count tracks how many times the product has been rented
+    # This is useful for analytics and sorting popular items
+    rental_count = models.PositiveIntegerField(
+        default=0, 
+        editable=False,
+        help_text=_("Number of times this product has been rented")
     )
 
     class Meta:
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['category']),
+            models.Index(fields=['product_type']),
             models.Index(fields=['location']),
-            models.Index(fields=['is_available']),
             models.Index(fields=['status']),
         ]
 
@@ -71,32 +168,43 @@ class Product(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
-        # used to clear cached data related to product listings whenever a Product instance is saved. This ensures that the cache is updated to reflect the latest product data, preventing outdated information from being served to users.
+        # Clear cached data related to product listings whenever a Product instance is saved
+        # This ensures that the cache is updated to reflect the latest product data
         cache.delete_many(keys=cache.keys("product_list_*"))
-        if (
-            self.pk is None # means that this Product instance is being created for the first time
-            or self._state.adding # checks if the Product instance is in the process of being added to the database.
-            or Product.objects.get(pk=self.pk).image != self.image
-        ) and self.image:
-            # Compress the image before saving
-            if compressed_image := compress_image(self.image):
-                self.image = compressed_image
         super().save(*args, **kwargs)
-        if not hasattr(self, 'pricing'): # ensure that a PricingOption is created whenever a Product is created.
-            PricingOption.objects.create(product=self, base_price=0)
 
     def increment_views(self):
-        self.views_count = F('views_count') + 1 # F() expressions are used to reference a model field's value in the database. This ensures that the views_count field is updated directly in the database in a single query.
-        self.save(update_fields=["views_count"])
+        """
+        Increment the view count for this product.
+        Uses F() expression to avoid race conditions when multiple users view simultaneously.
+        """
+        self.views_count = F('views_count') + 1
+        self.save(update_fields=['views_count'])
 
     def increment_rentals(self):
+        """
+        Increment the rental count for this product.
+        Uses F() expression to avoid race conditions when multiple rentals complete simultaneously.
+        """
         self.rental_count = F('rental_count') + 1
-        self.save(update_fields=["rental_count"])
+        self.save(update_fields=['rental_count'])
 
     def check_availability(self, start_time, end_time):
-        if not self.is_available:
+        """
+        Check if the product is available for the specified time period.
+        
+        Args:
+            start_time: The start time of the requested rental period
+            end_time: The end time of the requested rental period
+            
+        Returns:
+            bool: True if the product is available, False otherwise
+        """
+        # Check if the product is active and not marked as unavailable
+        if self.status != 'active':
             return False
         
+        # Check for overlapping rentals
         overlapping_rentals = self.rentals.filter(
             status__in=["accepted", "in_progress"],
             start_time__lt=end_time,
@@ -105,81 +213,139 @@ class Product(models.Model):
         return not overlapping_rentals.exists()
 
     def update_average_rating(self, new_rating):
+        """
+        Update the average rating for this product when a new review is added.
+        
+        Args:
+            new_rating: The rating value from the new review
+        """
         # Calculate new average rating
         total_ratings = self.rental_count
         current_total = self.average_rating * total_ratings
         new_total = current_total + new_rating
         self.average_rating = new_total / (total_ratings + 1)
         self.save(update_fields=["average_rating"])
+        
+    def update_status(self, new_status, message=None):
+        """
+        Update the status of the product and set a message for the owner.
+        
+        Args:
+            new_status: The new status to set
+            message: Optional message explaining the status change
+        """
+        from django.utils import timezone
+        
+        self.status = new_status
+        if message:
+            self.status_message = message
+        self.status_changed_at = timezone.now()
+        self.save(update_fields=['status', 'status_message', 'status_changed_at'])
+        
+        # Here you would trigger a notification to the owner
+        # This would typically be handled by a signal or a notification service
+        # For example:
+        # notify_owner_status_change(self.owner, self, new_status, message)
 
 
-# created to allow multiple images for a product
 class ProductImage(models.Model):
+    """
+    ProductImage model represents an image associated with a product.
+    Each product can have multiple images, and one can be marked as primary.
+    """
+    # Foreign key to Product allows direct access to the product this image belongs to
+    # This is in addition to the ManyToMany relationship from Product to ProductImage
     product = models.ForeignKey(
         Product, 
         on_delete=models.CASCADE, 
-        related_name="images"
+        related_name='product_images',
+        help_text=_("The product this image belongs to")
     )
     image = models.ImageField(
         upload_to="product_images/",
         validators=[FileExtensionValidator(["jpg", "jpeg", "png"])],
-        help_text=_("Upload a product image (max 5MB)"),
+        help_text=_("Upload a product image (max 5MB)")
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    is_primary = models.BooleanField(
+        default=False,
+        help_text=_("Whether this is the primary image for the product")
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text=_("When this image was uploaded")
+    )
 
     def __str__(self):
         return f"Image for {self.product.title}"
 
+    def save(self, *args, **kwargs):
+        """
+        Override save method to compress the image before saving.
+        This helps reduce storage space and improve loading times.
+        """
+        if self.image and not self._state.adding:  # Only compress if image is being updated
+            self.image = compress_image(self.image)
+        super().save(*args, **kwargs)
+
     class Meta:
         verbose_name = _("Product Image")
         verbose_name_plural = _("Product Images")
+        # Ensure only one primary image per product
+        unique_together = ['product', 'is_primary']
+        # Add constraint to ensure only one primary image per product
+        constraints = [
+            models.UniqueConstraint(
+                fields=['product'],
+                condition=models.Q(is_primary=True),
+                name='unique_primary_image'
+            )
+        ]
 
 
-class PricingOption(models.Model):
-    DURATION_CHOICES = [
-        ("hour", _("Per Hour")),
-        ("day", _("Per Day")),
-        ("week", _("Per Week")),
-        ("month", _("Per Month")),
-    ]
-    base_price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        validators=[MinValueValidator(0)],
-        help_text=_("Base rental price"),
+class PricingTier(models.Model):
+    """
+    PricingTier model represents different pricing options for a product.
+    Each product can have multiple pricing tiers for different durations.
+    """
+    product = models.ForeignKey(
+        Product, 
+        on_delete=models.CASCADE, 
+        related_name='pricing_tiers',
+        help_text=_("The product this pricing tier belongs to")
     )
     duration_unit = models.CharField(
         max_length=5,
-        choices=DURATION_CHOICES,
-        default="day",
-        help_text=_("Price per duration unit"),
+        choices=DURATION_UNITS,
+        help_text=_("The unit of time for this pricing tier")
     )
-    minimum_rental_period = models.PositiveIntegerField(
-        default=1, help_text=_("Minimum rental period in selected duration units")
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        help_text=_("Price for this duration")
     )
-    maximum_rental_period = models.PositiveIntegerField(
+    max_period = models.PositiveIntegerField(
         null=True,
         blank=True,
-        help_text=_(
-            "Maximum rental period in selected duration units (leave blank for no limit)"
-        ),
+        help_text=_("Maximum rental period in selected duration units")
     )
 
     class Meta:
-        verbose_name = _("Pricing Option")
-        verbose_name_plural = _("Pricing Options")
+        verbose_name = _("Pricing Tier")
+        verbose_name_plural = _("Pricing Tiers")
+        # Ensure only one pricing tier per duration unit per product
+        unique_together = ['product', 'duration_unit']
 
     def clean(self):
+        """
+        Validate the pricing tier data.
+        Raises ValidationError if the data is invalid.
+        """
         super().clean()
-        if not self.base_price:
-            raise ValidationError("Base price must be set.")
-        if (
-            self.maximum_rental_period
-            and self.maximum_rental_period < self.minimum_rental_period
-        ):
-            raise ValidationError(
-                _("Maximum rental period must be greater than minimum rental period")
-            )
+        if not self.price:
+            raise ValidationError("Price must be set.")
+        if self.max_period and self.max_period < 1:
+            raise ValidationError("Maximum period must be greater than 0")
 
     def __str__(self):
-        return f"{self.product.title} - {self.base_price} Taka for each {self.duration_unit}"
+        return f"{self.product.title} - {self.price} for {self.duration_unit}"

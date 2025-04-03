@@ -1,8 +1,9 @@
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
-from .models import Product, PricingOption, ProductImage
+from django.contrib.auth.models import User
+from .models import Product, ProductImage, PricingTier
+from .constants import STATUS_CHOICES, CATEGORY_CHOICES, PRODUCT_TYPE_CHOICES
+from datetime import datetime
 
-User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,31 +28,91 @@ class ProductImageSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ProductImage
-        fields = ['id', 'image', 'is_primary', 'created_at']
+        fields = ['id', 'image', 'is_primary']
 
 
-class PricingOptionSerializer(serializers.ModelSerializer):
+class PricingTierSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PricingOption
-        fields = ['id', 'base_price', 'duration_unit', 'minimum_rental_period', 'maximum_rental_period']
+        model = PricingTier
+        fields = ['id', 'duration_unit', 'price', 'max_period']
 
 
 class ProductSerializer(serializers.ModelSerializer):
     owner = UserSerializer(read_only=True)
-    pricing = PricingOptionSerializer(read_only=True)
     images = ProductImageSerializer(many=True, read_only=True)
-    unavailable_dates = serializers.ListField(
-        child=serializers.DateField(),
-        required=False,
-        default=list
-    )
+    pricing_tiers = PricingTierSerializer(many=True, read_only=True)
+    average_rating = serializers.FloatField(read_only=True)
+    views_count = serializers.IntegerField(read_only=True)
+    rental_count = serializers.IntegerField(read_only=True)
+    status_message = serializers.CharField(read_only=True)
+    status_changed_at = serializers.DateTimeField(read_only=True)
 
     class Meta:
         model = Product
         fields = [
-            'id', 'owner', 'title', 'category', 'description', 'location',
-            'latitude', 'longitude', 'is_available', 'status', 'created_at',
-            'updated_at', 'average_rating', 'unavailable_dates', 'pricing',
-            'images'
+            'id', 'owner', 'title', 'description', 'category', 'product_type',
+            'base_price', 'duration_unit', 'security_deposit', 'condition',
+            'item_age', 'purchase_year', 'original_price', 'ownership_history',
+            'images', 'pricing_tiers', 'status', 'status_message', 'status_changed_at',
+            'average_rating', 'views_count', 'rental_count', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['owner', 'created_at', 'updated_at', 'average_rating']
+        read_only_fields = [
+            'owner', 'average_rating', 'views_count', 'rental_count',
+            'status_message', 'status_changed_at'
+        ]
+
+    def validate_category(self, value):
+        if value not in dict(CATEGORY_CHOICES):
+            raise serializers.ValidationError("Invalid category selected.")
+        return value
+
+    def validate_product_type(self, value):
+        if value not in dict(PRODUCT_TYPE_CHOICES):
+            raise serializers.ValidationError("Invalid product type selected.")
+        return value
+
+    def validate_purchase_year(self, value):
+        current_year = datetime.now().year
+        if value > current_year:
+            raise serializers.ValidationError("Purchase year cannot be in the future.")
+        if value < 1900:
+            raise serializers.ValidationError("Purchase year seems invalid.")
+        return value
+
+    def validate(self, data):
+        # Ensure product_type corresponds to the selected category
+        category = data.get('category')
+        product_type = data.get('product_type')
+        
+        if category and product_type:
+            valid_types = [pt[0] for pt in PRODUCT_TYPE_CHOICES if pt[1] == category]
+            if product_type not in valid_types:
+                raise serializers.ValidationError({
+                    'product_type': f'Product type must be one of {valid_types} for the selected category.'
+                })
+
+    def validate(self, data):
+        # Validate that product_type belongs to the selected category
+        category_product_types = {
+            category: [pt for pt, cat in PRODUCT_TYPE_CHOICES if cat == category]
+            for category, _ in CATEGORY_CHOICES
+        }
+        if data.get('category') and data.get('product_type'):
+            if data['product_type'] not in category_product_types.get(data['category'], []):
+                raise serializers.ValidationError(
+                    f"Product type {data['product_type']} is not valid for category {data['category']}"
+                )
+
+        return data
+
+    def create(self, validated_data):
+        # Set initial status to draft for new listings
+        validated_data['status'] = 'draft'
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        # Only allow status updates through the update_status method
+        if 'status' in validated_data:
+            status = validated_data.pop('status')
+            instance.update_status(status)
+        return super().update(instance, validated_data)

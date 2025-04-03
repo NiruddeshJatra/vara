@@ -1,4 +1,7 @@
-export type DurationUnit = 'day' | 'week' | 'month';
+import { ProductStatus } from '../constants/productStatus';
+import { ProductCondition, OwnershipHistory } from '../constants/productAttributes';
+import { ProductType, Category } from '../constants/productTypes';
+import { DurationUnit, RentalStatus } from '../constants/rental';
 
 export type Product = {
   id: string;
@@ -14,9 +17,12 @@ export type Product = {
   securityDeposit?: number;
   averageRating?: number;
   totalRentals?: number;
-  condition?: 'excellent' | 'good' | 'fair';
+  condition?: ProductCondition;
   itemAge?: number;
   pricingTiers?: PricingTier[];
+  status?: ProductStatus;
+  statusMessage?: string;
+  statusChangedAt?: string;
 };
 
 export type PricingTier = {
@@ -27,7 +33,8 @@ export type PricingTier = {
 
 export interface ListingFormData {
   title: string;
-  category: string;
+  category: Category;
+  productType: ProductType;
   description: string;
   location: string;
   basePrice: number;
@@ -35,11 +42,11 @@ export interface ListingFormData {
   images: File[];
   unavailableDates: Date[];
   securityDeposit: number;
-  condition: 'excellent' | 'good' | 'fair';
+  condition: ProductCondition;
   itemAge: number;
   purchaseYear: string;
   originalPrice: number;
-  ownershipHistory: 'firsthand' | 'secondhand';
+  ownershipHistory: OwnershipHistory;
   pricingTiers: PricingTier[];
 }
 
@@ -84,30 +91,9 @@ export type RentalRequest = {
   updatedAt: Date;
 };
 
-export type RentalStatus = 
-  | 'pending' 
-  | 'approved' 
-  | 'rejected' 
-  | 'canceled' 
-  | 'completed';
-
 export type FormErrors = {
   [key: string]: string;
 };
-
-export const CATEGORY_CHOICES = [
-  'Photography',
-  'Camping',
-  'Audio',
-  'Electronics',
-  'Party',
-  'Tools',
-  'Vehicles',
-  'Furniture',
-  'Gaming',
-  'Sports',
-  'Other',
-] as const;
 
 export interface User {
   id: string;
@@ -115,17 +101,11 @@ export interface User {
   email: string;
 }
 
-export const DURATION_CHOICES = [
-  { value: 'hour', label: 'Per Hour' },
-  { value: 'day', label: 'Per Day' },
-  { value: 'week', label: 'Per Week' },
-  { value: 'month', label: 'Per Month' }
-] as const;
-
 export interface Listing {
   id: string;
   title: string;
-  category: string;
+  category: Category;
+  productType: ProductType;
   description: string;
   location: string;
   basePrice: number;
@@ -133,11 +113,14 @@ export interface Listing {
   images: string[];
   unavailableDates: Date[];
   securityDeposit: number;
-  condition: 'excellent' | 'good' | 'fair';
+  condition: ProductCondition;
   itemAge: number;
   purchaseYear: string;
   originalPrice: number;
-  ownershipHistory: 'firsthand' | 'secondhand';
+  ownershipHistory: OwnershipHistory;
   pricingTiers: PricingTier[];
   owner: User;
+  status: ProductStatus;
+  statusMessage?: string;
+  statusChangedAt?: string;
 }

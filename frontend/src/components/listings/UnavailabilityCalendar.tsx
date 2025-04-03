@@ -161,7 +161,7 @@ const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
                     text-center p-2 text-sm border-r last:border-r-0
                     ${day === null ? 'bg-white text-gray-300' : 'bg-white text-gray-700'}
                     ${day !== null && isDateUnavailable(currentYear, currentMonth, day) 
-                      ? 'bg-red-200/50 text-red-800 font-medium' 
+                      ? 'bg-red-200 text-red-800 font-medium' 
                       : day === new Date().getDate() && currentMonth === new Date().getMonth() && currentYear === new Date().getFullYear() 
                         ? 'border border-green-300 font-medium' 
                         : ''}

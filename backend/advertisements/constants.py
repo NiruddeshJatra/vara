@@ -1,56 +1,123 @@
+from django.utils.translation import gettext_lazy as _
 
 CATEGORY_CHOICES = [
+    ('Photography & Videography', _('Photography & Videography')),
+    ('Sports & Fitness', _('Sports & Fitness')),
+    ('Tools & Equipment', _('Tools & Equipment')),
+    ('Electronics', _('Electronics')),
+    ('Musical Instruments', _('Musical Instruments')),
+    ('Party & Events', _('Party & Events')),
+    ('Fashion & Accessories', _('Fashion & Accessories')),
+    ('Home & Garden', _('Home & Garden')),
+    ('Books & Media', _('Books & Media')),
+    ('Toys & Games', _('Toys & Games')),
+    ('Automotive', _('Automotive')),
+    ('Other', _('Other')),
+]
+
+PRODUCT_TYPE_CHOICES = [
     # Photography & Videography
-    ('camera', 'Camera'),
-    ('gimbal', 'Gimbal'),
-    ('lighting', 'Lighting Equipment'),
-    ('video_acc', 'Video Accessories'),
-    ('microphone', 'Microphone'),
-    ('studio_equip', 'Studio Equipment'),
+    ('camera', 'Photography & Videography'),
+    ('lens', 'Photography & Videography'),
+    ('gimbal', 'Photography & Videography'),
+    ('drone', 'Photography & Videography'),
+    ('lighting', 'Photography & Videography'),
+    ('tripod', 'Photography & Videography'),
+    ('microphone', 'Photography & Videography'),
+    ('video_camera', 'Photography & Videography'),
     
     # Sports & Fitness
-    ('bicycle', 'Bicycle'),
-    ('safety_gear', 'Helmets & Safety Gear'),
-    ('cricket', 'Cricket Equipment'),
-    ('football', 'Football & Soccer Equipment'),
-    ('basketball', 'Basketball Equipment'),
-    ('tennis', 'Tennis Equipment'),
-    ('gym_equip', 'Gym Equipment'),
-    
-    # Outdoor & Camping
-    ('tent', 'Tent'),
-    ('sleeping_bag', 'Sleeping Bag'),
-    ('camp_furniture', 'Camping Furniture'),
-    ('hiking_gear', 'Hiking Gear'),
-    ('camp_stove', 'Portable Stove'),
-    ('cooler', 'Cooler'),
-    ('bag', 'Bag'),
-    
-    # Audio & Entertainment
-    ('speaker', 'Speaker'),
-    ('dj_equip', 'DJ Equipment'),
-    ('musical_inst', 'Musical Instruments'),
-    ('karaoke', 'Karaoke Systems'),
-    ('party_lights', 'Party Lights'),
-    ('projector', 'Projector'),
-    
-    # Electronics & Gadgets
-    ('drone', 'Drone'),
-    ('power_bank', 'Power Bank'),
-    ('laptop', 'Laptop'),
-    
-    # Event & Party
-    ('party_furniture', 'Tables & Chairs'),
-    ('decorations', 'Decorations'),
-    ('grill', 'Grills & BBQ Equipment'),
-    ('stage', 'Portable Stage'),
+    ('bicycle', 'Sports & Fitness'),
+    ('treadmill', 'Sports & Fitness'),
+    ('yoga_mat', 'Sports & Fitness'),
+    ('dumbbells', 'Sports & Fitness'),
+    ('sports_equipment', 'Sports & Fitness'),
     
     # Tools & Equipment
-    ('power_tool', 'Power Tools'),
-    ('hand_tool', 'Hand Tools'),
-    ('garden_tool', 'Gardening Equipment'),
-    ('ladder', 'Ladder'),
-    ('paint_sprayer', 'Paint Sprayer'),
+    ('power_tools', 'Tools & Equipment'),
+    ('hand_tools', 'Tools & Equipment'),
+    ('gardening_tools', 'Tools & Equipment'),
+    ('cleaning_equipment', 'Tools & Equipment'),
+    
+    # Electronics
+    ('laptop', 'Electronics'),
+    ('tablet', 'Electronics'),
+    ('smartphone', 'Electronics'),
+    ('gaming_console', 'Electronics'),
+    ('tv', 'Electronics'),
+    ('speaker', 'Electronics'),
+    
+    # Musical Instruments
+    ('guitar', 'Musical Instruments'),
+    ('piano', 'Musical Instruments'),
+    ('drums', 'Musical Instruments'),
+    ('microphone', 'Musical Instruments'),
+    ('amplifier', 'Musical Instruments'),
+    
+    # Party & Events
+    ('tent', 'Party & Events'),
+    ('table', 'Party & Events'),
+    ('chair', 'Party & Events'),
+    ('decorations', 'Party & Events'),
+    ('sound_system', 'Party & Events'),
+    
+    # Fashion & Accessories
+    ('formal_wear', 'Fashion & Accessories'),
+    ('costume', 'Fashion & Accessories'),
+    ('jewelry', 'Fashion & Accessories'),
+    ('accessories', 'Fashion & Accessories'),
+    
+    # Home & Garden
+    ('furniture', 'Home & Garden'),
+    ('kitchen_appliance', 'Home & Garden'),
+    ('garden_tools', 'Home & Garden'),
+    ('decor', 'Home & Garden'),
+    
+    # Books & Media
+    ('book', 'Books & Media'),
+    ('magazine', 'Books & Media'),
+    ('movie', 'Books & Media'),
+    ('game', 'Books & Media'),
+    
+    # Toys & Games
+    ('board_game', 'Toys & Games'),
+    ('video_game', 'Toys & Games'),
+    ('toy', 'Toys & Games'),
+    ('puzzle', 'Toys & Games'),
+    
+    # Automotive
+    ('car', 'Automotive'),
+    ('bike', 'Automotive'),
+    ('scooter', 'Automotive'),
+    ('accessories', 'Automotive'),
+    
+    # Other
+    ('other', 'Other'),
+]
+
+DURATION_UNITS = [
+    ('day', _('Per Day')),
+    ('week', _('Per Week')),
+    ('month', _('Per Month')),
+]
+
+CONDITION_CHOICES = [
+    ('excellent', _('Excellent')),
+    ('good', _('Good')),
+    ('fair', _('Fair')),
+    ('pending', _('Pending Review')),
+]
+
+OWNERSHIP_HISTORY_CHOICES = [
+    ('firsthand', _('First Hand')),
+    ('secondhand', _('Second Hand')),
+]
+
+STATUS_CHOICES = [
+    ('draft', _('Draft - Pending Review')),
+    ('active', _('Active - Available for Rent')),
+    ('maintenance', _('Under Maintenance - Needs Action')),
+    ('suspended', _('Suspended - Listing Disabled')),
 ]
 
 CATEGORY_GROUPS = {

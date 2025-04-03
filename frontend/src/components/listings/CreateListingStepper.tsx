@@ -9,7 +9,9 @@ import ProductHistoryStep from './steps/ProductHistoryStep';
 import PricingStep from './steps/PricingStep';
 import UnavailabilityStep from './steps/UnavailabilityStep';
 import ConfirmationStep from './steps/ConfirmationStep';
-import {DURATION_CHOICES, ListingFormData, FormErrors, CATEGORY_CHOICES } from '@/types/listings';
+import {ListingFormData, FormErrors } from '@/types/listings';
+import { Category, ProductType } from '@/constants/productTypes';
+import { DURATION_CHOICES } from '@/constants/rental';
 
 interface Props {
   initialData?: ListingFormData;
@@ -21,7 +23,8 @@ const CreateListingStepper = ({ initialData, isEditing = false, onSubmit }: Prop
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<ListingFormData>(initialData || {
     title: '',
-    category: '',
+    category: 'Photography & Videography' as Category,
+    productType: 'camera' as ProductType,
     description: '',
     location: '',
     basePrice: 0,
@@ -34,7 +37,7 @@ const CreateListingStepper = ({ initialData, isEditing = false, onSubmit }: Prop
     purchaseYear: new Date().getFullYear().toString(),
     originalPrice: undefined,
     ownershipHistory: 'firsthand',
-    pricingTiers: [{ durationUnit: 'day', price: 0, maxPeriod: 30 }]
+    pricingTiers: [{ durationUnit: 'day', price: 0, maxPeriod: 1 }]
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,7 +57,7 @@ const CreateListingStepper = ({ initialData, isEditing = false, onSubmit }: Prop
   const validateBasicDetails = (data: ListingFormData) => {
     const newErrors: FormErrors = {};
     if (!data.title) newErrors.title = 'Title is required';
-    if (!data.category) newErrors.category = 'Category is required';
+    if (!data.productType) newErrors.productType = 'Product type is required';
     if (!data.description) newErrors.description = 'Description is required';
     if (!data.location) newErrors.location = 'Location is required';
     return newErrors;
@@ -222,7 +225,6 @@ const CreateListingStepper = ({ initialData, isEditing = false, onSubmit }: Prop
                 <BasicDetailsStep
                   formData={formData}
                   errors={errors}
-                  categories={CATEGORY_CHOICES}
                   onChange={(data: Partial<ListingFormData>) => setFormData(prev => ({ ...prev, ...data }))}
                   onNext={handleNextStep}
                 />

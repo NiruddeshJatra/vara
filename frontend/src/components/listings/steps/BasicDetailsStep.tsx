@@ -4,16 +4,33 @@ import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/u
 import { AlertCircle, ChevronRight, Lightbulb } from 'lucide-react';
 import { ListingFormData, FormErrors } from '@/types/listings';
 import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react';
+import { Category, ProductType, CATEGORY_GROUPS, CATEGORY_CHOICES } from '@/constants/productTypes';
 
 type Props = {
   formData: ListingFormData;
   errors: FormErrors;
-  categories: readonly string[];
   onChange: (data: Partial<ListingFormData>) => void;
   onNext: () => void;
 };
 
-const BasicDetailsStep = ({ formData, errors, categories, onChange, onNext }: Props) => {
+const BasicDetailsStep = ({ formData, errors, onChange, onNext }: Props) => {
+  const [availableProductTypes, setAvailableProductTypes] = useState<ProductType[]>([]);
+
+  // Update available product types when category changes
+  useEffect(() => {
+    if (formData.category) {
+      setAvailableProductTypes(CATEGORY_GROUPS[formData.category]);
+      
+      // Reset product type if it's not in the new category
+      if (formData.productType && !CATEGORY_GROUPS[formData.category].includes(formData.productType)) {
+        onChange({ productType: '' as ProductType });
+      }
+    } else {
+      setAvailableProductTypes([]);
+    }
+  }, [formData.category, onChange]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     onChange({ [name]: value });
@@ -41,28 +58,55 @@ const BasicDetailsStep = ({ formData, errors, categories, onChange, onNext }: Pr
         )}
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Category <span className="text-red-500">*</span>
-        </label>
-        <Select 
-          value={formData.category} 
-          onValueChange={(value) => onChange({ category: value })}
-        >
-          <SelectTrigger className={errors.category ? 'border-red-500' : ''}>
-            {formData.category || "Select Category"}
-          </SelectTrigger>
-          <SelectContent>
-            {categories.map(cat => (
-              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.category && (
-          <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-            <AlertCircle size={14} /> {errors.category}
-          </p>
-        )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Category <span className="text-red-500">*</span>
+          </label>
+          <Select 
+            value={formData.category} 
+            onValueChange={(value) => onChange({ category: value as Category })}
+          >
+            <SelectTrigger className={errors.category ? 'border-red-500' : ''}>
+              {formData.category || "Select Category"}
+            </SelectTrigger>
+            <SelectContent>
+              {Object.keys(CATEGORY_GROUPS).map(cat => (
+                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.category && (
+            <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+              <AlertCircle size={14} /> {errors.category}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Product Type <span className="text-red-500">*</span>
+          </label>
+          <Select 
+            value={formData.productType} 
+            onValueChange={(value) => onChange({ productType: value as ProductType })}
+            disabled={!formData.category}
+          >
+            <SelectTrigger className={errors.productType ? 'border-red-500' : ''}>
+              {formData.productType ? CATEGORY_CHOICES[formData.productType] : "Select Product Type"}
+            </SelectTrigger>
+            <SelectContent>
+              {availableProductTypes.map(type => (
+                <SelectItem key={type} value={type}>{CATEGORY_CHOICES[type]}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.productType && (
+            <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+              <AlertCircle size={14} /> {errors.productType}
+            </p>
+          )}
+        </div>
       </div>
 
       <div>
