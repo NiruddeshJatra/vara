@@ -5,11 +5,15 @@ import { ProfileCompletionModal } from '@/components/common/ProfileCompletionMod
 import CreateListingStepper from "@/components/listings/CreateListingStepper";
 import Footer from '@/components/home/Footer';
 import NavBar from '@/components/home/NavBar';
+import { ListingFormData } from '@/types/listings';
+import { toast } from 'react-hot-toast';
+import productService from '@/services/product.service';
 
 export default function CreateListingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -23,6 +27,20 @@ export default function CreateListingPage() {
     }
   }, [user, navigate]);
 
+  const handleSubmit = async (formData: ListingFormData) => {
+    setIsSubmitting(true);
+    try {
+      await productService.createProduct(formData);
+      toast.success('Product created successfully!');
+      navigate('/my-products');
+    } catch (error) {
+      toast.error('Failed to create product. Please try again.');
+      console.error('Error creating product:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // If user's profile is not complete, don't render the page
   if (!user?.profileComplete) {
     return null;
@@ -31,7 +49,7 @@ export default function CreateListingPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <NavBar />
-      <CreateListingStepper />
+      <CreateListingStepper onSubmit={handleSubmit} />
       <Footer />
     </div>
   );

@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
-import { useListingsApi } from '@/hooks/useListingApi';
 import CreateListingStepper from '@/components/listings/CreateListingStepper';
 import { ListingFormData } from '@/types/listings';
+import productService from '@/services/product.service';
 
 const EditListing = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { getListingById, updateListing } = useListingsApi();
   const [initialData, setInitialData] = useState<ListingFormData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -19,19 +18,26 @@ const EditListing = () => {
         if (!productId) {
           throw new Error('No product ID provided');
         }
-        const listing = await getListingById(productId);
+        const listing = await productService.getProduct(productId);
+        
+        // Convert image URLs to File objects for the form
+        const imageFiles: File[] = [];
+        // We don't convert the images to File objects here because they're just for display
+        // The actual file upload is handled separately when the user changes images
+
         setInitialData({
           title: listing.title,
           category: listing.category,
+          productType: listing.productType,
           description: listing.description,
           location: listing.location,
           basePrice: listing.basePrice,
           durationUnit: listing.durationUnit,
-          images: listing.images,
+          images: imageFiles, // Empty array for initial form state
+          existingImages: listing.images, // Keep track of existing image URLs
           unavailableDates: listing.unavailableDates,
           securityDeposit: listing.securityDeposit,
           condition: listing.condition,
-          itemAge: listing.itemAge,
           purchaseYear: listing.purchaseYear,
           originalPrice: listing.originalPrice,
           ownershipHistory: listing.ownershipHistory,
@@ -50,23 +56,35 @@ const EditListing = () => {
     };
 
     fetchListing();
-  }, [productId, getListingById, navigate, toast]);
+  }, [productId, navigate, toast]);
 
   const handleSubmit = async (formData: ListingFormData) => {
     try {
       if (!productId) {
         throw new Error('No product ID provided');
       }
-      await updateListing(productId, formData);
-      toast({
-        title: "Success",
-        description: "Listing updated successfully.",
-      });
-      navigate('/profile');
-    } catch (error) {
+
+      // Only upload new images if they were added
+      if (formData.images.length > 0) {
+        await productService.uploadImages(productId, formData.images);
+      }
+
+      const { images, ...updateData } = formData;
+      const response = await productService.updateProduct(productId, updateData);
+      
+      if (response) {
+        toast({
+          title: "Success",
+          description: "Listing updated successfully.",
+          variant: "default",
+        });
+        navigate('/profile');
+      }
+    } catch (error: any) {
+      console.error('Error updating listing:', error);
       toast({
         title: "Error",
-        description: "Failed to update listing. Please try again.",
+        description: error.response?.data?.message || error.message || "Failed to update listing. Please try again.",
         variant: "destructive",
       });
     }

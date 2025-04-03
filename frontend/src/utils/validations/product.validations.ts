@@ -1,4 +1,4 @@
-import { ProductFormData } from '@/types/product';
+import { ListingFormData } from '@/types/listings';
 
 export const validateTitle = (title: string): string | null => {
   if (!title) return 'Title is required';
@@ -45,7 +45,7 @@ export const validateImages = (images: File[]): string | null => {
   return null;
 };
 
-export const validateProductForm = (data: ProductFormData): Record<string, string> => {
+export const validateProductForm = (data: ListingFormData): Record<string, string> => {
   const errors: Record<string, string> = {};
   
   const titleError = validateTitle(data.title);
@@ -54,7 +54,7 @@ export const validateProductForm = (data: ProductFormData): Record<string, strin
   const descriptionError = validateDescription(data.description);
   if (descriptionError) errors.description = descriptionError;
   
-  const priceError = validatePrice(data.price);
+  const priceError = validatePrice(data.basePrice);
   if (priceError) errors.price = priceError;
   
   const categoryError = validateCategory(data.category);

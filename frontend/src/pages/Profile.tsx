@@ -130,7 +130,7 @@ const Profile = () => {
             onEdit={handleEditProfile}
             isEditing={isEditing}
           />
-        </div>
+                  </div>
         <div className="max-w-7xl mx-auto px-6 sm:px-8 md:px-12 lg:px-16 pb-16">
           <Tabs defaultValue="profile" value={activeTab} onValueChange={setActiveTab} className="mt-8">
             <div className="border-b border-green-100">
@@ -160,7 +160,7 @@ const Profile = () => {
                   Reviews
                 </TabsTrigger>
               </TabsList>
-            </div>
+              </div>
 
             <TabsContent value="profile" className="pt-6">
               <ProfileInformation

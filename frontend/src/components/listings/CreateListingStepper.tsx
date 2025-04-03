@@ -33,7 +33,6 @@ const CreateListingStepper = ({ initialData, isEditing = false, onSubmit }: Prop
     unavailableDates: [],
     securityDeposit: 0,
     condition: 'excellent',
-    itemAge: 0,
     purchaseYear: new Date().getFullYear().toString(),
     originalPrice: undefined,
     ownershipHistory: 'firsthand',

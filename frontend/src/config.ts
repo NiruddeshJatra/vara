@@ -28,6 +28,23 @@ const config = {
     profileEndpoint: "/users/profiles/me/",
     completeProfileEndpoint: '/users/profiles/complete_profile/',
   },
+  
+  // Product settings
+  products: {
+    // Product endpoints
+    listEndpoint: '/advertisements/products/',
+    userProductsEndpoint: '/advertisements/my-products/',
+    detailEndpoint: (id: string) => `/advertisements/products/${id}/`,
+    createEndpoint: '/advertisements/my-products/',
+    updateEndpoint: (id: string) => `/advertisements/my-products/${id}/`,
+    deleteEndpoint: (id: string) => `/advertisements/my-products/${id}/`,
+    submitForReviewEndpoint: (id: string) => `/advertisements/products/${id}/submit_for_review/`,
+    updateStatusEndpoint: (id: string) => `/advertisements/products/${id}/update_status/`,
+    incrementViewsEndpoint: (id: string) => `/advertisements/products/${id}/increment_views/`,
+    updateRatingEndpoint: (id: string) => `/advertisements/products/${id}/update_rating/`,
+    imagesEndpoint: (id: string) => `/advertisements/products/${id}/images/`,
+    pricingTiersEndpoint: (id: string) => `/advertisements/products/${id}/pricing-tiers/`,
+  },
 };
 
 export default config;

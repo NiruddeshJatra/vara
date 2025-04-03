@@ -19,6 +19,5 @@ class ProductFilter(filters.FilterSet):
         fields = {
             "category": ["exact", "in"],
             "location": ["exact", "icontains"],
-            "is_available": ["exact"],
             "average_rating": ["gte", "lte"],
         }

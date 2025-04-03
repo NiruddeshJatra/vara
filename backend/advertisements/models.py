@@ -17,7 +17,10 @@ from .constants import (
     OWNERSHIP_HISTORY_CHOICES, 
     STATUS_CHOICES
 )
-from django.db.models import Avg, F
+from django.db.models import F
+import uuid
+from django.utils import timezone
+from decimal import Decimal
 
 
 class Product(models.Model):
@@ -38,24 +41,31 @@ class Product(models.Model):
     category = models.CharField(
         max_length=50, 
         choices=CATEGORY_CHOICES,
+        default="Photography & Videography",
         help_text=_("The main category this product belongs to")
     )
     product_type = models.CharField(
         max_length=50, 
         choices=PRODUCT_TYPE_CHOICES,
+        default='camera',
         help_text=_("The specific type of product within the category")
     )
     description = models.TextField(
+        null=True,
+        blank=True,
         help_text=_("Detailed description of the product")
     )
     location = models.CharField(
         max_length=200,
+        null=True,
+        blank=True,
         help_text=_("Location where the product is available for pickup/delivery")
     )
     base_price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        validators=[MinValueValidator(0)],
+        default=0,
+        validators=[MinValueValidator(Decimal('0'))],
         help_text=_("Base rental price")
     )
     duration_unit = models.CharField(
@@ -63,12 +73,6 @@ class Product(models.Model):
         choices=DURATION_UNITS,
         default="day",
         help_text=_("The unit of time for rental duration (day, week, month)")
-    )
-    # Many-to-many relationship with ProductImage allows multiple images per product
-    images = models.ManyToManyField(
-        'ProductImage', 
-        related_name='products',
-        help_text=_("Images associated with this product")
     )
     # JSONField to store multiple unavailable dates
     unavailable_dates = models.JSONField(
@@ -79,7 +83,8 @@ class Product(models.Model):
     security_deposit = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        validators=[MinValueValidator(0)],
+        default=0,
+        validators=[MinValueValidator(Decimal('0'))],
         help_text=_("Security deposit required for renting")
     )
     # Condition field is set to 'pending' initially and updated by admins after review
@@ -91,12 +96,14 @@ class Product(models.Model):
     )
     purchase_year = models.CharField(
         max_length=4,
+        null=True, blank=True,
         help_text=_("Year when the item was purchased")
     )
     original_price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        validators=[MinValueValidator(0)],
+        default=0,
+        validators=[MinValueValidator(Decimal('0'))],
         help_text=_("Original purchase price")
     )
     ownership_history = models.CharField(
@@ -122,7 +129,7 @@ class Product(models.Model):
     )
     # Track when the status was last changed
     status_changed_at = models.DateTimeField(
-        auto_now_add=True,
+        auto_now=True,
         help_text=_("When the status was last changed")
     )
     created_at = models.DateTimeField(
@@ -168,9 +175,13 @@ class Product(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
-        # Clear cached data related to product listings whenever a Product instance is saved
-        # This ensures that the cache is updated to reflect the latest product data
-        cache.delete_many(keys=cache.keys("product_list_*"))
+        if not self.status_changed_at and self.status:
+            self.status_changed_at = timezone.now()
+        
+        # Clear cache only if using a cache backend that supports keys()
+        if hasattr(cache, 'keys'):
+            cache.delete_many(keys=cache.keys("product_list_*"))
+        
         super().save(*args, **kwargs)
 
     def increment_views(self):
@@ -251,10 +262,8 @@ class Product(models.Model):
 class ProductImage(models.Model):
     """
     ProductImage model represents an image associated with a product.
-    Each product can have multiple images, and one can be marked as primary.
+    Each product can have multiple images, with the first uploaded image (lowest order) being the primary one.
     """
-    # Foreign key to Product allows direct access to the product this image belongs to
-    # This is in addition to the ManyToMany relationship from Product to ProductImage
     product = models.ForeignKey(
         Product, 
         on_delete=models.CASCADE, 
@@ -266,40 +275,29 @@ class ProductImage(models.Model):
         validators=[FileExtensionValidator(["jpg", "jpeg", "png"])],
         help_text=_("Upload a product image (max 5MB)")
     )
-    is_primary = models.BooleanField(
-        default=False,
-        help_text=_("Whether this is the primary image for the product")
+    order = models.PositiveIntegerField(
+        default=0,
+        help_text=_("Order of the image, with the lowest order being the primary image")
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
         help_text=_("When this image was uploaded")
     )
 
+    class Meta:
+        ordering = ['order']
+        verbose_name = _("Product Image")
+        verbose_name_plural = _("Product Images")
+
     def __str__(self):
         return f"Image for {self.product.title}"
 
     def save(self, *args, **kwargs):
-        """
-        Override save method to compress the image before saving.
-        This helps reduce storage space and improve loading times.
-        """
-        if self.image and not self._state.adding:  # Only compress if image is being updated
-            self.image = compress_image(self.image)
+        if not self.order:
+            # Get the highest order value for this product
+            last_order = ProductImage.objects.filter(product=self.product).order_by('-order').first()
+            self.order = (last_order.order + 1) if last_order else 0
         super().save(*args, **kwargs)
-
-    class Meta:
-        verbose_name = _("Product Image")
-        verbose_name_plural = _("Product Images")
-        # Ensure only one primary image per product
-        unique_together = ['product', 'is_primary']
-        # Add constraint to ensure only one primary image per product
-        constraints = [
-            models.UniqueConstraint(
-                fields=['product'],
-                condition=models.Q(is_primary=True),
-                name='unique_primary_image'
-            )
-        ]
 
 
 class PricingTier(models.Model):
@@ -321,7 +319,7 @@ class PricingTier(models.Model):
     price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        validators=[MinValueValidator(0)],
+        validators=[MinValueValidator(Decimal('0'))],
         help_text=_("Price for this duration")
     )
     max_period = models.PositiveIntegerField(

@@ -28,7 +28,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ProductImage
-        fields = ['id', 'image', 'is_primary']
+        fields = ['id', 'image', 'order', 'image_url']
 
 
 class PricingTierSerializer(serializers.ModelSerializer):
@@ -38,9 +38,9 @@ class PricingTierSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    images = serializers.SerializerMethodField()
     owner = UserSerializer(read_only=True)
-    images = ProductImageSerializer(many=True, read_only=True)
-    pricing_tiers = PricingTierSerializer(many=True, read_only=True)
+    pricing_tiers = PricingTierSerializer(many=True, required=False)
     average_rating = serializers.FloatField(read_only=True)
     views_count = serializers.IntegerField(read_only=True)
     rental_count = serializers.IntegerField(read_only=True)
@@ -50,16 +50,19 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = [
-            'id', 'owner', 'title', 'description', 'category', 'product_type',
-            'base_price', 'duration_unit', 'security_deposit', 'condition',
-            'item_age', 'purchase_year', 'original_price', 'ownership_history',
-            'images', 'pricing_tiers', 'status', 'status_message', 'status_changed_at',
-            'average_rating', 'views_count', 'rental_count', 'created_at', 'updated_at'
+            'id', 'title', 'category', 'product_type', 'description', 'location',
+            'base_price', 'duration_unit', 'images', 'unavailable_dates',
+            'security_deposit', 'condition', 'purchase_year', 'original_price',
+            'ownership_history', 'pricing_tiers', 'owner', 'status',
+            'status_message', 'status_changed_at', 'created_at', 'updated_at',
+            'average_rating', 'views_count', 'rental_count'
         ]
-        read_only_fields = [
-            'owner', 'average_rating', 'views_count', 'rental_count',
-            'status_message', 'status_changed_at'
-        ]
+        read_only_fields = ['owner', 'status', 'status_message', 'status_changed_at',
+                          'created_at', 'updated_at', 'average_rating', 'views_count',
+                          'rental_count']
+
+    def get_images(self, obj):
+        return [image.image.url for image in obj.product_images.all().order_by('order')]
 
     def validate_category(self, value):
         if value not in dict(CATEGORY_CHOICES):
@@ -85,34 +88,34 @@ class ProductSerializer(serializers.ModelSerializer):
         product_type = data.get('product_type')
         
         if category and product_type:
+            # Get valid product types for the selected category
             valid_types = [pt[0] for pt in PRODUCT_TYPE_CHOICES if pt[1] == category]
             if product_type not in valid_types:
                 raise serializers.ValidationError({
                     'product_type': f'Product type must be one of {valid_types} for the selected category.'
                 })
 
-    def validate(self, data):
-        # Validate that product_type belongs to the selected category
-        category_product_types = {
-            category: [pt for pt, cat in PRODUCT_TYPE_CHOICES if cat == category]
-            for category, _ in CATEGORY_CHOICES
-        }
-        if data.get('category') and data.get('product_type'):
-            if data['product_type'] not in category_product_types.get(data['category'], []):
-                raise serializers.ValidationError(
-                    f"Product type {data['product_type']} is not valid for category {data['category']}"
-                )
-
         return data
 
     def create(self, validated_data):
-        # Set initial status to draft for new listings
-        validated_data['status'] = 'draft'
-        return super().create(validated_data)
+        pricing_tiers_data = validated_data.pop('pricing_tiers', [])
+        product = Product.objects.create(**validated_data)
+        
+        for tier_data in pricing_tiers_data:
+            PricingTier.objects.create(product=product, **tier_data)
+            
+        return product
 
     def update(self, instance, validated_data):
-        # Only allow status updates through the update_status method
-        if 'status' in validated_data:
-            status = validated_data.pop('status')
-            instance.update_status(status)
-        return super().update(instance, validated_data)
+        pricing_tiers_data = validated_data.pop('pricing_tiers', None)
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+            
+        if pricing_tiers_data is not None:
+            instance.pricing_tiers.all().delete()
+            for tier_data in pricing_tiers_data:
+                PricingTier.objects.create(product=instance, **tier_data)
+                
+        instance.save()
+        return instance

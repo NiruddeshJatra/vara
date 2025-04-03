@@ -4,7 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import NavBar from '@/components/home/NavBar';
 import Footer from '@/components/home/Footer';
-import { Product, DurationUnit } from '@/types/listings';
+import { Product } from '@/types/listings';
 import { allListings } from '@/utils/mockDataGenerator';
 import ItemModal from '@/components/advertisements/ItemModal';
 
@@ -21,6 +21,7 @@ import {
   SimilarItems,
   HostInfo
 } from '@/components/itemDetail';
+import { DurationUnit } from '@/constants/rental';
 
 export default function ItemDetailPage() {
   const { productId } = useParams();
@@ -42,7 +43,6 @@ export default function ItemDetailPage() {
           // Ensure the product matches the Product type
           const typedProduct: Product = {
             ...foundProduct,
-            durationUnit: foundProduct.durationUnit as DurationUnit,
             unavailableDates: foundProduct.unavailableDates || [],
             pricingTiers: [{
               durationUnit: foundProduct.durationUnit as DurationUnit,
@@ -200,7 +200,6 @@ export default function ItemDetailPage() {
                 <ItemDetails
                   condition={product.condition}
                   category={product.category}
-                  itemAge={product.itemAge}
                   securityDeposit={product.securityDeposit}
                 />
               </div>

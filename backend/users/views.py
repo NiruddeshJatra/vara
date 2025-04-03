@@ -30,6 +30,12 @@ User = get_user_model()
 
 @throttle_classes([UserProfileThrottle])
 class UserViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for managing user profiles.
+    
+    This viewset provides CRUD operations for user profiles, with appropriate
+    permissions and throttling.
+    """
     queryset = CustomUser.objects.all()
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
@@ -51,9 +57,18 @@ class UserViewSet(viewsets.ModelViewSet):
     ordering = ["-created_at"]
 
     def get_queryset(self):
-        if self.action == "list":
-            return CustomUser.objects.filter(is_active=True)
-        return CustomUser.objects.all()
+        """
+        Filter the queryset based on the current user's permissions.
+        
+        Returns:
+            QuerySet: The filtered queryset
+        """
+        # Admins can see all users
+        if self.request.user.is_staff:
+            return CustomUser.objects.all()
+        
+        # Regular users can only see their own profile
+        return CustomUser.objects.filter(id=self.request.user.id)
 
     def get_serializer_class(self):
         if self.action == "complete_profile":
@@ -67,6 +82,12 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get", "put", "patch"])
     def me(self, request):
+        """
+        Get the current user's profile.
+        
+        Returns:
+            Response: The user's profile data
+        """
         # GET: Retrieve user profile
         # PUT/PATCH: Update user profile (partial update supported)
         user = request.user
@@ -78,6 +99,15 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"])
     def complete_profile(self, request):
+        """
+        Complete the user's profile with additional information.
+        
+        This action validates and saves additional profile information and marks
+        the profile as completed.
+        
+        Returns:
+            Response: The updated user profile data
+        """
         user = request.user
         serializer = self.get_serializer(user, data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -207,21 +237,56 @@ class CustomLoginView(APIView):
 
 @method_decorator(csrf_exempt, name="dispatch")
 class VerifyEmailView(APIView):
+    """
+    API endpoint for email verification.
+    
+    This view handles the email verification process, validating the token
+    and updating the user's verification status.
+    """
     permission_classes = [AllowAny]
 
     def get(self, request, token):
-        """Check if the verification token is valid"""
+        """
+        Verify a user's email with the provided token.
+        
+        Args:
+            request: The HTTP request
+            token: The verification token
+            
+        Returns:
+            Response: The verification result
+        """
         try:
             user = CustomUser.objects.get(email_verification_token=token)
-            return Response({"message": "Token is valid", "email": user.email})
+            user.verify_email()
+
+            # Generate tokens for the user
+            token_serializer = TokenSerializer.get_token(user)
+
+            return Response(
+                {
+                    "message": "Email verified successfully.",
+                    "tokens": token_serializer,
+                },
+                status=status.HTTP_200_OK,
+            )
         except CustomUser.DoesNotExist:
             return Response(
-                {"error": "Invalid verification token"},
+                {"error": "Invalid verification token."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
     def post(self, request, token):
-        """Verify the email address and generate login tokens"""
+        """
+        Verify the email address and generate login tokens
+        
+        Args:
+            request: The HTTP request
+            token: The verification token
+            
+        Returns:
+            Response: The verification result
+        """
         try:
             user = CustomUser.objects.get(email_verification_token=token)
 
@@ -249,39 +314,50 @@ class VerifyEmailView(APIView):
 
 @method_decorator(csrf_exempt, name="dispatch")
 class ResendVerificationEmailView(APIView):
+    """
+    API endpoint for resending verification emails.
+    
+    This view allows users to request a new verification email if they didn't
+    receive the first one or if it expired.
+    """
     permission_classes = [AllowAny]
 
     def post(self, request):
+        """
+        Resend a verification email to the user.
+        
+        Args:
+            request: The HTTP request
+            
+        Returns:
+            Response: The result of the resend operation
+        """
         email = request.data.get("email")
         if not email:
             return Response(
-                {"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "Email is required."}, status=status.HTTP_400_BAD_REQUEST
             )
-
+        
         try:
             user = CustomUser.objects.get(email=email)
             if user.is_email_verified:
                 return Response(
-                    {"error": "Email is already verified"},
-                    status=status.HTTP_400_BAD_REQUEST,
+                    {"message": "Email is already verified."},
+                    status=status.HTTP_200_OK,
                 )
-
-            # Generate new verification token and send email
+            
+            # Generate a new token and send the email
             user.generate_verification_token()
             send_verification_email(user, request)
-
-            return Response({"message": "Verification email sent successfully"})
-
-        except CustomUser.DoesNotExist:
-            # For security reasons, don't reveal if the email exists
+            
             return Response(
-                {
-                    "message": "If your email is registered, a verification link has been sent"
-                }
+                {"message": "Verification email sent successfully."},
+                status=status.HTTP_200_OK,
             )
-        except Exception as e:
+        except CustomUser.DoesNotExist:
             return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {"error": "User with this email does not exist."},
+                status=status.HTTP_404_NOT_FOUND,
             )
 
 
@@ -453,12 +529,40 @@ class CheckNationalIdView(APIView):
 
 @method_decorator(csrf_exempt, name="dispatch")
 class LogoutView(APIView):
+    """
+    API endpoint for user logout.
+    
+    This view handles the logout process, invalidating the user's session
+    and blacklisting their refresh token.
+    """
     permission_classes = [AllowAny]
     
     def post(self, request):
-        # Clear the user's session
-        if request.session:
-            request.session.flush()
+        """
+        Log out the current user.
         
-        # Return success response
-        return Response({"message": "Successfully logged out"})
+        Args:
+            request: The HTTP request
+            
+        Returns:
+            Response: The logout result
+        """
+        try:
+            # Blacklist the refresh token
+            refresh_token = request.data.get("refresh")
+            if refresh_token:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            
+            # Invalidate the session
+            Session.objects.filter(session_key=request.session.session_key).delete()
+            
+            return Response(
+                {"message": "Logged out successfully."},
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )

@@ -18,7 +18,6 @@ export type Product = {
   averageRating?: number;
   totalRentals?: number;
   condition?: ProductCondition;
-  itemAge?: number;
   pricingTiers?: PricingTier[];
   status?: ProductStatus;
   statusMessage?: string;
@@ -40,10 +39,10 @@ export interface ListingFormData {
   basePrice: number;
   durationUnit: DurationUnit;
   images: File[];
+  existingImages?: string[]; // For editing existing listings
   unavailableDates: Date[];
   securityDeposit: number;
   condition: ProductCondition;
-  itemAge: number;
   purchaseYear: string;
   originalPrice: number;
   ownershipHistory: OwnershipHistory;
@@ -114,7 +113,6 @@ export interface Listing {
   unavailableDates: Date[];
   securityDeposit: number;
   condition: ProductCondition;
-  itemAge: number;
   purchaseYear: string;
   originalPrice: number;
   ownershipHistory: OwnershipHistory;
