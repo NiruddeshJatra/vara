@@ -181,9 +181,14 @@ class AuthService {
         localStorage.setItem(config.auth.refreshTokenStorageKey, response.data.tokens.refresh);
       }
 
-      // Store user data
+      // Store user data with profileComplete field
       if (response.data.user) {
-        localStorage.setItem(config.auth.userStorageKey, JSON.stringify(response.data.user));
+        const userData = {
+          ...response.data.user,
+          profileComplete: response.data.user.profile_completed === true
+        };
+        localStorage.setItem(config.auth.userStorageKey, JSON.stringify(userData));
+        return userData;
       }
 
       return response.data.user;
@@ -223,7 +228,6 @@ class AuthService {
         username: data.username,
         password1: data.password1,
         password2: data.password2,
-        terms_agreed: data.termsAgreed,
         marketing_consent: data.marketingConsent,
         profile_completed: data.profileCompleted
       };
@@ -402,7 +406,7 @@ class AuthService {
   
       // Make the API request
       console.log('Making profile update request with token:', updatedToken.substring(0, 10) + '...');
-      const response = await api.post(config.auth.completeProfileEndpoint, formData, {
+      const response = await authApi.post(config.auth.completeProfileEndpoint, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${updatedToken}`
@@ -414,7 +418,11 @@ class AuthService {
       // Update local storage with new user data
       const currentUser = this.getCurrentUser();
       if (currentUser) {
-        const updatedUser = { ...currentUser, ...response.data, profile_completed: profileCompleted };
+        const updatedUser = { 
+          ...currentUser, 
+          ...response.data, 
+          profileComplete: true // Ensure this is set to true after successful profile completion
+        };
         localStorage.setItem(config.auth.userStorageKey, JSON.stringify(updatedUser));
       }
       
@@ -428,11 +436,47 @@ class AuthService {
     }
   }
 
+  // Check if a national ID is already registered
+  async checkNationalId(nationalId: string): Promise<boolean> {
+    try {
+      const token = localStorage.getItem(config.auth.tokenStorageKey);
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      // Use a GET request with query parameters instead of POST
+      const response = await authApi.get(`/users/profiles/check_national_id/?national_id_number=${nationalId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      // Log the response for debugging
+      console.log('National ID check response:', response.data);
+      
+      // The backend returns {exists: true/false}
+      return response.data.exists === true;
+    } catch (error) {
+      console.error('National ID check error:', error);
+      throw error;
+    }
+  }
+
   // Get the current user from local storage
   getCurrentUser(): UserData | null {
     const userStr = localStorage.getItem(config.auth.userStorageKey);
     if (userStr) {
-      return JSON.parse(userStr);
+      try {
+        const userData = JSON.parse(userStr);
+        // Ensure profileComplete is a boolean
+        return {
+          ...userData,
+          profileComplete: userData.profileComplete === true
+        };
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        return null;
+      }
     }
     return null;
   }

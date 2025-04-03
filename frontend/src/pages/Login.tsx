@@ -9,6 +9,8 @@ import Footer from "@/components/home/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import AuthService from "@/services/auth.service";
+import { LoginData } from '@/types/auth';
+import { validateLoginForm } from '@/utils/validations';
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -44,39 +46,27 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const newErrors: { email?: string; password?: string; general?: string } = {};
-
-    if (!email) {
-      newErrors.email = "Email is required";
-    } else if (!validateEmail(email)) {
-      newErrors.email = "Please enter a valid email address";
-    }
-
-    if (!password) {
-      newErrors.password = "Password is required";
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    try {
-      await login(email, password, rememberMe);
-      // The navigation is handled by the AuthContext
-    } catch (error: any) {
-      if (error.message === 'UNVERIFIED_EMAIL') {
+    
+    const validationErrors = validateLoginForm({ email, password });
+    
+    if (Object.keys(validationErrors).length === 0) {
+      try {
+        await login(email, password, rememberMe);
+        // The AuthContext will handle redirection to /advertisements
+      } catch (error: any) {
+        if (error.message === 'UNVERIFIED_EMAIL') {
+          setErrors({
+            general: 'Please verify your email before logging in.',
+            email: 'Email not verified'
+          });
+          return;
+        }
         setErrors({
-          general: 'Please verify your email before logging in.',
-          email: 'Email not verified'
+          general: error.response?.data?.detail || 'Invalid email or password'
         });
-        // Show resend verification button
-        return;
       }
-      setErrors({
-        general: error.response?.data?.detail || 'Invalid email or password'
-      });
+    } else {
+      setErrors(validationErrors);
     }
   };
 

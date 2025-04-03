@@ -9,7 +9,7 @@ import LoadMoreTrigger from '@/components/advertisements/LoadMoreTrigger';
 import { categories, generateListings } from '@/utils/mockDataGenerator';
 import '../styles/main.css';
 import { Product } from '@/types/listings';
-import { ProfileCompletionBanner } from '@/components/common/ProfileCompletionBanner';
+
 
 // Generate listings once - ensure the mock data matches the Product type
 const allListings = generateListings(40) as unknown as Product[];
@@ -91,7 +91,6 @@ const Advertisements = () => {
       <NavBar />
 
       <main className="bg-green-50/65">
-        <ProfileCompletionBanner />
         {/* Compact Search Bar */}
         <div className="animate-fade-in">
           <CompactSearchBar

@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Upload } from "lucide-react";
+import { DateOfBirthPicker } from "@/components/common/DateOfBirthPicker";
 
 interface ProfileInformationProps {
   userData: {
@@ -104,14 +105,12 @@ const ProfileInformation = ({
               </div>
               
               <div>
-                <Label htmlFor="dob" className="text-green-800 font-medium">Date of Birth</Label>
-                <Input 
-                  id="dob" 
-                  type="date"
-                  value={userData.dob} 
-                  onChange={(e) => onInputChange('dob', e.target.value)}
-                  disabled={!isEditing}
-                  className={`border-green-300 bg-white text-green-800 ${!isEditing ? "bg-green-50/70 border-green-200" : ""}`}
+                <DateOfBirthPicker
+                  value={userData.dob}
+                  onChange={(date) => onInputChange('dob', date)}
+                  label="Date of Birth"
+                  required={false}
+                  className={!isEditing ? "opacity-70 pointer-events-none" : ""}
                 />
               </div>
             </div>

@@ -8,6 +8,7 @@ import { useAuth } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { ProtectedAdminRoute } from "./components/admin/ProtectedAdminRoute";
 import PageTransition from "./components/common/PageTransition";
+import { ProfileCompletionButton } from "./components/common/ProfileCompletionButton";
 import CompleteProfile from '@/pages/CompleteProfile';
 
 // Pages
@@ -41,6 +42,7 @@ const App = () => {
         <Sonner />
         <AdminAuthProvider>
           <PageTransition>
+            <ProfileCompletionButton />
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={

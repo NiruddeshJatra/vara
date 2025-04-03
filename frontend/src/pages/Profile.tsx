@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Bell, Package, History, Star } from "lucide-react";
+import { History, Star } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileInformation from "@/components/profile/ProfileInformation";
@@ -11,7 +8,6 @@ import EmptyState from "@/components/profile/EmptyState";
 import NavBar from "@/components/home/NavBar";
 import Footer from "@/components/home/Footer";
 import ProfileListings from "@/components/profile/ProfileListings";
-import { ProfileCompletionBanner } from '@/components/common/ProfileCompletionBanner';
 
 // Mock user data
 const mockUserData = {
@@ -136,7 +132,6 @@ const Profile = () => {
           />
         </div>
         <div className="max-w-7xl mx-auto px-6 sm:px-8 md:px-12 lg:px-16 pb-16">
-          <ProfileCompletionBanner />
           <Tabs defaultValue="profile" value={activeTab} onValueChange={setActiveTab} className="mt-8">
             <div className="border-b border-green-100">
               <TabsList className="bg-green-100 p-1 rounded-t-lg">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Footer from "@/components/home/Footer";
@@ -8,10 +8,12 @@ import NationalIdStep from "@/components/auth/steps/NationalIdStep";
 import { ProfileFormData, ProfileFormErrors, ProfileCompletionData } from "@/types/auth";
 import { useAuth } from "@/contexts/AuthContext";
 import config from "@/config";
+import { validateProfileForm, validatePhoneNumber, validateLocation, validateDateOfBirth, validateNationalId } from '@/utils/validations';
+import authService from "@/services/auth.service";
 
 const CompleteProfile = () => {
   const navigate = useNavigate();
-  const { updateProfile, loading } = useAuth();
+  const { updateProfile, loading: authLoading, user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<ProfileFormData>({
     firstName: "",
@@ -24,6 +26,15 @@ const CompleteProfile = () => {
     nationalIdBack: null,
   });
   const [errors, setErrors] = useState<ProfileFormErrors>({});
+  const [isCheckingId, setIsCheckingId] = useState(false);
+
+  // Redirect if profile is already complete
+  useEffect(() => {
+    if (user?.profileComplete === true) {
+      toast.info("Your profile is already complete.");
+      navigate("/profile");
+    }
+  }, [user, navigate]);
 
   const handleInputChange = (
     eventOrValue: React.ChangeEvent<HTMLInputElement> | Partial<ProfileFormData>
@@ -46,69 +57,85 @@ const CompleteProfile = () => {
     }
   };
 
-  const validateStep = (step: number): ProfileFormErrors => {
-    const stepErrors: ProfileFormErrors = {};
-
-    switch (step) {
-      case 1:
-        if (!formData.firstName) {
-          stepErrors.firstName = "First name is required";
-        }
-        if (!formData.lastName) {
-          stepErrors.lastName = "Last name is required";
-        }
-        if (!formData.phoneNumber) {
-          stepErrors.phoneNumber = "Phone number is required";
-        } else if (!/^(\+?88)?01[3-9]\d{8}$/.test(formData.phoneNumber)) {
-          stepErrors.phoneNumber = "Please enter a valid Bangladeshi phone number";
-        }
-        if (!formData.location) {
-          stepErrors.location = "Location is required";
-        }
-        if (!formData.dateOfBirth) {
-          stepErrors.dateOfBirth = "Date of birth is required";
-        } else {
-          const birthDate = new Date(formData.dateOfBirth);
-          const today = new Date();
-          const age = today.getFullYear() - birthDate.getFullYear();
-          const monthDiff = today.getMonth() - birthDate.getMonth();
-
-          if (age < 18 || (age === 18 && monthDiff < 0)) {
-            stepErrors.dateOfBirth = "You must be at least 18 years old";
-          }
-        }
-        break;
-
-      case 2:
-        if (!formData.nationalIdNumber) {
-          stepErrors.nationalIdNumber = "National ID number is required";
-        }
-        if (!formData.nationalIdFront) {
-          stepErrors.nationalIdFront = "Please upload a photo of your National ID front";
-        }
-        if (!formData.nationalIdBack) {
-          stepErrors.nationalIdBack = "Please upload a photo of your National ID back";
-        }
-        break;
-    }
-
-    return stepErrors;
+  const validateForm = () => {
+    return validateProfileForm(formData);
   };
 
-  const handleNextStep = (e: React.FormEvent) => {
-    e.preventDefault();
-    const stepErrors = validateStep(currentStep);
+  const validateCurrentStep = () => {
+    const errors: Record<string, string> = {};
+    
+    if (currentStep === 1) {
+      // Only validate contact details fields
+      if (!formData.firstName) errors.firstName = 'First name is required';
+      if (!formData.lastName) errors.lastName = 'Last name is required';
+      
+      const phoneError = validatePhoneNumber(formData.phoneNumber);
+      if (phoneError) errors.phoneNumber = phoneError;
+      
+      const locationError = validateLocation(formData.location);
+      if (locationError) errors.location = locationError;
+      
+      const dateOfBirthError = validateDateOfBirth(formData.dateOfBirth);
+      if (dateOfBirthError) errors.dateOfBirth = dateOfBirthError;
+    } else if (currentStep === 2) {
+      // Only validate national ID fields
+      const nationalIdError = validateNationalId(formData.nationalIdNumber);
+      if (nationalIdError) errors.nationalIdNumber = nationalIdError;
+      
+      if (!formData.nationalIdFront) errors.nationalIdFront = 'National ID front photo is required';
+      if (!formData.nationalIdBack) errors.nationalIdBack = 'National ID back photo is required';
+    }
+    
+    return errors;
+  };
 
-    if (Object.keys(stepErrors).length === 0) {
+  const handleNextStep = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const validationErrors = validateCurrentStep();
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length === 0) {
       if (currentStep === 2) {
-        handleSubmit(e);
+        // Check for duplicate national ID before submitting
+        try {
+          setIsCheckingId(true);
+          const isDuplicate = await authService.checkNationalId(formData.nationalIdNumber);
+          console.log('National ID check result:', isDuplicate);
+          
+          if (isDuplicate) {
+            setErrors({
+              ...errors,
+              nationalIdNumber: 'This National ID is already registered with another account'
+            });
+            setIsCheckingId(false);
+            return;
+          }
+          
+          // If not a duplicate, proceed with form submission
+          setIsCheckingId(false);
+          await handleSubmit(e);
+        } catch (error: any) {
+          console.error('Error checking national ID:', error);
+          setIsCheckingId(false);
+          
+          // Check if the error is about a duplicate national ID
+          if (error.message && error.message.includes("National ID is already registered")) {
+            setErrors({
+              ...errors,
+              nationalIdNumber: 'This National ID is already registered with another account'
+            });
+            return;
+          }
+          
+          // If there's an error checking the national ID, still try to submit the form
+          await handleSubmit(e);
+        }
       } else {
         setCurrentStep((prev) => prev + 1);
         window.scrollTo(0, 0);
       }
     } else {
-      setErrors(stepErrors);
-      console.log("Validation errors:", stepErrors);
+      console.log("Validation errors:", validationErrors);
     }
   };
 
@@ -119,7 +146,7 @@ const CompleteProfile = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (loading) return;
+    if (authLoading) return;
   
     try {
       // Check token before submission
@@ -137,21 +164,44 @@ const CompleteProfile = () => {
       };
   
       console.log("Submitting profile data with token:", token.substring(0, 10) + "...");
-      await updateProfile(updatedFormData);
+      const response = await updateProfile(updatedFormData);
       
-      toast.success("Profile updated successfully!");
-      navigate("/profile");
+      // Update the user's profile completion status in local storage
+      const currentUser = authService.getCurrentUser();
+      if (currentUser) {
+        const updatedUser = {
+          ...currentUser,
+          profileComplete: true
+        };
+        localStorage.setItem(config.auth.userStorageKey, JSON.stringify(updatedUser));
+      }
+      
+      // Force a refresh of the user context to update the UI
+      window.location.href = "/profile";
     } catch (error: any) {
       console.error("Profile update error:", error);
-      const errorMessage = error.message || "Failed to update profile. Please try again.";
-      toast.error(errorMessage);
       
-      // If token error, redirect to login
-      if (errorMessage.includes("authentication") || errorMessage.includes("token")) {
-        navigate("/auth/login");
+      // Handle specific error for duplicate national ID
+      if (error.message && error.message.includes("National ID is already registered")) {
+        setErrors(prev => ({
+          ...prev,
+          nationalIdNumber: "This National ID is already registered with another account"
+        }));
+        setCurrentStep(2); // Go back to the national ID step
+        window.scrollTo(0, 0);
+        toast.error("This National ID is already registered with another account");
+        return;
       }
+      
+      // Handle other errors
+      toast.error(error.message || "Failed to update profile");
     }
   };
+
+  // If user's profile is already complete, don't render the form
+  if (user?.profileComplete === true) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -204,7 +254,7 @@ const CompleteProfile = () => {
                   errors={errors}
                   onChange={handleInputChange}
                   onNext={handleNextStep}
-                  loading={loading}
+                  loading={authLoading || isCheckingId}
                 />
               )}
 
@@ -216,7 +266,7 @@ const CompleteProfile = () => {
                   onFileUpload={handleFileUpload}
                   onNext={handleNextStep}
                   onPrev={handlePrevStep}
-                  loading={loading}
+                  loading={authLoading || isCheckingId}
                 />
               )}
             </form>

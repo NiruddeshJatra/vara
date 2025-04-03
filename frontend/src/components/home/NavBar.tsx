@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Menu, X, User, LogOut, Settings, Home, Package, MessageSquare, Plus, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import CompactSearchBar from '@/components/advertisements/CompactSearchBar';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProfileCompletionModal } from '@/components/common/ProfileCompletionModal';
 
 const NavBar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const filepath = useLocation();
+  const navigate = useNavigate();
   const { isAuthenticated, logout, user } = useAuth();
   const [showSearchInNav, setShowSearchInNav] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,6 +46,14 @@ const NavBar = () => {
     } catch (error) {
       console.error('Logout error:', error);
     }
+  };
+
+  const handleUploadProduct = () => {
+    if (!user?.profileComplete) {
+      setShowProfileModal(true);
+      return;
+    }
+    navigate('/upload-product');
   };
 
   return (
@@ -83,11 +94,12 @@ const NavBar = () => {
         <div className="hidden md:flex items-center space-x-8 ml-auto mr-12">
           {isAuthenticated && !showSearchInNav && !isUploadProductPage && (
             <>
-              <Link to="/upload-product">
-                <Button className={"text-sm font-semibold text-black/70 hover:text-white border border-green-600 text-green-700 bg-green-50/50 hover:bg-lime-600 hover:border-none px-5"}>
-                  <Plus size={16} className="mr-1" />Upload Product
-                </Button>
-              </Link>
+              <Button 
+                className={"text-sm font-semibold text-black/70 hover:text-white border border-green-600 text-green-700 bg-green-50/50 hover:bg-lime-600 hover:border-none px-5"}
+                onClick={handleUploadProduct}
+              >
+                <Plus size={16} className="mr-1" />Upload Product
+              </Button>
             </>
           )}
           {isAuthenticated && showSearchInNav && (
@@ -233,6 +245,14 @@ const NavBar = () => {
           </div>
         </div>
       )}
+
+      {/* Profile Completion Modal */}
+      <ProfileCompletionModal 
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        title="Complete Your Profile"
+        description="You need to complete your profile before you can upload products."
+      />
     </header>
   );
 };

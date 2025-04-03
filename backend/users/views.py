@@ -401,6 +401,57 @@ class PasswordResetConfirmView(APIView):
             )
 
 @method_decorator(csrf_exempt, name="dispatch")
+class CheckNationalIdView(APIView):
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [UserProfileThrottle]
+
+    def get(self, request):
+        """
+        Check if a national ID is already registered with another account.
+        """
+        national_id = request.query_params.get('national_id_number')
+        
+        if not national_id:
+            return Response(
+                {"error": "National ID number is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Check if the national ID is already registered with another user
+        # Exclude the current user to allow them to keep their own national ID
+        exists = CustomUser.objects.filter(
+            national_id_number=national_id
+        ).exclude(id=request.user.id).exists()
+        
+        return Response({
+            "exists": exists,
+            "message": "National ID is already registered" if exists else "National ID is available"
+        })
+
+    def post(self, request):
+        """
+        Check if a national ID is already registered with another account.
+        """
+        national_id = request.data.get('national_id_number')
+        
+        if not national_id:
+            return Response(
+                {"error": "National ID number is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Check if the national ID is already registered with another user
+        # Exclude the current user to allow them to keep their own national ID
+        exists = CustomUser.objects.filter(
+            national_id_number=national_id
+        ).exclude(id=request.user.id).exists()
+        
+        return Response({
+            "exists": exists,
+            "message": "National ID is already registered" if exists else "National ID is available"
+        })
+
+@method_decorator(csrf_exempt, name="dispatch")
 class LogoutView(APIView):
     permission_classes = [AllowAny]
     

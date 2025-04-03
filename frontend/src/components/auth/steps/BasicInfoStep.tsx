@@ -39,18 +39,18 @@ const BasicInfoStep = ({
   showConsent = false,
 }: Props) => {
   const renderPasswordStrength = () => {
-    const { password } = formData;
-    if (!password) return null;
+    const { password1 } = formData;
+    if (!password1) return null;
 
     let strength = 0;
     let label = "";
     let colorClass = "";
 
-    if (password.length >= 8) strength += 1;
-    if (/[A-Z]/.test(password)) strength += 1;
-    if (/[a-z]/.test(password)) strength += 1;
-    if (/[0-9]/.test(password)) strength += 1;
-    if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+    if (password1.length >= 8) strength += 1;
+    if (/[A-Z]/.test(password1)) strength += 1;
+    if (/[a-z]/.test(password1)) strength += 1;
+    if (/[0-9]/.test(password1)) strength += 1;
+    if (/[^A-Za-z0-9]/.test(password1)) strength += 1;
 
     if (strength <= 2) {
       label = "Weak";
@@ -158,17 +158,17 @@ const BasicInfoStep = ({
               id="password"
               name="password"
               type="password"
-              value={formData.password}
+              value={formData.password1}
               onChange={(e) => onPasswordChange(e.target.value)}
-              error={!!errors.password}
+              error={!!errors.password1}
               className="pl-9"
             />
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           </div>
           {renderPasswordStrength()}
-          {errors.password ? (
+          {errors.password1 ? (
             <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-              <AlertCircle size={14} /> {errors.password}
+              <AlertCircle size={14} /> {errors.password1}
             </p>
           ) : (
             <p className="mt-1 text-xs text-gray-500">
@@ -270,8 +270,8 @@ const BasicInfoStep = ({
       <div className="flex justify-end pt-4">
         <Button 
           className="bg-green-600 hover:bg-green-700 text-white"
-          onClick={onNext}
-          disabled={loading}
+          type="submit"
+          disabled={loading || !formData.email || !formData.username || !formData.password1 || !formData.password2 || !formData.termsAgreed}
         >
           {loading ? 'Creating account...' : 'Create Account'} <ChevronRight size={16} className="ml-1" />
         </Button>

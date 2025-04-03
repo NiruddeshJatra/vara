@@ -6,7 +6,7 @@ import NavBar from '@/components/home/NavBar';
 import BasicInfoStep from '@/components/auth/steps/BasicInfoStep';
 import { RegistrationData, RegistrationFormErrors } from '@/types/auth';
 import { useAuth } from '@/contexts/AuthContext';
-import { validateEmail, validateUsername, validatePassword, validateTermsAgreed } from '@/utils/validation';
+import { validateRegistrationForm } from '@/utils/validations';
 
 
 const Register = () => {
@@ -34,22 +34,7 @@ const Register = () => {
   };
 
   const validateBasicInfo = () => {
-    const stepErrors: RegistrationFormErrors = {
-      email: validateEmail(formData.email),
-      username: validateUsername(formData.username),
-      password1: validatePassword(formData.password1),
-      termsAgreed: validateTermsAgreed(formData.termsAgreed)
-    };
-
-    if (!confirmPassword) {
-      stepErrors.confirmPassword = 'Please confirm your password';
-    } else if (password !== confirmPassword) {
-      stepErrors.confirmPassword = 'Passwords do not match';
-    }
-    
-    return Object.fromEntries(
-      Object.entries(stepErrors).filter(([_, value]) => value !== null)
-    );
+    return validateRegistrationForm(formData);
   };
 
   // If you remove this code:
@@ -77,13 +62,13 @@ const Register = () => {
       try {
         // Send data in camelCase, auth service will transform to snake_case
         const apiFormData: RegistrationData = {
-            email: formData.email,
-            username: formData.username,
+          email: formData.email,
+          username: formData.username,
           password1: formData.password1,
           password2: formData.password2,
-          termsAgreed: formData.termsAgreed,
           marketingConsent: formData.marketingConsent || false,
-          profileCompleted: false
+          profileCompleted: false,
+          termsAgreed: formData.termsAgreed
         };
 
         await registerUser(apiFormData);
@@ -115,7 +100,7 @@ const Register = () => {
               <BasicInfoStep
                 formData={formData}
                 errors={errors}
-                      onChange={handleInputChange}
+                onChange={handleInputChange}
                 onNext={handleSubmit}
                 loading={loading}
                 showConsent={true}

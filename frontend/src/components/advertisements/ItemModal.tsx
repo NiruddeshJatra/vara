@@ -1,84 +1,72 @@
-import React from 'react';
-import { Star, Heart, MapPin, Banknote } from 'lucide-react';
+import { useState } from 'react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { Heart, Calendar, Clock, MapPin, Shield, Banknote } from 'lucide-react';
 import { Product } from '@/types/listings';
+import { useAuth } from '@/contexts/AuthContext';
+import { ProfileCompletionModal } from '@/components/common/ProfileCompletionModal';
 
-export type ItemModalProps = {
+interface ItemModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedItem: Product | null;
-};
+}
 
 const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
-  if (!selectedItem) return null;
-  
-  const displayImage = selectedItem.images?.[0] || '';
-  
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // If no item is selected, don't render the modal
+  if (!selectedItem) {
+    return null;
+  }
+
+  const handleRequestRental = () => {
+    if (!user?.profileComplete) {
+      setShowProfileModal(true);
+      return;
+    }
+    navigate(`/request-rental/${selectedItem.id}`, { state: { product: selectedItem } });
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl bg-gradient-to-b from-white to-lime-50 p-8">
-        <DialogHeader>
-          <DialogTitle className="px-2 text-xl font-semibold text-green-800">
-            Item Quick View
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div className="flex flex-col md:flex-row gap-10">
-          <div className="md:w-1/2">
-            <div className="rounded-lg overflow-hidden">
-              <img 
-                src={displayImage} 
-                alt={selectedItem.title} 
-                className="w-full h-auto object-cover" 
-              />
-            </div>
+      <DialogContent className="max-w-3xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="relative aspect-square rounded-lg overflow-hidden">
+            <img
+              src={selectedItem.images[0]}
+              alt={selectedItem.title}
+              className="w-full h-full object-cover"
+            />
           </div>
-          <div className="md:w-1/2 space-y-3">
-            <h2 className="text-2xl font-bold text-green-800">{selectedItem.title}</h2>
-            <div className="flex items-center">
-              <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-              <span className="ml-1 text-sm font-medium">{selectedItem.averageRating?.toFixed(1) || 'N/A'}</span>
-              <span className="ml-1 text-xs text-gray-500">({selectedItem.totalRentals || 0} rentals)</span>
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">{selectedItem.title}</h2>
+              <p className="text-sm text-gray-500 mt-1">{selectedItem.description}</p>
             </div>
-            <p className="text-sm text-green-700">{selectedItem.category}</p>
-            
-            <div className="bg-green-50 p-4 rounded-lg">
-              <div className="text-xl font-bold text-green-800 flex items-center">
-                <Banknote size={18} className="text-green-700 mr-1" />
-                {selectedItem.basePrice}
-                <span className="text-sm font-normal ml-1"> per {selectedItem.durationUnit}</span>
+            <div className="space-y-2">
+              <div className="flex items-center text-sm text-gray-600">
+                <Calendar className="h-4 w-4 mr-2 text-green-600" />
+                <span>Available for {selectedItem.minRentalPeriod} {selectedItem.durationUnit}s</span>
               </div>
-              <div className="mt-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-700">Minimum rental:</span>
-                  <span className="font-medium">
-                    {selectedItem.minRentalPeriod} {selectedItem.durationUnit}s
-                  </span>
-                </div>
-                {selectedItem.maxRentalPeriod && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">Maximum rental:</span>
-                    <span className="font-medium">
-                      {selectedItem.maxRentalPeriod} {selectedItem.durationUnit}s
-                    </span>
-                  </div>
-                )}
+              <div className="flex items-center text-sm text-gray-600">
+                <Clock className="h-4 w-4 mr-2 text-green-600" />
+                <span>Base price: ৳{selectedItem.basePrice} per {selectedItem.durationUnit}</span>
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <MapPin className="h-4 w-4 mr-2 text-green-600" />
+                <span>{selectedItem.location}</span>
               </div>
             </div>
-            
             <div className="space-y-2 pt-4">
               <Button 
                 className="w-full bg-green-600 hover:bg-green-700 text-white"
-                asChild
+                onClick={handleRequestRental}
               >
-                <Link 
-                  to={`/request-rental/${selectedItem.id}`}
-                  state={{ product: selectedItem }}
-                >
-                  Request Rental
-                </Link>
+                Request Rental
               </Button>
               <div className="flex gap-2">
                 <Button 
@@ -97,6 +85,14 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
             </div>
           </div>
         </div>
+
+        {/* Profile Completion Modal */}
+        <ProfileCompletionModal 
+          isOpen={showProfileModal}
+          onClose={() => setShowProfileModal(false)}
+          title="Complete Your Profile"
+          description="You need to complete your profile before you can request rentals."
+        />
       </DialogContent>
     </Dialog>
   );

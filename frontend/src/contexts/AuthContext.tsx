@@ -147,11 +147,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       const response = await AuthService.updateProfile(data);
       
-      // Update user state with new data
+      // Update user state with new data and ensure profileComplete is set to true
       setUser(prev => {
-        if (!prev) return response;
-        return { ...prev, ...response };
+        if (!prev) return { ...response, profileComplete: true };
+        return { ...prev, ...response, profileComplete: true };
       });
+      
+      // Also update the user data in localStorage
+      const userStr = localStorage.getItem(config.auth.userStorageKey);
+      if (userStr) {
+        try {
+          const userData = JSON.parse(userStr);
+          const updatedUser = { ...userData, ...response, profileComplete: true };
+          localStorage.setItem(config.auth.userStorageKey, JSON.stringify(updatedUser));
+        } catch (error) {
+          console.error('Error updating user data in localStorage:', error);
+        }
+      }
       
       toast.success('Profile updated successfully');
       return response;

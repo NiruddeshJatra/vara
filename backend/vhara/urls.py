@@ -20,7 +20,7 @@ urlpatterns = [
     # Authentication endpoints
     path("auth/login/", CustomLoginView.as_view(), name="custom_login"),
     path("auth/logout/", LogoutView.as_view(), name="logout"),
-    path("auth/registration/", CustomRegisterView.as_view(), name="custom_register"),
+    path("auth/register/", CustomRegisterView.as_view(), name="custom_register"),
     path(
         "auth/resend-verification/",
         ResendVerificationEmailView.as_view(),

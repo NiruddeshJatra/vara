@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Clock, ShieldCheck, Banknote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { DurationUnit } from '@/types/listings';
+import { useAuth } from '@/contexts/AuthContext';
+import { ProfileCompletionModal } from '@/components/common/ProfileCompletionModal';
 
 interface PricingCardProps {
   productId: string;
@@ -21,6 +23,29 @@ export default function PricingCard({
   maxRentalPeriod,
   securityDeposit = 0
 }: PricingCardProps) {
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleRequestRental = () => {
+    if (!user?.profileComplete) {
+      setShowProfileModal(true);
+      return;
+    }
+    navigate(`/request-rental/${productId}`, { 
+      state: { 
+        product: {
+          id: productId,
+          basePrice,
+          durationUnit,
+          minRentalPeriod,
+          maxRentalPeriod,
+          securityDeposit
+        }
+      }
+    });
+  };
+
   return (
     <div className="sticky top-24 h-fit">
       <div className="bg-gradient-to-b from-white to-leaf-50 rounded-lg border border-gray-200 shadow-md p-4 sm:p-6">
@@ -74,24 +99,9 @@ export default function PricingCard({
 
             <Button
               className="w-full bg-green-600 hover:bg-green-700 h-12 text-base"
-              asChild
+              onClick={handleRequestRental}
             >
-              <Link 
-                to={`/request-rental/${productId}`} 
-                state={{ 
-                  product: {
-                    id: productId,
-                    basePrice,
-                    durationUnit,
-                    minRentalPeriod,
-                    maxRentalPeriod,
-                    securityDeposit
-                  }
-                }}
-                className="w-full h-full flex items-center justify-center"
-              >
-                Request Rental Now
-              </Link>
+              Request Rental Now
             </Button>
             <p className="text-xs text-gray-500 mt-2 text-center">
               No upfront payment required. Vhara handles the logistics.
@@ -99,6 +109,14 @@ export default function PricingCard({
           </div>
         </div>
       </div>
+
+      {/* Profile Completion Modal */}
+      <ProfileCompletionModal 
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        title="Complete Your Profile"
+        description="You need to complete your profile before you can request rentals."
+      />
     </div>
   );
 } 

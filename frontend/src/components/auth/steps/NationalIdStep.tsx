@@ -200,7 +200,7 @@ const NationalIdStep = ({ profileFormData, errors, onChange, onFileUpload, onNex
           <Button
             type="submit"
             className="bg-green-600 hover:bg-green-700 text-white"
-            disabled={loading || !profileFormData.nationalIdFront || !profileFormData.nationalIdBack}
+            disabled={loading || !profileFormData.nationalIdFront || !profileFormData.nationalIdBack || !profileFormData.nationalIdNumber}
           >
             {loading ? 'Verifying...' : 'Verify & Complete'} <ChevronRight size={16} className="ml-2" />
           </Button>

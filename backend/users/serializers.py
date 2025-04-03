@@ -25,7 +25,6 @@ class ProfilePictureSerializer(serializers.ModelSerializer):
 class CustomRegisterSerializer(serializers.ModelSerializer):
     password1 = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
-    terms_agreed = serializers.BooleanField(required=True)
     marketing_consent = serializers.BooleanField(required=False, default=False)
     profile_completed = serializers.BooleanField(required=False, default=False)
 
@@ -36,7 +35,6 @@ class CustomRegisterSerializer(serializers.ModelSerializer):
             "email",
             "password1",
             "password2",
-            "terms_agreed",
             "marketing_consent",
             "profile_completed",
         ]
@@ -59,7 +57,6 @@ class CustomRegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # Remove password2 and other fields from validated_data
         validated_data.pop("password2", None)
-        terms_agreed = validated_data.pop("terms_agreed", False)
         marketing_consent = validated_data.pop("marketing_consent", False)
         profile_completed = validated_data.pop("profile_completed", False)
 
@@ -68,7 +65,6 @@ class CustomRegisterSerializer(serializers.ModelSerializer):
             username=validated_data["username"],
             email=validated_data["email"],
             password=validated_data["password1"],
-            terms_agreed=terms_agreed,
             marketing_consent=marketing_consent,
             profile_completed=profile_completed,
         )
@@ -107,7 +103,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "bio",
             "created_at",
             "is_trusted",
-            "terms_agreed",
             "marketing_consent",
             "profile_completed",
             "is_email_verified",
@@ -117,7 +112,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "email",
             "created_at",
             "is_trusted",
-            "terms_agreed",
             "marketing_consent",
             "profile_completed",
             "is_email_verified",
@@ -254,3 +248,18 @@ class ProfileCompletionSerializer(serializers.ModelSerializer):
         # Set profile_completed to True when all required fields are present
         validated_data["profile_completed"] = True
         return super().update(instance, validated_data)
+
+    def validate_national_id_number(self, value):
+        if not value:
+            raise serializers.ValidationError("National ID number is required")
+        
+        # Check if it's a valid format (assuming 10 digits)
+        if not value.isdigit() or len(value) != 10:
+            raise serializers.ValidationError("National ID must be 10 digits")
+        
+        # Check if another user already has this ID
+        user = self.context['request'].user
+        if CustomUser.objects.exclude(id=user.id).filter(national_id_number=value).exists():
+            raise serializers.ValidationError("This National ID is already registered")
+        
+        return value

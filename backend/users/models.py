@@ -20,10 +20,15 @@ class CustomUser(AbstractUser):
     is_trusted = models.BooleanField(default=False)
     is_email_verified = models.BooleanField(default=False)
     email_verification_token = models.CharField(max_length=255, blank=True, null=True)
-    terms_agreed = models.BooleanField(default=False)
     marketing_consent = models.BooleanField(default=False)
     profile_completed = models.BooleanField(default=False)
-    national_id_number = models.CharField(max_length=50, blank=True, null=True)
+    national_id_number = models.CharField(
+        max_length=20, 
+        blank=True, 
+        null=True,
+        unique=True,
+        help_text="User's national ID number (must be unique)"
+    )
     national_id_front = models.ImageField(
         upload_to="national_ids/front/", null=True, blank=True, validators=[FileExtensionValidator(["jpg", "jpeg", "png"])]
     )

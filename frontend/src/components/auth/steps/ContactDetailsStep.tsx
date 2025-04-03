@@ -1,7 +1,8 @@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, AlertCircle, User, Phone, MapPin, Calendar } from 'lucide-react';
+import { ChevronRight, AlertCircle, User, Phone, MapPin } from 'lucide-react';
 import { ProfileFormData, ProfileFormErrors } from '@/types/auth';
+import { DateOfBirthPicker } from '@/components/common/DateOfBirthPicker';
 
 interface Props {
   profileFormData: ProfileFormData;
@@ -113,26 +114,19 @@ const ContactDetailsStep = ({ profileFormData, errors, onChange, onNext, loading
         </div>
 
         <div>
-          <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-1">
-            Date of Birth
-          </label>
-          <div className="relative">
-            <Input
-              id="dateOfBirth"
-              name="dateOfBirth"
-              type="date"
-              value={profileFormData.dateOfBirth}
-              onChange={(e) => onChange({ dateOfBirth: e.target.value })}
-              error={!!errors.dateOfBirth}
-              className="pl-9"
-            />
-            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          </div>
-          {errors.dateOfBirth ? (
+          <DateOfBirthPicker
+            value={profileFormData.dateOfBirth}
+            onChange={(date) => onChange({ dateOfBirth: date })}
+            error={!!errors.dateOfBirth}
+            label="Date of Birth"
+            required={true}
+          />
+          {errors.dateOfBirth && (
             <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
               <AlertCircle size={14} /> {errors.dateOfBirth}
             </p>
-          ) : (
+          )}
+          {!errors.dateOfBirth && (
             <p className="mt-1 text-xs text-gray-500">Must be 18 years or older</p>
           )}
         </div>
