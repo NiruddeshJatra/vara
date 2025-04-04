@@ -21,18 +21,20 @@ from django.core.exceptions import ValidationError
 
 class ProductImage(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='product_images')
+    product = models.ForeignKey(
+        "Product", on_delete=models.CASCADE, related_name="product_images"
+    )
     image = models.ImageField(
-        upload_to='product_images/',
+        upload_to="product_images/",
         help_text=_("Product image file"),
-        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png'])],
-        max_length=255
+        validators=[FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png"])],
+        max_length=255,
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['created_at']
+        ordering = ["created_at"]
         verbose_name = _("Product Image")
         verbose_name_plural = _("Product Images")
 
@@ -48,25 +50,38 @@ class ProductImage(models.Model):
 
 class UnavailableDate(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='unavailable_dates')
+    product = models.ForeignKey(
+        "Product", on_delete=models.CASCADE, related_name="unavailable_dates"
+    )
     date = models.DateField(help_text=_("Single unavailable date"))
-    is_range = models.BooleanField(default=False, help_text=_("Is this part of a date range?"))
-    range_start = models.DateField(null=True, blank=True, help_text=_("Start date of range"))
-    range_end = models.DateField(null=True, blank=True, help_text=_("End date of range"))
+    is_range = models.BooleanField(
+        default=False, help_text=_("Is this part of a date range?")
+    )
+    range_start = models.DateField(
+        null=True, blank=True, help_text=_("Start date of range")
+    )
+    range_end = models.DateField(
+        null=True, blank=True, help_text=_("End date of range")
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['date']
+        ordering = ["date"]
         verbose_name = _("Unavailable Date")
         verbose_name_plural = _("Unavailable Dates")
         constraints = [
             models.CheckConstraint(
                 check=models.Q(
-                    models.Q(is_range=False) | 
-                    (models.Q(is_range=True) & models.Q(range_start__isnull=False) & models.Q(range_end__isnull=False) & models.Q(range_end__gte=models.F('range_start')))
+                    models.Q(is_range=False)
+                    | (
+                        models.Q(is_range=True)
+                        & models.Q(range_start__isnull=False)
+                        & models.Q(range_end__isnull=False)
+                        & models.Q(range_end__gte=models.F("range_start"))
+                    )
                 ),
-                name='valid_date_range'
+                name="valid_date_range",
             )
         ]
 
@@ -77,40 +92,46 @@ class UnavailableDate(models.Model):
 
     def clean(self):
         if self.is_range and (not self.range_start or not self.range_end):
-            raise ValidationError("Range start and end dates are required for date ranges")
+            raise ValidationError(
+                "Range start and end dates are required for date ranges"
+            )
         if not self.is_range and not self.date:
             raise ValidationError("Date is required for single dates")
 
 
 class PricingTier(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='pricing_tiers')
+    product = models.ForeignKey(
+        "Product", on_delete=models.CASCADE, related_name="pricing_tiers"
+    )
     duration_unit = models.CharField(
         max_length=10,
         choices=DURATION_UNITS,
-        help_text=_("Duration unit (day/week/month)")
+        help_text=_("Duration unit (day/week/month)"),
     )
     price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))],
-        help_text=_("Price per duration unit")
+        validators=[MinValueValidator(Decimal("0.01"))],
+        help_text=_("Price per duration unit"),
     )
     max_period = models.PositiveIntegerField(
         default=30,  # Default to 30 days/weeks/months
-        help_text=_("Maximum rental period in the specified duration unit (optional, defaults to 30)")
+        help_text=_(
+            "Maximum rental period in the specified duration unit (optional, defaults to 30)"
+        ),
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['duration_unit', 'price']
+        ordering = ["duration_unit", "price"]
         verbose_name = _("Pricing Tier")
         verbose_name_plural = _("Pricing Tiers")
         constraints = [
             models.UniqueConstraint(
-                fields=['product', 'duration_unit'],
-                name='unique_duration_unit_per_product'
+                fields=["product", "duration_unit"],
+                name="unique_duration_unit_per_product",
             )
         ]
 
@@ -135,9 +156,7 @@ class Product(models.Model):
         related_name="products",
         help_text=_("The user who owns this product"),
     )
-    title = models.CharField(
-        max_length=255, help_text=_("Product title")
-    )
+    title = models.CharField(max_length=255, help_text=_("Product title"))
     category = models.CharField(
         max_length=50,
         choices=CATEGORY_CHOICES,
@@ -154,43 +173,49 @@ class Product(models.Model):
         help_text=_("Product location"),
     )
     security_deposit = models.DecimalField(
-        max_digits=10, 
-        decimal_places=2, 
-        null=True, 
+        max_digits=10,
+        decimal_places=2,
+        null=True,
         blank=True,
-        help_text=_("Security deposit amount (optional)")
+        help_text=_("Security deposit amount (optional)"),
     )
-    purchase_year = models.CharField(max_length=4, null=True, blank=True, help_text=_("Year of purchase"))
-    original_price = models.DecimalField(max_digits=10, decimal_places=2, help_text=_("Original purchase price"))
-    ownership_history = models.CharField(max_length=20, choices=OWNERSHIP_HISTORY_CHOICES, help_text=_("Ownership history"))
+    purchase_year = models.CharField(
+        max_length=4, null=True, blank=True, help_text=_("Year of purchase")
+    )
+    original_price = models.DecimalField(
+        max_digits=10, decimal_places=2, help_text=_("Original purchase price")
+    )
+    ownership_history = models.CharField(
+        max_length=20,
+        choices=OWNERSHIP_HISTORY_CHOICES,
+        help_text=_("Ownership history"),
+    )
     status = models.CharField(
-        max_length=20, 
-        choices=STATUS_CHOICES, 
-        default='draft',
-        help_text=_("Product status (managed by admins)")
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="draft",
+        help_text=_("Product status (managed by admins)"),
     )
     status_message = models.TextField(
-        null=True, 
+        null=True,
         blank=True,
-        help_text=_("Admin message for status changes (e.g., maintenance or suspension reason)")
+        help_text=_(
+            "Admin message for status changes (e.g., maintenance or suspension reason)"
+        ),
     )
     status_changed_at = models.DateTimeField(
-        null=True, 
-        blank=True,
-        help_text=_("When status was last changed by admin")
+        null=True, blank=True, help_text=_("When status was last changed by admin")
     )
     # Internal tracking fields
     views_count = models.PositiveIntegerField(
-        default=0,
-        help_text=_("Internal: Number of views")
+        default=0, help_text=_("Internal: Number of views")
     )
     rental_count = models.PositiveIntegerField(
-        default=0,
-        help_text=_("Internal: Number of rentals")
+        default=0, help_text=_("Internal: Number of rentals")
     )
     average_rating = models.DecimalField(
-        max_digits=3, 
-        decimal_places=2, 
+        max_digits=3,
+        decimal_places=2,
         default=0,
         validators=[MinValueValidator(0), MaxValueValidator(5)],
         help_text=_("Average rating from all reviews"),
@@ -203,11 +228,11 @@ class Product(models.Model):
         verbose_name = _("Product")
         verbose_name_plural = _("Products")
         indexes = [
-            models.Index(fields=['status']),
-            models.Index(fields=['category']),
-            models.Index(fields=['location']),
-            models.Index(fields=['created_at']),
-            models.Index(fields=['average_rating']),
+            models.Index(fields=["status"]),
+            models.Index(fields=["category"]),
+            models.Index(fields=["location"]),
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["average_rating"]),
         ]
 
     def __str__(self):
@@ -255,8 +280,12 @@ class Product(models.Model):
         """
         return not self.unavailable_dates.filter(
             models.Q(
-                models.Q(is_range=False, date=check_date) |
-                models.Q(is_range=True, range_start__lte=check_date, range_end__gte=check_date)
+                models.Q(is_range=False, date=check_date)
+                | models.Q(
+                    is_range=True,
+                    range_start__lte=check_date,
+                    range_end__gte=check_date,
+                )
             )
         ).exists()
 
