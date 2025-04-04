@@ -38,12 +38,7 @@ const config = {
     createEndpoint: '/products/',
     updateEndpoint: (id: string) => `/products/${id}/`,
     deleteEndpoint: (id: string) => `/products/${id}/`,
-    submitForReviewEndpoint: (id: string) => `/products/${id}/submit_for_review/`,
     updateStatusEndpoint: (id: string) => `/products/${id}/update_status/`,
-    incrementViewsEndpoint: (id: string) => `/products/${id}/increment_views/`,
-    updateRatingEndpoint: (id: string) => `/products/${id}/update_rating/`,
-    imagesEndpoint: (id: string) => `/advertisements/products/${id}/images/`,
-    pricingTiersEndpoint: (id: string) => `/advertisements/products/${id}/pricing-tiers/`,
   },
 };
 

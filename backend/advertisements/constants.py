@@ -101,13 +101,6 @@ DURATION_UNITS = [
     ('month', _('Per Month')),
 ]
 
-CONDITION_CHOICES = [
-    ('excellent', _('Excellent')),
-    ('good', _('Good')),
-    ('fair', _('Fair')),
-    ('pending', _('Pending Review')),
-]
-
 OWNERSHIP_HISTORY_CHOICES = [
     ('firsthand', _('First Hand')),
     ('secondhand', _('Second Hand')),
