@@ -26,10 +26,10 @@ const PriceCalculationStep = ({ product, formData, onNext, onPrev }: Props) => {
             <div>
               <p className="font-medium">Base Price</p>
               <p className="text-sm text-gray-500">
-                {product.basePrice} × {formData.duration} {product.durationUnit}s
+                {product.pricingTiers[0].price} × {formData.duration} {product.pricingTiers[0].durationUnit}s
               </p>
             </div>
-            <span className="font-medium">{product.basePrice * formData.duration} Taka</span>
+            <span className="font-medium">{product.pricingTiers[0].price * formData.duration} Taka</span>
           </div>
 
           <div className="flex justify-between items-center py-2 border-b border-gray-100">

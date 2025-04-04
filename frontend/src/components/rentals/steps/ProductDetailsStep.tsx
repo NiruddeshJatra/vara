@@ -31,7 +31,7 @@ const ProductDetailsStep = ({ product, formData, errors, onChange, onNext }: Pro
           </div>
           <div>
             <p className="text-gray-600">Price</p>
-            <p className="font-medium text-green-900">{product.basePrice} Taka per {product.durationUnit}</p>
+            <p className="font-medium text-green-900">{product.pricingTiers[0].price} Taka per {product.pricingTiers[0].durationUnit}</p>
           </div>
           <div>
             <p className="text-gray-600">Location</p>
@@ -66,11 +66,11 @@ const ProductDetailsStep = ({ product, formData, errors, onChange, onNext }: Pro
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Rental Duration ({product.durationUnit}s) <span className="text-red-500">*</span>
+            Rental Duration ({product.pricingTiers[0].durationUnit}s) <span className="text-red-500">*</span>
           </label>
           <Input
             type="number"
-            max={product.maxRentalPeriod}
+            max={product.pricingTiers[0].maxPeriod}
             value={formData.duration}
             onChange={(e) => onChange({ duration: Number(e.target.value) })}
             className={`text-sm md:text-base h-8 md:h-10 focus:ring-green-500 focus:border-green-500 ${errors.duration ? 'border-red-500' : 'border-gray-300'}`}
@@ -81,7 +81,7 @@ const ProductDetailsStep = ({ product, formData, errors, onChange, onNext }: Pro
             </p>
           ) : (
             <p className="text-xs text-gray-500">
-              {product.maxRentalPeriod ? `, maximum ${product.maxRentalPeriod} ${product.durationUnit}s` : ''}
+              {product.pricingTiers[0].maxPeriod ? `, maximum ${product.pricingTiers[0].maxPeriod} ${product.pricingTiers[0].durationUnit}s` : ''}
             </p>
           )}
         </div>

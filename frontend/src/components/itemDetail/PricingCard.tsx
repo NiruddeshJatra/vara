@@ -2,27 +2,21 @@ import React, { useState } from 'react';
 import { Clock, ShieldCheck, Banknote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
-import { DurationUnit } from '@/types/listings';
+import { DurationUnit, PricingTier } from '@/types/listings';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileCompletionModal } from '@/components/common/ProfileCompletionModal';
 
 interface PricingCardProps {
-  productId: string;
-  basePrice: number;
-  durationUnit: DurationUnit;
+  pricingTiers: PricingTier[];
   minRentalPeriod: number;
-  maxRentalPeriod?: number;
-  securityDeposit?: number;
+  maxRentalPeriod: number;
 }
 
-export default function PricingCard({
-  productId,
-  basePrice,
-  durationUnit,
+const PricingCard: React.FC<PricingCardProps> = ({
+  pricingTiers,
   minRentalPeriod,
   maxRentalPeriod,
-  securityDeposit = 0
-}: PricingCardProps) {
+}) => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -32,15 +26,15 @@ export default function PricingCard({
       setShowProfileModal(true);
       return;
     }
-    navigate(`/request-rental/${productId}`, { 
+    navigate(`/request-rental/${pricingTiers[0].productId}`, { 
       state: { 
         product: {
-          id: productId,
-          basePrice,
-          durationUnit,
+          id: pricingTiers[0].productId,
+          basePrice: pricingTiers[0].price,
+          durationUnit: pricingTiers[0].durationUnit,
           minRentalPeriod,
           maxRentalPeriod,
-          securityDeposit
+          securityDeposit: pricingTiers[0].securityDeposit
         }
       }
     });
@@ -51,62 +45,48 @@ export default function PricingCard({
       <div className="bg-gradient-to-b from-white to-leaf-50 rounded-lg border border-gray-200 shadow-md p-4 sm:p-6">
         <h2 className="text-lg sm:text-xl font-semibold mb-6 pb-3 border-b">Pricing Details</h2>
         <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <span className="font-medium">Base Price:</span>
-            <div className="text-2xl font-bold text-green-600 flex items-center">
-              <Banknote className="h-5 w-5 mr-1 inline" />
-              {basePrice}
-            </div>
-          </div>
-          <div className="flex justify-between text-gray-600 text-sm">
-            <span>Per {durationUnit}</span>
-            <span>+ 5% Service Fee</span>
-          </div>
-
-          <div className="pt-4 space-y-2 border-t">
-            <div className="flex justify-between">
-              <span className="flex items-center gap-1">
-                <Clock className="h-4 w-4 text-gray-500" />
-                Minimum Rental:
-              </span>
-              <span className="font-medium">
-                {minRentalPeriod} {durationUnit}s
-              </span>
-            </div>
-            {maxRentalPeriod && (
-              <div className="flex justify-between">
-                <span className="flex items-center gap-1">
-                  <Clock className="h-4 w-4 text-gray-500" />
-                  Maximum Rental:
-                </span>
+          {pricingTiers.map((tier, index) => (
+            <div key={index} className="flex justify-between items-center">
+              <div>
                 <span className="font-medium">
-                  {maxRentalPeriod} {durationUnit}s
+                  {tier.durationUnit.charAt(0).toUpperCase() + tier.durationUnit.slice(1)}ly
                 </span>
+                {tier.maxPeriod && (
+                  <span className="text-sm text-gray-500 ml-2">
+                    (Max: {tier.maxPeriod} {tier.durationUnit}{tier.maxPeriod > 1 ? 's' : ''})
+                  </span>
+                )}
               </div>
-            )}
-          </div>
-
-          <div className="pt-4 border-t">
-            <div className="mb-6">
-              <h3 className="text-sm font-medium mb-2">Security Deposit</h3>
-              <div className="flex items-center text-gray-700">
-                <ShieldCheck className="h-4 w-4 text-green-600 mr-2" />
-                <Banknote className="h-4 w-4 mr-1 text-gray-600" />
-                <span>{securityDeposit}</span>
-                <span className="text-xs text-gray-500 ml-2">(Refundable)</span>
-              </div>
+              <span className="font-medium">৳{tier.price}</span>
             </div>
-
-            <Button
-              className="w-full bg-green-600 hover:bg-green-700 h-12 text-base"
-              onClick={handleRequestRental}
-            >
-              Request Rental Now
-            </Button>
-            <p className="text-xs text-gray-500 mt-2 text-center">
-              No upfront payment required. Vhara handles the logistics.
-            </p>
+          ))}
+        </div>
+        <div className="mt-6 pt-4 border-t">
+          <div className="text-sm text-gray-600">
+            <p>Minimum rental period: {minRentalPeriod} {pricingTiers[0]?.durationUnit}s</p>
+            <p>Maximum rental period: {maxRentalPeriod} {pricingTiers[0]?.durationUnit}s</p>
           </div>
+        </div>
+        <div className="pt-4 border-t">
+          <div className="mb-6">
+            <h3 className="text-sm font-medium mb-2">Security Deposit</h3>
+            <div className="flex items-center text-gray-700">
+              <ShieldCheck className="h-4 w-4 text-green-600 mr-2" />
+              <Banknote className="h-4 w-4 mr-1 text-gray-600" />
+              <span>{pricingTiers[0]?.securityDeposit}</span>
+              <span className="text-xs text-gray-500 ml-2">(Refundable)</span>
+            </div>
+          </div>
+
+          <Button
+            className="w-full bg-green-600 hover:bg-green-700 h-12 text-base"
+            onClick={handleRequestRental}
+          >
+            Request Rental Now
+          </Button>
+          <p className="text-xs text-gray-500 mt-2 text-center">
+            No upfront payment required. Vhara handles the logistics.
+          </p>
         </div>
       </div>
 
@@ -119,4 +99,6 @@ export default function PricingCard({
       />
     </div>
   );
-} 
+};
+
+export default PricingCard; 

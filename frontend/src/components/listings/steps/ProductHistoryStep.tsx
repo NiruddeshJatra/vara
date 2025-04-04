@@ -6,6 +6,7 @@ import { ListingFormData } from '@/types/listings';
 import { Info, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 import { Button } from '@/components/ui/button';
+import { ProductCondition, OwnershipHistory, PRODUCT_CONDITION_DISPLAY, OWNERSHIP_HISTORY_DISPLAY } from '@/constants/productAttributes';
 
 type Props = {
   formData: ListingFormData;
@@ -21,8 +22,11 @@ const ProductHistoryStep = ({ formData, onNext, onBack, errors = {} }: Props) =>
   const [originalPrice, setOriginalPrice] = useState<string>(
     formData.originalPrice?.toString() || ''
   );
-  const [ownershipHistory, setOwnershipHistory] = useState<'firsthand' | 'secondhand'>(
-    formData.ownershipHistory || 'firsthand'
+  const [ownershipHistory, setOwnershipHistory] = useState<OwnershipHistory>(
+    formData.ownershipHistory || OwnershipHistory.FIRSTHAND
+  );
+  const [condition, setCondition] = useState<ProductCondition>(
+    formData.condition || ProductCondition.PENDING
   );
 
   // Update local state when formData changes
@@ -30,15 +34,16 @@ const ProductHistoryStep = ({ formData, onNext, onBack, errors = {} }: Props) =>
     if (formData.purchaseYear) setPurchaseYear(formData.purchaseYear);
     if (formData.originalPrice) setOriginalPrice(formData.originalPrice.toString());
     if (formData.ownershipHistory) setOwnershipHistory(formData.ownershipHistory);
+    if (formData.condition) setCondition(formData.condition);
   }, [formData]);
 
   // Handle next button click properly
   const handleNext = () => {
-    // Call onNext directly without validation
     onNext({
       purchaseYear,
-      originalPrice: originalPrice ? parseFloat(originalPrice) : undefined,
+      originalPrice: originalPrice ? parseFloat(originalPrice) : 0,
       ownershipHistory,
+      condition,
     });
   };
 
@@ -83,50 +88,63 @@ const ProductHistoryStep = ({ formData, onNext, onBack, errors = {} }: Props) =>
 
           <div className="space-y-2">
             <Label htmlFor="originalPrice" className="text-base font-medium text-gray-700">
-              Original Purchase Price
+              Original Price
             </Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">৳</span>
-              <Input
-                id="originalPrice"
-                type="number"
-                min="0"
-                step="0.01"
-                value={originalPrice}
-                onChange={(e) => setOriginalPrice(e.target.value)}
-                className={`pl-8 ${errors.originalPrice ? "border-red-500" : ""}`}
-                placeholder="Enter the original price"
-                required
-              />
-            </div>
+            <Input
+              id="originalPrice"
+              type="number"
+              min="0"
+              step="0.01"
+              value={originalPrice}
+              onChange={(e) => setOriginalPrice(e.target.value)}
+              className={errors.originalPrice ? "border-red-500" : ""}
+              placeholder="Enter original purchase price"
+            />
             {errors.originalPrice && (
               <p className="text-sm text-red-500">{errors.originalPrice}</p>
             )}
             <p className="text-sm text-gray-500">
-              The price you paid when you purchased this product.
+              The price you paid when purchasing this product.
             </p>
           </div>
         </div>
 
         <div className="space-y-4">
-          <Label className="text-base font-medium text-gray-700">Ownership History</Label>
+          <Label className="text-base font-medium text-gray-700">
+            Product Condition
+          </Label>
+          <RadioGroup
+            value={condition}
+            onValueChange={(value) => setCondition(value as ProductCondition)}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          >
+            {Object.entries(PRODUCT_CONDITION_DISPLAY).map(([key, label]) => (
+              <div key={key} className="flex items-center space-x-2">
+                <RadioGroupItem value={key} id={`condition-${key}`} />
+                <Label htmlFor={`condition-${key}`}>{label}</Label>
+              </div>
+            ))}
+          </RadioGroup>
+          {errors.condition && (
+            <p className="text-sm text-red-500">{errors.condition}</p>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <Label className="text-base font-medium text-gray-700">
+            Ownership History
+          </Label>
           <RadioGroup
             value={ownershipHistory}
-            onValueChange={(value) => setOwnershipHistory(value as 'firsthand' | 'secondhand')}
-            className="flex flex-col space-y-2"
+            onValueChange={(value) => setOwnershipHistory(value as OwnershipHistory)}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4"
           >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="firsthand" id="firsthand" className="text-green-600 border-green-600 data-[state=checked]:bg-green-600" />
-              <Label htmlFor="firsthand" className="text-gray-600">
-                Firsthand (I am the original owner)
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="secondhand" id="secondhand" className="text-green-600 border-green-600 data-[state=checked]:bg-green-600" />
-              <Label htmlFor="secondhand" className="text-gray-600">
-                Secondhand (I purchased it from someone else)
-              </Label>
-            </div>
+            {Object.entries(OWNERSHIP_HISTORY_DISPLAY).map(([key, label]) => (
+              <div key={key} className="flex items-center space-x-2">
+                <RadioGroupItem value={key} id={`ownership-${key}`} />
+                <Label htmlFor={`ownership-${key}`}>{label}</Label>
+              </div>
+            ))}
           </RadioGroup>
           {errors.ownershipHistory && (
             <p className="text-sm text-red-500">{errors.ownershipHistory}</p>
@@ -145,22 +163,34 @@ const ProductHistoryStep = ({ formData, onNext, onBack, errors = {} }: Props) =>
         </ul>
       </div>
 
-      {/* Add navigation buttons inside the component */}
-      <div className="flex justify-between mt-6">
+      <div className="flex justify-between mt-8">
         <Button
-          type="button"
-          variant="outline"
           onClick={onBack}
-          className="border-green-300 text-green-700 hover:bg-green-50"
+          variant="outline"
+          className="flex items-center gap-2"
         >
-          <ChevronLeft size={16} className="mr-1" /> Previous
+          <ChevronLeft size={16} /> Back
         </Button>
         <Button
-          type="button"
-          className="bg-green-600 hover:bg-green-700 text-white"
           onClick={handleNext}
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
         >
-          Continue to Pricing <ChevronRight size={16} className="ml-1" />
+          Next <ChevronRight size={16} />
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export default ProductHistoryStep;
+        >
+          <ChevronLeft size={16} /> Back
+        </Button>
+        <Button
+          onClick={handleNext}
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+        >
+          Next <ChevronRight size={16} />
         </Button>
       </div>
     </div>

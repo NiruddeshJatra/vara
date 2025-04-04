@@ -2,41 +2,48 @@
  * Rental-related constants for the frontend
  */
 
-export type DurationUnit = 'day' | 'week' | 'month';
+export enum DurationUnit {
+  DAY = 'day',
+  WEEK = 'week',
+  MONTH = 'month'
+}
 
-export type RentalStatus = 
-  | 'pending' 
-  | 'approved' 
-  | 'rejected' 
-  | 'canceled' 
-  | 'completed';
+export enum RentalStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  CANCELLED = 'cancelled',
+  COMPLETED = 'completed'
+}
 
-export const DURATION_CHOICES = [
-  { value: 'day', label: 'Per Day' },
-  { value: 'week', label: 'Per Week' },
-  { value: 'month', label: 'Per Month' }
-] as const;
+export const DURATION_UNIT_VALUES = Object.values(DurationUnit);
+
+export const DURATION_UNIT_DISPLAY: Record<DurationUnit, string> = {
+  [DurationUnit.DAY]: 'Day',
+  [DurationUnit.WEEK]: 'Week',
+  [DurationUnit.MONTH]: 'Month'
+};
 
 export const RENTAL_STATUS_DISPLAY: Record<RentalStatus, string> = {
-  pending: 'Pending',
-  approved: 'Approved',
-  rejected: 'Rejected',
-  canceled: 'Canceled',
-  completed: 'Completed'
+  [RentalStatus.PENDING]: 'Pending',
+  [RentalStatus.APPROVED]: 'Approved',
+  [RentalStatus.REJECTED]: 'Rejected',
+  [RentalStatus.CANCELLED]: 'Cancelled',
+  [RentalStatus.COMPLETED]: 'Completed'
 };
 
 export const RENTAL_STATUS_COLORS: Record<RentalStatus, string> = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  approved: 'bg-green-100 text-green-800',
-  rejected: 'bg-red-100 text-red-800',
-  canceled: 'bg-gray-100 text-gray-800',
-  completed: 'bg-blue-100 text-blue-800'
+  [RentalStatus.PENDING]: 'bg-yellow-100 text-yellow-800',
+  [RentalStatus.APPROVED]: 'bg-green-100 text-green-800',
+  [RentalStatus.REJECTED]: 'bg-red-100 text-red-800',
+  [RentalStatus.CANCELLED]: 'bg-gray-100 text-gray-800',
+  [RentalStatus.COMPLETED]: 'bg-blue-100 text-blue-800'
 };
 
 export const RENTAL_STATUS_ICONS: Record<RentalStatus, string> = {
   pending: '⏳',
   approved: '✅',
   rejected: '❌',
-  canceled: '🚫',
+  cancelled: '🚫',
   completed: '🏁'
 }; 

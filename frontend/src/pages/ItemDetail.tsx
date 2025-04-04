@@ -41,37 +41,55 @@ export default function ItemDetailPage() {
 
         if (foundProduct) {
           // Ensure the product matches the Product type
-          const typedProduct: Product = {
+          const product: Product = {
             ...foundProduct,
-            unavailableDates: foundProduct.unavailableDates || [],
-            pricingTiers: [{
-              durationUnit: foundProduct.durationUnit as DurationUnit,
-              price: foundProduct.basePrice,
-              maxPeriod: foundProduct.maxRentalPeriod
-            }]
+            owner: {
+              id: foundProduct.owner.id,
+              username: foundProduct.owner.username,
+              email: foundProduct.owner.email
+            },
+            pricingTiers: foundProduct.pricingTiers || [
+              {
+                durationUnit: foundProduct.durationUnit,
+                price: foundProduct.basePrice,
+                maxPeriod: foundProduct.maxRentalPeriod
+              }
+            ],
+            unavailableDates: foundProduct.unavailableDates.map(date => date.toISOString()),
+            status: foundProduct.status || 'active',
+            statusMessage: null,
+            statusChangedAt: null
           };
 
-          setProduct(typedProduct);
+          setProduct(product);
 
-          // Find similar items with the same category
+          // Find similar items
           const similar = allListings
-            .filter(item =>
+            .filter(item => 
               item.id !== productId &&
               item.category === foundProduct.category
             )
-            .slice(0, 4)
-            .map(item => ({
-              ...item,
-              durationUnit: item.durationUnit as DurationUnit,
-              unavailableDates: item.unavailableDates || [],
-              pricingTiers: [{
-                durationUnit: item.durationUnit as DurationUnit,
+            .slice(0, 4);
+
+          setSimilarItems(similar.map(item => ({
+            ...item,
+            owner: {
+              id: item.owner.id,
+              username: item.owner.username,
+              email: item.owner.email
+            },
+            pricingTiers: item.pricingTiers || [
+              {
+                durationUnit: item.durationUnit,
                 price: item.basePrice,
                 maxPeriod: item.maxRentalPeriod
-              }]
-            }));
-
-          setSimilarItems(similar);
+              }
+            ],
+            unavailableDates: item.unavailableDates.map(date => date.toISOString()),
+            status: item.status || 'active',
+            statusMessage: null,
+            statusChangedAt: null
+          })));
         }
       } catch (error) {
         console.error('Error fetching product:', error);
@@ -178,7 +196,7 @@ export default function ItemDetailPage() {
               {/* Host/Vhara Section */}
               <div className="animate-fade-left delay-200">
                 <HostInfo />
-              </div>
+            </div>
 
               {/* Description Section */}
               <div className="animate-fade-left delay-300">
@@ -202,12 +220,12 @@ export default function ItemDetailPage() {
                   category={product.category}
                   securityDeposit={product.securityDeposit}
                 />
-              </div>
+          </div>
 
               {/* Availability Calendar */}
               <div className="animate-fade-left delay-600">
                 <AvailabilitySection unavailableDates={product.unavailableDates} />
-              </div>
+                </div>
 
               {/* Reviews Section */}
               <div className="animate-fade-left delay-700">
@@ -223,21 +241,24 @@ export default function ItemDetailPage() {
               <div className="animate-fade-right delay-200">
                 <PricingCard
                   productId={product.id}
-                  basePrice={product.basePrice}
-                  durationUnit={product.durationUnit}
-                  minRentalPeriod={product.pricingTiers?.[0]?.maxPeriod || 1}
-                  maxRentalPeriod={product.pricingTiers?.[0]?.maxPeriod || 30}
+                  pricingTiers={product.pricingTiers}
+                  minRentalPeriod={product.pricingTiers[0].maxPeriod || 1}
+                  maxRentalPeriod={product.pricingTiers[0].maxPeriod || 30}
                   securityDeposit={product.securityDeposit}
-                />
-              </div>
+              />
+            </div>
             </div>
           </div>
         </div>
 
         {/* Similar Items */}
         <div className="animate-fade-up delay-1000">
-          <SimilarItems items={similarItems} onQuickView={handleQuickView} />
-        </div>
+          <SimilarItems
+            items={similarItems}
+            currentProductId={product.id}
+            onQuickView={handleQuickView}
+          />
+          </div>
       </main>
 
       {/* Item Detail Modal */}

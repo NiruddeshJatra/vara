@@ -11,7 +11,9 @@ import UnavailabilityStep from './steps/UnavailabilityStep';
 import ConfirmationStep from './steps/ConfirmationStep';
 import {ListingFormData, FormErrors } from '@/types/listings';
 import { Category, ProductType } from '@/constants/productTypes';
-import { DURATION_CHOICES } from '@/constants/rental';
+import { DURATION_UNIT_VALUES, DurationUnit } from '@/constants/rental';
+import { ProductCondition, OwnershipHistory } from '@/constants/productAttributes';
+import { toast } from 'react-hot-toast';
 
 interface Props {
   initialData?: ListingFormData;
@@ -21,22 +23,20 @@ interface Props {
 
 const CreateListingStepper = ({ initialData, isEditing = false, onSubmit }: Props) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<ListingFormData>(initialData || {
+  const [formData, setFormData] = useState<ListingFormData>(() => initialData || {
     title: '',
-    category: 'Photography & Videography' as Category,
-    productType: 'camera' as ProductType,
+    category: Category.PHOTOGRAPHY_VIDEOGRAPHY,
+    productType: ProductType.CAMERA,
     description: '',
     location: '',
-    basePrice: 0,
-    durationUnit: 'day',
     images: [],
     unavailableDates: [],
     securityDeposit: 0,
-    condition: 'excellent',
+    condition: ProductCondition.PENDING,
     purchaseYear: new Date().getFullYear().toString(),
-    originalPrice: undefined,
-    ownershipHistory: 'firsthand',
-    pricingTiers: [{ durationUnit: 'day', price: 0, maxPeriod: 1 }]
+    originalPrice: 0,
+    ownershipHistory: OwnershipHistory.FIRSTHAND,
+    pricingTiers: [{ durationUnit: DurationUnit.DAY, price: 0, maxPeriod: 1 }]
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -253,23 +253,25 @@ const CreateListingStepper = ({ initialData, isEditing = false, onSubmit }: Prop
                 <PricingStep
                   formData={formData}
                   errors={errors}
-                  durationOptions={DURATION_CHOICES}
                   onChange={(data) => setFormData(prev => ({ ...prev, ...data }))}
+                  onNext={handleNextStep}
+                  onBack={handlePrevStep}
                 />
               )}
 
               {currentStep === 5 && (
                 <UnavailabilityStep
                   formData={formData}
-                  setFormData={setFormData}
-                  onNext={handleSubmit}
+                  errors={errors}
+                  onChange={(data) => setFormData(prev => ({ ...prev, ...data }))}
+                  onNext={handleNextStep}
                   onBack={handlePrevStep}
                 />
               )}
 
             {currentStep === 6 && (
-              <ConfirmationStep 
-                formData={formData} 
+              <ConfirmationStep
+                formData={formData}
                 onEdit={() => setCurrentStep(1)}
                 isEditing={isEditing}
               />

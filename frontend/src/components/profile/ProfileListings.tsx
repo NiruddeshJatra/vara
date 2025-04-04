@@ -182,8 +182,8 @@ const ProfileListings = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <Banknote size={16} className="text-green-700 mr-1" />
-                <span className="text-lg font-bold text-green-700">{listing.basePrice}</span>
-                <span className="text-sm font-semibold text-green-700 ml-1">/{listing.durationUnit}</span>
+                <span className="text-lg font-bold text-green-700">{listing.pricingTiers[0].price}</span>
+                <span className="text-sm font-semibold text-green-700 ml-1">/{listing.pricingTiers[0].durationUnit}</span>
               </div>
               {listing.securityDeposit > 0 && (
                 <div className="text-sm text-gray-500">

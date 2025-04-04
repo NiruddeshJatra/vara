@@ -1,206 +1,117 @@
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-from rest_framework.permissions import IsAuthenticated, BasePermission
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.exceptions import PermissionDenied, ValidationError
-from rest_framework import filters, status, permissions
-from django.views.decorators.cache import cache_page
-from django_filters.rest_framework import DjangoFilterBackend
-from django.utils.decorators import method_decorator
-from .models import Product, ProductImage, PricingTier
-from .serializers import (
-    ProductSerializer,
-    ProductImageSerializer,
-    PricingTierSerializer,
-)
-from .filters import ProductFilter
-from .constants import STATUS_CHOICES
-from django.shortcuts import get_object_or_404
+from rest_framework.permissions import IsAuthenticated, BasePermission, SAFE_METHODS
+from django.db.models import F
+from .models import Product
+from .serializers import ProductSerializer
+import logging
 
+logger = logging.getLogger(__name__)
 
 class IsOwnerOrReadOnly(BasePermission):
     def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
+        if request.method in SAFE_METHODS:
             return True
         return obj.owner == request.user
 
-
-class IsAdminOrOwner(BasePermission):
-    def has_permission(self, request, view):
-        return request.user and (request.user.is_staff or request.user.is_authenticated)
-
-    def has_object_permission(self, request, view, obj):
-        if request.user.is_staff:
-            return True
-        return obj.owner == request.user
-
-
-class ProductViewSet(ReadOnlyModelViewSet):
+class ProductViewSet(viewsets.ModelViewSet):
     """
-    Read-only endpoint for all users
+    ViewSet for Product model.
+    Provides CRUD operations and additional actions for products.
     """
-
-    queryset = Product.objects.select_related("owner", "pricing").filter(
-        status='active'
-    )
+    queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [IsAdminOrOwner]
-    filter_backends = [
-        DjangoFilterBackend,
-        filters.SearchFilter,
-        filters.OrderingFilter,
-    ]
-    filterset_class = ProductFilter
-    search_fields = ["title", "category", "description", "location"]
-    ordering_fields = ["pricing__base_price", "created_at", "average_rating"]
-    ordering = ["-created_at"]
-
-    @method_decorator(cache_page(60 * 15))
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
-
-    @action(detail=True, methods=["post"])
-    def increment_views(self, request, pk=None):
-        product = self.get_object()
-        product.increment_views()
-        return Response({"status": "views incremented"})
-
-    @action(detail=True, methods=["post"])
-    def update_rating(self, request, pk=None):
-        product = self.get_object()
-        new_rating = request.data.get("rating")
-        if new_rating is not None:
-            product.update_average_rating(float(new_rating))
-            return Response({"status": "rating updated"})
-        return Response(
-            {"error": "rating not provided"}, status=status.HTTP_400_BAD_REQUEST
-        )
-
-    @action(detail=True, methods=["post"])
-    def update_status(self, request, pk=None):
-        """
-        Admin endpoint to update product status
-        """
-        if not request.user.is_staff:
-            return Response(
-                {"detail": "Only administrators can update product status."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        product = self.get_object()
-        new_status = request.data.get("status")
-        status_message = request.data.get("status_message", "")
-
-        if new_status not in dict(STATUS_CHOICES):
-            return Response(
-                {"detail": "Invalid status provided."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        product.update_status(new_status, status_message)
-
-        # Here you would typically trigger notifications to the owner
-        # TODO: Implement notification system
-
-        return Response(
-            {
-                "status": "success",
-                "message": f"Product status updated to {new_status}",
-                "product": ProductSerializer(product).data,
-            }
-        )
-
-    @action(detail=True, methods=["post"])
-    def submit_for_review(self, request, pk=None):
-        """
-        Owner endpoint to submit a draft product for admin review
-        """
-        product = self.get_object()
-
-        if product.owner != request.user:
-            return Response(
-                {"detail": "Only the product owner can submit for review."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        if product.status != "draft":
-            return Response(
-                {"detail": "Only draft products can be submitted for review."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Here you would typically trigger notifications to admins
-        # TODO: Implement notification system
-
-        return Response(
-            {
-                "status": "success",
-                "message": "Product submitted for review",
-                "product": ProductSerializer(product).data,
-            }
-        )
-
-
-class UserProductViewSet(ModelViewSet):
-    """
-    CRUD endpoint for authenticated users' own products
-    """
-
-    serializer_class = ProductSerializer
-    permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_class = ProductFilter
-    search_fields = ["title", "category", "description", "location"]
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
 
     def get_queryset(self):
-        return Product.objects.filter(owner=self.request.user)
+        """
+        Filter products based on the user's role and request type.
+        """
+        if self.action == 'list':
+            # For listing products, only show active products
+            return Product.objects.filter(status='active')
+        elif self.action == 'my_products':
+            # For my_products, show all products owned by the user
+            return Product.objects.filter(owner=self.request.user)
+        return super().get_queryset()
 
     def perform_create(self, serializer):
+        """
+        Set the owner to the current user when creating a product.
+        """
         serializer.save(owner=self.request.user)
 
-    def perform_update(self, serializer):
-        if serializer.instance.owner != self.request.user:
-            raise PermissionDenied("You can only update your own products")
-        serializer.save()
-
-
-class ProductImageViewSet(ModelViewSet):
-    """
-    API endpoint for managing product images.
-    """
-
-    serializer_class = ProductImageSerializer
-    permission_classes = [IsOwnerOrReadOnly]
-
-    def get_queryset(self):
+    @action(detail=False, methods=['get'])
+    def my_products(self, request):
         """
-        Filter images by product ID if provided in the URL.
-        Otherwise, return all images for the current user's products.
+        List all products owned by the current user.
         """
-        product_id = self.kwargs.get("product_pk")
-        if product_id:
-            return ProductImage.objects.filter(product_id=product_id).order_by("order")
-        return ProductImage.objects.filter(product__owner=self.request.user).order_by(
-            "order"
-        )
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
-    def perform_create(self, serializer):
+    @action(detail=True, methods=['post'])
+    def submit_for_review(self, request, pk=None):
         """
-        Set the product when creating a new image.
-        The order will be set automatically in the model's save method.
+        Submit a product for admin review.
         """
-        product_id = self.kwargs.get("product_pk")
-        if product_id:
-            product = get_object_or_404(Product, id=product_id, owner=self.request.user)
-            serializer.save(product=product)
-        else:
-            raise ValidationError("Product ID is required to create an image.")
+        product = self.get_object()
+        if product.status != 'draft':
+            return Response(
+                {'error': 'Only draft products can be submitted for review'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        product.status = 'pending'
+        product.save()
+        return Response({'status': 'submitted for review'})
 
+    @action(detail=True, methods=['post'])
+    def update_status(self, request, pk=None):
+        """
+        Update the status of a product.
+        Only allowed for product owners and admins.
+        """
+        product = self.get_object()
+        new_status = request.data.get('status')
+        message = request.data.get('message')
 
-class PricingTierViewSet(ModelViewSet):
-    queryset = PricingTier.objects.all()
-    serializer_class = PricingTierSerializer
-    permission_classes = [IsOwnerOrReadOnly]
+        if new_status not in dict(Product.STATUS_CHOICES):
+            return Response(
+                {'error': 'Invalid status'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-    def get_queryset(self):
-        return PricingTier.objects.filter(product__owner=self.request.user)
+        product.update_status(new_status, message)
+        return Response({'status': 'updated'})
+
+    @action(detail=True, methods=['post'])
+    def increment_views(self, request, pk=None):
+        """
+        Increment the view count for a product.
+        """
+        product = self.get_object()
+        product.increment_views()
+        return Response({'views_count': product.views_count})
+
+    @action(detail=True, methods=['post'])
+    def update_rating(self, request, pk=None):
+        """
+        Update the average rating for a product.
+        """
+        product = self.get_object()
+        new_rating = request.data.get('rating')
+
+        try:
+            new_rating = float(new_rating)
+            if not 0 <= new_rating <= 5:
+                raise ValueError
+        except (TypeError, ValueError):
+            return Response(
+                {'error': 'Rating must be a number between 0 and 5'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        product.update_average_rating(new_rating)
+        return Response({'average_rating': product.average_rating})
+

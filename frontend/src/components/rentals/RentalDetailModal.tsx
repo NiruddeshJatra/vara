@@ -62,7 +62,7 @@ const RentalDetailModal = ({
   const rentalDuration = differenceInCalendarDays(new Date(rental.endTime), new Date(rental.startTime));
   
   // Calculate service fee (10% of base price total)
-  const serviceFee = Math.round(rental.basePrice * rentalDuration * 0.1);
+  const serviceFee = Math.round(rental.pricingTiers[0].price * rentalDuration * 0.1);
   
   // Sample images for the carousel
   const sampleImages = [
@@ -189,7 +189,7 @@ const RentalDetailModal = ({
                 <div className="space-y-2 text-sm text-gray-600">
                   <div className="flex justify-between">
                     <span>Base price</span>
-                    <span>৳{rental.basePrice} × {rentalDuration} days</span>
+                    <span>৳{rental.pricingTiers[0].price} × {rentalDuration} days</span>
                     </div>
                   <div className="flex justify-between">
                     <span>Service fee</span>

@@ -84,7 +84,7 @@ const EditListing = () => {
       console.error('Error updating listing:', error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || error.message || "Failed to update listing. Please try again.",
+        description: error.message || "Failed to update listing. Please try again.",
         variant: "destructive",
       });
     }

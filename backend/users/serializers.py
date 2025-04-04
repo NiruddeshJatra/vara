@@ -2,6 +2,7 @@ from rest_framework import serializers
 import re
 from .models import CustomUser
 from rest_framework_simplejwt.tokens import RefreshToken
+from .email_service import send_verification_email
 
 
 class ProfilePictureSerializer(serializers.ModelSerializer):
@@ -112,8 +113,9 @@ class CustomRegisterSerializer(serializers.ModelSerializer):
             profile_completed=validated_data.get("profile_completed", False),
         )
         
-        # Generate verification token
+        # Generate verification token and send email
         user.generate_verification_token()
+        send_verification_email(user, self.context.get('request'))
         
         return user
 

@@ -24,7 +24,7 @@ const RentalRequestStepper = ({ product }: Props) => {
   const [errors, setErrors] = useState<FormErrors>({});
 
   const calculateTotalCost = () => {
-    const baseCost = product.basePrice * formData.duration;
+    const baseCost = product.pricingTiers[0].price * formData.duration;
     const serviceFee = baseCost * 0.05;
     const securityDeposit = product.securityDeposit || 0;
     return {
@@ -43,11 +43,11 @@ const RentalRequestStepper = ({ product }: Props) => {
         } else if (formData.startDate < new Date()) {
           newErrors.startDate = 'Start date must be in the future';
         }
-        if (formData.duration < product.minRentalPeriod) {
-          newErrors.duration = `Minimum ${product.minRentalPeriod} ${product.durationUnit}s`;
+        if (formData.duration < product.pricingTiers[0].minPeriod) {
+          newErrors.duration = `Minimum ${product.pricingTiers[0].minPeriod} ${product.pricingTiers[0].durationUnit}s`;
         }
-        if (product.maxRentalPeriod && formData.duration > product.maxRentalPeriod) {
-          newErrors.duration = `Maximum ${product.maxRentalPeriod} ${product.durationUnit}s`;
+        if (product.pricingTiers[0].maxPeriod && formData.duration > product.pricingTiers[0].maxPeriod) {
+          newErrors.duration = `Maximum ${product.pricingTiers[0].maxPeriod} ${product.pricingTiers[0].durationUnit}s`;
         }
         break;
       case 3:

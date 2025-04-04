@@ -3,37 +3,48 @@
  * These align with the backend CONDITION_CHOICES and OWNERSHIP_HISTORY_CHOICES
  */
 
-export type ProductCondition = 'excellent' | 'good' | 'fair' | 'pending';
+export enum ProductCondition {
+  EXCELLENT = 'excellent',
+  GOOD = 'good',
+  FAIR = 'fair',
+  PENDING = 'pending'
+}
 
-export type OwnershipHistory = 'firsthand' | 'secondhand';
+export enum OwnershipHistory {
+  FIRSTHAND = 'firsthand',
+  SECONDHAND = 'secondhand'
+}
 
-export const CONDITION_DISPLAY: Record<ProductCondition, string> = {
-  excellent: 'Excellent',
-  good: 'Good',
-  fair: 'Fair',
-  pending: 'Pending Review'
+export const PRODUCT_CONDITION_VALUES = Object.values(ProductCondition);
+export const OWNERSHIP_HISTORY_VALUES = Object.values(OwnershipHistory);
+
+export const PRODUCT_CONDITION_DISPLAY: Record<ProductCondition, string> = {
+  [ProductCondition.EXCELLENT]: 'Excellent',
+  [ProductCondition.GOOD]: 'Good',
+  [ProductCondition.FAIR]: 'Fair',
+  [ProductCondition.PENDING]: 'Pending Review'
 };
 
-export const CONDITION_DESCRIPTIONS: Record<ProductCondition, string> = {
-  excellent: 'Like new, minimal wear and tear',
-  good: 'Some wear and tear, but fully functional',
-  fair: 'Visible wear and tear, but still usable',
-  pending: 'Condition will be reviewed by our team'
+export const PRODUCT_CONDITION_DESCRIPTIONS: Record<ProductCondition, string> = {
+  [ProductCondition.EXCELLENT]: 'Like new, minimal wear and tear',
+  [ProductCondition.GOOD]: 'Some wear and tear, but fully functional',
+  [ProductCondition.FAIR]: 'Visible wear and tear, but still usable',
+  [ProductCondition.PENDING]: 'Condition pending review by admin'
 };
 
-export const CONDITION_COLORS: Record<ProductCondition, string> = {
-  excellent: 'bg-green-100 text-green-800',
-  good: 'bg-blue-100 text-blue-800',
-  fair: 'bg-amber-100 text-amber-800',
-  pending: 'bg-gray-100 text-gray-800'
+export const PRODUCT_CONDITION_COLORS: Record<ProductCondition, string> = {
+  [ProductCondition.EXCELLENT]: 'bg-green-100 text-green-800',
+  [ProductCondition.GOOD]: 'bg-blue-100 text-blue-800',
+  [ProductCondition.FAIR]: 'bg-yellow-100 text-yellow-800',
+  [ProductCondition.PENDING]: 'bg-gray-100 text-gray-800'
 };
 
 export const OWNERSHIP_HISTORY_DISPLAY: Record<OwnershipHistory, string> = {
-  firsthand: 'First Hand',
-  secondhand: 'Second Hand'
+  [OwnershipHistory.FIRSTHAND]: 'First Hand',
+  [OwnershipHistory.SECONDHAND]: 'Second Hand'
 };
 
 export const OWNERSHIP_HISTORY_DESCRIPTIONS: Record<OwnershipHistory, string> = {
-  firsthand: 'You are the original owner of this item',
-  secondhand: 'You purchased this item from someone else'
+  [OwnershipHistory.FIRSTHAND]: 'I am the original owner of this item',
+  [OwnershipHistory.SECONDHAND]: 'I purchased this item from someone else'
 }; 

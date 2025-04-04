@@ -1,5 +1,139 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight, Calendar, AlertCircle } from 'lucide-react';
+import { ListingFormData, FormErrors } from '@/types/listings';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+
+type Props = {
+  formData: ListingFormData;
+  errors: FormErrors;
+  onChange: (data: Partial<ListingFormData>) => void;
+  onNext: () => void;
+  onBack: () => void;
+};
+
+const UnavailabilityStep = ({ formData, errors, onChange, onNext, onBack }: Props) => {
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  const handleDateSelect = (date: Date | null) => {
+    if (!date) return;
+
+    // Check if date is already selected
+    const isSelected = formData.unavailableDates.some(
+      (d) => d.toISOString().split('T')[0] === date.toISOString().split('T')[0]
+    );
+
+    if (isSelected) {
+      // Remove date if already selected
+      onChange({
+        unavailableDates: formData.unavailableDates.filter(
+          (d) => d.toISOString().split('T')[0] !== date.toISOString().split('T')[0]
+        ),
+      });
+    } else {
+      // Add new date
+      onChange({
+        unavailableDates: [...formData.unavailableDates, date],
+      });
+    }
+
+    setSelectedDate(null);
+  };
+
+  const removeDate = (dateToRemove: Date) => {
+    onChange({
+      unavailableDates: formData.unavailableDates.filter(
+        (date) => date.toISOString() !== dateToRemove.toISOString()
+      ),
+    });
+  };
+
+  return (
+    <div className="space-y-8">
+      <div className="space-y-2">
+        <h2 className="text-2xl font-bold text-gray-800">Unavailable Dates</h2>
+        <p className="text-gray-600">
+          Select dates when your item will not be available for rent.
+        </p>
+      </div>
+
+      <div className="space-y-6">
+        <div className="p-4 border rounded-lg space-y-4">
+          <div className="flex items-center gap-2 text-gray-700">
+            <Calendar size={20} />
+            <span className="font-medium">Select Dates</span>
+          </div>
+
+          <DatePicker
+            selected={selectedDate}
+            onChange={handleDateSelect}
+            minDate={new Date()}
+            inline
+            highlightDates={formData.unavailableDates}
+            dayClassName={(date) => {
+              return formData.unavailableDates.some(
+                (d) => d.toISOString().split('T')[0] === date.toISOString().split('T')[0]
+              )
+                ? 'bg-red-100 text-red-800 hover:bg-red-200'
+                : undefined;
+            }}
+          />
+        </div>
+
+        {formData.unavailableDates.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="font-medium text-gray-700">Selected Dates</h3>
+            <div className="flex flex-wrap gap-2">
+              {formData.unavailableDates
+                .sort((a, b) => a.getTime() - b.getTime())
+                .map((date) => (
+                  <div
+                    key={date.toISOString()}
+                    className="flex items-center gap-2 px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm"
+                  >
+                    <span>{date.toLocaleDateString()}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeDate(date)}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {errors.unavailableDates && (
+          <div className="flex items-center gap-2 text-red-500">
+            <AlertCircle size={16} />
+            <p className="text-sm">{errors.unavailableDates}</p>
+          </div>
+        )}
+      </div>
+
+      <div className="flex justify-between mt-8">
+        <Button
+          onClick={onBack}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <ChevronLeft size={16} /> Back
+        </Button>
+        <Button
+          onClick={onNext}
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+        >
+          Next <ChevronRight size={16} />
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export default UnavailabilityStep; 
 import { AlertCircle, CalendarDays, Info, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';

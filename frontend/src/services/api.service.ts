@@ -101,10 +101,30 @@ class ApiService {
             return Promise.reject(new Error(errorData.detail));
           } else if (errorData.non_field_errors) {
             return Promise.reject(new Error(errorData.non_field_errors[0]));
+          } else if (errorData.message) {
+            return Promise.reject(new Error(errorData.message));
+          } else if (errorData.pricing_tiers) {
+            // Handle pricing tiers validation errors
+            return Promise.reject(new Error(`Pricing tiers error: ${errorData.pricing_tiers}`));
+          } else if (errorData.product_type) {
+            // Handle product type validation errors
+            return Promise.reject(new Error(`Product type error: ${errorData.product_type}`));
+          } else if (errorData.category) {
+            // Handle category validation errors
+            return Promise.reject(new Error(`Category error: ${errorData.category}`));
+          } else if (errorData.purchase_year) {
+            // Handle purchase year validation errors
+            return Promise.reject(new Error(`Purchase year error: ${errorData.purchase_year}`));
+          } else {
+            // For other validation errors, show the first error message
+            const errorMessages = Object.entries(errorData)
+              .map(([field, message]) => `${field}: ${message}`)
+              .join(', ');
+            return Promise.reject(new Error(`Validation error: ${errorMessages}`));
           }
         }
 
-        return Promise.reject(error);
+        return Promise.reject(new Error('Network error. Please check your connection and try again.'));
       }
     );
   }
