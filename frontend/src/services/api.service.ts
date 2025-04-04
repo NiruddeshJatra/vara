@@ -20,21 +20,36 @@ class ApiService {
       },
     });
 
-    // Request interceptor for adding authentication token
+    // Request interceptor for adding authentication token and transforming data
     this.api.interceptors.request.use(
       (reqConfig: AxiosRequestConfig) => {
         const token = localStorage.getItem(config.auth.tokenStorageKey);
         if (token && reqConfig.headers) {
           reqConfig.headers.Authorization = `Bearer ${token}`;
         }
+
+        // Skip transformation for FormData requests
+        if (!(reqConfig.data instanceof FormData)) {
+          // Transform request data from camelCase to snake_case
+          if (reqConfig.data) {
+            reqConfig.data = this.transformToSnakeCase(reqConfig.data);
+          }
+        }
+
         return reqConfig;
       },
       (error: AxiosError) => Promise.reject(error)
     );
 
-    // Response interceptor for handling errors and token refresh
+    // Response interceptor for handling errors and transforming data
     this.api.interceptors.response.use(
-      (response: AxiosResponse) => response,
+      (response: AxiosResponse) => {
+        // Transform response data from snake_case to camelCase
+        if (response.data) {
+          response.data = this.transformToCamelCase(response.data);
+        }
+        return response;
+      },
       async (error: AxiosError) => {
         const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
 
@@ -42,14 +57,12 @@ class ApiService {
         if (
           error.response?.status === 401 &&
           !originalRequest._retry &&
-          localStorage.getItem(config.auth.userStorageKey) && // Check if user is logged in
-          // Skip token refresh for profile completion to prevent logout loops
+          localStorage.getItem(config.auth.userStorageKey) &&
           !(originalRequest.url && originalRequest.url.includes('complete_profile'))
         ) {
           originalRequest._retry = true;
 
           try {
-            // Attempt to refresh the token using the refresh token
             const refreshToken = localStorage.getItem(config.auth.refreshTokenStorageKey);
             if (!refreshToken) {
               throw new Error('No refresh token available');
@@ -62,17 +75,12 @@ class ApiService {
             );
 
             if (refreshResponse.data.access && originalRequest.headers) {
-              // Update localStorage with new token
               localStorage.setItem(config.auth.tokenStorageKey, refreshResponse.data.access);
-
-              // Update the Authorization header with the new token
               originalRequest.headers.Authorization = `Bearer ${refreshResponse.data.access}`;
               return this.api(originalRequest);
             }
           } catch (refreshError) {
-            // Only logout for non-profile completion requests
             if (!(originalRequest.url && originalRequest.url.includes('complete_profile'))) {
-              // If token refresh fails, logout the user
               localStorage.removeItem(config.auth.userStorageKey);
               localStorage.removeItem(config.auth.tokenStorageKey);
               localStorage.removeItem(config.auth.refreshTokenStorageKey);
@@ -83,18 +91,43 @@ class ApiService {
           }
         }
 
+        // Handle product-specific errors
+        if (error.response?.data && originalRequest.url?.includes('/products/')) {
+          const errorData = error.response.data;
+          
+          // Product validation errors
+          if (error.response.status === 400) {
+            if (errorData.images) {
+              return Promise.reject(new Error(`Image upload failed: ${errorData.images.join(', ')}`));
+            }
+            if (errorData.pricing_tiers) {
+              return Promise.reject(new Error(`Invalid pricing tiers: ${errorData.pricing_tiers}`));
+            }
+            if (errorData.unavailable_dates) {
+              return Promise.reject(new Error(`Invalid date range: ${errorData.unavailable_dates}`));
+            }
+            if (errorData.product_type) {
+              return Promise.reject(new Error(`Invalid product type: ${errorData.product_type}`));
+            }
+            if (errorData.category) {
+              return Promise.reject(new Error(`Invalid category: ${errorData.category}`));
+            }
+            if (errorData.purchase_year) {
+              return Promise.reject(new Error(`Invalid purchase year: ${errorData.purchase_year}`));
+            }
+          }
+
+          // Product status errors
+          if (error.response.status === 403) {
+            if (errorData.detail?.includes('status')) {
+              return Promise.reject(new Error(`Cannot perform action in current status: ${errorData.detail}`));
+            }
+          }
+        }
+
         // Handle other API errors
         if (error.response?.data) {
           const errorData = error.response.data;
-
-          // Log detailed error information for debugging
-          console.error('API Error:', {
-            status: error.response?.status,
-            endpoint: originalRequest.url,
-            data: errorData
-          });
-
-          // Format error message for user
           if (typeof errorData === 'string') {
             return Promise.reject(new Error(errorData));
           } else if (errorData.detail) {
@@ -103,20 +136,7 @@ class ApiService {
             return Promise.reject(new Error(errorData.non_field_errors[0]));
           } else if (errorData.message) {
             return Promise.reject(new Error(errorData.message));
-          } else if (errorData.pricing_tiers) {
-            // Handle pricing tiers validation errors
-            return Promise.reject(new Error(`Pricing tiers error: ${errorData.pricing_tiers}`));
-          } else if (errorData.product_type) {
-            // Handle product type validation errors
-            return Promise.reject(new Error(`Product type error: ${errorData.product_type}`));
-          } else if (errorData.category) {
-            // Handle category validation errors
-            return Promise.reject(new Error(`Category error: ${errorData.category}`));
-          } else if (errorData.purchase_year) {
-            // Handle purchase year validation errors
-            return Promise.reject(new Error(`Purchase year error: ${errorData.purchase_year}`));
           } else {
-            // For other validation errors, show the first error message
             const errorMessages = Object.entries(errorData)
               .map(([field, message]) => `${field}: ${message}`)
               .join(', ');
@@ -127,6 +147,40 @@ class ApiService {
         return Promise.reject(new Error('Network error. Please check your connection and try again.'));
       }
     );
+  }
+
+  /**
+   * Transform object keys from camelCase to snake_case
+   */
+  private transformToSnakeCase(obj: any): any {
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.transformToSnakeCase(item));
+    }
+    if (obj !== null && typeof obj === 'object') {
+      return Object.keys(obj).reduce((acc: any, key: string) => {
+        const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+        acc[snakeKey] = this.transformToSnakeCase(obj[key]);
+        return acc;
+      }, {});
+    }
+    return obj;
+  }
+
+  /**
+   * Transform object keys from snake_case to camelCase
+   */
+  private transformToCamelCase(obj: any): any {
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.transformToCamelCase(item));
+    }
+    if (obj !== null && typeof obj === 'object') {
+      return Object.keys(obj).reduce((acc: any, key: string) => {
+        const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+        acc[camelKey] = this.transformToCamelCase(obj[key]);
+        return acc;
+      }, {});
+    }
+    return obj;
   }
 
   /**

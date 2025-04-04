@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import NavBar from '@/components/home/NavBar';
 import Footer from '@/components/home/Footer';
 import { Product } from '@/types/listings';
-import { allListings } from '@/utils/mockDataGenerator';
+import { allListings } from 'mockDataGenerator';
 import ItemModal from '@/components/advertisements/ItemModal';
 
 // Import modular components

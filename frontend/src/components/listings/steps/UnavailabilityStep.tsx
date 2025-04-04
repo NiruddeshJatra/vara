@@ -1,140 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Calendar, AlertCircle } from 'lucide-react';
-import { ListingFormData, FormErrors } from '@/types/listings';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-
-type Props = {
-  formData: ListingFormData;
-  errors: FormErrors;
-  onChange: (data: Partial<ListingFormData>) => void;
-  onNext: () => void;
-  onBack: () => void;
-};
-
-const UnavailabilityStep = ({ formData, errors, onChange, onNext, onBack }: Props) => {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-
-  const handleDateSelect = (date: Date | null) => {
-    if (!date) return;
-
-    // Check if date is already selected
-    const isSelected = formData.unavailableDates.some(
-      (d) => d.toISOString().split('T')[0] === date.toISOString().split('T')[0]
-    );
-
-    if (isSelected) {
-      // Remove date if already selected
-      onChange({
-        unavailableDates: formData.unavailableDates.filter(
-          (d) => d.toISOString().split('T')[0] !== date.toISOString().split('T')[0]
-        ),
-      });
-    } else {
-      // Add new date
-      onChange({
-        unavailableDates: [...formData.unavailableDates, date],
-      });
-    }
-
-    setSelectedDate(null);
-  };
-
-  const removeDate = (dateToRemove: Date) => {
-    onChange({
-      unavailableDates: formData.unavailableDates.filter(
-        (date) => date.toISOString() !== dateToRemove.toISOString()
-      ),
-    });
-  };
-
-  return (
-    <div className="space-y-8">
-      <div className="space-y-2">
-        <h2 className="text-2xl font-bold text-gray-800">Unavailable Dates</h2>
-        <p className="text-gray-600">
-          Select dates when your item will not be available for rent.
-        </p>
-      </div>
-
-      <div className="space-y-6">
-        <div className="p-4 border rounded-lg space-y-4">
-          <div className="flex items-center gap-2 text-gray-700">
-            <Calendar size={20} />
-            <span className="font-medium">Select Dates</span>
-          </div>
-
-          <DatePicker
-            selected={selectedDate}
-            onChange={handleDateSelect}
-            minDate={new Date()}
-            inline
-            highlightDates={formData.unavailableDates}
-            dayClassName={(date) => {
-              return formData.unavailableDates.some(
-                (d) => d.toISOString().split('T')[0] === date.toISOString().split('T')[0]
-              )
-                ? 'bg-red-100 text-red-800 hover:bg-red-200'
-                : undefined;
-            }}
-          />
-        </div>
-
-        {formData.unavailableDates.length > 0 && (
-          <div className="space-y-2">
-            <h3 className="font-medium text-gray-700">Selected Dates</h3>
-            <div className="flex flex-wrap gap-2">
-              {formData.unavailableDates
-                .sort((a, b) => a.getTime() - b.getTime())
-                .map((date) => (
-                  <div
-                    key={date.toISOString()}
-                    className="flex items-center gap-2 px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm"
-                  >
-                    <span>{date.toLocaleDateString()}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeDate(date)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-            </div>
-          </div>
-        )}
-
-        {errors.unavailableDates && (
-          <div className="flex items-center gap-2 text-red-500">
-            <AlertCircle size={16} />
-            <p className="text-sm">{errors.unavailableDates}</p>
-          </div>
-        )}
-      </div>
-
-      <div className="flex justify-between mt-8">
-        <Button
-          onClick={onBack}
-          variant="outline"
-          className="flex items-center gap-2"
-        >
-          <ChevronLeft size={16} /> Back
-        </Button>
-        <Button
-          onClick={onNext}
-          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
-        >
-          Next <ChevronRight size={16} />
-        </Button>
-      </div>
-    </div>
-  );
-};
-
-export default UnavailabilityStep; 
 import { AlertCircle, CalendarDays, Info, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ListingFormData, FormError, UnavailableDate } from '@/types/listings';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
@@ -142,23 +9,24 @@ import { cn } from '@/lib/utils';
 import AvailabilityCalendar from '@/components/listings/UnavailabilityCalendar';
 import { DateRange } from 'react-day-picker';
 
-interface ListingFormData {
-  unavailableDates: Date[];
-  [key: string]: any;
-}
-
-interface StepProps {
+type Props = {
   formData: ListingFormData;
-  setFormData: React.Dispatch<React.SetStateAction<ListingFormData>>;
+  errors: FormError;
+  onChange: (data: Partial<ListingFormData>) => void;
   onNext: () => void;
   onBack: () => void;
-}
+};
 
-const UnavailabilityStep = ({ formData, setFormData, onNext, onBack }: StepProps) => {
+const UnavailabilityStep = ({ formData, errors, onChange, onNext, onBack }: Props) => {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Convert UnavailableDate[] to Date[] for the calendar component
+  const unavailableDatesAsDates = formData.unavailableDates
+    .filter(date => date.date !== null)
+    .map(date => new Date(date.date!));
 
   const handleSingleDateSelect = (selectedDate: Date | undefined) => {
     if (!selectedDate) return;
@@ -170,13 +38,20 @@ const UnavailabilityStep = ({ formData, setFormData, onNext, onBack }: StepProps
     
     // Check if date already exists
     const dateExists = formData.unavailableDates.some(
-      date => date.getTime() === selectedDate.getTime()
+      date => date.date === selectedDate.toISOString()
     );
     
     if (!dateExists) {
-      setFormData({
-        ...formData,
-        unavailableDates: [...formData.unavailableDates, selectedDate],
+      const newUnavailableDate: UnavailableDate = {
+        id: '', // Will be set by the backend
+        date: selectedDate.toISOString(),
+        isRange: false,
+        rangeStart: null,
+        rangeEnd: null
+      };
+      
+      onChange({
+        unavailableDates: [...formData.unavailableDates, newUnavailableDate],
       });
     }
     
@@ -186,7 +61,7 @@ const UnavailabilityStep = ({ formData, setFormData, onNext, onBack }: StepProps
   const handleDateRangeSelect = (range: DateRange | undefined) => {
     if (!range || !range.from) return;
     
-    const newDates: Date[] = [];
+    const newDates: UnavailableDate[] = [];
     const currentDate = new Date(range.from);
     
     if (range.to) {
@@ -198,11 +73,17 @@ const UnavailabilityStep = ({ formData, setFormData, onNext, onBack }: StepProps
         
         // Check if date already exists
         const dateExists = formData.unavailableDates.some(
-          date => date.getTime() === currentDate.getTime()
+          date => date.date === currentDate.toISOString()
         );
         
         if (!dateExists) {
-          newDates.push(new Date(currentDate));
+          newDates.push({
+            id: '', // Will be set by the backend
+            date: currentDate.toISOString(),
+            isRange: true,
+            rangeStart: range.from.toISOString(),
+            rangeEnd: range.to.toISOString()
+          });
         }
         
         currentDate.setDate(currentDate.getDate() + 1);
@@ -215,17 +96,22 @@ const UnavailabilityStep = ({ formData, setFormData, onNext, onBack }: StepProps
       
       // Check if date already exists
       const dateExists = formData.unavailableDates.some(
-        date => date.getTime() === range.from.getTime()
+        date => date.date === range.from.toISOString()
       );
       
       if (!dateExists) {
-        newDates.push(new Date(range.from));
+        newDates.push({
+          id: '', // Will be set by the backend
+          date: range.from.toISOString(),
+          isRange: false,
+          rangeStart: null,
+          rangeEnd: null
+        });
       }
     }
     
     if (newDates.length > 0) {
-      setFormData({
-        ...formData,
+      onChange({
         unavailableDates: [...formData.unavailableDates, ...newDates],
       });
     }
@@ -236,12 +122,12 @@ const UnavailabilityStep = ({ formData, setFormData, onNext, onBack }: StepProps
   const handleRemoveRange = (startDate: Date, endDate: Date) => {
     // Create a new array without the dates in the range
     const newUnavailableDates = formData.unavailableDates.filter(date => {
-      const dateTime = date.getTime();
+      if (!date.date) return true;
+      const dateTime = new Date(date.date).getTime();
       return dateTime < startDate.getTime() || dateTime > endDate.getTime();
     });
     
-    setFormData({
-      ...formData,
+    onChange({
       unavailableDates: newUnavailableDates,
     });
   };
@@ -292,7 +178,7 @@ const UnavailabilityStep = ({ formData, setFormData, onNext, onBack }: StepProps
                   mode="range"
                   defaultMonth={dateRange?.from}
                   selected={dateRange}
-                  onSelect={(range) => {
+                  onSelect={(range: DateRange | undefined) => {
                     setDateRange(range);
                     if (range?.from && range?.to) {
                       handleDateRangeSelect(range);
@@ -323,7 +209,7 @@ const UnavailabilityStep = ({ formData, setFormData, onNext, onBack }: StepProps
                 <Calendar
                   mode="single"
                   selected={date}
-                  onSelect={(newDate) => {
+                  onSelect={(newDate: Date | undefined) => {
                     setDate(newDate);
                     if (newDate) {
                       handleSingleDateSelect(newDate);
@@ -345,10 +231,10 @@ const UnavailabilityStep = ({ formData, setFormData, onNext, onBack }: StepProps
       </div>
 
       {/* Display selected unavailable dates in a calendar view */}
-      {formData.unavailableDates.length > 0 && (
+      {unavailableDatesAsDates.length > 0 && (
         <div className="border border-gray-200 rounded-lg p-4 mt-4 bg-white shadow-sm">
           <AvailabilityCalendar 
-            unavailableDates={formData.unavailableDates} 
+            unavailableDates={unavailableDatesAsDates} 
             onRemoveRange={handleRemoveRange}
           />
         </div>
@@ -365,6 +251,22 @@ const UnavailabilityStep = ({ formData, setFormData, onNext, onBack }: StepProps
           <li>All other dates will be available for rent</li>
           <li>You can update unavailable dates anytime from your dashboard</li>
         </ul>
+      </div>
+
+      <div className="flex justify-between mt-8">
+        <Button
+          onClick={onBack}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <ChevronLeft size={16} /> Back
+        </Button>
+        <Button
+          onClick={onNext}
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+        >
+          Next <ChevronRight size={16} />
+        </Button>
       </div>
     </div>
   );

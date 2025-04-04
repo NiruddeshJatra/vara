@@ -8,12 +8,6 @@ import os
 from django.utils.translation import gettext_lazy as _
 
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["id", "username", "email", "first_name", "last_name"]
-
-
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
@@ -78,7 +72,6 @@ class PricingTierSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    owner = UserSerializer(read_only=True)
     images = ProductImageSerializer(many=True, read_only=True)
     unavailable_dates = UnavailableDateSerializer(many=True, required=False)
     pricing_tiers = PricingTierSerializer(many=True)

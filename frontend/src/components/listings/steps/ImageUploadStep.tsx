@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress';
 
 type Props = {
   images: File[];
-  error?: string;
+  error?: string[];
   onChange: (files: File[]) => void;
   onNext?: () => void;
 };
@@ -18,7 +18,7 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
 
   const handleFileChange = (files: FileList) => {
     setIsUploading(true);
-    
+
     // Simulate upload progress
     let progress = 0;
     const interval = setInterval(() => {
@@ -28,10 +28,10 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
         clearInterval(interval);
         setIsUploading(false);
         setUploadProgress(0);
-        
+
         // Filter valid files
-        const validFiles = Array.from(files).filter(file => 
-          ['image/jpeg', 'image/png', 'image/jpg'].includes(file.type) && 
+        const validFiles = Array.from(files).filter(file =>
+          ['image/jpeg', 'image/png', 'image/jpg'].includes(file.type) &&
           file.size <= 5 * 1024 * 1024
         );
         onChange([...images, ...validFiles]);
@@ -73,9 +73,9 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
           )}
         </div>
       </div>
-      
+
       <div className="border-2 border-dashed rounded-xl p-6 text-center bg-white">
-        <div 
+        <div
           className={`${dragActive ? 'border-green-500 bg-green-50' : 'border-gray-200'} 
             relative border-2 rounded-xl min-h-[220px] flex flex-col items-center justify-center transition-colors`}
           onDragEnter={handleDrag}
@@ -102,7 +102,7 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
                 className="hidden text-sm md:text-base h-10 md:h-12"
                 id="file-upload"
               />
-              <label 
+              <label
                 htmlFor="file-upload"
                 className="inline-block px-6 py-2.5 bg-green-600 text-white rounded-md hover:bg-green-700 cursor-pointer font-medium transition-colors"
               >
@@ -119,10 +119,10 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
         </div>
       </div>
 
-      {error && (
+      {error && error.length > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-md p-3 text-red-700 text-sm flex items-start gap-2">
-          <AlertCircle size={16} className="mt-0.5 flex-shrink-0" /> 
-          <p>{error}</p>
+          <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
+          <p>{error[0]}</p>
         </div>
       )}
 
@@ -132,7 +132,7 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
             <Image className="h-5 w-5 text-gray-500" />
             Uploaded Images ({images.length})
           </h4>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
             {images.map((file, index) => (
               <div key={index} className="relative group overflow-hidden rounded-lg border border-gray-200 shadow-sm">
@@ -157,9 +157,9 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
                 </div>
               </div>
             ))}
-            
+
             {images.length < 10 && (
-              <label 
+              <label
                 htmlFor="file-upload-additional"
                 className="flex flex-col items-center justify-center w-full h-36 cursor-pointer hover:bg-gray-50 transition-colors p-4 border border-dashed border-gray-200 rounded-lg"
               >
@@ -204,7 +204,7 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
 
       {onNext && (
         <div className="flex justify-end mt-8">
-          <Button 
+          <Button
             onClick={onNext}
             className="bg-green-600 hover:bg-green-700"
             disabled={images.length === 0}

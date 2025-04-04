@@ -1,139 +1,106 @@
-import { ProductStatus, PRODUCT_STATUS_VALUES } from '../constants/productStatus';
-import { ProductCondition, PRODUCT_CONDITION_VALUES, OwnershipHistory, OWNERSHIP_HISTORY_VALUES } from '../constants/productAttributes';
-import { ProductType, PRODUCT_TYPE_VALUES, Category, CATEGORY_VALUES } from '../constants/productTypes';
-import { DurationUnit, DURATION_UNIT_VALUES, RentalStatus } from '../constants/rental';
+import { ProductStatus } from '../constants/productStatus';
+import { OwnershipHistory } from '../constants/productAttributes';
+import { ProductType, Category } from '../constants/productTypes';
+import { DurationUnit, RentalStatus } from '../constants/rental';
 
-export type { ProductStatus, ProductCondition, OwnershipHistory, ProductType, Category, DurationUnit, RentalStatus };
+export type { ProductStatus, OwnershipHistory, ProductType, Category, DurationUnit, RentalStatus };
 
-export const ProductStatusValues = PRODUCT_STATUS_VALUES;
-export const ProductConditionValues = PRODUCT_CONDITION_VALUES;
-export const OwnershipHistoryValues = OWNERSHIP_HISTORY_VALUES;
-export const ProductTypeValues = PRODUCT_TYPE_VALUES;
-export const CategoryValues = CATEGORY_VALUES;
-export const DurationUnitValues = DURATION_UNIT_VALUES;
 
 export type Product = {
   id: string;
+  owner: string; // Only the owner ID is exposed
   title: string;
-  owner: {
-    id: string;
-    username: string;
-    email: string;
-  };
-  category: Category;
-  productType: ProductType;
+  category: string;
+  productType: string;
   description: string;
   location: string;
-  images: string[]; // URLs from API
-  unavailableDates: string[]; // ISO date strings from API
-  securityDeposit: number;
-  condition: ProductCondition;
-  purchaseYear: string | null;
+  securityDeposit: number | null;
+  purchaseYear: string; // Required field, no longer nullable
   originalPrice: number;
-  ownershipHistory: OwnershipHistory;
-  pricingTiers: PricingTier[];
-  status: ProductStatus;
+  ownershipHistory: string;
+  status: string;
   statusMessage: string | null;
   statusChangedAt: string | null;
-  views_count: number;
-  rental_count: number;
-  average_rating: number;
-  created_at: string;
-  updated_at: string;
+  images: ProductImage[];
+  unavailableDates: UnavailableDate[];
+  pricingTiers: PricingTier[];
+  viewsCount: number;
+  rentalCount: number;
+  averageRating: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ProductImage = {
+  id: string;
+  image: string;
+  createdAt: string;
+};
+
+export type UnavailableDate = {
+  id: string;
+  date: string | null;
+  isRange: boolean;
+  rangeStart: string | null;
+  rangeEnd: string | null;
 };
 
 export type PricingTier = {
+  id: string;
   durationUnit: DurationUnit;
   price: number;
-  maxPeriod: number;
+  maxPeriod?: number; // Optional, defaults to 30 in backend
 };
 
-export interface ListingFormData {
+export type ListingFormData = {
   title: string;
-  category: Category;
-  productType: ProductType;
+  category: string;
+  productType: string;
   description: string;
   location: string;
-  images: File[]; // Files for upload
-  unavailableDates: Date[]; // Date objects for form handling
-  securityDeposit: number;
-  condition: ProductCondition;
-  purchaseYear: string;
+  securityDeposit: number | null;
+  purchaseYear: string; // Required field, no longer nullable
   originalPrice: number;
-  ownershipHistory: OwnershipHistory;
-  pricingTiers: PricingTier[];
-}
-
-export type AvailabilityPeriod = {
-  startDate: string;
-  endDate: string;
-  available: boolean;
-  notes: string;
-};
-
-export type RentalRequestFormData = {
-  startDate: Date | null;
-  duration: number;
-  purpose: string;
-  notes: string;
-  pickupMethod: 'self' | 'delivery';
-  deliveryAddress: string;
-  deliveryTime: Date | null;
-  totalCost?: number;
-  securityDeposit?: number;
-  serviceFee?: number;
+  ownershipHistory: string;
+  images: File[];
+  unavailableDates: {
+    date: string | null;
+    isRange: boolean;
+    rangeStart: string | null;
+    rangeEnd: string | null;
+  }[];
+  pricingTiers: {
+    durationUnit: DurationUnit;
+    price: number;
+    maxPeriod?: number;
+  }[];
 };
 
 export type RentalRequest = {
   id: string;
-  productId: string;
-  productTitle: string;
-  ownerId: string;
-  renterId: string;
-  status: RentalStatus;
-  startDate: Date;
-  endDate: Date;
-  totalCost: number;
-  securityDeposit: number;
-  serviceFee: number;
-  purpose: string;
-  notes?: string;
-  pickupMethod: 'self' | 'delivery';
-  deliveryAddress?: string;
-  deliveryTime?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  product: string;
+  renter: string;
+  startDate: string;
+  endDate: string;
+  durationUnit: DurationUnit;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
-export type FormErrors = {
-  [key: string]: string;
+export type RentalRequestFormData = {
+  product: string;
+  startDate: string;
+  endDate: string;
+  durationUnit: DurationUnit;
+};
+
+export type FormError = {
+  [key: string]: string[];
 };
 
 export interface User {
   id: string;
   name: string;
   email: string;
-}
-
-export interface Listing {
-  id: string;
-  title: string;
-  category: Category;
-  productType: ProductType;
-  description: string;
-  location: string;
-  basePrice: number;
-  durationUnit: DurationUnit;
-  images: string[];
-  unavailableDates: Date[];
-  securityDeposit: number;
-  condition: ProductCondition;
-  purchaseYear: string;
-  originalPrice: number;
-  ownershipHistory: OwnershipHistory;
-  pricingTiers: PricingTier[];
-  owner: User;
-  status: ProductStatus;
-  statusMessage?: string;
-  statusChangedAt?: string;
 }

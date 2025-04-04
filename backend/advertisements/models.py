@@ -17,6 +17,7 @@ from django.db.models import F
 import uuid
 from decimal import Decimal
 from django.core.exceptions import ValidationError
+from datetime import datetime
 
 
 class ProductImage(models.Model):
@@ -180,7 +181,9 @@ class Product(models.Model):
         help_text=_("Security deposit amount (optional)"),
     )
     purchase_year = models.CharField(
-        max_length=4, null=True, blank=True, help_text=_("Year of purchase")
+        max_length=4,
+        default=str(datetime.now().year),
+        help_text=_("Year of purchase (defaults to current year)")
     )
     original_price = models.DecimalField(
         max_digits=10, decimal_places=2, help_text=_("Original purchase price")

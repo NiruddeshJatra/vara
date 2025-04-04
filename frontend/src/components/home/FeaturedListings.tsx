@@ -1,7 +1,7 @@
 import { Button } from '../ui/button';
 import ListingsGrid from '../advertisements/ListingsGrid';
 import { useState, useEffect } from 'react';
-import { categories, generateListings } from '@/utils/mockDataGenerator';
+import { categories, generateListings } from 'mockDataGenerator';
 import ItemModal from '@/components/advertisements/ItemModal';
 
 

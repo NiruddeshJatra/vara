@@ -6,7 +6,7 @@ import CategoryScroll from '@/components/advertisements/CategoryScroll';
 import ItemModal from '@/components/advertisements/ItemModal';
 import ListingsGrid from '@/components/advertisements/ListingsGrid';
 import LoadMoreTrigger from '@/components/advertisements/LoadMoreTrigger';
-import { categories, generateListings } from '@/utils/mockDataGenerator';
+import { categories, generateListings } from 'mockDataGenerator';
 import '../styles/main.css';
 import { Product } from '@/types/listings';
 

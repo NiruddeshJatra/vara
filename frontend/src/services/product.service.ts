@@ -1,6 +1,6 @@
 import api from './api.service';
 import { ProductStatus } from '../constants/productStatus';
-import { Listing, ListingFormData } from '../types/listings';
+import { Product, ListingFormData } from '../types/listings';
 import config from '../config';
 
 /**
@@ -11,7 +11,7 @@ class ProductService {
    * Get all active products (visible to all users)
    * @returns List of active products
    */
-  async getActiveProducts(): Promise<Listing[]> {
+  async getActiveProducts(): Promise<Product[]> {
     const response = await api.get(config.products.listEndpoint);
     return response.data;
   }
@@ -20,7 +20,7 @@ class ProductService {
    * Get all products for the current user
    * @returns List of products
    */
-  async getUserProducts(): Promise<Listing[]> {
+  async getUserProducts(): Promise<Product[]> {
     const response = await api.get(config.products.userProductsEndpoint);
     return response.data;
   }
@@ -30,7 +30,7 @@ class ProductService {
    * @param productId The ID of the product to retrieve
    * @returns The product
    */
-  async getProduct(productId: string): Promise<Listing> {
+  async getProduct(productId: string): Promise<Product> {
     const response = await api.get(config.products.detailEndpoint(productId));
     return response.data;
   }
@@ -41,7 +41,7 @@ class ProductService {
    * @returns The created product
    * @throws Error if image upload fails
    */
-  async createProduct(data: ListingFormData): Promise<Listing> {
+  async createProduct(data: ListingFormData): Promise<Product> {
     try {
       const formData = new FormData();
       
@@ -51,8 +51,9 @@ class ProductService {
       formData.append('product_type', data.productType);
       formData.append('description', data.description);
       formData.append('location', data.location);
-      formData.append('security_deposit', data.securityDeposit.toString());
-      formData.append('condition', data.condition);
+      if (data.securityDeposit !== null) {
+        formData.append('security_deposit', data.securityDeposit.toString());
+      }
       formData.append('purchase_year', data.purchaseYear);
       formData.append('original_price', data.originalPrice.toString());
       formData.append('ownership_history', data.ownershipHistory);
@@ -64,20 +65,25 @@ class ProductService {
         });
       }
       
-      // Append unavailable dates (convert to ISO strings)
+      // Append unavailable dates
       if (data.unavailableDates && data.unavailableDates.length > 0) {
-        const isoDates = data.unavailableDates.map(date => date.toISOString().split('T')[0]);
-        formData.append('unavailable_dates', JSON.stringify(isoDates));
+        const unavailableDates = data.unavailableDates.map(date => ({
+          date: date.date,
+          is_range: date.isRange,
+          range_start: date.rangeStart,
+          range_end: date.rangeEnd
+        }));
+        formData.append('unavailable_dates', JSON.stringify(unavailableDates));
       }
       
       // Append pricing tiers
       if (data.pricingTiers && data.pricingTiers.length > 0) {
-        const transformedTiers = data.pricingTiers.map(tier => ({
+        const pricingTiers = data.pricingTiers.map(tier => ({
           duration_unit: tier.durationUnit,
-          max_period: tier.maxPeriod,
-          price: Number(tier.price)
+          price: tier.price,
+          max_period: tier.maxPeriod
         }));
-        formData.append('pricing_tiers', JSON.stringify(transformedTiers));
+        formData.append('pricing_tiers', JSON.stringify(pricingTiers));
       }
       
       const response = await api.post(config.products.createEndpoint, formData, {
@@ -101,7 +107,7 @@ class ProductService {
    * @returns The updated product
    * @throws Error if image upload fails
    */
-  async updateProduct(productId: string, data: Partial<ListingFormData>): Promise<Listing> {
+  async updateProduct(productId: string, data: Partial<ListingFormData>): Promise<Product> {
     try {
       const formData = new FormData();
       
@@ -111,8 +117,9 @@ class ProductService {
       if (data.productType) formData.append('product_type', data.productType);
       if (data.description) formData.append('description', data.description);
       if (data.location) formData.append('location', data.location);
-      if (data.securityDeposit) formData.append('security_deposit', data.securityDeposit.toString());
-      if (data.condition) formData.append('condition', data.condition);
+      if (data.securityDeposit !== undefined) {
+        formData.append('security_deposit', data.securityDeposit?.toString() ?? '');
+      }
       if (data.purchaseYear) formData.append('purchase_year', data.purchaseYear);
       if (data.originalPrice) formData.append('original_price', data.originalPrice.toString());
       if (data.ownershipHistory) formData.append('ownership_history', data.ownershipHistory);
@@ -124,20 +131,25 @@ class ProductService {
         });
       }
       
-      // Append unavailable dates if they're being updated (convert to ISO strings)
+      // Append unavailable dates if they're being updated
       if (data.unavailableDates && data.unavailableDates.length > 0) {
-        const isoDates = data.unavailableDates.map(date => date.toISOString().split('T')[0]);
-        formData.append('unavailable_dates', JSON.stringify(isoDates));
+        const unavailableDates = data.unavailableDates.map(date => ({
+          date: date.date,
+          is_range: date.isRange,
+          range_start: date.rangeStart,
+          range_end: date.rangeEnd
+        }));
+        formData.append('unavailable_dates', JSON.stringify(unavailableDates));
       }
       
       // Append pricing tiers if they're being updated
       if (data.pricingTiers && data.pricingTiers.length > 0) {
-        const transformedTiers = data.pricingTiers.map(tier => ({
+        const pricingTiers = data.pricingTiers.map(tier => ({
           duration_unit: tier.durationUnit,
-          max_period: tier.maxPeriod,
-          price: Number(tier.price)
+          price: tier.price,
+          max_period: tier.maxPeriod
         }));
-        formData.append('pricing_tiers', JSON.stringify(transformedTiers));
+        formData.append('pricing_tiers', JSON.stringify(pricingTiers));
       }
       
       const response = await api.patch(config.products.updateEndpoint(productId), formData, {
@@ -163,12 +175,83 @@ class ProductService {
   }
 
   /**
+   * Upload an image for a product
+   * @param productId The ID of the product
+   * @param image The image file to upload
+   * @returns The created image
+   */
+  async uploadImage(productId: string, image: File): Promise<any> {
+    const formData = new FormData();
+    formData.append('image', image);
+    const response = await api.post(`${config.products.detailEndpoint(productId)}/upload_image/`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  }
+
+  /**
+   * Delete an image from a product
+   * @param productId The ID of the product
+   * @param imageId The ID of the image to delete
+   */
+  async deleteImage(productId: string, imageId: string): Promise<void> {
+    await api.delete(`${config.products.detailEndpoint(productId)}/delete_image/`, {
+      data: { image_id: imageId }
+    });
+  }
+
+  /**
+   * Check product availability for a date or date range
+   * @param productId The ID of the product
+   * @param date Single date to check
+   * @param startDate Start date of range
+   * @param endDate End date of range
+   * @returns Availability status
+   */
+  async checkAvailability(
+    productId: string,
+    date?: string,
+    startDate?: string,
+    endDate?: string
+  ): Promise<{ available: boolean }> {
+    const params = new URLSearchParams();
+    if (date) params.append('date', date);
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+    
+    const response = await api.get(
+      `${config.products.detailEndpoint(productId)}/availability/?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  /**
+   * Get pricing information for a product
+   * @param productId The ID of the product
+   * @param duration Duration of rental
+   * @param unit Duration unit (day/week/month)
+   * @returns Price information
+   */
+  async getPricing(
+    productId: string,
+    duration: number,
+    unit: string
+  ): Promise<{ price: number }> {
+    const response = await api.get(
+      `${config.products.detailEndpoint(productId)}/pricing/?duration=${duration}&unit=${unit}`
+    );
+    return response.data;
+  }
+
+  /**
    * Submit a product for admin review
    * @param productId The ID of the product to submit
    * @returns The updated product
    */
-  async submitForReview(productId: string): Promise<Listing> {
-    const response = await api.post(config.products.submitForReviewEndpoint(productId));
+  async submitForReview(productId: string): Promise<Product> {
+    const response = await api.post(`${config.products.detailEndpoint(productId)}/submit_for_review/`);
     return response.data;
   }
 
@@ -179,8 +262,8 @@ class ProductService {
    * @param message Optional message explaining the status change
    * @returns The updated product
    */
-  async updateStatus(productId: string, status: ProductStatus, message?: string): Promise<Listing> {
-    const response = await api.post(config.products.updateStatusEndpoint(productId), {
+  async updateStatus(productId: string, status: ProductStatus, message?: string): Promise<Product> {
+    const response = await api.patch(config.products.updateStatusEndpoint(productId), {
       status,
       message,
     });
@@ -193,7 +276,7 @@ class ProductService {
    * @returns The updated view count
    */
   async incrementViews(productId: string): Promise<number> {
-    const response = await api.post(config.products.incrementViewsEndpoint(productId));
+    const response = await api.post(`${config.products.detailEndpoint(productId)}/increment_views/`);
     return response.data.views_count;
   }
 
@@ -204,7 +287,7 @@ class ProductService {
    * @returns The updated average rating
    */
   async updateRating(productId: string, rating: number): Promise<number> {
-    const response = await api.post(config.products.updateRatingEndpoint(productId), {
+    const response = await api.post(`${config.products.detailEndpoint(productId)}/update_rating/`, {
       rating,
     });
     return response.data.average_rating;

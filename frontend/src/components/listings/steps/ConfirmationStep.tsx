@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, Edit, Calendar, Image, MapPin, Tag, DollarSign, CalendarDays } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ListingFormData } from '@/types/listings';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
 interface Props {
   formData: ListingFormData;
@@ -21,16 +21,26 @@ const ConfirmationStep = ({ formData, onEdit, isEditing = false }: Props) => {
       return [];
     }
 
+    // Filter out null dates and convert to Date objects
+    const validDates = formData.unavailableDates
+      .filter(date => date.date !== null)
+      .map(date => ({
+        date: parseISO(date.date!),
+        isRange: date.isRange,
+        rangeStart: date.rangeStart ? parseISO(date.rangeStart) : null,
+        rangeEnd: date.rangeEnd ? parseISO(date.rangeEnd) : null
+      }));
+
     // Sort dates
-    const sortedDates = [...formData.unavailableDates].sort((a, b) => a.getTime() - b.getTime());
+    const sortedDates = [...validDates].sort((a, b) => a.date.getTime() - b.date.getTime());
     
     const ranges = [];
-    let rangeStart = sortedDates[0];
-    let rangeEnd = sortedDates[0];
+    let rangeStart = sortedDates[0].date;
+    let rangeEnd = sortedDates[0].date;
     
     for (let i = 1; i < sortedDates.length; i++) {
-      const currentDate = sortedDates[i];
-      const prevDate = sortedDates[i - 1];
+      const currentDate = sortedDates[i].date;
+      const prevDate = sortedDates[i - 1].date;
       
       // Check if dates are consecutive
       const dayDiff = Math.floor((currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
