@@ -108,7 +108,7 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
         </div>
         
         <p className="text-sm text-gray-500">
-          Set different prices for different rental durations. You can add multiple tiers (e.g., daily, weekly, monthly rates).
+          Set different prices for different rental durations by adding multiple tiers (daily, weekly, monthly rates).
         </p>
 
         {formData.pricingTiers?.map((tier, index) => (
@@ -153,9 +153,6 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
                     <AlertCircle size={14} /> {errors[`pricingTiers.${index}.durationUnit`][0]}
                   </p>
                 )}
-                <p className="text-sm text-gray-500 mt-1">
-                  Select for what time unit you want to set the price.
-                </p>
               </div>
 
               <div>
@@ -175,9 +172,6 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
                     <AlertCircle size={14} /> {errors[`pricingTiers.${index}.price`][0]}
                   </p>
                 )}
-                <p className="text-sm text-gray-500 mt-1">
-                  Enter the per duration rate for your product.
-                </p>
               </div>
 
               <div className="md:col-span-2">
@@ -198,7 +192,7 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
                   </p>
                 )}
                 <p className="text-sm text-gray-500 mt-1">
-                  Optional: Set for maximum how many days/weeks/months you want to rent out. Leave empty for no limit.
+                  Set for maximum how many days/weeks/months you want to rent out. Leave empty for no limit.
                 </p>
               </div>
             </div>

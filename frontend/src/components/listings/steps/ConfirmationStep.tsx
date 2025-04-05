@@ -5,7 +5,7 @@ import { CheckCircle, Edit, Calendar, Image, MapPin, Tag, DollarSign, CalendarDa
 import { Link } from 'react-router-dom';
 import { ListingFormData } from '@/types/listings';
 import { format, parseISO } from 'date-fns';
-
+import { CATEGORY_DISPLAY } from '@/constants/productTypes';
 interface Props {
   formData: ListingFormData;
   onEdit: () => void;
@@ -93,7 +93,7 @@ const ConfirmationStep = ({ formData, onEdit, isEditing = false }: Props) => {
             <span className="text-base font-semibold text-green-700">Category</span>
           </div>
           <div className="flex items-center">
-            <span className="text-base font-medium text-gray-600">{formData.category}</span>
+            <span className="text-base font-medium text-gray-600">{CATEGORY_DISPLAY[formData.category]}</span>
           </div>
           
           <div className="flex items-center">

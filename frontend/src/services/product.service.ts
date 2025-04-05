@@ -1,6 +1,7 @@
 import api from './api.service';
 import { ProductStatus } from '../constants/productStatus';
 import { Product, ListingFormData } from '../types/listings';
+import { UnavailableDate, PricingTier } from '../types/listings';
 import config from '../config';
 
 /**
@@ -39,87 +40,63 @@ class ProductService {
    * Create a new product
    * @param data The product data to create
    * @returns The created product
-   * @throws Error if image upload fails
    */
   async createProduct(data: ListingFormData): Promise<Product> {
     try {
       const formData = new FormData();
-
-      // Append basic fields
-      formData.append('title', data.title);
-      formData.append('category', data.category);
-      formData.append('product_type', data.productType);
-      formData.append('description', data.description);
-      formData.append('location', data.location);
-      if (data.securityDeposit !== null) {
+      
+      // Append basic fields with proper field names
+      if (data.title) formData.append('title', data.title);
+      if (data.category) formData.append('category', data.category);
+      if (data.productType) formData.append('product_type', data.productType);
+      if (data.description) formData.append('description', data.description);
+      if (data.location) formData.append('location', data.location);
+      if (data.securityDeposit !== undefined) {
         formData.append('security_deposit', data.securityDeposit.toString());
       }
-      formData.append('purchase_year', data.purchaseYear);
-      formData.append('original_price', data.originalPrice.toString());
-      formData.append('ownership_history', data.ownershipHistory);
+      if (data.purchaseYear) formData.append('purchase_year', data.purchaseYear);
+      if (data.originalPrice !== undefined) {
+        formData.append('original_price', data.originalPrice.toString());
+      }
+      if (data.ownershipHistory) formData.append('ownership_history', data.ownershipHistory);
 
-      // Append images - process one at a time to prevent buffering issues
+      // Append images
       if (data.images && data.images.length > 0) {
-        data.images.forEach((image, index) => {
-          formData.append(`uploaded_images[${index}]`, image);
+        data.images.forEach((image) => {
+          formData.append('images', image);
         });
       }
 
-      // Append unavailable dates
+      // Format and append unavailable dates
       if (data.unavailableDates && data.unavailableDates.length > 0) {
-        const unavailableDates = data.unavailableDates.map(date => ({
-          date: date.date,
+        const formattedDates = data.unavailableDates.map(date => ({
+          date: date.date ? new Date(date.date).toISOString().split('T')[0] : null,
           is_range: date.isRange,
-          range_start: date.rangeStart,
-          range_end: date.rangeEnd
+          range_start: date.rangeStart ? new Date(date.rangeStart).toISOString().split('T')[0] : null,
+          range_end: date.rangeEnd ? new Date(date.rangeEnd).toISOString().split('T')[0] : null
         }));
-        formData.append('unavailable_dates', JSON.stringify(unavailableDates));
+        formData.append('unavailable_dates', JSON.stringify(formattedDates));
       }
 
-      // Append pricing tiers
+      // Format and append pricing tiers
       if (data.pricingTiers && data.pricingTiers.length > 0) {
-        const pricingTiers = data.pricingTiers.map(tier => ({
+        const formattedTiers = data.pricingTiers.map(tier => ({
           duration_unit: tier.durationUnit.toLowerCase(),
           price: tier.price,
-          max_period: tier.maxPeriod || 30
+          max_period: tier.maxPeriod || null
         }));
-
-        console.log('Final pricing tiers payload:', pricingTiers);
-        formData.append('pricing_tiers', JSON.stringify(pricingTiers));
+        formData.append('pricing_tiers', JSON.stringify(formattedTiers));
       }
 
-      // Log non-file content for debugging
-      console.log('FormData non-file contents:');
-      for (const [key, value] of formData.entries()) {
-        if (typeof value !== 'object' || value === null) {
-          console.log(`${key}:`, value);
-        } else {
-          console.log(`${key}: [File object]`);
-        }
-      }
-
-      const response = await api.post(config.products.createEndpoint, formData, {
+      const response = await api.post<Product>(config.products.createEndpoint, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
       return response.data;
-    } catch (error: any) {
-      console.error("Error response:", error.response?.data);
-      
-      if (error.response?.data?.detail) {
-        throw new Error(`Server error: ${error.response.data.detail}`);
-      } else if (error.response?.data?.images) {
-        throw new Error(`Image upload failed: ${error.response.data.images.join(', ')}`);
-      } else if (error.response?.data) {
-        // Try to extract error message from response data
-        const errorMsg = typeof error.response.data === 'string' 
-          ? error.response.data 
-          : JSON.stringify(error.response.data);
-        throw new Error(`Failed to create product: ${errorMsg}`);
-      }
-      
-      throw new Error("Failed to create product. Please try again.");
+    } catch (error) {
+      console.error('Full API Error:', error);
+      throw new Error('Failed to create product. Please try again.');
     }
   }
 
@@ -128,7 +105,6 @@ class ProductService {
    * @param productId The ID of the product to update
    * @param data The updated product data
    * @returns The updated product
-   * @throws Error if image upload fails
    */
   async updateProduct(productId: string, data: Partial<ListingFormData>): Promise<Product> {
     try {
@@ -150,7 +126,7 @@ class ProductService {
       // Append images if they're being updated
       if (data.images && data.images.length > 0) {
         data.images.forEach((image) => {
-          formData.append('images', image); // Use the same key for all images
+          formData.append('images', image); // Changed from uploaded_images to images
         });
       }
 
@@ -170,9 +146,9 @@ class ProductService {
         const pricingTiers = data.pricingTiers.map(tier => ({
           duration_unit: tier.durationUnit.toLowerCase(),
           price: tier.price,
-          max_period: tier.maxPeriod || 30
+          max_period: tier.maxPeriod || null
         }));
-        formData.append('pricing_tiers', JSON.stringify(pricingTiers)); // Send as JSON
+        formData.append('pricing_tiers', JSON.stringify(pricingTiers));
       }
 
       const response = await api.patch(config.products.updateEndpoint(productId), formData, {
@@ -245,7 +221,7 @@ class ProductService {
     if (endDate) params.append('end_date', endDate);
 
     const response = await api.get(
-      `${config.products.detailEndpoint(productId)}/availability/?${params.toString()}`
+      `${config.products.availabilityEndpoint(productId)}?${params.toString()}`
     );
     return response.data;
   }
@@ -263,7 +239,7 @@ class ProductService {
     unit: string
   ): Promise<{ price: number }> {
     const response = await api.get(
-      `${config.products.detailEndpoint(productId)}/pricing/?duration=${duration}&unit=${unit}`
+      `${config.products.pricingEndpoint(productId)}?duration=${duration}&unit=${unit}`
     );
     return response.data;
   }
@@ -274,7 +250,7 @@ class ProductService {
    * @returns The updated product
    */
   async submitForReview(productId: string): Promise<Product> {
-    const response = await api.post(`${config.products.detailEndpoint(productId)}/submit_for_review/`);
+    const response = await api.post(config.products.submitForReviewEndpoint(productId));
     return response.data;
   }
 
@@ -285,7 +261,7 @@ class ProductService {
    * @param message Optional message explaining the status change
    * @returns The updated product
    */
-  async updateStatus(productId: string, status: ProductStatus, message?: string): Promise<Product> {
+  async updateStatus(productId: string, status: keyof typeof ProductStatus, message?: string): Promise<Product> {
     const response = await api.patch(config.products.updateStatusEndpoint(productId), {
       status,
       message,
@@ -299,7 +275,7 @@ class ProductService {
    * @returns The updated view count
    */
   async incrementViews(productId: string): Promise<number> {
-    const response = await api.post(`${config.products.detailEndpoint(productId)}/increment_views/`);
+    const response = await api.post(config.products.incrementViewsEndpoint(productId));
     return response.data.views_count;
   }
 
@@ -310,7 +286,7 @@ class ProductService {
    * @returns The updated average rating
    */
   async updateRating(productId: string, rating: number): Promise<number> {
-    const response = await api.post(`${config.products.detailEndpoint(productId)}/update_rating/`, {
+    const response = await api.post(config.products.updateRatingEndpoint(productId), {
       rating,
     });
     return response.data.average_rating;

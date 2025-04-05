@@ -1,4 +1,4 @@
-// components/listings/CreateListingStepper.tsx
+
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -64,7 +64,18 @@ const CreateListingStepper = ({ initialData, isEditing = false, productId, onSub
 
   const validateImageUpload = (data: ListingFormData) => {
     const newErrors: FormError = {};
-    if (data.images.length === 0) newErrors.images = ['At least one image required'];
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+    if (data.images.length === 0) {
+      newErrors.images = ['At least one image required'];
+    } else {
+      // Check each image's size
+      data.images.forEach((file, index) => {
+        if (file.size > MAX_FILE_SIZE) {
+          newErrors.images = [`Image ${index + 1} is too large (${(file.size / (1024 * 1024)).toFixed(1)}MB). Maximum size is 5MB.`];
+        }
+      });
+    }
     return newErrors;
   };
 
@@ -176,7 +187,7 @@ const CreateListingStepper = ({ initialData, isEditing = false, productId, onSub
       console.error('Full API Error:', error.response?.data);
       console.error('Error submitting form:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to save listing. Please try again.');
-      
+
       if (error.response?.data) {
         // Handle validation errors from the backend
         const errorData = error.response.data;

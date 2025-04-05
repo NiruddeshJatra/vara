@@ -6,7 +6,7 @@ import { ListingFormData, FormError } from '@/types/listings';
 import { Info, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 import { Button } from '@/components/ui/button';
-import { OwnershipHistory, OWNERSHIP_HISTORY_DISPLAY } from '@/constants/productAttributes';
+import { OwnershipHistory } from '@/constants/productAttributes';
 
 type Props = {
   formData: ListingFormData;
@@ -111,12 +111,22 @@ const ProductHistoryStep = ({ formData, onNext, onBack, errors = {} }: Props) =>
             onValueChange={setOwnershipHistory}
             className="grid grid-cols-1 md:grid-cols-2 gap-4"
           >
-            {Object.entries(OWNERSHIP_HISTORY_DISPLAY).map(([key, label]) => (
-              <div key={key} className="flex items-center space-x-2">
-                <RadioGroupItem value={key} id={`ownership-${key}`} className="text-green-600" />
-                <Label htmlFor={`ownership-${key}`}>{label}</Label>
-              </div>
-            ))}
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem 
+                value={OwnershipHistory.FIRSTHAND} 
+                id="ownership-firsthand" 
+                className="text-green-600" 
+              />
+              <Label htmlFor="ownership-firsthand">First Hand</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem 
+                value={OwnershipHistory.SECONDHAND} 
+                id="ownership-secondhand" 
+                className="text-green-600" 
+              />
+              <Label htmlFor="ownership-secondhand">Second Hand</Label>
+            </div>
           </RadioGroup>
           {errors.ownershipHistory && (
             <p className="text-sm text-red-500">{errors.ownershipHistory[0]}</p>

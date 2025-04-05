@@ -28,13 +28,7 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
         clearInterval(interval);
         setIsUploading(false);
         setUploadProgress(0);
-
-        // Filter valid files
-        const validFiles = Array.from(files).filter(file =>
-          ['image/jpeg', 'image/png', 'image/jpg'].includes(file.type) &&
-          file.size <= 5 * 1024 * 1024
-        );
-        onChange([...images, ...validFiles]);
+        onChange([...images, ...Array.from(files)]);
       }
     }, 50);
   };

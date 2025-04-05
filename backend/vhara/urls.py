@@ -48,7 +48,7 @@ urlpatterns = [
     path('users/', include('users.urls')),
     
     # Core functionality
-    path('products/', include('advertisements.urls')),
+    path('', include('advertisements.urls')),
     path('rentals/', include('rentals.urls')),
     path('reviews/', include('reviews.urls')),
     

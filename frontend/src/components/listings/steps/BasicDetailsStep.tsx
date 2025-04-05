@@ -5,7 +5,12 @@ import { AlertCircle, ChevronRight, Lightbulb } from 'lucide-react';
 import { ListingFormData, FormError } from '@/types/listings';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
-import { Category, ProductType, CATEGORY_PRODUCT_TYPES, PRODUCT_TYPE_DISPLAY } from '@/constants/productTypes';
+import {
+  Category,
+  PRODUCT_TYPE_CATEGORY,
+  CATEGORY_DISPLAY,
+  PRODUCT_TYPE_DISPLAY
+} from '@/constants/productTypes';
 import { Label } from '@/components/ui/label';
 
 type Props = {
@@ -16,17 +21,19 @@ type Props = {
 };
 
 const BasicDetailsStep = ({ formData, errors, onChange, onNext }: Props) => {
-  const [availableProductTypes, setAvailableProductTypes] = useState<ProductType[]>([]);
+  const [availableProductTypes, setAvailableProductTypes] = useState<string[]>([]);
 
   // Update available product types when category changes
   useEffect(() => {
     if (formData.category) {
       // Get product types for the selected category using the mapping
-      const productTypes = CATEGORY_PRODUCT_TYPES[formData.category as Category] || [];
+      const productTypes = Object.entries(PRODUCT_TYPE_CATEGORY)
+        .filter(([_, category]) => category === formData.category)
+        .map(([type]) => type);
       setAvailableProductTypes(productTypes);
 
       // Reset product type if it's not in the new category
-      if (formData.productType && !productTypes.includes(formData.productType as ProductType)) {
+      if (formData.productType && !productTypes.includes(formData.productType)) {
         onChange({ productType: '' });
       }
     } else {
@@ -63,14 +70,16 @@ const BasicDetailsStep = ({ formData, errors, onChange, onNext }: Props) => {
           <Label htmlFor="category">Category <span className="text-red-500">*</span></Label>
           <Select
             value={formData.category}
-            onValueChange={(value) => onChange({ category: value as Category })}
+            onValueChange={(value) => onChange({ category: value })}
           >
             <SelectTrigger className={errors.category ? 'border-red-500' : ''}>
-              {formData.category || "Select Category"}
+              {formData.category ? CATEGORY_DISPLAY[formData.category] : "Select Category"}
             </SelectTrigger>
             <SelectContent>
               {Object.values(Category).map(cat => (
-                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                <SelectItem key={cat} value={cat}>
+                  {CATEGORY_DISPLAY[cat]}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -85,15 +94,17 @@ const BasicDetailsStep = ({ formData, errors, onChange, onNext }: Props) => {
           <Label htmlFor="productType">Product Type <span className="text-red-500">*</span></Label>
           <Select
             value={formData.productType}
-            onValueChange={(value) => onChange({ productType: value as ProductType })}
+            onValueChange={(value) => onChange({ productType: value })}
             disabled={!formData.category}
           >
             <SelectTrigger className={errors.productType ? 'border-red-500' : ''}>
-              {formData.productType ? PRODUCT_TYPE_DISPLAY[formData.productType as ProductType] : "Select Product Type"}
+              {formData.productType ? PRODUCT_TYPE_DISPLAY[formData.productType] : "Select Product Type"}
             </SelectTrigger>
             <SelectContent>
               {availableProductTypes.map(type => (
-                <SelectItem key={type} value={type}>{PRODUCT_TYPE_DISPLAY[type]}</SelectItem>
+                <SelectItem key={type} value={type}>
+                  {PRODUCT_TYPE_DISPLAY[type]}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -132,7 +143,7 @@ const BasicDetailsStep = ({ formData, errors, onChange, onNext }: Props) => {
           placeholder="City, Area"
           value={formData.location}
           onChange={handleChange}
-          className={`text-sm md:text-base h-8 md:h-10 focus:ring-green-500 focus:border-green-500 placeholder:text-sm ${errors.location ? 'border-red-500' : ''}`}
+          className={errors.location ? 'border-red-500' : ''}
         />
         {errors.location ? (
           <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
@@ -152,7 +163,7 @@ const BasicDetailsStep = ({ formData, errors, onChange, onNext }: Props) => {
           <li><strong>Title:</strong> Be specific and include brand names when relevant</li>
           <li><strong>Description:</strong> Mention condition, dimensions, features, and usage instructions</li>
           <li><strong>Category:</strong> Choose the most relevant category for better visibility</li>
-          <li><strong>Location:</strong> Provide neighborhood details to help renters plan pickup</li>
+          <li><strong>Location:</strong> Provide location details to help renters know the nearest location</li>
         </ul>
       </div>
 

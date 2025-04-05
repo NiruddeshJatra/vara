@@ -186,14 +186,14 @@ export const generateListings = (count: number): Product[] => {
     {
       title: "DeWalt Cordless Drill Set (20V)",
       category: Category.TOOLS_EQUIPMENT,
-      productType: ProductType.POWER_TOOL,
+      productType: ProductType.POWER_TOOLS,
       description: "Professional drill with 2 batteries, charger, and hard case. Includes 30-piece bit set for various projects. Lightweight and powerful.",
       images: imageCategories[5]
     },
     {
       title: "Pressure Washer - 3000 PSI Electric",
       category: Category.TOOLS_EQUIPMENT,
-      productType: ProductType.POWER_TOOL,
+      productType: ProductType.POWER_TOOLS,
       description: "Electric pressure washer with 25ft hose and 5 interchangeable nozzles. Perfect for cleaning decks, patios, cars, and more.",
       images: imageCategories[5]
     },

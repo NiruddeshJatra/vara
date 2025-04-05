@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2, Eye, Banknote, Star } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Listing } from '@/types/listings';
-import { Category } from '@/constants/productTypes';
+import { Category, CATEGORY_DISPLAY } from '@/constants/productTypes';
 // Mock data for testing
 const mockListings: Listing[] = [
   {
@@ -160,7 +160,7 @@ const ProfileListings = () => {
               }}
             />
             <Badge variant="secondary" className="absolute top-2 left-2 bg-white/90 text-green-800">
-              {listing.category}
+              {CATEGORY_DISPLAY[listing.category as keyof typeof CATEGORY_DISPLAY]}
             </Badge>
           </div>
           

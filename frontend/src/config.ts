@@ -39,6 +39,14 @@ const config = {
     updateEndpoint: (id: string) => `/products/${id}/`,
     deleteEndpoint: (id: string) => `/products/${id}/`,
     updateStatusEndpoint: (id: string) => `/products/${id}/update_status/`,
+    // Additional endpoints
+    unavailableDatesEndpoint: (id: string) => `/products/${id}/unavailable_dates/`,
+    pricingTiersEndpoint: (id: string) => `/products/${id}/pricing_tiers/`,
+    availabilityEndpoint: (id: string) => `/products/${id}/availability/`,
+    pricingEndpoint: (id: string) => `/products/${id}/pricing/`,
+    submitForReviewEndpoint: (id: string) => `/products/${id}/submit_for_review/`,
+    incrementViewsEndpoint: (id: string) => `/products/${id}/increment_views/`,
+    updateRatingEndpoint: (id: string) => `/products/${id}/update_rating/`,
   },
 };
 
