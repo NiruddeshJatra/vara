@@ -2,6 +2,7 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.db.models import Q
 from django.utils import timezone
 from django.views.decorators.cache import cache_page
@@ -11,7 +12,9 @@ from .serializers import ProductSerializer, ProductImageSerializer
 from .permissions import IsOwnerOrReadOnly
 from django.core.files.storage import default_storage
 import os
+import logging
 
+logger = logging.getLogger(__name__)
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 20
@@ -29,6 +32,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
     pagination_class = StandardResultsSetPagination
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_queryset(self):
         """
@@ -52,6 +56,32 @@ class ProductViewSet(viewsets.ModelViewSet):
         if self.action in ["update_status"]:
             return [permissions.IsAdminUser()]
         return super().get_permissions()
+      
+    def create(self, request, *args, **kwargs):
+        """Create a new product with nested data"""
+        try:
+            # Create a copy without file objects for logging
+            log_data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
+            
+            # Remove file objects from log data to prevent pickle errors
+            if 'images' in log_data:
+                log_data['images'] = f"{len(request.FILES.getlist('images', []))} images"
+            if 'uploaded_images' in log_data:
+                log_data['uploaded_images'] = "uploaded images present"
+                
+            logger.info(f"Creating product with data: {log_data}")
+            
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        except Exception as e:
+            logger.error(f"Error creating product: {str(e)}")
+            return Response(
+                {"detail": str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     def perform_create(self, serializer):
         """

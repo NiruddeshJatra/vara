@@ -6,6 +6,8 @@ from datetime import datetime
 from django.core.files.images import get_image_dimensions
 import os
 from django.utils.translation import gettext_lazy as _
+from django.db import transaction
+import json
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -65,16 +67,11 @@ class PricingTierSerializer(serializers.ModelSerializer):
         fields = ["id", "duration_unit", "price", "max_period"]
         read_only_fields = ["id"]
 
-    def validate_price(self, value):
-        if value <= 0:
-            raise serializers.ValidationError(_("Price must be greater than 0"))
-        return value
-
 
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     unavailable_dates = UnavailableDateSerializer(many=True, required=False)
-    pricing_tiers = PricingTierSerializer(many=True)
+    pricing_tiers = PricingTierSerializer(many=True, required=False)
     average_rating = serializers.DecimalField(
         max_digits=3, decimal_places=2, read_only=True
     )
@@ -82,6 +79,13 @@ class ProductSerializer(serializers.ModelSerializer):
     rental_count = serializers.IntegerField(read_only=True)
     status_message = serializers.CharField(read_only=True)
     status_changed_at = serializers.DateTimeField(read_only=True)
+    
+    # File fields for direct upload handling
+    uploaded_images = serializers.ListField(
+        child=serializers.ImageField(max_length=1000000, allow_empty_file=False, use_url=False),
+        write_only=True,
+        required=False
+    )
 
     class Meta:
         model = Product
@@ -103,6 +107,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "images",
             "unavailable_dates",
             "pricing_tiers",
+            "uploaded_images",
             "views_count",
             "rental_count",
             "average_rating",
@@ -126,13 +131,19 @@ class ProductSerializer(serializers.ModelSerializer):
         """
         Validate the product data
         """
-        # Validate image count
-        if "images" in self.context.get("request").FILES:
-            if len(self.context.get("request").FILES.getlist("images")) > 10:
-                raise serializers.ValidationError(
-                    "Maximum 10 images allowed per product"
-                )
-
+        request = self.context.get('request')
+        
+        # Validate image count from both sources
+        image_count = 0
+        if request and request.FILES:
+            image_count += len(request.FILES.getlist('images', []))
+        
+        if 'uploaded_images' in data:
+            image_count += len(data['uploaded_images'])
+            
+        if image_count > 10:
+            raise serializers.ValidationError({"images": "Maximum 10 images allowed per product"})
+                
         return data
 
     def validate_category(self, value):
@@ -168,3 +179,105 @@ class ProductSerializer(serializers.ModelSerializer):
                 _("Original price must be greater than 0")
             )
         return value
+    
+    def _parse_json_field(self, data, field_name):
+        """Helper method to safely parse JSON fields"""
+        if field_name in data:
+            if isinstance(data[field_name], str):
+                try:
+                    return json.loads(data[field_name])
+                except json.JSONDecodeError:
+                    raise serializers.ValidationError({field_name: "Invalid JSON format"})
+            return data[field_name]
+        return []
+
+    def to_internal_value(self, data):
+        """
+        Parse JSON strings in the incoming data
+        """
+        data = data.copy() if hasattr(data, 'copy') else dict(data)
+        
+        # Handle pricing_tiers parsing
+        if 'pricing_tiers' in data:
+            data['pricing_tiers'] = self._parse_json_field(data, 'pricing_tiers')
+        
+        # Handle unavailable_dates parsing
+        if 'unavailable_dates' in data:
+            data['unavailable_dates'] = self._parse_json_field(data, 'unavailable_dates')
+            
+        # Pass the modified data to the parent method
+        return super().to_internal_value(data)
+
+    @transaction.atomic
+    def create(self, validated_data):
+        # Extract nested data
+        uploaded_images = validated_data.pop('uploaded_images', [])
+        unavailable_dates_data = validated_data.pop('unavailable_dates', [])
+        pricing_tiers_data = validated_data.pop('pricing_tiers', [])
+        
+        # Set owner from the request
+        validated_data['owner'] = self.context['request'].user
+        
+        # Create the product
+        product = Product.objects.create(**validated_data)
+        
+        # Process images from request.FILES
+        request = self.context.get('request')
+        if request:
+            for image in request.FILES.getlist('images', []):
+                ProductImage.objects.create(product=product, image=image)
+                
+        # Handle uploaded_images from the serializer field
+        # IMPORTANT: Process each image individually instead of storing the whole list
+        for image in uploaded_images:
+            ProductImage.objects.create(product=product, image=image)
+
+        # Create unavailable dates
+        for date_data in unavailable_dates_data:
+            UnavailableDate.objects.create(product=product, **date_data)
+
+        # Create pricing tiers
+        for tier_data in pricing_tiers_data:
+            PricingTier.objects.create(product=product, **tier_data)
+
+        return product
+        
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        # Extract nested data
+        uploaded_images = validated_data.pop('uploaded_images', [])
+        unavailable_dates_data = validated_data.pop('unavailable_dates', [])
+        pricing_tiers_data = validated_data.pop('pricing_tiers', [])
+        
+        # Update the main product fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        # Process new images
+        request = self.context.get('request')
+        if request:
+            for image in request.FILES.getlist('images', []):
+                ProductImage.objects.create(product=instance, image=image)
+                
+        # Process each image individually
+        for image in uploaded_images:
+            ProductImage.objects.create(product=instance, image=image)
+            
+        # Handle updates for related models (optional - this is a replace strategy)
+        # For a more sophisticated approach, you might want to implement a diff
+        # to only update what changed
+        
+        # Update unavailable dates - clear and recreate
+        if unavailable_dates_data:
+            instance.unavailable_dates.all().delete()
+            for date_data in unavailable_dates_data:
+                UnavailableDate.objects.create(product=instance, **date_data)
+                
+        # Update pricing tiers - clear and recreate
+        if pricing_tiers_data:
+            instance.pricing_tiers.all().delete()
+            for tier_data in pricing_tiers_data:
+                PricingTier.objects.create(product=instance, **tier_data)
+                
+        return instance

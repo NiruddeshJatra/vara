@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Star, Eye, ChevronLeft, ChevronRight, Banknote } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Product } from '@/types/listings';
+import { Product, ProductImage } from '@/types/listings';
 
 interface ItemCardProps {
   product: Product;
@@ -23,7 +23,7 @@ const ItemCard = ({
   // Use a default image if product.images is empty
   const images = product.images && product.images.length > 0
     ? product.images
-    : ['/images/placeholder-image.jpg'];
+    : [{ id: 'default', image: '/images/placeholder-image.jpg', createdAt: new Date().toISOString() }];
 
   const nextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -52,7 +52,7 @@ const ItemCard = ({
     >
       <div className="relative h-40 sm:h-48 md:h-60 overflow-hidden z-0">
         <img
-          src={images[currentImageIndex]}
+          src={images[currentImageIndex].image}
           alt={product.title || 'Product image'}
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
           onError={(e) => {
@@ -103,14 +103,18 @@ const ItemCard = ({
             <Star size={12} className="fill-current sm:h-4 sm:w-4" />
             <span className="ml-1 font-medium">{product.averageRating?.toFixed(1) || '4.5'}</span>
           </div>
-          <span className="text-gray-500">({product.totalRentals || 0} reviews)</span>
+          <span className="text-gray-500">({product.rentalCount || 0} reviews)</span>
         </div>
 
         <div className="flex justify-between items-center">
           <div className="flex items-center">
             <Banknote size={14} className="text-green-700 mr-1 sm:h-4 sm:w-4" />
-            <span className="text-sm sm:text-base md:text-lg font-bold text-green-700">{product.basePrice}</span>
-            <span className="text-xs sm:text-sm font-semibold text-green-700">/{product.durationUnit}</span>
+            <span className="text-sm sm:text-base md:text-lg font-bold text-green-700">
+              {product.pricingTiers[0].price}
+            </span>
+            <span className="text-xs sm:text-sm font-semibold text-green-700">
+              /{product.pricingTiers[0].durationUnit}
+            </span>
           </div>
 
           {onQuickView && (

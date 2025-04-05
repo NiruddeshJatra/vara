@@ -6,7 +6,7 @@ import CategoryScroll from '@/components/advertisements/CategoryScroll';
 import ItemModal from '@/components/advertisements/ItemModal';
 import ListingsGrid from '@/components/advertisements/ListingsGrid';
 import LoadMoreTrigger from '@/components/advertisements/LoadMoreTrigger';
-import { categories, generateListings } from 'mockDataGenerator';
+import { categories, generateListings } from '@/utils/mockDataGenerator';
 import '../styles/main.css';
 import { Product } from '@/types/listings';
 
@@ -29,8 +29,8 @@ const Advertisements = () => {
     const categoryMatch = selectedCategory ?
       categories.find(c => c.id === selectedCategory)?.name : null;
 
-    // Price range filter - basePrice is a number according to the type definition
-    const priceInRange = item.basePrice >= priceRange[0] && item.basePrice <= priceRange[1];
+    // Price range filter - use the first pricing tier's price
+    const priceInRange = item.pricingTiers[0].price >= priceRange[0] && item.pricingTiers[0].price <= priceRange[1];
 
     return (
       (!categoryMatch || item.category === categoryMatch) &&

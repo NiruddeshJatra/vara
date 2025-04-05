@@ -44,7 +44,7 @@ class ProductService {
   async createProduct(data: ListingFormData): Promise<Product> {
     try {
       const formData = new FormData();
-      
+
       // Append basic fields
       formData.append('title', data.title);
       formData.append('category', data.category);
@@ -57,14 +57,14 @@ class ProductService {
       formData.append('purchase_year', data.purchaseYear);
       formData.append('original_price', data.originalPrice.toString());
       formData.append('ownership_history', data.ownershipHistory);
-      
-      // Append images
+
+      // Append images - process one at a time to prevent buffering issues
       if (data.images && data.images.length > 0) {
         data.images.forEach((image, index) => {
-          formData.append(`images[${index}]`, image);
+          formData.append(`uploaded_images[${index}]`, image);
         });
       }
-      
+
       // Append unavailable dates
       if (data.unavailableDates && data.unavailableDates.length > 0) {
         const unavailableDates = data.unavailableDates.map(date => ({
@@ -75,17 +75,29 @@ class ProductService {
         }));
         formData.append('unavailable_dates', JSON.stringify(unavailableDates));
       }
-      
+
       // Append pricing tiers
       if (data.pricingTiers && data.pricingTiers.length > 0) {
         const pricingTiers = data.pricingTiers.map(tier => ({
-          duration_unit: tier.durationUnit,
+          duration_unit: tier.durationUnit.toLowerCase(),
           price: tier.price,
-          max_period: tier.maxPeriod
+          max_period: tier.maxPeriod || 30
         }));
+
+        console.log('Final pricing tiers payload:', pricingTiers);
         formData.append('pricing_tiers', JSON.stringify(pricingTiers));
       }
-      
+
+      // Log non-file content for debugging
+      console.log('FormData non-file contents:');
+      for (const [key, value] of formData.entries()) {
+        if (typeof value !== 'object' || value === null) {
+          console.log(`${key}:`, value);
+        } else {
+          console.log(`${key}: [File object]`);
+        }
+      }
+
       const response = await api.post(config.products.createEndpoint, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -93,10 +105,21 @@ class ProductService {
       });
       return response.data;
     } catch (error: any) {
-      if (error.response?.data?.images) {
+      console.error("Error response:", error.response?.data);
+      
+      if (error.response?.data?.detail) {
+        throw new Error(`Server error: ${error.response.data.detail}`);
+      } else if (error.response?.data?.images) {
         throw new Error(`Image upload failed: ${error.response.data.images.join(', ')}`);
+      } else if (error.response?.data) {
+        // Try to extract error message from response data
+        const errorMsg = typeof error.response.data === 'string' 
+          ? error.response.data 
+          : JSON.stringify(error.response.data);
+        throw new Error(`Failed to create product: ${errorMsg}`);
       }
-      throw error;
+      
+      throw new Error("Failed to create product. Please try again.");
     }
   }
 
@@ -110,7 +133,7 @@ class ProductService {
   async updateProduct(productId: string, data: Partial<ListingFormData>): Promise<Product> {
     try {
       const formData = new FormData();
-      
+
       // Append only the fields that are being updated
       if (data.title) formData.append('title', data.title);
       if (data.category) formData.append('category', data.category);
@@ -123,14 +146,14 @@ class ProductService {
       if (data.purchaseYear) formData.append('purchase_year', data.purchaseYear);
       if (data.originalPrice) formData.append('original_price', data.originalPrice.toString());
       if (data.ownershipHistory) formData.append('ownership_history', data.ownershipHistory);
-      
+
       // Append images if they're being updated
       if (data.images && data.images.length > 0) {
-        data.images.forEach((image, index) => {
-          formData.append(`images[${index}]`, image);
+        data.images.forEach((image) => {
+          formData.append('images', image); // Use the same key for all images
         });
       }
-      
+
       // Append unavailable dates if they're being updated
       if (data.unavailableDates && data.unavailableDates.length > 0) {
         const unavailableDates = data.unavailableDates.map(date => ({
@@ -141,17 +164,17 @@ class ProductService {
         }));
         formData.append('unavailable_dates', JSON.stringify(unavailableDates));
       }
-      
+
       // Append pricing tiers if they're being updated
       if (data.pricingTiers && data.pricingTiers.length > 0) {
         const pricingTiers = data.pricingTiers.map(tier => ({
-          duration_unit: tier.durationUnit,
+          duration_unit: tier.durationUnit.toLowerCase(),
           price: tier.price,
-          max_period: tier.maxPeriod
+          max_period: tier.maxPeriod || 30
         }));
-        formData.append('pricing_tiers', JSON.stringify(pricingTiers));
+        formData.append('pricing_tiers', JSON.stringify(pricingTiers)); // Send as JSON
       }
-      
+
       const response = await api.patch(config.products.updateEndpoint(productId), formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -220,7 +243,7 @@ class ProductService {
     if (date) params.append('date', date);
     if (startDate) params.append('start_date', startDate);
     if (endDate) params.append('end_date', endDate);
-    
+
     const response = await api.get(
       `${config.products.detailEndpoint(productId)}/availability/?${params.toString()}`
     );

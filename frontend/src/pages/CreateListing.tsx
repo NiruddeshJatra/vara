@@ -32,10 +32,11 @@ export default function CreateListingPage() {
     try {
       await productService.createProduct(formData);
       toast.success('Product created successfully!');
-      navigate('/my-products');
+      return true;
     } catch (error) {
       toast.error('Failed to create product. Please try again.');
       console.error('Error creating product:', error);
+      return false;
     } finally {
       setIsSubmitting(false);
     }

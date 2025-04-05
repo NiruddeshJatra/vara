@@ -96,7 +96,21 @@ export type RentalRequestFormData = {
 };
 
 export type FormError = {
-  [key: string]: string[];
+  [K in keyof ListingFormData]?: string[];
+} & {
+  // Additional error fields that might come from backend validation
+  'pricingTiers'?: string[];
+  'pricingTiers.*.price'?: string[];
+  'pricingTiers.*.durationUnit'?: string[];
+  'pricingTiers.*.maxPeriod'?: string[];
+  'unavailableDates'?: string[];
+  'unavailableDates.*.date'?: string[];
+  'unavailableDates.*.rangeStart'?: string[];
+  'unavailableDates.*.rangeEnd'?: string[];
+  'images'?: string[];
+  'images.*'?: string[];
+  // Generic error for non-field specific errors
+  'non_field_errors'?: string[];
 };
 
 export interface User {

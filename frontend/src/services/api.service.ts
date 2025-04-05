@@ -94,6 +94,15 @@ class ApiService {
         // Handle product-specific errors
         if (error.response?.data && originalRequest.url?.includes('/products/')) {
           const errorData = error.response.data;
+          console.error('Product API Error Details:', {
+            status: error.response.status,
+            data: errorData,
+            request: {
+              url: originalRequest.url,
+              method: originalRequest.method,
+              data: originalRequest.data
+            }
+          });
           
           // Product validation errors
           if (error.response.status === 400) {
@@ -101,7 +110,10 @@ class ApiService {
               return Promise.reject(new Error(`Image upload failed: ${errorData.images.join(', ')}`));
             }
             if (errorData.pricing_tiers) {
-              return Promise.reject(new Error(`Invalid pricing tiers: ${errorData.pricing_tiers}`));
+              const pricingError = typeof errorData.pricing_tiers === 'string' 
+                ? errorData.pricing_tiers 
+                : JSON.stringify(errorData.pricing_tiers);
+              return Promise.reject(new Error(`Invalid pricing tiers: ${pricingError}`));
             }
             if (errorData.unavailable_dates) {
               return Promise.reject(new Error(`Invalid date range: ${errorData.unavailable_dates}`));

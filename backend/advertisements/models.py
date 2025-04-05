@@ -110,11 +110,8 @@ class PricingTier(models.Model):
         choices=DURATION_UNITS,
         help_text=_("Duration unit (day/week/month)"),
     )
-    price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal("0.01"))],
-        help_text=_("Price per duration unit"),
+    price = models.PositiveIntegerField(
+        help_text=_("Price per duration unit in Taka"),
     )
     max_period = models.PositiveIntegerField(
         default=30,  # Default to 30 days/weeks/months
@@ -138,10 +135,6 @@ class PricingTier(models.Model):
 
     def __str__(self):
         return f"{self.duration_unit} - ${self.price} (max {self.max_period})"
-
-    def clean(self):
-        if self.max_period < 1:
-            raise ValidationError("Maximum period must be at least 1")
 
 
 class Product(models.Model):

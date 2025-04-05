@@ -252,22 +252,6 @@ const UnavailabilityStep = ({ formData, errors, onChange, onNext, onBack }: Prop
           <li>You can update unavailable dates anytime from your dashboard</li>
         </ul>
       </div>
-
-      <div className="flex justify-between mt-8">
-        <Button
-          onClick={onBack}
-          variant="outline"
-          className="flex items-center gap-2"
-        >
-          <ChevronLeft size={16} /> Back
-        </Button>
-        <Button
-          onClick={onNext}
-          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
-        >
-          Next <ChevronRight size={16} />
-        </Button>
-      </div>
     </div>
   );
 };

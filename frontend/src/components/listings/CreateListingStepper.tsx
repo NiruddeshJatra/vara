@@ -10,17 +10,19 @@ import UnavailabilityStep from './steps/UnavailabilityStep';
 import ConfirmationStep from './steps/ConfirmationStep';
 import { ListingFormData, FormError } from '@/types/listings';
 import { Category, ProductType } from '@/constants/productTypes';
-import { DurationUnit } from '@/constants/rental';
+import { DURATION_UNIT_DISPLAY, DurationUnit } from '@/constants/rental';
 import { OwnershipHistory } from '@/constants/productAttributes';
+import productService from '@/services/product.service';
 import { toast } from 'react-hot-toast';
 
 interface Props {
   initialData?: ListingFormData;
   isEditing?: boolean;
+  productId?: string;
   onSubmit?: (data: ListingFormData) => void;
 }
 
-const CreateListingStepper = ({ initialData, isEditing = false, onSubmit }: Props) => {
+const CreateListingStepper = ({ initialData, isEditing = false, productId, onSubmit }: Props) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<ListingFormData>(() => initialData || {
     title: '',
@@ -34,7 +36,7 @@ const CreateListingStepper = ({ initialData, isEditing = false, onSubmit }: Prop
     purchaseYear: new Date().getFullYear().toString(),
     originalPrice: 0,
     ownershipHistory: OwnershipHistory.FIRSTHAND,
-    pricingTiers: [{ durationUnit: DurationUnit.DAY, price: 0, maxPeriod: 1 }]
+    pricingTiers: [{ durationUnit: DurationUnit.DAY, price: 1, maxPeriod: 30 }]
   });
   const [errors, setErrors] = useState<FormError>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -84,8 +86,8 @@ const CreateListingStepper = ({ initialData, isEditing = false, onSubmit }: Prop
         if (tier.price <= 0) {
           newErrors[`pricingTiers.${index}.price`] = ['Price must be greater than 0'];
         }
-        if (tier.maxPeriod && tier.maxPeriod <= 1) {
-          newErrors[`pricingTiers.${index}.maxPeriod`] = ['Maximum period must be greater than 1'];
+        if (tier.maxPeriod && tier.maxPeriod < 1) {
+          newErrors[`pricingTiers.${index}.maxPeriod`] = ['Maximum period must be at least 1'];
         }
       });
     }
@@ -133,26 +135,57 @@ const CreateListingStepper = ({ initialData, isEditing = false, onSubmit }: Prop
   };
 
   const handleSubmit = async () => {
+    // Validate all steps before submission
+    const basicDetailsErrors = validateBasicDetails(formData);
+    const imageErrors = validateImageUpload(formData);
+    const productHistoryErrors = validateProductHistory(formData);
     const pricingErrors = validatePricing(formData);
+    const unavailabilityErrors = validateUnavailability(formData);
 
-    if (Object.keys(pricingErrors).length === 0) {
-      setIsSubmitting(true);
-      try {
-        if (onSubmit) {
-          await onSubmit(formData);
+    // Combine all errors
+    const allErrors = {
+      ...basicDetailsErrors,
+      ...imageErrors,
+      ...productHistoryErrors,
+      ...pricingErrors,
+      ...unavailabilityErrors
+    };
+
+    if (Object.keys(allErrors).length > 0) {
+      setErrors(allErrors);
+      toast.error('Please fix the errors before submitting');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      if (onSubmit) {
+        await onSubmit(formData);
+        toast.success(isEditing ? 'Listing updated successfully!' : 'Listing created successfully!');
+        setCurrentStep(6);
+      } else {
+        if (isEditing && productId) {
+          await productService.updateProduct(productId, formData);
         } else {
-          // Default behavior for creating new listing
-          console.log('Creating new listing:', formData);
-          // TODO: Call API to create listing
-          setCurrentStep(6);
+          await productService.createProduct(formData);
         }
-      } catch (error) {
-        console.error('Error submitting form:', error);
-      } finally {
-        setIsSubmitting(false);
+        toast.success(isEditing ? 'Listing updated successfully!' : 'Listing created successfully!');
+        setCurrentStep(6);
       }
-    } else {
-      setErrors(pricingErrors);
+    } catch (error: any) {
+      console.error('Full API Error:', error.response?.data);
+      console.error('Error submitting form:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to save listing. Please try again.');
+      
+      if (error.response?.data) {
+        // Handle validation errors from the backend
+        const errorData = error.response.data;
+        if (typeof errorData === 'object') {
+          setErrors(errorData);
+        }
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -251,6 +284,10 @@ const CreateListingStepper = ({ initialData, isEditing = false, onSubmit }: Prop
               <PricingStep
                 formData={formData}
                 errors={errors}
+                durationOptions={Object.entries(DURATION_UNIT_DISPLAY).map(([value, label]) => ({
+                  value: value as DurationUnit,
+                  label
+                }))}
                 onChange={(data) => setFormData(prev => ({ ...prev, ...data }))}
                 onNext={handleNextStep}
                 onBack={handlePrevStep}

@@ -19,9 +19,7 @@ const ProductHistoryStep = ({ formData, onNext, onBack, errors = {} }: Props) =>
   const [purchaseYear, setPurchaseYear] = useState<string>(
     formData.purchaseYear || new Date().getFullYear().toString()
   );
-  const [originalPrice, setOriginalPrice] = useState<string>(
-    formData.originalPrice?.toString() || ''
-  );
+  const [originalPrice, setOriginalPrice] = useState<string>('');
   const [ownershipHistory, setOwnershipHistory] = useState<string>(
     formData.ownershipHistory || OwnershipHistory.FIRSTHAND
   );
@@ -115,7 +113,7 @@ const ProductHistoryStep = ({ formData, onNext, onBack, errors = {} }: Props) =>
           >
             {Object.entries(OWNERSHIP_HISTORY_DISPLAY).map(([key, label]) => (
               <div key={key} className="flex items-center space-x-2">
-                <RadioGroupItem value={key} id={`ownership-${key}`} />
+                <RadioGroupItem value={key} id={`ownership-${key}`} className="text-green-600" />
                 <Label htmlFor={`ownership-${key}`}>{label}</Label>
               </div>
             ))}
@@ -123,6 +121,9 @@ const ProductHistoryStep = ({ formData, onNext, onBack, errors = {} }: Props) =>
           {errors.ownershipHistory && (
             <p className="text-sm text-red-500">{errors.ownershipHistory[0]}</p>
           )}
+          <p className="text-sm text-gray-500">
+            Indicate whether you are the first owner of this product or if it has been previously owned.
+          </p>
         </div>
       </div>
 

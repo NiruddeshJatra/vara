@@ -11,12 +11,18 @@ type Props = {
   errors: FormError;
   durationOptions: { value: DurationUnit; label: string }[];
   onChange: (data: Partial<ListingFormData>) => void;
+  onNext: () => void;
+  onBack: () => void;
 };
 
-const PricingStep = ({ formData, errors, durationOptions, onChange }: Props) => {
+const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBack }: Props) => {
   // Initialize pricingTiers if it doesn't exist
   if (!formData.pricingTiers || formData.pricingTiers.length === 0) {
-    onChange({ pricingTiers: [{ durationUnit: DurationUnit.DAY, price: 0 }] });
+    onChange({ pricingTiers: [{ 
+      durationUnit: DurationUnit.DAY, 
+      price: undefined,
+      maxPeriod: undefined 
+    }] });
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -38,7 +44,11 @@ const PricingStep = ({ formData, errors, durationOptions, onChange }: Props) => 
 
   const addPricingTier = () => {
     const updatedTiers = [...(formData.pricingTiers || [])];
-    updatedTiers.push({ durationUnit: DurationUnit.DAY, price: 0 });
+    updatedTiers.push({ 
+      durationUnit: DurationUnit.DAY, 
+      price: undefined,
+      maxPeriod: 30
+    });
     onChange({ pricingTiers: updatedTiers });
   };
 
@@ -73,6 +83,12 @@ const PricingStep = ({ formData, errors, durationOptions, onChange }: Props) => 
       default:
         return 'Optional';
     }
+  };
+
+  const DURATION_UNIT_LABELS: Record<DurationUnit, string> = {
+    [DurationUnit.DAY]: 'Per Day',
+    [DurationUnit.WEEK]: 'Per Week',
+    [DurationUnit.MONTH]: 'Per Month'
   };
 
   return (
@@ -122,11 +138,13 @@ const PricingStep = ({ formData, errors, durationOptions, onChange }: Props) => 
                   onValueChange={(value) => handlePricingTierChange(index, 'durationUnit', value as DurationUnit)}
                 >
                   <SelectTrigger className={errors[`pricingTiers.${index}.durationUnit`] ? 'border-red-500' : ''}>
-                    {DURATION_UNIT_DISPLAY[tier.durationUnit as DurationUnit] || "Select Duration Unit"}
+                    {DURATION_UNIT_LABELS[tier.durationUnit as DurationUnit] || "Select Duration Unit"}
                   </SelectTrigger>
                   <SelectContent>
                     {durationOptions.map(option => (
-                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      <SelectItem key={option.value} value={option.value}>
+                        {DURATION_UNIT_LABELS[option.value]}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -135,6 +153,9 @@ const PricingStep = ({ formData, errors, durationOptions, onChange }: Props) => 
                     <AlertCircle size={14} /> {errors[`pricingTiers.${index}.durationUnit`][0]}
                   </p>
                 )}
+                <p className="text-sm text-gray-500 mt-1">
+                  Select for what time unit you want to set the price.
+                </p>
               </div>
 
               <div>
@@ -144,8 +165,8 @@ const PricingStep = ({ formData, errors, durationOptions, onChange }: Props) => 
                 <Input
                   type="number"
                   min="0"
-                  value={tier.price === 0 ? '' : tier.price}
-                  onChange={(e) => handlePricingTierChange(index, 'price', e.target.value ? Number(e.target.value) : 0)}
+                  value={tier.price || ''}
+                  onChange={(e) => handlePricingTierChange(index, 'price', e.target.value ? Number(e.target.value) : undefined)}
                   className={`text-sm md:text-base h-10 md:h-12 placeholder:text-sm ${errors[`pricingTiers.${index}.price`] ? 'border-red-500' : ''}`}
                   placeholder={getPricePlaceholder(tier.durationUnit as DurationUnit)}
                 />
@@ -154,9 +175,12 @@ const PricingStep = ({ formData, errors, durationOptions, onChange }: Props) => 
                     <AlertCircle size={14} /> {errors[`pricingTiers.${index}.price`][0]}
                   </p>
                 )}
+                <p className="text-sm text-gray-500 mt-1">
+                  Enter the per duration rate for your product.
+                </p>
               </div>
 
-              <div>
+              <div className="md:col-span-2">
                 <label className="block text-sm font-medium mb-1 text-gray-700">
                   Maximum Rental Period
                 </label>
@@ -173,6 +197,9 @@ const PricingStep = ({ formData, errors, durationOptions, onChange }: Props) => 
                     <AlertCircle size={14} /> {errors[`pricingTiers.${index}.maxPeriod`][0]}
                   </p>
                 )}
+                <p className="text-sm text-gray-500 mt-1">
+                  Optional: Set for maximum how many days/weeks/months you want to rent out. Leave empty for no limit.
+                </p>
               </div>
             </div>
           </div>

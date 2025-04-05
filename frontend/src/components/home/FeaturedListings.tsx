@@ -1,12 +1,12 @@
 import { Button } from '../ui/button';
 import ListingsGrid from '../advertisements/ListingsGrid';
-import { useState, useEffect } from 'react';
-import { categories, generateListings } from 'mockDataGenerator';
+import { useState } from 'react';
+import { generateListings } from '@/utils/mockDataGenerator';
 import ItemModal from '@/components/advertisements/ItemModal';
 
-
 const FeaturedListings = () => {
-  const allListings = generateListings(4);
+  // Generate mock listings for display
+  const mockListings = generateListings(4);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
 
@@ -16,7 +16,7 @@ const FeaturedListings = () => {
   };
 
   const getSelectedItem = () => {
-    return allListings.find(item => item.id === selectedItem) || null;
+    return mockListings.find(item => item.id === selectedItem) || null;
   };
 
   return (
@@ -37,7 +37,7 @@ const FeaturedListings = () => {
         <section className="py-6 animate-fade-up delay-200">
           <div className="container mx-auto px-4">
             <ListingsGrid
-              displayedListings={allListings}
+              displayedListings={mockListings}
               handleQuickView={handleQuickView}
             />
           </div>

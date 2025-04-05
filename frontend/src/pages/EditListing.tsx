@@ -20,24 +20,15 @@ const EditListing = () => {
         }
         const listing = await productService.getProduct(productId);
         
-        // Convert image URLs to File objects for the form
-        const imageFiles: File[] = [];
-        // We don't convert the images to File objects here because they're just for display
-        // The actual file upload is handled separately when the user changes images
-
         setInitialData({
           title: listing.title,
           category: listing.category,
           productType: listing.productType,
           description: listing.description,
           location: listing.location,
-          basePrice: listing.basePrice,
-          durationUnit: listing.durationUnit,
-          images: imageFiles, // Empty array for initial form state
-          existingImages: listing.images, // Keep track of existing image URLs
+          images: [], // Start with empty array, images will be handled separately
           unavailableDates: listing.unavailableDates,
           securityDeposit: listing.securityDeposit,
-          condition: listing.condition,
           purchaseYear: listing.purchaseYear,
           originalPrice: listing.originalPrice,
           ownershipHistory: listing.ownershipHistory,
@@ -64,22 +55,14 @@ const EditListing = () => {
         throw new Error('No product ID provided');
       }
 
-      // Only upload new images if they were added
-      if (formData.images.length > 0) {
-        await productService.uploadImages(productId, formData.images);
-      }
-
-      const { images, ...updateData } = formData;
-      const response = await productService.updateProduct(productId, updateData);
+      await productService.updateProduct(productId, formData);
       
-      if (response) {
-        toast({
-          title: "Success",
-          description: "Listing updated successfully.",
-          variant: "default",
-        });
-        navigate('/profile');
-      }
+      toast({
+        title: "Success",
+        description: "Listing updated successfully.",
+        variant: "default",
+      });
+      navigate('/profile');
     } catch (error: any) {
       console.error('Error updating listing:', error);
       toast({
@@ -104,6 +87,7 @@ const EditListing = () => {
       <CreateListingStepper
         initialData={initialData}
         isEditing={true}
+        productId={productId}
         onSubmit={handleSubmit}
       />
     </div>

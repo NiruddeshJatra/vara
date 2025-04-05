@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import NavBar from '@/components/home/NavBar';
 import Footer from '@/components/home/Footer';
 import { Product } from '@/types/listings';
-import { allListings } from 'mockDataGenerator';
+import { generateListings } from '@/utils/mockDataGenerator';
 import ItemModal from '@/components/advertisements/ItemModal';
 
 // Import modular components
@@ -22,6 +22,9 @@ import {
   HostInfo
 } from '@/components/itemDetail';
 import { DurationUnit } from '@/constants/rental';
+
+// Generate mock listings
+const allListings = generateListings(40);
 
 export default function ItemDetailPage() {
   const { productId } = useParams();
@@ -40,28 +43,7 @@ export default function ItemDetailPage() {
         const foundProduct = allListings.find(item => item.id === productId);
 
         if (foundProduct) {
-          // Ensure the product matches the Product type
-          const product: Product = {
-            ...foundProduct,
-            owner: {
-              id: foundProduct.owner.id,
-              username: foundProduct.owner.username,
-              email: foundProduct.owner.email
-            },
-            pricingTiers: foundProduct.pricingTiers || [
-              {
-                durationUnit: foundProduct.durationUnit,
-                price: foundProduct.basePrice,
-                maxPeriod: foundProduct.maxRentalPeriod
-              }
-            ],
-            unavailableDates: foundProduct.unavailableDates.map(date => date.toISOString()),
-            status: foundProduct.status || 'active',
-            statusMessage: null,
-            statusChangedAt: null
-          };
-
-          setProduct(product);
+          setProduct(foundProduct);
 
           // Find similar items
           const similar = allListings
@@ -71,25 +53,7 @@ export default function ItemDetailPage() {
             )
             .slice(0, 4);
 
-          setSimilarItems(similar.map(item => ({
-            ...item,
-            owner: {
-              id: item.owner.id,
-              username: item.owner.username,
-              email: item.owner.email
-            },
-            pricingTiers: item.pricingTiers || [
-              {
-                durationUnit: item.durationUnit,
-                price: item.basePrice,
-                maxPeriod: item.maxRentalPeriod
-              }
-            ],
-            unavailableDates: item.unavailableDates.map(date => date.toISOString()),
-            status: item.status || 'active',
-            statusMessage: null,
-            statusChangedAt: null
-          })));
+          setSimilarItems(similar);
         }
       } catch (error) {
         console.error('Error fetching product:', error);
@@ -107,20 +71,7 @@ export default function ItemDetailPage() {
   };
 
   const getSelectedItem = () => {
-    const found = allListings.find(item => item.id === selectedItem);
-    if (!found) return null;
-
-    // Cast durationUnit to the correct type
-    return {
-      ...found,
-      durationUnit: found.durationUnit as DurationUnit,
-      unavailableDates: found.unavailableDates || [],
-      pricingTiers: [{
-        durationUnit: found.durationUnit as DurationUnit,
-        price: found.basePrice,
-        maxPeriod: found.maxRentalPeriod
-      }]
-    };
+    return allListings.find(item => item.id === selectedItem) || null;
   };
 
   if (isLoading) {
@@ -177,7 +128,7 @@ export default function ItemDetailPage() {
           <ProductHeader
             title={product.title}
             averageRating={product.averageRating}
-            totalRentals={product.totalRentals}
+            totalRentals={product.rentalCount}
             location={product.location}
             category={product.category}
           />
@@ -185,7 +136,7 @@ export default function ItemDetailPage() {
 
         {/* Image Gallery Section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 animate-fade-up delay-100">
-          <ImageGallery images={product.images} title={product.title} />
+          <ImageGallery images={product.images.map(img => img.image)} title={product.title} />
         </div>
 
         {/* Main Content Grid */}
@@ -196,15 +147,15 @@ export default function ItemDetailPage() {
               {/* Host/Vhara Section */}
               <div className="animate-fade-left delay-200">
                 <HostInfo />
-            </div>
+              </div>
 
               {/* Description Section */}
               <div className="animate-fade-left delay-300">
                 <ProductDescription
                   description={product.description}
                   title={product.title}
-                  condition={product.condition}
                   category={product.category}
+                  condition="Good"
                 />
               </div>
 
@@ -216,22 +167,22 @@ export default function ItemDetailPage() {
               {/* Details & Specifications */}
               <div className="animate-fade-left delay-500">
                 <ItemDetails
-                  condition={product.condition}
                   category={product.category}
                   securityDeposit={product.securityDeposit}
+                  condition="Good"
                 />
-          </div>
+              </div>
 
               {/* Availability Calendar */}
               <div className="animate-fade-left delay-600">
-                <AvailabilitySection unavailableDates={product.unavailableDates} />
-                </div>
+                <AvailabilitySection unavailableDates={product.unavailableDates.map(date => new Date(date.date))} />
+              </div>
 
               {/* Reviews Section */}
               <div className="animate-fade-left delay-700">
                 <ReviewsSection
                   averageRating={product.averageRating}
-                  totalRentals={product.totalRentals}
+                  totalRentals={product.rentalCount}
                 />
               </div>
             </div>
@@ -240,13 +191,11 @@ export default function ItemDetailPage() {
             <div className="lg:col-span-1 relative">
               <div className="animate-fade-right delay-200">
                 <PricingCard
-                  productId={product.id}
                   pricingTiers={product.pricingTiers}
                   minRentalPeriod={product.pricingTiers[0].maxPeriod || 1}
                   maxRentalPeriod={product.pricingTiers[0].maxPeriod || 30}
-                  securityDeposit={product.securityDeposit}
-              />
-            </div>
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -255,10 +204,9 @@ export default function ItemDetailPage() {
         <div className="animate-fade-up delay-1000">
           <SimilarItems
             items={similarItems}
-            currentProductId={product.id}
             onQuickView={handleQuickView}
           />
-          </div>
+        </div>
       </main>
 
       {/* Item Detail Modal */}

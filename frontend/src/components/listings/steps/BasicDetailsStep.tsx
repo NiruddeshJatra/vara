@@ -5,7 +5,8 @@ import { AlertCircle, ChevronRight, Lightbulb } from 'lucide-react';
 import { ListingFormData, FormError } from '@/types/listings';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
-import { Category, ProductType } from '@/constants/productTypes';
+import { Category, ProductType, CATEGORY_PRODUCT_TYPES, PRODUCT_TYPE_DISPLAY } from '@/constants/productTypes';
+import { Label } from '@/components/ui/label';
 
 type Props = {
   formData: ListingFormData;
@@ -20,10 +21,8 @@ const BasicDetailsStep = ({ formData, errors, onChange, onNext }: Props) => {
   // Update available product types when category changes
   useEffect(() => {
     if (formData.category) {
-      // Get product types for the selected category
-      const productTypes = Object.values(ProductType).filter(
-        type => type.startsWith(formData.category.toUpperCase())
-      );
+      // Get product types for the selected category using the mapping
+      const productTypes = CATEGORY_PRODUCT_TYPES[formData.category as Category] || [];
       setAvailableProductTypes(productTypes);
 
       // Reset product type if it's not in the new category
@@ -41,32 +40,27 @@ const BasicDetailsStep = ({ formData, errors, onChange, onNext }: Props) => {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6 px-2">
-      <div className="grid gap-2">
-        <label className="block text-sm font-medium text-gray-700">
-          Title <span className="text-red-500">*</span>
-        </label>
+    <div className="space-y-6">
+      <div>
+        <Label htmlFor="title">Title <span className="text-red-500">*</span></Label>
         <Input
+          id="title"
           name="title"
           value={formData.title}
           onChange={handleChange}
-          className={`text-sm md:text-base h-8 md:h-10 focus:ring-green-500 focus:border-green-500 placeholder:text-sm ${errors.title ? 'border-red-500' : 'border-gray-300'}`}
-          placeholder="e.g., Canon EOS R6 Camera, Camping Tent 4-Person"
+          className={errors.title ? 'border-red-500' : ''}
+          placeholder="Enter a descriptive title for your product"
         />
-        {errors.title ? (
+        {errors.title && (
           <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
             <AlertCircle size={14} /> {errors.title[0]}
           </p>
-        ) : (
-          <p className="text-xs text-gray-500">Enter a descriptive title for your product</p>
         )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Category <span className="text-red-500">*</span>
-          </label>
+          <Label htmlFor="category">Category <span className="text-red-500">*</span></Label>
           <Select
             value={formData.category}
             onValueChange={(value) => onChange({ category: value as Category })}
@@ -88,20 +82,18 @@ const BasicDetailsStep = ({ formData, errors, onChange, onNext }: Props) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Product Type <span className="text-red-500">*</span>
-          </label>
+          <Label htmlFor="productType">Product Type <span className="text-red-500">*</span></Label>
           <Select
             value={formData.productType}
             onValueChange={(value) => onChange({ productType: value as ProductType })}
             disabled={!formData.category}
           >
             <SelectTrigger className={errors.productType ? 'border-red-500' : ''}>
-              {formData.productType || "Select Product Type"}
+              {formData.productType ? PRODUCT_TYPE_DISPLAY[formData.productType as ProductType] : "Select Product Type"}
             </SelectTrigger>
             <SelectContent>
               {availableProductTypes.map(type => (
-                <SelectItem key={type} value={type}>{type}</SelectItem>
+                <SelectItem key={type} value={type}>{PRODUCT_TYPE_DISPLAY[type]}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -114,15 +106,15 @@ const BasicDetailsStep = ({ formData, errors, onChange, onNext }: Props) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Description <span className="text-red-500">*</span>
-        </label>
+        <Label htmlFor="description">Description <span className="text-red-500">*</span></Label>
         <Textarea
+          id="description"
           name="description"
           value={formData.description}
           onChange={handleChange}
-          className={`w-full p-2 border rounded-md h-24 md:h-32 transition-colors placeholder:text-sm ${errors.description ? 'border-red-500' : 'border-gray-300'} focus:ring-1 focus:ring-green-500 focus:border-green-500`}
-          placeholder="Describe your item's features, condition, and any special instructions..."
+          className={errors.description ? 'border-red-500' : ''}
+          placeholder="Describe your product in detail"
+          rows={4}
         />
         {errors.description && (
           <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
