@@ -218,6 +218,22 @@ const CreateListingStepper = ({ initialData, isEditing = false, productId, onSub
     }
   };
 
+  const handleFormDataChange = (data: Partial<ListingFormData>) => {
+    // Clear errors for the fields that are being updated
+    const newErrors = { ...errors };
+    Object.keys(data).forEach(key => {
+      delete newErrors[key];
+      // Also clear any nested errors (for pricing tiers)
+      Object.keys(newErrors).forEach(errorKey => {
+        if (errorKey.startsWith(`${key}.`)) {
+          delete newErrors[errorKey];
+        }
+      });
+    });
+    setErrors(newErrors);
+    setFormData(prev => ({ ...prev, ...data }));
+  };
+
   return (
     <main className="flex-grow pt-4 pb-4 md:pt-8 md:pb-8 lg:pt-16 lg:pb-16">
       <div className="bg-gradient-to-b from-green-300 to-lime-100/20 pt-4 md:pt-8 px-4">
@@ -273,7 +289,7 @@ const CreateListingStepper = ({ initialData, isEditing = false, productId, onSub
               <BasicDetailsStep
                 formData={formData}
                 errors={errors}
-                onChange={(data: Partial<ListingFormData>) => setFormData(prev => ({ ...prev, ...data }))}
+                onChange={handleFormDataChange}
                 onNext={handleNextStep}
               />
             )}
@@ -282,7 +298,7 @@ const CreateListingStepper = ({ initialData, isEditing = false, productId, onSub
               <ImageUploadStep
                 images={formData.images}
                 error={errors.images}
-                onChange={(images) => setFormData(prev => ({ ...prev, images }))}
+                onChange={(images) => handleFormDataChange({ images })}
               />
             )}
 
@@ -291,7 +307,7 @@ const CreateListingStepper = ({ initialData, isEditing = false, productId, onSub
                 formData={formData}
                 errors={errors}
                 onNext={(data) => {
-                  setFormData(prev => ({ ...prev, ...data }));
+                  handleFormDataChange(data);
                   handleNextStep();
                 }}
                 onBack={handlePrevStep}
@@ -306,7 +322,7 @@ const CreateListingStepper = ({ initialData, isEditing = false, productId, onSub
                   value: value as DurationUnit,
                   label
                 }))}
-                onChange={(data) => setFormData(prev => ({ ...prev, ...data }))}
+                onChange={handleFormDataChange}
                 onNext={handleNextStep}
                 onBack={handlePrevStep}
               />
@@ -316,7 +332,7 @@ const CreateListingStepper = ({ initialData, isEditing = false, productId, onSub
               <UnavailabilityStep
                 formData={formData}
                 errors={errors}
-                onChange={(data) => setFormData(prev => ({ ...prev, ...data }))}
+                onChange={handleFormDataChange}
                 onNext={handleNextStep}
                 onBack={handlePrevStep}
               />
