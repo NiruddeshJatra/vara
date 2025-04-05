@@ -33,18 +33,18 @@ const ConfirmationStep = ({ formData, onEdit, isEditing = false }: Props) => {
 
     // Sort dates
     const sortedDates = [...validDates].sort((a, b) => a.date.getTime() - b.date.getTime());
-    
+
     const ranges = [];
     let rangeStart = sortedDates[0].date;
     let rangeEnd = sortedDates[0].date;
-    
+
     for (let i = 1; i < sortedDates.length; i++) {
       const currentDate = sortedDates[i].date;
       const prevDate = sortedDates[i - 1].date;
-      
+
       // Check if dates are consecutive
       const dayDiff = Math.floor((currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
-      
+
       if (dayDiff === 1) {
         // Consecutive date, extend the range
         rangeEnd = currentDate;
@@ -55,10 +55,10 @@ const ConfirmationStep = ({ formData, onEdit, isEditing = false }: Props) => {
         rangeEnd = currentDate;
       }
     }
-    
+
     // Add the last range
     ranges.push({ start: rangeStart, end: rangeEnd });
-    
+
     return ranges;
   };
 
@@ -66,89 +66,71 @@ const ConfirmationStep = ({ formData, onEdit, isEditing = false }: Props) => {
 
   return (
     <div className="space-y-10">
-      <div className="text-center">
-        <div className="text-green-600">
-          <CheckCircle size={48} className="mx-auto" />
+      <div className="space-y-10">
+        <div className="text-center">
+          <div className="text-green-600">
+            <CheckCircle size={48} className="mx-auto" />
+          </div>
+          <h2 className="text-2xl font-bold text-green-600 mb-2">
+            {isEditing ? 'Listing Updated Successfully!' : 'Listing Created Successfully!'}
+          </h2>
+          <p className="text-gray-600">
+            {isEditing
+              ? 'Your product listing has been updated.'
+              : 'Your product is now available for rent.'}
+          </p>
         </div>
-        <h2 className="text-2xl font-bold text-green-600 mb-2">
-          {isEditing ? 'Listing Updated Successfully!' : 'Listing Created Successfully!'}
-        </h2>
-        <p className="text-gray-600">
-          {isEditing 
-            ? 'Your product listing has been updated.'
-            : 'Your product is now available for rent.'}
-        </p>
-      </div>
-      
-      <div className="max-w-lg mx-auto">
-        <div className="grid grid-cols-2 gap-x-4 gap-y-5">
-          <div className="flex items-center">
-            <span className="text-base font-semibold text-green-700">Title</span>
-          </div>
-          <div className="flex items-center">
-            <span className="text-base font-medium text-gray-600">{formData.title}</span>
-          </div>
-          
-          <div className="flex items-center">
-            <span className="text-base font-semibold text-green-700">Category</span>
-          </div>
-          <div className="flex items-center">
-            <span className="text-base font-medium text-gray-600">{CATEGORY_DISPLAY[formData.category]}</span>
-          </div>
-          
-          <div className="flex items-center">
-            <span className="text-base font-semibold text-green-700">Location</span>
-          </div>
-          <div className="flex items-center">
-            <span className="text-base font-medium text-gray-600">{formData.location}</span>
-          </div>
-          
-          <div className="flex items-center">
-            <span className="text-base font-semibold text-green-700">Images</span>
-          </div>
-          <div className="flex items-center">
-            <span className="text-base font-medium text-gray-600">{formData.images.length} uploaded</span>
-          </div>
-          
-          <div className="flex items-center">
-            <span className="text-base font-semibold text-green-700">Pricing</span>
-          </div>
-          <div className="flex items-center">
-            <div>
+
+        <div className="max-w-lg mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4">
+            <div className="font-semibold text-green-700">Title</div>
+            <div className="text-gray-600 truncate">{formData.title}</div>
+
+            <div className="font-semibold text-green-700">Category</div>
+            <div className="text-gray-600 truncate">{CATEGORY_DISPLAY[formData.category]}</div>
+
+            <div className="font-semibold text-green-700">Location</div>
+            <div className="text-gray-600 truncate">{formData.location}</div>
+
+            <div className="font-semibold text-green-700">Images</div>
+            <div className="text-gray-600">{formData.images.length} uploaded</div>
+
+            <div className="font-semibold text-green-700">Pricing</div>
+            <div className="space-y-2">
               {formData.pricingTiers.map((tier, index) => (
-                <div key={index} className="text-base font-medium text-gray-600">
-                  {tier.durationUnit.charAt(0).toUpperCase() + tier.durationUnit.slice(1)}ly {tier.price} Taka
+                <div key={index} className="text-gray-600 whitespace-nowrap">
+                  {tier.price} Taka 
+                  {tier.durationUnit === 'day' ? ' daily' :
+                    tier.durationUnit === 'week' ? ' weekly' :
+                      tier.durationUnit === 'month' ? ' monthly' :
+                        (tier.durationUnit as string).charAt(0).toUpperCase() + (tier.durationUnit as string).slice(1) + 'ly'}
                   {tier.maxPeriod && ` (Max: ${tier.maxPeriod} ${tier.durationUnit}${tier.maxPeriod > 1 ? 's' : ''})`}
                 </div>
               ))}
             </div>
-          </div>
-          {formData.securityDeposit && (
-            <>
-              <div className="flex items-start">
-                <span className="text-base font-medium text-green-700">Security Deposit</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-base font-medium text-gray-600">{formData.securityDeposit} Taka</span>
-              </div>
-            </>
-          )}
-          {unavailableRanges.length > 0 && (
-            <>
-              <div className="flex items-start">
-                <span className="text-base font-medium text-green-700">Unavailable Dates</span>
-              </div>
-              <div className="flex items-start">
-                <div className="flex flex-wrap gap-2">
-                  {unavailableRanges.map((range, index) => (
-                    <div key={index} className="text-sm bg-red-50 text-red-800 px-3 py-1 rounded-md">
-                      {format(range.start, "MMM d")} - {format(range.end, "MMM d, yyyy")}
-                    </div>
-                  ))}
+
+            {formData.securityDeposit && (
+              <>
+                <div className="font-semibold text-green-700">Security Deposit</div>
+                <div className="text-gray-600 whitespace-nowrap">{formData.securityDeposit} Taka</div>
+              </>
+            )}
+
+            {unavailableRanges.length > 0 && (
+              <>
+                <div className="font-semibold text-green-700">Unavailable Dates</div>
+                <div className="overflow-x-auto">
+                  <div className="flex flex-wrap gap-2">
+                    {unavailableRanges.map((range, index) => (
+                      <div key={index} className="text-sm bg-red-50 text-red-800 px-3 py-1 rounded-md whitespace-nowrap">
+                        {format(range.start, "MMM d")} - {format(range.end, "MMM d, yyyy")}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -163,12 +145,12 @@ const ConfirmationStep = ({ formData, onEdit, isEditing = false }: Props) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
         <Button
-            variant="outline"
-            onClick={onEdit}
-            className="w-full text-gray-600 font-bold border-gray-300 hover:border-green-500 hover:text-green-600"
-          >
-            Edit Again
-          </Button>
+          variant="outline"
+          onClick={onEdit}
+          className="w-full text-gray-600 font-bold border-gray-300 hover:border-green-500 hover:text-green-600"
+        >
+          Edit Again
+        </Button>
         <Button
           onClick={() => navigate('/profile')}
           className="w-full bg-green-600 hover:bg-green-700"

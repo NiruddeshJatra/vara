@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -36,7 +35,7 @@ const CreateListingStepper = ({ initialData, isEditing = false, productId, onSub
     purchaseYear: new Date().getFullYear().toString(),
     originalPrice: 0,
     ownershipHistory: OwnershipHistory.FIRSTHAND,
-    pricingTiers: [{ durationUnit: DurationUnit.DAY, price: 1, maxPeriod: 30 }]
+    pricingTiers: [{ durationUnit: DurationUnit.DAY, price: 0, maxPeriod: 30 }]
   });
   const [errors, setErrors] = useState<FormError>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -82,7 +81,7 @@ const CreateListingStepper = ({ initialData, isEditing = false, productId, onSub
   const validateProductHistory = (data: ListingFormData) => {
     const newErrors: FormError = {};
     if (!data.purchaseYear) newErrors.purchaseYear = ['Purchase year is required'];
-    if (!data.originalPrice) newErrors.originalPrice = ['Original price is required'];
+    if (!data.originalPrice || data.originalPrice <= 0) newErrors.originalPrice = ['Original price is required and must be greater than 0'];
     if (!data.ownershipHistory) newErrors.ownershipHistory = ['Ownership history is required'];
     return newErrors;
   };
@@ -93,9 +92,17 @@ const CreateListingStepper = ({ initialData, isEditing = false, productId, onSub
     if (!data.pricingTiers || data.pricingTiers.length === 0) {
       newErrors.pricingTiers = ['At least one pricing tier is required'];
     } else {
+      // Check for duplicate duration units
+      const durationUnits = new Set();
       data.pricingTiers.forEach((tier, index) => {
-        if (tier.price <= 0) {
-          newErrors[`pricingTiers.${index}.price`] = ['Price must be greater than 0'];
+        if (durationUnits.has(tier.durationUnit)) {
+          newErrors[`pricingTiers.${index}.durationUnit`] = ['Duplicate duration unit is not allowed'];
+        } else {
+          durationUnits.add(tier.durationUnit);
+        }
+
+        if (!tier.price || tier.price <= 0) {
+          newErrors[`pricingTiers.${index}.price`] = ['Price is required and must be greater than 0'];
         }
         if (tier.maxPeriod && tier.maxPeriod < 1) {
           newErrors[`pricingTiers.${index}.maxPeriod`] = ['Maximum period must be at least 1'];
@@ -115,17 +122,17 @@ const CreateListingStepper = ({ initialData, isEditing = false, productId, onSub
   const handleNextStep = () => {
     let newErrors: FormError = {};
 
-    // Skip validation for ProductHistoryStep since it's handled in the component
-    if (currentStep === 3) {
-      setCurrentStep(prev => prev + 1);
-      return;
-    }
-
     // Validate current step
     if (currentStep === 1) {
       newErrors = validateBasicDetails(formData);
     } else if (currentStep === 2) {
       newErrors = validateImageUpload(formData);
+    } else if (currentStep === 3) {
+      newErrors = validateProductHistory(formData);
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        return;
+      }
     } else if (currentStep === 4) {
       newErrors = validatePricing(formData);
     } else if (currentStep === 5) {
