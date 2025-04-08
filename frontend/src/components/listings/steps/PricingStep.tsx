@@ -157,7 +157,7 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
 
               <div>
                 <label className="block text-sm font-medium mb-1 text-gray-700">
-                  Base Price (Taka) <span className="text-red-500">*</span>
+                  Base Price <span className="text-red-500">*</span>
                 </label>
                 <Input
                   type="number"

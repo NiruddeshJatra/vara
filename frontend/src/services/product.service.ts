@@ -1,7 +1,6 @@
 import api from './api.service';
 import { ProductStatus } from '../constants/productStatus';
 import { Product, ListingFormData } from '../types/listings';
-import { UnavailableDate, PricingTier } from '../types/listings';
 import config from '../config';
 
 /**
@@ -117,31 +116,28 @@ class ProductService {
       if (data.description) formData.append('description', data.description);
       if (data.location) formData.append('location', data.location);
       if (data.securityDeposit !== undefined) {
-        formData.append('security_deposit', data.securityDeposit?.toString() ?? '');
+        formData.append('security_deposit', data.securityDeposit?.toString());
       }
       if (data.purchaseYear) formData.append('purchase_year', data.purchaseYear);
       if (data.originalPrice) formData.append('original_price', data.originalPrice.toString());
       if (data.ownershipHistory) formData.append('ownership_history', data.ownershipHistory);
 
-      // Append images if they're being updated
       if (data.images && data.images.length > 0) {
         data.images.forEach((image) => {
-          formData.append('images', image); // Changed from uploaded_images to images
+          formData.append('images', image);
         });
       }
 
-      // Append unavailable dates if they're being updated
       if (data.unavailableDates && data.unavailableDates.length > 0) {
         const unavailableDates = data.unavailableDates.map(date => ({
-          date: date.date,
+          date: date.date ? new Date(date.date).toISOString().split('T')[0] : null,
           is_range: date.isRange,
-          range_start: date.rangeStart,
-          range_end: date.rangeEnd
+          range_start: date.rangeStart ? new Date(date.rangeStart).toISOString().split('T')[0] : null,
+          range_end: date.rangeEnd ? new Date(date.rangeEnd).toISOString().split('T')[0] : null
         }));
         formData.append('unavailable_dates', JSON.stringify(unavailableDates));
       }
 
-      // Append pricing tiers if they're being updated
       if (data.pricingTiers && data.pricingTiers.length > 0) {
         const pricingTiers = data.pricingTiers.map(tier => ({
           duration_unit: tier.durationUnit.toLowerCase(),
@@ -151,9 +147,11 @@ class ProductService {
         formData.append('pricing_tiers', JSON.stringify(pricingTiers));
       }
 
+      console.log("Updating product with ID:", productId);
+
       const response = await api.patch(config.products.updateEndpoint(productId), formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': 'multipart/form-data'
         },
       });
       return response.data;

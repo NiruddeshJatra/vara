@@ -171,6 +171,11 @@ class ProductSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # When updating, we need to know if this is an update request
+        self.is_update = kwargs.get('instance') is not None
 
     def validate_images(self, value):
         """Validate list of images"""
@@ -229,6 +234,7 @@ class ProductSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         try:
+            logger.info(f"Create method called on ProductSerializer")
             # Extract related data
             images = validated_data.pop("images", [])
             unavailable_dates = validated_data.pop("unavailable_dates", [])
@@ -259,3 +265,41 @@ class ProductSerializer(serializers.ModelSerializer):
         except Exception as e:
             logger.error(f"Error creating product: {str(e)}")
             raise serializers.ValidationError(f"Error creating product: {str(e)}")
+          
+          
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        logger.info(f"Update method called for product {instance.id}")
+        # Extract related data
+        images = validated_data.pop("images", [])
+        unavailable_dates = validated_data.pop("unavailable_dates", [])
+        pricing_tiers = validated_data.pop("pricing_tiers", [])
+        
+        # Update the product fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        # Handle images - add new ones if provided
+        if images:
+            # Create new images
+            for image in images:
+                ProductImage.objects.create(product=instance, image=image)
+        
+        # Handle unavailable dates - clear existing and create new ones
+        if unavailable_dates:
+            # Delete existing dates
+            UnavailableDate.objects.filter(product=instance).delete()
+            # Create new dates
+            for date_data in unavailable_dates:
+                UnavailableDate.objects.create(product=instance, **date_data)
+        
+        # Handle pricing tiers - clear existing and create new ones
+        if pricing_tiers:
+            # Delete existing tiers
+            PricingTier.objects.filter(product=instance).delete()
+            # Create new tiers
+            for tier_data in pricing_tiers:
+                PricingTier.objects.create(product=instance, **tier_data)
+        
+        return instance

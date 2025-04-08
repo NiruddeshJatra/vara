@@ -28,7 +28,6 @@ import VerifyEmailNotice from "./pages/VerifyEmailNotice";
 import EmailVerification from "./pages/EmailVerification";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
-import EditListing from "./pages/EditListing";
 
 const queryClient = new QueryClient();
 
@@ -121,14 +120,6 @@ const App = () => {
                 element={
                   <ProtectedRoute requireCompleteProfile>
                     <CreateListing />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/edit-listing/:productId"
-                element={
-                  <ProtectedRoute>
-                    <EditListing />
                   </ProtectedRoute>
                 }
               />

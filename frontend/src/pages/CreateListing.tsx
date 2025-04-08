@@ -30,13 +30,13 @@ export default function CreateListingPage() {
   const handleSubmit = async (formData: ListingFormData) => {
     setIsSubmitting(true);
     try {
-      await productService.createProduct(formData);
+      const response = await productService.createProduct(formData);
       toast.success('Product created successfully!');
-      return true;
+      return response;
     } catch (error) {
       toast.error('Failed to create product. Please try again.');
       console.error('Error creating product:', error);
-      return false;
+      throw error;
     } finally {
       setIsSubmitting(false);
     }

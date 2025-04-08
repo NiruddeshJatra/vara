@@ -13,32 +13,58 @@ import { DURATION_UNIT_DISPLAY, DurationUnit } from '@/constants/rental';
 import { OwnershipHistory } from '@/constants/productAttributes';
 import productService from '@/services/product.service';
 import { toast } from 'react-hot-toast';
+import { useLocation } from 'react-router-dom';
+
+interface ProductResponse {
+  id: string;
+}
 
 interface Props {
   initialData?: ListingFormData;
   isEditing?: boolean;
   productId?: string;
-  onSubmit?: (data: ListingFormData) => void;
+  onSubmit: (data: ListingFormData) => Promise<ProductResponse>;
+  onEditComplete?: () => void;
 }
 
-const CreateListingStepper = ({ initialData, isEditing = false, productId, onSubmit }: Props) => {
+const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false, productId: initialProductId, onSubmit, onEditComplete }: Props) => {
+  const location = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<ListingFormData>(() => initialData || {
-    title: '',
-    category: Category.PHOTOGRAPHY_VIDEOGRAPHY,
-    productType: ProductType.CAMERA,
-    description: '',
-    location: '',
-    images: [],
-    unavailableDates: [],
-    securityDeposit: 0,
-    purchaseYear: new Date().getFullYear().toString(),
-    originalPrice: 0,
-    ownershipHistory: OwnershipHistory.FIRSTHAND,
-    pricingTiers: [{ durationUnit: DurationUnit.DAY, price: 0, maxPeriod: 30 }]
+  const [isEditing, setIsEditing] = useState(initialIsEditing);
+  const [productId, setProductId] = useState(initialProductId);
+  const [formData, setFormData] = useState<ListingFormData>(() => {
+    if (location.state?.initialData) {
+      return location.state.initialData;
+    }
+    
+    return initialData || {
+      title: '',
+      category: Category.PHOTOGRAPHY_VIDEOGRAPHY,
+      productType: ProductType.CAMERA,
+      description: '',
+      location: '',
+      images: [],
+      unavailableDates: [],
+      securityDeposit: 0,
+      purchaseYear: new Date().getFullYear().toString(),
+      originalPrice: 0,
+      ownershipHistory: OwnershipHistory.FIRSTHAND,
+      pricingTiers: [{ durationUnit: DurationUnit.DAY, price: 0, maxPeriod: 30 }]
+    };
   });
   const [errors, setErrors] = useState<FormError>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (location.state) {
+      if (location.state.isEditing !== undefined) {
+        setIsEditing(location.state.isEditing);
+      }
+      if (location.state.productId) {
+        setProductId(location.state.productId);
+      }
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -121,6 +147,7 @@ const CreateListingStepper = ({ initialData, isEditing = false, productId, onSub
 
   const handleNextStep = () => {
     let newErrors: FormError = {};
+    setErrors({}); // Clear any existing errors before validation
 
     // Validate current step
     if (currentStep === 1) {
@@ -152,6 +179,12 @@ const CreateListingStepper = ({ initialData, isEditing = false, productId, onSub
     setErrors({});
   };
 
+  const handleEdit = () => {
+    setIsEditing(true);
+    setProductId(productId);
+    setCurrentStep(1);
+  };
+
   const handleSubmit = async () => {
     // Validate all steps before submission
     const basicDetailsErrors = validateBasicDetails(formData);
@@ -177,19 +210,20 @@ const CreateListingStepper = ({ initialData, isEditing = false, productId, onSub
 
     setIsSubmitting(true);
     try {
-      if (onSubmit) {
-        await onSubmit(formData);
-        toast.success(isEditing ? 'Listing updated successfully!' : 'Listing created successfully!');
-        setCurrentStep(6);
+      console.log("Submit handler - isEditing:", isEditing, "productId:", productId);
+      let response;
+      if (isEditing && productId) {
+        response = await productService.updateProduct(productId, formData);
       } else {
-        if (isEditing && productId) {
-          await productService.updateProduct(productId, formData);
-        } else {
-          await productService.createProduct(formData);
-        }
-        toast.success(isEditing ? 'Listing updated successfully!' : 'Listing created successfully!');
+        response = await productService.createProduct(formData);
+      }
+      
+      if (response?.id) {
+        setProductId(response.id);
+        console.log("Setting productId from response:", response.id);
         setCurrentStep(6);
       }
+      toast.success(isEditing ? 'Listing updated successfully!' : 'Listing created successfully!');
     } catch (error: any) {
       console.error('Full API Error:', error.response?.data);
       console.error('Error submitting form:', error);
@@ -219,11 +253,14 @@ const CreateListingStepper = ({ initialData, isEditing = false, productId, onSub
   };
 
   const handleFormDataChange = (data: Partial<ListingFormData>) => {
+    console.log("Form data changing:", data);
     // Clear errors for the fields that are being updated
     const newErrors = { ...errors };
     Object.keys(data).forEach(key => {
+      // Clear the main field error
       delete newErrors[key];
-      // Also clear any nested errors (for pricing tiers)
+      
+      // Clear any nested errors (for pricing tiers)
       Object.keys(newErrors).forEach(errorKey => {
         if (errorKey.startsWith(`${key}.`)) {
           delete newErrors[errorKey];
@@ -306,10 +343,8 @@ const CreateListingStepper = ({ initialData, isEditing = false, productId, onSub
               <ProductHistoryStep
                 formData={formData}
                 errors={errors}
-                onNext={(data) => {
-                  handleFormDataChange(data);
-                  handleNextStep();
-                }}
+                onChange={handleFormDataChange}
+                onNext={handleNextStep}
                 onBack={handlePrevStep}
               />
             )}
@@ -341,14 +376,15 @@ const CreateListingStepper = ({ initialData, isEditing = false, productId, onSub
             {currentStep === 6 && (
               <ConfirmationStep
                 formData={formData}
-                onEdit={() => setCurrentStep(1)}
+                onEdit={handleEdit}
                 isEditing={isEditing}
+                productId={productId}
               />
             )}
           </form>
 
           <div className="mt-6 md:mt-8 lg:mt-10 flex flex-col-reverse md:flex-row justify-between gap-3 md:gap-4">
-            {currentStep > 1 && currentStep < 6 && currentStep !== 3 && (
+            {currentStep > 1 && currentStep < 6 && (
               <>
                 <Button
                   variant="outline"

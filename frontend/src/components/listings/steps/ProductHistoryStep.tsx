@@ -3,45 +3,25 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ListingFormData, FormError } from '@/types/listings';
-import { Info, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
-import { Button } from '@/components/ui/button';
 import { OwnershipHistory } from '@/constants/productAttributes';
 
 type Props = {
   formData: ListingFormData;
-  onNext: (data: Partial<ListingFormData>) => void;
-  onBack: () => void;
+  onChange: (data: Partial<ListingFormData>) => void;
   errors?: FormError;
+  onNext: () => void;
+  onBack: () => void;
 };
 
-const ProductHistoryStep = ({ formData, onNext, onBack, errors = {} }: Props) => {
-  const [purchaseYear, setPurchaseYear] = useState<string>(
-    formData.purchaseYear || new Date().getFullYear().toString()
-  );
-  const [originalPrice, setOriginalPrice] = useState<string>('');
-  const [ownershipHistory, setOwnershipHistory] = useState<string>(
-    formData.ownershipHistory || OwnershipHistory.FIRSTHAND
-  );
-
-  // Update local state when formData changes
-  useEffect(() => {
-    if (formData.purchaseYear) setPurchaseYear(formData.purchaseYear);
-    if (formData.originalPrice) setOriginalPrice(formData.originalPrice.toString());
-    if (formData.ownershipHistory) setOwnershipHistory(formData.ownershipHistory);
-  }, [formData]);
-
-  // Handle next button click properly
-  const handleNext = () => {
-    onNext({
-      purchaseYear,
-      originalPrice: originalPrice ? parseFloat(originalPrice) : 0,
-      ownershipHistory,
-    });
-  };
-
+const ProductHistoryStep = ({ formData, onChange, errors = {} }: Props) => {
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 21 }, (_, i) => currentYear - i);
+
+  const handleChange = (field: keyof ListingFormData, value: any) => {
+    onChange({ [field]: value });
+  };
 
   return (
     <div className="space-y-8">
@@ -56,14 +36,14 @@ const ProductHistoryStep = ({ formData, onNext, onBack, errors = {} }: Props) =>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label htmlFor="purchaseYear" className="text-base font-medium text-gray-700">
-              Purchase Year
+              Purchase Year <span className="text-red-500">*</span>
             </Label>
             <Select 
-              value={purchaseYear} 
-              onValueChange={setPurchaseYear}
+              value={formData.purchaseYear} 
+              onValueChange={(value) => handleChange('purchaseYear', value)}
             >
               <SelectTrigger className={errors.purchaseYear ? "border-red-500" : ""}>
-                {purchaseYear || "Select Year"}
+                {formData.purchaseYear || "Select Year"}
               </SelectTrigger>
               <SelectContent>
                 {years.map(year => (
@@ -81,15 +61,14 @@ const ProductHistoryStep = ({ formData, onNext, onBack, errors = {} }: Props) =>
 
           <div className="space-y-2">
             <Label htmlFor="originalPrice" className="text-base font-medium text-gray-700">
-              Original Price
+              Original Price <span className="text-red-500">*</span>
             </Label>
             <Input
               id="originalPrice"
               type="number"
               min="0"
-              step="0.01"
-              value={originalPrice}
-              onChange={(e) => setOriginalPrice(e.target.value)}
+              value={formData.originalPrice || ''}
+              onChange={(e) => handleChange('originalPrice', e.target.value ? Number(e.target.value) : undefined)}
               className={errors.originalPrice ? "border-red-500" : ""}
               placeholder="Enter original purchase price"
             />
@@ -104,11 +83,11 @@ const ProductHistoryStep = ({ formData, onNext, onBack, errors = {} }: Props) =>
 
         <div className="space-y-4">
           <Label className="text-base font-medium text-gray-700">
-            Ownership History
+            Ownership History <span className="text-red-500">*</span>
           </Label>
           <RadioGroup
-            value={ownershipHistory}
-            onValueChange={setOwnershipHistory}
+            value={formData.ownershipHistory}
+            onValueChange={(value) => handleChange('ownershipHistory', value)}
             className="grid grid-cols-1 md:grid-cols-2 gap-4"
           >
             <div className="flex items-center space-x-2">
@@ -146,22 +125,6 @@ const ProductHistoryStep = ({ formData, onNext, onBack, errors = {} }: Props) =>
           <li>Product history helps renters understand the item's background and value.</li>
           <li>This information can build trust and transparency in your listing.</li>
         </ul>
-      </div>
-
-      <div className="flex justify-between mt-8">
-        <Button
-          onClick={onBack}
-          variant="outline"
-          className="flex items-center gap-2"
-        >
-          <ChevronLeft size={16} /> Back
-        </Button>
-        <Button
-          onClick={handleNext}
-          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
-        >
-          Next <ChevronRight size={16} />
-        </Button>
       </div>
     </div>
   );

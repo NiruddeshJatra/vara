@@ -48,6 +48,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
+        logger.info(f"CREATE method called on ProductViewSet")
         try:
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
@@ -64,9 +65,36 @@ class ProductViewSet(viewsets.ModelViewSet):
                 {"error": "An unexpected error occurred"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+            
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        logger.info(f"Update method called with data: {request.data}")
+        
+        instance = self.get_object()
+        logger.info(f"Updating product with ID: {instance.id}")
+        
+        partial = kwargs.pop('partial', False)
+        serializer = self.get_serializer(
+            instance, 
+            data=request.data, 
+            partial=partial,
+            context={'request': request, 'is_update': True}  # Mark this as an update
+        )
+        
+        serializer.is_valid(raise_exception=True)
+        
+        # Log validated data
+        logger.info(f"Validated data: {serializer.validated_data}")
+        
+        self.perform_update(serializer)
+        
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user, status="draft")
+        
+    def perform_update(self, serializer):
+        serializer.save()
 
     @action(detail=True, methods=["patch"])
     def update_status(self, request, pk=None):

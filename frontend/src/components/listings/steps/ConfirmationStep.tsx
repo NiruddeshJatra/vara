@@ -6,14 +6,22 @@ import { Link } from 'react-router-dom';
 import { ListingFormData } from '@/types/listings';
 import { format, parseISO } from 'date-fns';
 import { CATEGORY_DISPLAY } from '@/constants/productTypes';
+
 interface Props {
   formData: ListingFormData;
   onEdit: () => void;
   isEditing?: boolean;
+  productId?: string;
 }
 
-const ConfirmationStep = ({ formData, onEdit, isEditing = false }: Props) => {
+const ConfirmationStep = ({ formData, onEdit, isEditing = false, productId }: Props) => {
   const navigate = useNavigate();
+  
+  const handleEditAgain = () => {
+    console.log("Edit Again clicked - using onEdit callback");
+    console.log("Current productId:", productId);
+    onEdit();
+  };
 
   // Group unavailable dates into ranges
   const getUnavailableDateRanges = () => {
@@ -109,7 +117,7 @@ const ConfirmationStep = ({ formData, onEdit, isEditing = false }: Props) => {
               ))}
             </div>
 
-            {formData.securityDeposit && (
+            {formData.securityDeposit > 0 && (
               <>
                 <div className="font-semibold text-green-700">Security Deposit</div>
                 <div className="text-gray-600 whitespace-nowrap">{formData.securityDeposit} Taka</div>
@@ -146,7 +154,7 @@ const ConfirmationStep = ({ formData, onEdit, isEditing = false }: Props) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
         <Button
           variant="outline"
-          onClick={onEdit}
+          onClick={handleEditAgain}
           className="w-full text-gray-600 font-bold border-gray-300 hover:border-green-500 hover:text-green-600"
         >
           Edit Again

@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, Calendar, Clock, MapPin, Shield, Banknote } from 'lucide-react';
+import { Heart, Calendar, Clock, MapPin, Star, Banknote } from 'lucide-react';
 import { Product } from '@/types/listings';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileCompletionModal } from '@/components/common/ProfileCompletionModal';
@@ -33,40 +33,71 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="relative aspect-square rounded-lg overflow-hidden">
-            <img
-              src={selectedItem.images[0]}
-              alt={selectedItem.title}
-              className="w-full h-full object-cover"
-            />
+      <DialogContent className="max-w-3xl bg-gradient-to-b from-white to-lime-50 p-8">
+        <DialogHeader>
+          <DialogTitle className="px-2 text-xl font-semibold text-green-800">
+            Item Quick View
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="flex flex-col md:flex-row gap-10">
+          <div className="md:w-1/2">
+            <div className="rounded-lg overflow-hidden">
+              <img 
+                src={selectedItem.images[0]?.image || '/images/placeholder-image.jpg'} 
+                alt={selectedItem.title} 
+                className="w-full h-auto object-cover" 
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/images/placeholder-image.jpg';
+                }}
+              />
+            </div>
           </div>
-          <div className="space-y-4">
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">{selectedItem.title}</h2>
-              <p className="text-sm text-gray-500 mt-1">{selectedItem.description}</p>
+          <div className="md:w-1/2 space-y-3">
+            <h2 className="text-2xl font-bold text-green-800">{selectedItem.title}</h2>
+            <div className="flex items-center">
+              <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+              <span className="ml-1 text-sm font-medium">{selectedItem.averageRating?.toFixed(1) || 'N/A'}</span>
+              <span className="ml-1 text-xs text-gray-500">({selectedItem.rentalCount || 0} rentals)</span>
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center text-sm text-gray-600">
-                <Calendar className="h-4 w-4 mr-2 text-green-600" />
-                <span>Available for {selectedItem.pricingTiers[0].maxPeriod} {selectedItem.pricingTiers[0].durationUnit}s</span>
+            <p className="text-sm text-green-700">{selectedItem.category}</p>
+            
+            <div className="bg-green-50 p-4 rounded-lg">
+              <div className="text-xl font-bold text-green-800 flex items-center">
+                <Banknote size={18} className="text-green-700 mr-1" />
+                {selectedItem.pricingTiers[0]?.price || 0}
+                <span className="text-sm font-normal ml-1"> per {selectedItem.pricingTiers[0]?.durationUnit || 'day'}</span>
               </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <Clock className="h-4 w-4 mr-2 text-green-600" />
-                <span>Base price: ৳{selectedItem.pricingTiers[0].price} per {selectedItem.pricingTiers[0].durationUnit}</span>
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <MapPin className="h-4 w-4 mr-2 text-green-600" />
-                <span>{selectedItem.location}</span>
+              <div className="mt-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-700">Minimum rental:</span>
+                  <span className="font-medium">
+                    1 {selectedItem.pricingTiers[0]?.durationUnit || 'day'}
+                  </span>
+                </div>
+                {selectedItem.pricingTiers[0]?.maxPeriod && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">Maximum rental:</span>
+                    <span className="font-medium">
+                      {selectedItem.pricingTiers[0].maxPeriod} {selectedItem.pricingTiers[0].durationUnit}s
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
+            
             <div className="space-y-2 pt-4">
               <Button 
                 className="w-full bg-green-600 hover:bg-green-700 text-white"
-                onClick={handleRequestRental}
+                asChild
               >
-                Request Rental
+                <Link 
+                  to={`/request-rental/${selectedItem.id}`}
+                  state={{ product: selectedItem }}
+                >
+                  Request Rental
+                </Link>
               </Button>
               <div className="flex gap-2">
                 <Button 
@@ -85,14 +116,6 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
             </div>
           </div>
         </div>
-
-        {/* Profile Completion Modal */}
-        <ProfileCompletionModal 
-          isOpen={showProfileModal}
-          onClose={() => setShowProfileModal(false)}
-          title="Complete Your Profile"
-          description="You need to complete your profile before you can request rentals."
-        />
       </DialogContent>
     </Dialog>
   );
