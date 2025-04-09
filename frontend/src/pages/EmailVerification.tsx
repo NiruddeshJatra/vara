@@ -48,11 +48,9 @@ const EmailVerification = () => {
   }, [token, verifyEmail, navigate]);
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <NavBar />
-
-      <main className="flex-grow pt-20 pb-20 bg-gradient-to-b from-green-300 to-lime-100/20">
-        <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg overflow-hidden px-8 py-20 animate-fade-up">
+    <div className="min-h-screen flex flex-col">
+      <div className="flex-grow flex items-center justify-center">
+        <div className="max-w-md p-8 text-center">
           {status === 'loading' && (
             <div className="text-center">
               <Loader2 className="h-16 w-16 text-green-600 mx-auto mt-20 mb-6 animate-spin" />
@@ -93,10 +91,8 @@ const EmailVerification = () => {
             </div>
           )}
         </div>
-      </main>
-
-      <Footer />
     </div>
+  </div>
   );
 };
 

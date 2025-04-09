@@ -6,42 +6,270 @@ import CategoryScroll from '@/components/advertisements/CategoryScroll';
 import ItemModal from '@/components/advertisements/ItemModal';
 import ListingsGrid from '@/components/advertisements/ListingsGrid';
 import LoadMoreTrigger from '@/components/advertisements/LoadMoreTrigger';
-import { categories, generateListings } from '@/utils/mockDataGenerator';
+import { CATEGORY_DISPLAY, CATEGORY_VALUES } from '@/constants/productTypes';
 import '../styles/main.css';
 import { Product } from '@/types/listings';
+import { addDays, addMonths, isWithinInterval, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
+import productService from '@/services/product.service';
+import { toast } from 'react-hot-toast';
 
-
-// Generate listings once - ensure the mock data matches the Product type
-const allListings = generateListings(40) as unknown as Product[];
+type AppCategory = {
+  id: string;
+  name: string;
+  icon: string;
+  image: string;
+  count: number;
+};
 
 const Advertisements = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [location, setLocation] = useState('GEC, Chittagong');
+  const [location, setLocation] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([50, 10000]);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [visibleItems, setVisibleItems] = useState(16);
+  const [availability, setAvailability] = useState('any');
+  const [allListings, setAllListings] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [categoriesWithCounts, setCategoriesWithCounts] = useState<AppCategory[]>([]);
 
-  // Filter listings based on selected category, search term, and price range
+  // Generate categories from constants
+  useEffect(() => {
+    const initialCategories: AppCategory[] = CATEGORY_VALUES.map((categoryId) => ({
+      id: categoryId,
+      name: CATEGORY_DISPLAY[categoryId],
+      icon: getCategoryIcon(categoryId),
+      image: '',
+      count: 0 // This will be updated when we get the actual data
+    }));
+    
+    setCategoriesWithCounts(initialCategories);
+  }, []);
+
+  function getCategoryIcon(categoryId: string): string {
+    // Map category IDs to appropriate icons
+    const iconMap: Record<string, string> = {
+      'photography_videography': 'camera',
+      'sports_fitness': 'dumbbell',
+      'tools_equipment': 'wrench',
+      'electronics': 'smartphone',
+      'musical_instruments': 'music',
+      'party_events': 'party-popper',
+      'fashion_accessories': 'shirt',
+      'home_garden': 'home',
+      'books_media': 'book',
+      'toys_games': 'gamepad-2',
+      'automotive': 'car',
+      'other': 'more-horizontal'
+    };
+    
+    return iconMap[categoryId] || 'tag';
+  }
+
+  // Fetch products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        console.log('Fetching products from API...');
+        const data = await productService.getActiveProducts();
+        setAllListings(data);
+        
+        // Update category counts
+        const categoryCounts = data.reduce((counts: Record<string, number>, product) => {
+          counts[product.category] = (counts[product.category] || 0) + 1;
+          return counts;
+        }, {});
+        
+        // Update categories with counts
+        setCategoriesWithCounts(prev => prev.map(category => ({
+          ...category,
+          count: categoryCounts[category.id] || 0
+        })));
+        
+        console.log('Fetched', data.length, 'products');
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        toast.error('Failed to load products. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Helper function to check if a product is available during a specific date range
+  const isProductAvailableDuring = (product: Product, startDate: Date, endDate: Date): boolean => {
+    if (!product.unavailableDates || product.unavailableDates.length === 0) {
+      // If there are no unavailable dates, the product is always available
+      return true;
+    }
+
+    // Check if any unavailable date falls within our target range
+    return !product.unavailableDates.some(unavailable => {
+      if (unavailable.isRange && unavailable.rangeStart && unavailable.rangeEnd) {
+        // Handle date range
+        const rangeStart = parseISO(unavailable.rangeStart);
+        const rangeEnd = parseISO(unavailable.rangeEnd);
+        
+        // Check if there's an overlap between the two ranges
+        return (
+          (rangeStart <= endDate && rangeEnd >= startDate)
+        );
+      } else if (unavailable.date) {
+        // Handle single date
+        const unavailableDate = parseISO(unavailable.date);
+        return (
+          unavailableDate >= startDate && unavailableDate <= endDate
+        );
+      }
+      return false;
+    });
+  };
+
+  // Calculate availability filter date range based on selected option
+  const getAvailabilityDateRange = (): { start: Date, end: Date } | null => {
+    const today = new Date();
+    
+    switch (availability) {
+      case 'next3days':
+        return {
+          start: today,
+          end: addDays(today, 3)
+        };
+      case 'thisWeek':
+        return {
+          start: today,
+          end: endOfWeek(today)
+        };
+      case 'nextWeek':
+        return {
+          start: addDays(endOfWeek(today), 1),
+          end: addDays(endOfWeek(today), 7)
+        };
+      case 'thisMonth':
+        return {
+          start: today,
+          end: endOfMonth(today)
+        };
+      case 'nextMonth':
+        return {
+          start: addDays(endOfMonth(today), 1),
+          end: endOfMonth(addMonths(today, 1))
+        };
+      case 'any':
+      default:
+        return null; // Any time means no date filtering
+    }
+  };
+
   const filteredListings = allListings.filter(item => {
-    const categoryMatch = selectedCategory ?
-      categories.find(c => c.id === selectedCategory)?.name : null;
+    // Check if there's a selected category
+    const categoryMatch = selectedCategory ? item.category === selectedCategory : true;
 
-    // Price range filter - use the first pricing tier's price
-    const priceInRange = item.pricingTiers[0].price >= priceRange[0] && item.pricingTiers[0].price <= priceRange[1];
+    // Ensure the item has pricing tiers before checking price range
+    const priceInRange = item.pricingTiers?.length > 0 ? 
+      (item.pricingTiers[0]?.price || 0) >= priceRange[0] && 
+      (item.pricingTiers[0]?.price || 0) <= priceRange[1] : true;
+    
+    // Location filtering
+    const locationMatch = !location || (item.location?.toLowerCase() || '').includes(location.toLowerCase());
 
-    return (
-      (!categoryMatch || item.category === categoryMatch) &&
-      (!searchTerm ||
-        item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      priceInRange
-    );
+    // Availability filtering
+    const availabilityDateRange = getAvailabilityDateRange();
+    const availabilityMatch = !availabilityDateRange || 
+      isProductAvailableDuring(item, availabilityDateRange.start, availabilityDateRange.end);
+
+    // If no search term, only filter by category, price, location and availability
+    if (!searchTerm) {
+      return categoryMatch && priceInRange && locationMatch && availabilityMatch;
+    }
+
+    // Calculate search score based on where matches are found
+    const searchTermLower = searchTerm.toLowerCase();
+    let searchScore = 0;
+
+    // Exact matches in title are most valuable
+    if (item.title?.toLowerCase() === searchTermLower) {
+      searchScore += 100;
+    }
+    // Partial matches in title are very valuable
+    else if (item.title?.toLowerCase()?.includes(searchTermLower)) {
+      searchScore += 50;
+    }
+
+    // Exact matches in product type are valuable
+    if (item.productType?.toLowerCase() === searchTermLower) {
+      searchScore += 40;
+    }
+    // Partial matches in product type are somewhat valuable
+    else if (item.productType?.toLowerCase()?.includes(searchTermLower)) {
+      searchScore += 30;
+    }
+
+    // Matches in description are less valuable but still count
+    if (item.description?.toLowerCase()?.includes(searchTermLower)) {
+      searchScore += 20;
+    }
+
+    return searchScore > 0 && categoryMatch && priceInRange && locationMatch && availabilityMatch;
   });
 
-  const displayedListings = filteredListings.slice(0, visibleItems);
+  // Sort results by search score (if search term exists)
+  const sortedListings = searchTerm
+    ? [...filteredListings].sort((a, b) => {
+      const scoreA = getSearchScore(a, searchTerm.toLowerCase());
+      const scoreB = getSearchScore(b, searchTerm.toLowerCase());
+      return scoreB - scoreA; // Higher scores first
+    })
+    : filteredListings;
+
+  const displayedListings = sortedListings.slice(0, visibleItems);
+
+  // Helper function to calculate search score (duplicated for sorting)
+  function getSearchScore(item: Product, searchTermLower: string): number {
+    let score = 0;
+
+    // Title matches
+    if (item.title?.toLowerCase() === searchTermLower) {
+      score += 100;
+    } else if (item.title?.toLowerCase()?.includes(searchTermLower)) {
+      score += 50;
+    }
+
+    // Product type matches
+    if (item.productType?.toLowerCase() === searchTermLower) {
+      score += 40;
+    } else if (item.productType?.toLowerCase()?.includes(searchTermLower)) {
+      score += 30;
+    }
+
+    // Description matches
+    if (item.description?.toLowerCase()?.includes(searchTermLower)) {
+      score += 20;
+    }
+
+    return score;
+  }
+
+  // Function to highlight search terms in text
+  const highlightSearchTerm = (text: string, term: string): JSX.Element | string => {
+    if (!term) return text;
+
+    const parts = text.split(new RegExp(`(${term})`, 'gi'));
+    return (
+      <>
+        {parts.map((part, i) =>
+          part.toLowerCase() === term.toLowerCase()
+            ? <span key={i} className="bg-yellow-200">{part}</span>
+            : part
+        )}
+      </>
+    );
+  };
 
   const handleQuickView = (itemId: string) => {
     setSelectedItem(itemId);
@@ -59,7 +287,7 @@ const Advertisements = () => {
   // Intersection Observer for infinite scrolling effect
   useEffect(() => {
     const observer = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && visibleItems < filteredListings.length) {
+      if (entries[0].isIntersecting && visibleItems < sortedListings.length) {
         loadMoreItems();
       }
     }, {
@@ -74,11 +302,11 @@ const Advertisements = () => {
         observer.unobserve(loadMoreTrigger);
       }
     };
-  }, [visibleItems, filteredListings.length]);
+  }, [visibleItems, sortedListings.length]);
 
   const getPageTitle = () => {
     if (selectedCategory) {
-      return `${categories.find(c => c.id === selectedCategory)?.name} Items`;
+      return `${CATEGORY_DISPLAY[selectedCategory]} Items`;
     }
     if (searchTerm) {
       return `Search Results for "${searchTerm}"`;
@@ -102,6 +330,8 @@ const Advertisements = () => {
             setFiltersOpen={setFiltersOpen}
             priceRange={priceRange}
             setPriceRange={setPriceRange}
+            availability={availability}
+            setAvailability={setAvailability}
             inNav={false}
           />
         </div>
@@ -109,7 +339,7 @@ const Advertisements = () => {
         {/* Horizontal Category Scroll */}
         <div className="animate-fade-up delay-200">
           <CategoryScroll
-            categories={categories}
+            categories={categoriesWithCounts}
             selectedCategory={selectedCategory}
             setSelectedCategory={setSelectedCategory}
           />
@@ -121,11 +351,16 @@ const Advertisements = () => {
             <h1 className="text-xl text- sm:text-2xl md:text-3xl font-bold text-green-800 mb-6 sm:mb-8">
               {getPageTitle()}
               <span className="text-sm sm:text-base md:text-lg font-normal text-gray-500 ml-2">
-                ({filteredListings.length} items)
+                ({sortedListings.length} items)
               </span>
             </h1>
 
-            {filteredListings.length === 0 ? (
+            {loading ? (
+              <div className="p-6 sm:p-8 md:p-10 text-center animate-scale-up">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mx-auto mb-4"></div>
+                <p className="text-gray-500 text-sm sm:text-base">Loading products...</p>
+              </div>
+            ) : sortedListings.length === 0 ? (
               <div className="p-6 sm:p-8 md:p-10 text-center animate-scale-up">
                 <h2 className="text-lg sm:text-xl font-medium text-gray-700 mb-2">No Items Found</h2>
                 <p className="text-gray-500 text-sm sm:text-base">
@@ -141,7 +376,7 @@ const Advertisements = () => {
                   />
                 </div>
 
-                <LoadMoreTrigger visible={visibleItems < filteredListings.length} />
+                <LoadMoreTrigger visible={visibleItems < sortedListings.length} />
               </>
             )}
           </div>

@@ -37,11 +37,21 @@ def validate_image_file(value):
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+    
     class Meta:
         model = ProductImage
         fields = ["id", "image", "created_at"]
         read_only_fields = ["id", "created_at"]
 
+    def get_image(self, obj):
+        if obj.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
+        
     def validate_image(self, value):
         return validate_image_file(value)
 

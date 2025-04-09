@@ -1,9 +1,9 @@
 import { useRef, useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Camera, Dumbbell, Tent, Headphones, Smartphone, PartyPopper, Wrench, Car, Bed, Gamepad2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Camera, Dumbbell, Tent, Headphones, Smartphone, PartyPopper, Wrench, Car, Bed, Gamepad2, Music, Shirt, Home, Book, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 type Category = {
-  id: number;
+  id: string;
   name: string;
   icon: string;
   image: string;
@@ -12,25 +12,30 @@ type Category = {
 
 type CategoryScrollProps = {
   categories: Category[];
-  selectedCategory: number | null;
-  setSelectedCategory: (id: number | null) => void;
+  selectedCategory: string | null;
+  setSelectedCategory: (id: string | null) => void;
 };
 
-// Map of category names to Lucide icons
-const getCategoryIcon = (name: string) => {
+// Map of icon names to Lucide icons
+const getIconComponent = (iconName: string) => {
   const iconMap: Record<string, JSX.Element> = {
-    'Photography': <Camera className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'Sports': <Dumbbell className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'Camping': <Tent className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'Audio': <Headphones className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'Electronics': <Smartphone className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'Party': <PartyPopper className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'Tools': <Wrench className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'Vehicles': <Car className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'Furniture': <Bed className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'Games': <Gamepad2 className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />
+    'camera': <Camera className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    'dumbbell': <Dumbbell className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    'tent': <Tent className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    'headphones': <Headphones className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    'smartphone': <Smartphone className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    'party-popper': <PartyPopper className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    'wrench': <Wrench className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    'car': <Car className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    'bed': <Bed className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    'gamepad-2': <Gamepad2 className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    'music': <Music className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    'shirt': <Shirt className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    'home': <Home className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    'book': <Book className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    'more-horizontal': <MoreHorizontal className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />
   };
-  return iconMap[name] || <Wrench className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-600" />;
+  return iconMap[iconName] || <Wrench className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-600" />;
 };
 
 const CategoryScroll = ({
@@ -129,7 +134,7 @@ const CategoryScroll = ({
                 onClick={() => setSelectedCategory(category.id)}
               >
                 <div className={`flex items-center justify-center w-10 sm:w-12 h-8 sm:h-10 mb-1 ${selectedCategory === category.id ? 'border-b-2 border-vhara-600' : ''}`}>
-                  {getCategoryIcon(category.name)}
+                  {getIconComponent(category.icon)}
                 </div>
                 <span className="text-[10px] sm:text-xs text-green-800 font-medium text-center truncate max-w-[60px] sm:max-w-[80px]">
                   {category.name}

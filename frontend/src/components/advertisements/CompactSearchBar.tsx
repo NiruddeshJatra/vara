@@ -1,21 +1,23 @@
-import { useState } from 'react';
+import { useState, Dispatch, SetStateAction } from 'react';
 import { Search, MapPin, SlidersHorizontal, X, Banknote, Calendar } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-type CompactSearchBarProps = {
+interface CompactSearchBarProps {
   searchTerm: string;
-  setSearchTerm: (term: string) => void;
+  setSearchTerm: Dispatch<SetStateAction<string>>;
   location: string;
-  setLocation: (location: string) => void;
+  setLocation: Dispatch<SetStateAction<string>>;
   filtersOpen: boolean;
-  setFiltersOpen: (open: boolean) => void;
+  setFiltersOpen: Dispatch<SetStateAction<boolean>>;
   priceRange: [number, number];
-  setPriceRange: (range: [number, number]) => void;
+  setPriceRange: Dispatch<SetStateAction<[number, number]>>;
+  availability: string;
+  setAvailability: Dispatch<SetStateAction<string>>;
   inNav: boolean;
-};
+}
 
 const CompactSearchBar = ({
   searchTerm,
@@ -26,10 +28,12 @@ const CompactSearchBar = ({
   setFiltersOpen,
   priceRange,
   setPriceRange,
+  availability,
+  setAvailability,
   inNav
 }: CompactSearchBarProps) => {
-  const [availability, setAvailability] = useState('any');
   const [tempPriceRange, setTempPriceRange] = useState<[number, number]>(priceRange);
+  const [tempAvailability, setTempAvailability] = useState(availability);
   
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,15 +42,15 @@ const CompactSearchBar = ({
 
   const applyFilters = () => {
     setPriceRange(tempPriceRange);
-    // Here you would apply other filters
+    setAvailability(tempAvailability);
+    setFiltersOpen(false);
   };
 
   const clearFilters = () => {
-    setTempPriceRange([0, 5000]);
-    setAvailability('any');
-    setPriceRange([0, 5000]);
+    setTempPriceRange([50, 10000]);
+    setTempAvailability('any');
   };
-
+  
   return (
     <div className={`${inNav ? 'w-full flex justify-center' : 'top-[64px] mt-[64px] pt-3 sm:pt-6 pb-2 zoom-out-0 backdrop-blur-sm'}`}>
       <div className={`${inNav ? 'w-full max-w-md' : 'container mx-auto px-4'}`}>
@@ -107,22 +111,18 @@ const CompactSearchBar = ({
                   <Banknote className="h-4 w-4 text-green-600" />
                   Price Range (৳)
                 </label>
-                <div className="pt-4">
-                  <Slider 
-                    defaultValue={[0, 5000]} 
-                    max={5000} 
-                    step={100} 
-                    value={tempPriceRange} 
+                <div className="mt-2">
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>৳{tempPriceRange[0]}</span>
+                    <span>৳{tempPriceRange[1]}</span>
+                  </div>
+                  <Slider
+                    className="mt-2"
+                    value={tempPriceRange}
+                    min={50}
+                    max={10000}
                     onValueChange={(value) => setTempPriceRange(value as [number, number])}
                   />
-                </div>
-                <div className="flex justify-between text-xs sm:text-sm text-green-700 mt-2">
-                  <div className="bg-white px-3 py-1.5 rounded-md border border-green-300 shadow-sm font-semibold">
-                    <span className="mr-1 text-green-800">৳</span>{tempPriceRange[0]}
-                  </div>
-                  <div className="bg-white px-3 py-1.5 rounded-md border border-green-300 shadow-sm font-semibold">
-                    <span className="mr-1 text-green-800">৳</span>{tempPriceRange[1]}
-                  </div>
                 </div>
               </div>
 
@@ -131,17 +131,21 @@ const CompactSearchBar = ({
                   <Calendar className="h-4 w-4 text-green-600" />
                   Availability
                 </label>
-                <Select value={availability} onValueChange={setAvailability}>
-                  <SelectTrigger className="w-full border-green-400">
-                    <SelectValue placeholder="Select availability" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="any">Any time</SelectItem>
-                    <SelectItem value="now">Available now</SelectItem>
-                    <SelectItem value="weekend">Available this weekend</SelectItem>
-                    <SelectItem value="week">Available next week</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="mt-2">
+                  <Select value={tempAvailability} onValueChange={setTempAvailability}>
+                    <SelectTrigger className="w-full border-green-400 focus:border-green-500">
+                      <SelectValue placeholder="Select availability" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Any time</SelectItem>
+                      <SelectItem value="next3days">Next 3 days</SelectItem>
+                      <SelectItem value="thisWeek">This week</SelectItem>
+                      <SelectItem value="nextWeek">Next week</SelectItem>
+                      <SelectItem value="thisMonth">This month</SelectItem>
+                      <SelectItem value="nextMonth">Next month</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 

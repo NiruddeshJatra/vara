@@ -13,7 +13,36 @@ class ProductService {
    */
   async getActiveProducts(): Promise<Product[]> {
     const response = await api.get(config.products.listEndpoint);
-    return response.data;
+    // Handle both array and paginated responses
+    const products = Array.isArray(response.data) ? response.data : (response.data.results || []);
+    
+    // Transform the response data to match the frontend's expected structure
+    return products.map((product: any) => ({
+      ...product,
+      productType: product.product_type,
+      securityDeposit: product.security_deposit,
+      purchaseYear: product.purchase_year,
+      originalPrice: product.original_price,
+      ownershipHistory: product.ownership_history,
+      statusMessage: product.status_message,
+      statusChangedAt: product.status_changed_at,
+      viewsCount: product.views_count,
+      rentalCount: product.rental_count,
+      averageRating: product.average_rating ? parseFloat(product.average_rating) : 0,
+      createdAt: product.created_at,
+      updatedAt: product.updated_at,
+      unavailableDates: product.unavailable_dates?.map((date: any) => ({
+        ...date,
+        isRange: date.is_range,
+        rangeStart: date.range_start,
+        rangeEnd: date.range_end
+      })) || [],
+      pricingTiers: product.pricing_tiers?.map((tier: any) => ({
+        ...tier,
+        durationUnit: tier.duration_unit,
+        maxPeriod: tier.max_period
+      })) || []
+    }));
   }
 
   /**
@@ -22,7 +51,32 @@ class ProductService {
    */
   async getUserProducts(): Promise<Product[]> {
     const response = await api.get(config.products.userProductsEndpoint);
-    return response.data;
+    return response.data.results || response.data.map((product: any) => ({
+      ...product,
+      productType: product.product_type,
+      securityDeposit: product.security_deposit,
+      purchaseYear: product.purchase_year,
+      originalPrice: product.original_price,
+      ownershipHistory: product.ownership_history,
+      statusMessage: product.status_message,
+      statusChangedAt: product.status_changed_at,
+      viewsCount: product.views_count,
+      rentalCount: product.rental_count,
+      averageRating: product.average_rating ? parseFloat(product.average_rating) : 0,
+      createdAt: product.created_at,
+      updatedAt: product.updated_at,
+      unavailableDates: product.unavailable_dates?.map((date: any) => ({
+        ...date,
+        isRange: date.is_range,
+        rangeStart: date.range_start,
+        rangeEnd: date.range_end
+      })) || [],
+      pricingTiers: product.pricing_tiers?.map((tier: any) => ({
+        ...tier,
+        durationUnit: tier.duration_unit,
+        maxPeriod: tier.max_period
+      })) || []
+    }));
   }
 
   /**
@@ -32,7 +86,33 @@ class ProductService {
    */
   async getProduct(productId: string): Promise<Product> {
     const response = await api.get(config.products.detailEndpoint(productId));
-    return response.data;
+    const product = response.data;
+    return {
+      ...product,
+      productType: product.product_type,
+      securityDeposit: product.security_deposit,
+      purchaseYear: product.purchase_year,
+      originalPrice: product.original_price,
+      ownershipHistory: product.ownership_history,
+      statusMessage: product.status_message,
+      statusChangedAt: product.status_changed_at,
+      viewsCount: product.views_count,
+      rentalCount: product.rental_count,
+      averageRating: product.average_rating ? parseFloat(product.average_rating) : 0,
+      createdAt: product.created_at,
+      updatedAt: product.updated_at,
+      unavailableDates: product.unavailable_dates?.map((date: any) => ({
+        ...date,
+        isRange: date.is_range,
+        rangeStart: date.range_start,
+        rangeEnd: date.range_end
+      })) || [],
+      pricingTiers: product.pricing_tiers?.map((tier: any) => ({
+        ...tier,
+        durationUnit: tier.duration_unit,
+        maxPeriod: tier.max_period
+      })) || []
+    };
   }
 
   /**

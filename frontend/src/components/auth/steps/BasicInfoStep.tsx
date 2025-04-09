@@ -7,10 +7,13 @@ import {
   User,
   Lock,
   Shield,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { RegistrationData, RegistrationFormErrors } from "@/types/auth";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 
 interface Props {
@@ -38,6 +41,9 @@ const BasicInfoStep = ({
   loading = false,
   showConsent = false,
 }: Props) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const renderPasswordStrength = () => {
     const { password1 } = formData;
     if (!password1) return null;
@@ -157,13 +163,28 @@ const BasicInfoStep = ({
             <Input
               id="password"
               name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={formData.password1}
               onChange={(e) => onPasswordChange(e.target.value)}
               error={!!errors.password1}
-              className="pl-9"
+              className="pl-9 pr-10"
             />
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+              tabIndex={-1}
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <Eye className="h-4 w-4" aria-hidden="true" />
+              )}
+              <span className="sr-only">
+                {showPassword ? "Hide password" : "Show password"}
+              </span>
+            </button>
           </div>
           {renderPasswordStrength()}
           {errors.password1 ? (
@@ -188,13 +209,28 @@ const BasicInfoStep = ({
             <Input
               id="confirmPassword"
               name="confirmPassword"
-              type="password"
+              type={showConfirmPassword ? "text" : "password"}
               value={confirmPassword}
               onChange={(e) => onConfirmPasswordChange(e.target.value)}
               error={!!errors.confirmPassword}
-              className="pl-9"
+              className="pl-9 pr-10"
             />
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+              tabIndex={-1}
+            >
+              {showConfirmPassword ? (
+                <EyeOff className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <Eye className="h-4 w-4" aria-hidden="true" />
+              )}
+              <span className="sr-only">
+                {showConfirmPassword ? "Hide password" : "Show password"}
+              </span>
+            </button>
           </div>
           {errors.confirmPassword && (
             <p className="mt-1 text-sm text-red-500 flex items-center gap-1">

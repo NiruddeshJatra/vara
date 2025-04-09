@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Star, Eye, ChevronLeft, ChevronRight, Banknote } from 'lucide-react';
+import { Star, Eye, ChevronLeft, ChevronRight, Banknote, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Product, ProductImage } from '@/types/listings';
@@ -9,12 +9,16 @@ interface ItemCardProps {
   product: Product;
   onQuickView?: () => void;
   style?: React.CSSProperties;
+  searchTerm?: string;
+  searchScore?: number;
 }
 
 const ItemCard = ({
   product,
   onQuickView,
   style,
+  searchTerm = '',
+  searchScore = 0
 }: ItemCardProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
@@ -49,6 +53,31 @@ const ItemCard = ({
     if (onQuickView) {
       onQuickView();
     }
+  };
+
+  // Text highlighting function for search results
+  const highlightText = (text: string): JSX.Element | string => {
+    if (!searchTerm) return text;
+    
+    const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
+    
+    return (
+      <>
+        {parts.map((part, i) => 
+          part.toLowerCase() === searchTerm.toLowerCase() 
+            ? <span key={i} className="bg-yellow-200">{part}</span> 
+            : part
+        )}
+      </>
+    );
+  };
+
+  // Helper to safely handle rating display
+  const displayRating = () => {
+    if (typeof product.averageRating === 'number') {
+      return product.averageRating.toFixed(1);
+    }
+    return '4.0'; // Default rating when none exists
   };
 
   return (
@@ -102,15 +131,27 @@ const ItemCard = ({
           <Badge variant="secondary" className="absolute top-2 left-2 bg-white/90 text-green-800 z-10 text-[10px] sm:text-xs py-0.5 px-1.5 sm:px-2">
             {product.category}
           </Badge>
+          
+          {/* Show search match badge when it's a search result */}
+          {searchTerm && searchScore > 0 && (
+            <Badge variant="secondary" className="absolute top-2 right-2 bg-green-600 text-white z-10 text-[10px] sm:text-xs py-0.5 px-1.5 sm:px-2 flex items-center">
+              <Search size={12} className="mr-1" />
+              Match
+            </Badge>
+          )}
         </div>
 
         <div className="p-3 sm:p-4">
-          <h3 className="font-semibold text-sm sm:text-base md:text-lg mb-1 text-gray-800 line-clamp-1">{product.title}</h3>
+          <h3 className="font-semibold text-sm sm:text-base md:text-lg mb-1 text-gray-800 line-clamp-1">
+            {searchTerm ? highlightText(product.title) : product.title}
+          </h3>
 
           <div className="flex items-center text-xs sm:text-sm mb-2 sm:mb-3">
             <div className="flex items-center text-yellow-500 mr-2">
               <Star size={12} className="fill-current sm:h-4 sm:w-4" />
-              <span className="ml-1 font-medium">{product.averageRating?.toFixed(1) || '4.5'}</span>
+              <span className="ml-1 font-medium">
+                {displayRating()}
+              </span>
             </div>
             <span className="text-gray-500">({product.rentalCount || 0} reviews)</span>
           </div>
@@ -119,10 +160,10 @@ const ItemCard = ({
             <div className="flex items-center">
               <Banknote size={14} className="text-green-700 mr-1 sm:h-4 sm:w-4" />
               <span className="text-sm sm:text-base md:text-lg font-bold text-green-700">
-                {product.pricingTiers[0]?.price || 0}
+                {product.pricingTiers?.[0]?.price || 0}
               </span>
               <span className="text-xs sm:text-sm font-semibold text-green-700">
-                /{product.pricingTiers[0]?.durationUnit || 'day'}
+                /{product.pricingTiers?.[0]?.durationUnit || 'day'}
               </span>
             </div>
 

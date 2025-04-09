@@ -33,6 +33,11 @@ class ProductViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
     def get_queryset(self):
         queryset = super().get_queryset()
         if self.action == "list":
@@ -116,7 +121,7 @@ class ProductViewSet(viewsets.ModelViewSet):
                 {"error": "No image provided"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        serializer = ProductImageSerializer(data=request.data)
+        serializer = ProductImageSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save(product=product)
             return Response(serializer.data, status=status.HTTP_201_CREATED)

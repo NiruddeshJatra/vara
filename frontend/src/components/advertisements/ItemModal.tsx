@@ -22,6 +22,14 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
   if (!selectedItem) {
     return null;
   }
+  
+  // Helper to safely handle rating display
+  const displayRating = () => {
+    if (typeof selectedItem.averageRating === 'number') {
+      return selectedItem.averageRating.toFixed(1);
+    }
+    return '4.0'; // Default rating when none exists
+  };
 
   const handleRequestRental = () => {
     if (!user?.profileComplete) {
@@ -33,19 +41,26 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl bg-gradient-to-b from-white to-lime-50 p-8">
+      <DialogContent 
+        className="max-w-3xl bg-gradient-to-b from-white to-lime-50 p-8"
+        aria-describedby="item-modal-description"
+      >
         <DialogHeader>
           <DialogTitle className="px-2 text-xl font-semibold text-green-800">
             Item Quick View
           </DialogTitle>
         </DialogHeader>
         
+        <div id="item-modal-description" className="sr-only">
+          Quick view modal for {selectedItem.title || 'product'} showing details and rental options
+        </div>
+        
         <div className="flex flex-col md:flex-row gap-10">
           <div className="md:w-1/2">
             <div className="rounded-lg overflow-hidden">
               <img 
-                src={selectedItem.images[0]?.image || '/images/placeholder-image.jpg'} 
-                alt={selectedItem.title} 
+                src={selectedItem.images?.[0]?.image || '/images/placeholder-image.jpg'} 
+                alt={selectedItem.title || 'Product image'} 
                 className="w-full h-auto object-cover" 
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
@@ -55,32 +70,34 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
             </div>
           </div>
           <div className="md:w-1/2 space-y-3">
-            <h2 className="text-2xl font-bold text-green-800">{selectedItem.title}</h2>
+            <h2 className="text-2xl font-bold text-green-800">{selectedItem.title || 'Untitled Product'}</h2>
             <div className="flex items-center">
               <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-              <span className="ml-1 text-sm font-medium">{selectedItem.averageRating?.toFixed(1) || 'N/A'}</span>
+              <span className="ml-1 text-sm font-medium">
+                {displayRating()}
+              </span>
               <span className="ml-1 text-xs text-gray-500">({selectedItem.rentalCount || 0} rentals)</span>
             </div>
-            <p className="text-sm text-green-700">{selectedItem.category}</p>
+            <p className="text-sm text-green-700">{selectedItem.category || 'Uncategorized'}</p>
             
             <div className="bg-green-50 p-4 rounded-lg">
               <div className="text-xl font-bold text-green-800 flex items-center">
                 <Banknote size={18} className="text-green-700 mr-1" />
-                {selectedItem.pricingTiers[0]?.price || 0}
-                <span className="text-sm font-normal ml-1"> per {selectedItem.pricingTiers[0]?.durationUnit || 'day'}</span>
+                {selectedItem.pricingTiers?.[0]?.price || 0}
+                <span className="text-sm font-normal ml-1"> per {selectedItem.pricingTiers?.[0]?.durationUnit || 'day'}</span>
               </div>
               <div className="mt-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-700">Minimum rental:</span>
                   <span className="font-medium">
-                    1 {selectedItem.pricingTiers[0]?.durationUnit || 'day'}
+                    1 {selectedItem.pricingTiers?.[0]?.durationUnit || 'day'}
                   </span>
                 </div>
-                {selectedItem.pricingTiers[0]?.maxPeriod && (
+                {selectedItem.pricingTiers?.[0]?.maxPeriod && (
                   <div className="flex justify-between">
                     <span className="text-gray-700">Maximum rental:</span>
                     <span className="font-medium">
-                      {selectedItem.pricingTiers[0].maxPeriod} {selectedItem.pricingTiers[0].durationUnit}s
+                      {selectedItem.pricingTiers?.[0]?.maxPeriod} {selectedItem.pricingTiers?.[0]?.durationUnit || 'day'}s
                     </span>
                   </div>
                 )}
