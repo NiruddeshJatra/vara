@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
@@ -17,8 +17,21 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showSecondImage, setShowSecondImage] = useState(false);
+  const rightPanelRef = useRef<HTMLDivElement>(null);
+  const leftPanelRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  useEffect(() => {
+    if (isOpen && rightPanelRef.current && leftPanelRef.current) {
+      const rightPanelHeight = rightPanelRef.current.offsetHeight;
+      const leftPanelHeight = leftPanelRef.current.offsetHeight;
+      
+      // Show second image if right panel is taller than left panel
+      setShowSecondImage(rightPanelHeight > leftPanelHeight && selectedItem?.images?.length > 1);
+    }
+  }, [isOpen, selectedItem]);
 
   // If no item is selected, don't render the modal
   if (!selectedItem) {
@@ -86,7 +99,7 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
         </div>
         
         <div className="flex flex-col md:flex-row gap-10">
-          <div className="md:w-1/2">
+          <div className="md:w-1/2" ref={leftPanelRef}>
             <div className="relative rounded-lg overflow-hidden">
               <img 
                 src={selectedItem.images?.[currentImageIndex]?.image || 'https://placehold.co/600x400?text=No+Image'} 
@@ -127,9 +140,21 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
                 </div>
               )}
             </div>
+            
+            {/* Second image - only shown if there's space */}
+            {showSecondImage && selectedItem.images?.[1] && (
+              <div className="mt-2 relative rounded-lg overflow-hidden">
+                <img
+                  src={selectedItem.images[1].image}
+                  alt="Additional view"
+                  className="w-full h-auto object-cover"
+                  onError={handleImageError}
+                />
+              </div>
+            )}
           </div>
           
-          <div className="md:w-1/2 space-y-3">
+          <div className="md:w-1/2 space-y-3" ref={rightPanelRef}>
             <h2 className="text-2xl font-bold text-green-800">{selectedItem.title || 'Untitled Product'}</h2>
             <div className="flex items-center">
               <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
