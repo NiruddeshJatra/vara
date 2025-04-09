@@ -19,7 +19,8 @@ import {
   AvailabilitySection,
   ReviewsSection,
   SimilarItems,
-  HostInfo
+  HostInfo,
+  ProductHistory
 } from '@/components/itemDetail';
 import { DurationUnit } from '@/constants/rental';
 import productService from '@/services/product.service';
@@ -233,8 +234,18 @@ export default function ItemDetailPage() {
               <div className="animate-fade-left delay-500">
                 <ItemDetails
                   category={product.category}
-                  condition="Good"
+                  productType={product.productType}
                   securityDeposit={String(product.securityDeposit)}
+                />
+              </div>
+              
+              {/* Product History */}
+              <div className="animate-fade-left delay-550">
+                <ProductHistory
+                  purchaseYear={product.purchaseYear}
+                  ownershipHistory={product.ownershipHistory}
+                  originalPrice={product.originalPrice}
+                  totalRentals={product.rentalCount || 0}
                 />
               </div>
 

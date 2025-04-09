@@ -6,6 +6,7 @@ import { Heart, Calendar, Clock, MapPin, Star, Banknote, ChevronLeft, ChevronRig
 import { Product } from '@/types/listings';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileCompletionModal } from '@/components/common/ProfileCompletionModal';
+import { CATEGORY_DISPLAY, PRODUCT_TYPE_DISPLAY } from '@/constants/productTypes';
 
 interface ItemModalProps {
   isOpen: boolean;
@@ -163,7 +164,7 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
               </span>
               <span className="ml-1 text-xs text-gray-500">({selectedItem.rentalCount || 0} rentals)</span>
             </div>
-            <p className="text-sm text-green-700">{selectedItem.category || 'Uncategorized'}</p>
+            <p className="text-sm text-green-700">{CATEGORY_DISPLAY[selectedItem.category] || selectedItem.category}</p>
             
             {/* Pricing Tiers Section */}
             <div className="bg-green-50 p-4 rounded-lg space-y-3">

@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Camera, Dumbbell, Tent, Headphones, Smartphone, PartyPopper, Wrench, Car, Bed, Gamepad2, Music, Shirt, Home, Book, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { CATEGORY_DISPLAY } from '@/constants/productTypes';
 
 type Category = {
   id: string;

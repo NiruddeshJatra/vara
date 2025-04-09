@@ -96,8 +96,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
         >
           Request Rental Now
         </Button>
-        <p className="text-xs text-gray-500 mt-2 text-center">
-          No upfront payment required. Vhara handles the logistics.
+        <p className="text-xs text-gray-500 mt-3 text-center">
+          No upfront payment required. Vara handles the logistics.
         </p>
       </div>
 

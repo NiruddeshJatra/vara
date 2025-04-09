@@ -3,6 +3,7 @@ import { Star, Eye, ChevronLeft, ChevronRight, Banknote, Search } from 'lucide-r
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Product, ProductImage } from '@/types/listings';
+import { CATEGORY_DISPLAY, PRODUCT_TYPE_DISPLAY } from '@/constants/productTypes';
 
 interface ItemCardProps {
   product: Product;
@@ -140,7 +141,7 @@ const ItemCard = ({
         )}
 
         <Badge variant="secondary" className="absolute top-2 left-2 bg-white/90 text-green-800 z-10 text-[10px] sm:text-xs py-0.5 px-1.5 sm:px-2">
-          {product.category}
+          {CATEGORY_DISPLAY[product.category] || product.category}
         </Badge>
         
         {/* Show search match badge when it's a search result */}

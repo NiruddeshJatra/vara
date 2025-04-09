@@ -7,4 +7,5 @@ export { default as ItemDetails } from './ItemDetails';
 export { default as AvailabilitySection } from './AvailabilitySection';
 export { default as ReviewsSection } from './ReviewsSection';
 export { default as SimilarItems } from './SimilarItems';
-export { default as HostInfo } from './HostInfo'; 
+export { default as HostInfo } from './HostInfo';
+export { default as ProductHistory } from './ProductHistory'; 
