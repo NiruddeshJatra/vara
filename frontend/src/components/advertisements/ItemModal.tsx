@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, Calendar, Clock, MapPin, Star, Banknote } from 'lucide-react';
+import { Heart, Calendar, Clock, MapPin, Star, Banknote, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Product } from '@/types/listings';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileCompletionModal } from '@/components/common/ProfileCompletionModal';
@@ -16,6 +16,7 @@ interface ItemModalProps {
 const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -48,11 +49,16 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
     target.src = 'https://placehold.co/600x400?text=Error+Loading+Image';
   };
 
-  const getImageUrl = () => {
-    if (imageError || !selectedItem.images || selectedItem.images.length === 0) {
-      return 'https://placehold.co/600x400?text=No+Image';
+  const nextImage = () => {
+    if (selectedItem.images && currentImageIndex < selectedItem.images.length - 1) {
+      setCurrentImageIndex(currentImageIndex + 1);
     }
-    return selectedItem.images[0].image;
+  };
+
+  const prevImage = () => {
+    if (currentImageIndex > 0) {
+      setCurrentImageIndex(currentImageIndex - 1);
+    }
   };
 
   const handleRequestRental = () => {
@@ -81,15 +87,48 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
         
         <div className="flex flex-col md:flex-row gap-10">
           <div className="md:w-1/2">
-            <div className="rounded-lg overflow-hidden">
+            <div className="relative rounded-lg overflow-hidden">
               <img 
-                src={getImageUrl()} 
+                src={selectedItem.images?.[currentImageIndex]?.image || 'https://placehold.co/600x400?text=No+Image'} 
                 alt={selectedItem.title || 'Product image'} 
                 className="w-full h-auto object-cover" 
                 onError={handleImageError}
               />
+              
+              {/* Image navigation controls */}
+              {selectedItem.images && selectedItem.images.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    disabled={currentImageIndex === 0}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 flex items-center justify-center z-10 disabled:opacity-50"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    disabled={currentImageIndex === selectedItem.images.length - 1}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 flex items-center justify-center z-10 disabled:opacity-50"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </>
+              )}
+              
+              {/* Image pagination dots */}
+              {selectedItem.images && selectedItem.images.length > 1 && (
+                <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-10">
+                  {selectedItem.images.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`w-2 h-2 rounded-full ${currentImageIndex === index ? 'bg-white' : 'bg-white/50'}`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
+          
           <div className="md:w-1/2 space-y-3">
             <h2 className="text-2xl font-bold text-green-800">{selectedItem.title || 'Untitled Product'}</h2>
             <div className="flex items-center">
@@ -101,28 +140,29 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
             </div>
             <p className="text-sm text-green-700">{selectedItem.category || 'Uncategorized'}</p>
             
-            <div className="bg-green-50 p-4 rounded-lg">
-              <div className="text-xl font-bold text-green-800 flex items-center">
-                <Banknote size={18} className="text-green-700 mr-1" />
-                {selectedItem.pricingTiers?.[0]?.price || 0}
-                <span className="text-sm font-normal ml-1"> per {selectedItem.pricingTiers?.[0]?.durationUnit || 'day'}</span>
-              </div>
-              <div className="mt-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-700">Minimum rental:</span>
-                  <span className="font-medium">
-                    1 {selectedItem.pricingTiers?.[0]?.durationUnit || 'day'}
-                  </span>
-                </div>
-                {selectedItem.pricingTiers?.[0]?.maxPeriod && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">Maximum rental:</span>
-                    <span className="font-medium">
-                      {selectedItem.pricingTiers?.[0]?.maxPeriod} {selectedItem.pricingTiers?.[0]?.durationUnit || 'day'}s
-                    </span>
+            {/* Pricing Tiers Section */}
+            <div className="bg-green-50 p-4 rounded-lg space-y-3">
+              <h3 className="text-lg font-semibold text-green-800">Rental Options</h3>
+              {selectedItem.pricingTiers && selectedItem.pricingTiers.length > 0 ? (
+                selectedItem.pricingTiers.map((tier, index) => (
+                  <div key={tier.id || index} className="flex justify-between items-center p-2 rounded">
+                    <div className="flex items-center">
+                      <Banknote size={18} className="text-green-700 mr-2" />
+                      <div>
+                        <span className="text-lg font-bold text-green-800">{tier.price}</span>
+                        <span className="text-sm text-gray-600 ml-1">per {tier.durationUnit}</span>
+                      </div>
+                    </div>
+                    {tier.maxPeriod && (
+                      <span className="text-sm text-gray-600">
+                        Max: {tier.maxPeriod} {tier.durationUnit}s
+                      </span>
+                    )}
                   </div>
-                )}
-              </div>
+                ))
+              ) : (
+                <p className="text-gray-600">No pricing information available</p>
+              )}
             </div>
             
             <div className="space-y-2 pt-4">
