@@ -27,6 +27,22 @@ import productService from '@/services/product.service';
 // Generate mock listings
 const allListings = generateListings(40);
 
+// Add custom styles for sticky element
+const stickyStyles = `
+  .pricing-card-container {
+    position: relative;
+  }
+  
+  @media (min-width: 1024px) {
+    .pricing-card-container {
+      position: sticky;
+      top: 96px;
+      z-index: 10;
+      height: fit-content;
+    }
+  }
+`;
+
 export default function ItemDetailPage() {
   const { productId } = useParams();
   const location = useLocation();
@@ -123,6 +139,7 @@ export default function ItemDetailPage() {
   if (isLoading) {
     return (
       <div className="flex flex-col min-h-screen bg-white">
+        <style>{stickyStyles}</style>
         <NavBar />
         <div className="flex-grow flex items-center justify-center py-20 mt-20 bg-green-50/65">
           <div className="animate-pulse space-y-8 w-full max-w-7xl px-4">
@@ -151,6 +168,7 @@ export default function ItemDetailPage() {
   if (!product) {
     return (
       <div className="flex flex-col min-h-screen bg-white">
+        <style>{stickyStyles}</style>
         <NavBar />
         <div className="flex-grow flex flex-col items-center justify-center py-20 px-4 mt-20 bg-green-50/65 animate-fade-in">
           <h1 className="text-2xl font-bold text-red-500 mb-4">Product Not Found</h1>
@@ -166,6 +184,7 @@ export default function ItemDetailPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
+      <style>{stickyStyles}</style>
       <NavBar />
 
       <main className="flex-grow pt-20 pb-20 bg-gradient-to-b from-green-50 to-white">
@@ -239,8 +258,8 @@ export default function ItemDetailPage() {
             </div>
 
             {/* Right Column - Pricing Card */}
-            <div className="lg:col-span-1 relative">
-              <div className="animate-fade-right delay-200">
+            <div className="lg:col-span-1">
+              <div className="animate-fade-right delay-200 pricing-card-container">
                 <PricingCard
                   pricingTiers={product.pricingTiers}
                   maxRentalPeriod={product.pricingTiers[0]?.maxPeriod || 30}
@@ -253,7 +272,7 @@ export default function ItemDetailPage() {
         </div>
 
         {/* Similar Items */}
-        <div className="animate-fade-up delay-1000">
+        <div id="similar-items-section" className="animate-fade-up delay-1000 mt-12">
           <SimilarItems
             items={similarItems}
             onQuickView={handleQuickView}
