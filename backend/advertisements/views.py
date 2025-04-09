@@ -121,9 +121,21 @@ class ProductViewSet(viewsets.ModelViewSet):
                 {"error": "No image provided"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        serializer = ProductImageSerializer(data=request.data, context={'request': request})
+        # Create image serializer with proper context for absolute URLs
+        serializer = ProductImageSerializer(
+            data=request.data, 
+            context={'request': request}
+        )
+        
         if serializer.is_valid():
-            serializer.save(product=product)
+            # Explicitly save to product_images related name
+            image = serializer.save(product=product)
+            logger.info(f"Added image {image.id} to product {product.id}")
+            
+            # Refresh the product from DB to ensure we get latest images
+            product = Product.objects.get(id=product.id)
+            logger.info(f"Product now has {product.product_images.count()} images")
+            
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -212,3 +224,34 @@ class ProductViewSet(viewsets.ModelViewSet):
     @method_decorator(cache_page(60 * 15))  # Cache for 15 minutes
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+    @action(detail=True, methods=["get"])
+    def debug_images(self, request, pk=None):
+        product = self.get_object()
+        
+        # Get all related images directly from DB
+        product_images = ProductImage.objects.filter(product=product)
+        
+        # Serialize the images with absolute URLs
+        image_serializer = ProductImageSerializer(
+            product_images, 
+            many=True,
+            context={'request': request}
+        )
+        
+        # Get the full product representation
+        product_serializer = self.get_serializer(product)
+        product_data = product_serializer.data
+        
+        # Debug info
+        debug_info = {
+            'product_id': str(product.id),
+            'product_title': product.title,
+            'images_from_db_count': product_images.count(),
+            'images_from_db': image_serializer.data,
+            'images_in_response': product_data.get('images', []),
+            'all_fields_in_response': list(product_data.keys()),
+            'serializer_class': self.get_serializer_class().__name__,
+        }
+        
+        return Response(debug_info)

@@ -210,7 +210,6 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
 
     setIsSubmitting(true);
     try {
-      console.log("Submit handler - isEditing:", isEditing, "productId:", productId);
       let response;
       if (isEditing && productId) {
         response = await productService.updateProduct(productId, formData);
@@ -220,13 +219,10 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
       
       if (response?.id) {
         setProductId(response.id);
-        console.log("Setting productId from response:", response.id);
         setCurrentStep(6);
       }
       toast.success(isEditing ? 'Listing updated successfully!' : 'Listing created successfully!');
     } catch (error: any) {
-      console.error('Full API Error:', error.response?.data);
-      console.error('Error submitting form:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to save listing. Please try again.');
 
       if (error.response?.data) {
@@ -253,7 +249,6 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
   };
 
   const handleFormDataChange = (data: Partial<ListingFormData>) => {
-    console.log("Form data changing:", data);
     // Clear errors for the fields that are being updated
     const newErrors = { ...errors };
     Object.keys(data).forEach(key => {

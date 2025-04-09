@@ -75,6 +75,8 @@ const Advertisements = () => {
         setLoading(true);
         console.log('Fetching products from API...');
         const data = await productService.getActiveProducts();
+        console.log('Raw product data:', data);
+        console.log('First product pricing tiers:', data[0]?.pricingTiers);
         setAllListings(data);
         
         // Update category counts
@@ -88,10 +90,7 @@ const Advertisements = () => {
           ...category,
           count: categoryCounts[category.id] || 0
         })));
-        
-        console.log('Fetched', data.length, 'products');
       } catch (error) {
-        console.error('Error fetching products:', error);
         toast.error('Failed to load products. Please try again later.');
       } finally {
         setLoading(false);

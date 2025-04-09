@@ -15,6 +15,7 @@ interface ItemModalProps {
 
 const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -29,6 +30,29 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
       return selectedItem.averageRating.toFixed(1);
     }
     return '4.0'; // Default rating when none exists
+  };
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    const imgSrc = (e.target as HTMLImageElement).src;
+    console.error('Modal image failed to load:', imgSrc);
+    
+    // Log more details about the failing image
+    console.debug('Modal image load error details:', { 
+      originalSrc: imgSrc,
+      productId: selectedItem.id,
+      firstImageUrl: selectedItem.images?.[0]?.image || 'no image available'
+    });
+    
+    setImageError(true);
+    const target = e.target as HTMLImageElement;
+    target.src = 'https://placehold.co/600x400?text=Error+Loading+Image';
+  };
+
+  const getImageUrl = () => {
+    if (imageError || !selectedItem.images || selectedItem.images.length === 0) {
+      return 'https://placehold.co/600x400?text=No+Image';
+    }
+    return selectedItem.images[0].image;
   };
 
   const handleRequestRental = () => {
@@ -59,13 +83,10 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
           <div className="md:w-1/2">
             <div className="rounded-lg overflow-hidden">
               <img 
-                src={selectedItem.images?.[0]?.image || '/images/placeholder-image.jpg'} 
+                src={getImageUrl()} 
                 alt={selectedItem.title || 'Product image'} 
                 className="w-full h-auto object-cover" 
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/images/placeholder-image.jpg';
-                }}
+                onError={handleImageError}
               />
             </div>
           </div>

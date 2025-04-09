@@ -126,8 +126,8 @@ class PricingTierSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    # Read-only fields
-    images = ProductImageSerializer(many=True, read_only=True)
+    # Read-only fields for related data
+    product_images = ProductImageSerializer(many=True, read_only=True)
     average_rating = serializers.DecimalField(
         max_digits=3, decimal_places=2, read_only=True
     )
@@ -135,13 +135,15 @@ class ProductSerializer(serializers.ModelSerializer):
     rental_count = serializers.IntegerField(read_only=True)
     status_message = serializers.CharField(read_only=True)
     status_changed_at = serializers.DateTimeField(read_only=True)
+    pricing_tiers = PricingTierSerializer(many=True, read_only=True)
+    unavailable_dates = UnavailableDateSerializer(many=True, read_only=True)
 
-    # Write-only fields
+    # Write-only fields for input data
     images = serializers.ListField(
         child=serializers.ImageField(), write_only=True, required=False
     )
-    unavailable_dates = serializers.CharField(write_only=True, required=False)
-    pricing_tiers = serializers.CharField(write_only=True, required=False)
+    unavailable_dates_input = serializers.CharField(write_only=True, required=False)
+    pricing_tiers_input = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = Product
@@ -160,7 +162,8 @@ class ProductSerializer(serializers.ModelSerializer):
             "status",
             "status_message",
             "status_changed_at",
-            "images",
+            "product_images",    # Read-only field for product images (mapped to proper relation)
+            "images",            # Write-only field for uploading images
             "views_count",
             "rental_count",
             "average_rating",
@@ -168,6 +171,8 @@ class ProductSerializer(serializers.ModelSerializer):
             "updated_at",
             "unavailable_dates",
             "pricing_tiers",
+            "unavailable_dates_input",
+            "pricing_tiers_input",
         ]
         read_only_fields = [
             "id",
@@ -247,8 +252,8 @@ class ProductSerializer(serializers.ModelSerializer):
             logger.info(f"Create method called on ProductSerializer")
             # Extract related data
             images = validated_data.pop("images", [])
-            unavailable_dates = validated_data.pop("unavailable_dates", [])
-            pricing_tiers = validated_data.pop("pricing_tiers", [])
+            unavailable_dates = validated_data.pop("unavailable_dates_input", [])
+            pricing_tiers = validated_data.pop("pricing_tiers_input", [])
             
             # Remove owner from validated_data if it exists
             validated_data.pop("owner", None)
@@ -282,8 +287,8 @@ class ProductSerializer(serializers.ModelSerializer):
         logger.info(f"Update method called for product {instance.id}")
         # Extract related data
         images = validated_data.pop("images", [])
-        unavailable_dates = validated_data.pop("unavailable_dates", [])
-        pricing_tiers = validated_data.pop("pricing_tiers", [])
+        unavailable_dates = validated_data.pop("unavailable_dates_input", [])
+        pricing_tiers = validated_data.pop("pricing_tiers_input", [])
         
         # Update the product fields
         for attr, value in validated_data.items():

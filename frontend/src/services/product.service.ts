@@ -12,37 +12,99 @@ class ProductService {
    * @returns List of active products
    */
   async getActiveProducts(): Promise<Product[]> {
-    const response = await api.get(config.products.listEndpoint);
-    // Handle both array and paginated responses
-    const products = Array.isArray(response.data) ? response.data : (response.data.results || []);
+    try {
+      const response = await api.get(config.products.listEndpoint);
+      console.log("API Response:", response.data);
+      console.log("First product debug data:", response.data.results?.[0]);
+      
+      // Handle both array and paginated responses
+      const products = Array.isArray(response.data) ? response.data : (response.data.results || []);
+      
+      // Transform the response data to match the frontend's expected structure
+      return products.map((product: any) => {
+        // Fix: Use camelCase property name that matches the API response
+        const productImages = product.productImages || [];
+        
+        // Debug the images array
+        console.log(`Product ${product.id} raw product_images:`, productImages);
+        
+        // Transform image URLs to be complete URLs if they're relative paths
+        const images = productImages.map((img: any) => ({
+          ...img,
+          image: this.ensureFullImageUrl(img.image)
+        }));
+        
+        console.log(`Product ${product.id} has ${images.length} images`);
+        
+        // Transform pricing tiers - use camelCase from API response
+        const pricingTiers = product.pricingTiers?.map((tier: any) => ({
+          id: tier.id,
+          durationUnit: tier.durationUnit,
+          price: tier.price,
+          maxPeriod: tier.maxPeriod
+        })) || [];
+
+        // Transform unavailable dates - use camelCase from API response
+        const unavailableDates = product.unavailableDates?.map((date: any) => ({
+          id: date.id,
+          date: date.date,
+          isRange: date.isRange,
+          rangeStart: date.rangeStart,
+          rangeEnd: date.rangeEnd
+        })) || [];
+        
+        return {
+          ...product,
+          productType: product.productType,
+          securityDeposit: product.securityDeposit,
+          purchaseYear: product.purchaseYear,
+          originalPrice: product.originalPrice,
+          ownershipHistory: product.ownershipHistory,
+          statusMessage: product.statusMessage,
+          statusChangedAt: product.statusChangedAt,
+          viewsCount: product.viewsCount,
+          rentalCount: product.rentalCount,
+          averageRating: product.averageRating,
+          createdAt: product.createdAt,
+          updatedAt: product.updatedAt,
+          images: images,
+          pricingTiers: pricingTiers,
+          unavailableDates: unavailableDates
+        };
+      });
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      return [];
+    }
+  }
+
+  /**
+   * Ensure the image URL is a complete URL
+   * @param imageUrl The image URL to check
+   * @returns Complete image URL
+   */
+  private ensureFullImageUrl(imageUrl: string): string {
+    if (!imageUrl) {
+      return 'https://placehold.co/600x400?text=No+Image';
+    }
     
-    // Transform the response data to match the frontend's expected structure
-    return products.map((product: any) => ({
-      ...product,
-      productType: product.product_type,
-      securityDeposit: product.security_deposit,
-      purchaseYear: product.purchase_year,
-      originalPrice: product.original_price,
-      ownershipHistory: product.ownership_history,
-      statusMessage: product.status_message,
-      statusChangedAt: product.status_changed_at,
-      viewsCount: product.views_count,
-      rentalCount: product.rental_count,
-      averageRating: product.average_rating ? parseFloat(product.average_rating) : 0,
-      createdAt: product.created_at,
-      updatedAt: product.updated_at,
-      unavailableDates: product.unavailable_dates?.map((date: any) => ({
-        ...date,
-        isRange: date.is_range,
-        rangeStart: date.range_start,
-        rangeEnd: date.range_end
-      })) || [],
-      pricingTiers: product.pricing_tiers?.map((tier: any) => ({
-        ...tier,
-        durationUnit: tier.duration_unit,
-        maxPeriod: tier.max_period
-      })) || []
-    }));
+    // If it's already a full URL (starts with http:// or https://), return as is
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    
+    // If it's a relative URL (starts with /media/), add the base URL
+    if (imageUrl.startsWith('/media/')) {
+      return `${config.baseUrl}${imageUrl}`;
+    }
+
+    // If it's a relative URL (starts with media/), add the base URL
+    if (imageUrl.startsWith('media/')) {
+      return `${config.baseUrl}/${imageUrl}`;
+    }
+    
+    // For all other cases, prepend the base URL and media path
+    return `${config.baseUrl}/media/${imageUrl}`;
   }
 
   /**
@@ -50,33 +112,52 @@ class ProductService {
    * @returns List of products
    */
   async getUserProducts(): Promise<Product[]> {
-    const response = await api.get(config.products.userProductsEndpoint);
-    return response.data.results || response.data.map((product: any) => ({
-      ...product,
-      productType: product.product_type,
-      securityDeposit: product.security_deposit,
-      purchaseYear: product.purchase_year,
-      originalPrice: product.original_price,
-      ownershipHistory: product.ownership_history,
-      statusMessage: product.status_message,
-      statusChangedAt: product.status_changed_at,
-      viewsCount: product.views_count,
-      rentalCount: product.rental_count,
-      averageRating: product.average_rating ? parseFloat(product.average_rating) : 0,
-      createdAt: product.created_at,
-      updatedAt: product.updated_at,
-      unavailableDates: product.unavailable_dates?.map((date: any) => ({
-        ...date,
-        isRange: date.is_range,
-        rangeStart: date.range_start,
-        rangeEnd: date.range_end
-      })) || [],
-      pricingTiers: product.pricing_tiers?.map((tier: any) => ({
-        ...tier,
-        durationUnit: tier.duration_unit,
-        maxPeriod: tier.max_period
-      })) || []
-    }));
+    try {
+      const response = await api.get(config.products.userProductsEndpoint);
+      const products = response.data.results || response.data;
+      
+      return products.map((product: any) => {
+        // Fix: Use camelCase property name that matches the API response
+        const productImages = product.productImages || [];
+        
+        // Transform image URLs to be complete URLs if they're relative paths
+        const images = productImages.map((img: any) => ({
+          ...img,
+          image: this.ensureFullImageUrl(img.image)
+        }));
+        
+        return {
+          ...product,
+          productType: product.product_type,
+          securityDeposit: product.security_deposit,
+          purchaseYear: product.purchase_year,
+          originalPrice: product.original_price,
+          ownershipHistory: product.ownership_history,
+          statusMessage: product.status_message,
+          statusChangedAt: product.status_changed_at,
+          viewsCount: product.views_count,
+          rentalCount: product.rental_count,
+          averageRating: product.average_rating ? parseFloat(product.average_rating) : 0,
+          createdAt: product.created_at,
+          updatedAt: product.updated_at,
+          images: images,
+          unavailableDates: product.unavailable_dates?.map((date: any) => ({
+            ...date,
+            isRange: date.is_range,
+            rangeStart: date.range_start,
+            rangeEnd: date.range_end
+          })) || [],
+          pricingTiers: product.pricing_tiers?.map((tier: any) => ({
+            ...tier,
+            durationUnit: tier.duration_unit,
+            maxPeriod: tier.max_period
+          })) || []
+        };
+      });
+    } catch (error) {
+      console.error("Error fetching user products:", error);
+      return [];
+    }
   }
 
   /**
@@ -85,34 +166,50 @@ class ProductService {
    * @returns The product
    */
   async getProduct(productId: string): Promise<Product> {
-    const response = await api.get(config.products.detailEndpoint(productId));
-    const product = response.data;
-    return {
-      ...product,
-      productType: product.product_type,
-      securityDeposit: product.security_deposit,
-      purchaseYear: product.purchase_year,
-      originalPrice: product.original_price,
-      ownershipHistory: product.ownership_history,
-      statusMessage: product.status_message,
-      statusChangedAt: product.status_changed_at,
-      viewsCount: product.views_count,
-      rentalCount: product.rental_count,
-      averageRating: product.average_rating ? parseFloat(product.average_rating) : 0,
-      createdAt: product.created_at,
-      updatedAt: product.updated_at,
-      unavailableDates: product.unavailable_dates?.map((date: any) => ({
-        ...date,
-        isRange: date.is_range,
-        rangeStart: date.range_start,
-        rangeEnd: date.range_end
-      })) || [],
-      pricingTiers: product.pricing_tiers?.map((tier: any) => ({
-        ...tier,
-        durationUnit: tier.duration_unit,
-        maxPeriod: tier.max_period
-      })) || []
-    };
+    try {
+      const response = await api.get(config.products.detailEndpoint(productId));
+      const product = response.data;
+      
+      // Fix: Use camelCase property name that matches the API response
+      const productImages = product.productImages || [];
+      
+      // Transform image URLs to be complete URLs if they're relative paths
+      const images = productImages.map((img: any) => ({
+        ...img,
+        image: this.ensureFullImageUrl(img.image)
+      }));
+      
+      return {
+        ...product,
+        productType: product.product_type,
+        securityDeposit: product.security_deposit,
+        purchaseYear: product.purchase_year,
+        originalPrice: product.original_price,
+        ownershipHistory: product.ownership_history,
+        statusMessage: product.status_message,
+        statusChangedAt: product.status_changed_at,
+        viewsCount: product.views_count,
+        rentalCount: product.rental_count,
+        averageRating: product.average_rating ? parseFloat(product.average_rating) : 0,
+        createdAt: product.created_at,
+        updatedAt: product.updated_at,
+        images: images,
+        unavailableDates: product.unavailable_dates?.map((date: any) => ({
+          ...date,
+          isRange: date.is_range,
+          rangeStart: date.range_start,
+          rangeEnd: date.range_end
+        })) || [],
+        pricingTiers: product.pricing_tiers?.map((tier: any) => ({
+          ...tier,
+          durationUnit: tier.duration_unit,
+          maxPeriod: tier.max_period
+        })) || []
+      };
+    } catch (error) {
+      console.error(`Error fetching product ${productId}:`, error);
+      throw error;
+    }
   }
 
   /**
@@ -226,8 +323,6 @@ class ProductService {
         }));
         formData.append('pricing_tiers', JSON.stringify(pricingTiers));
       }
-
-      console.log("Updating product with ID:", productId);
 
       const response = await api.patch(config.products.updateEndpoint(productId), formData, {
         headers: {

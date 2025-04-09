@@ -24,13 +24,30 @@ const ItemCard = ({
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Debug pricing data
+  console.log('ItemCard product:', product);
+  console.log('Pricing tiers:', product.pricingTiers);
+  console.log('First pricing tier:', product.pricingTiers?.[0]);
+
   // Use a default image if product.images is empty
   const images = product.images && product.images.length > 0
     ? product.images
-    : [{ id: 'default', image: '/images/placeholder-image.jpg', createdAt: new Date().toISOString() }];
+    : [{ id: 'default', image: 'https://placehold.co/600x400?text=No+Image', createdAt: new Date().toISOString() }];
+
+  const [imageError, setImageError] = useState(false);
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    const imgSrc = (e.target as HTMLImageElement).src;
+    console.error('Image failed to load:', imgSrc);
+    
+    setImageError(true);
+    const target = e.target as HTMLImageElement;
+    target.src = 'https://placehold.co/600x400?text=Error+Loading+Image';
+  };
 
   const nextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
+    setImageError(false); // Reset error state when changing images
     if (currentImageIndex < images.length - 1) {
       setCurrentImageIndex(currentImageIndex + 1);
     } else {
@@ -40,6 +57,7 @@ const ItemCard = ({
 
   const prevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
+    setImageError(false); // Reset error state when changing images
     if (currentImageIndex > 0) {
       setCurrentImageIndex(currentImageIndex - 1);
     } else {
@@ -90,13 +108,10 @@ const ItemCard = ({
       >
         <div className="relative h-40 sm:h-48 md:h-60 overflow-hidden z-0">
           <img
-            src={images[currentImageIndex].image}
+            src={images[currentImageIndex]?.image || 'https://placehold.co/600x400?text=No+Image'}
             alt={product.title || 'Product image'}
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = '/images/placeholder-image.jpg';
-            }}
+            onError={handleImageError}
           />
           {/* Image navigation controls - only shown on hover for non-touch devices */}
           {isHovered && images.length > 1 && (
