@@ -208,7 +208,10 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
                   className="flex-1 border-green-300"
                   asChild
                 >
-                  <Link to={`/items/${selectedItem.id}`}>
+                  <Link 
+                    to={`/items/${selectedItem.id}`}
+                    state={{ product: selectedItem }}
+                  >
                     View Full Details
                   </Link>
                 </Button>

@@ -1,19 +1,24 @@
 import { useState, useEffect } from 'react';
 import { CalendarDays, Info, Calendar as CalendarIcon, X, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 
+interface CustomDateRange {
+  start: Date;
+  end: Date;
+}
+
 interface Props {
-  unavailableDates: Date[];
+  unavailableDates: (Date | CustomDateRange)[];
   onRemoveRange?: (startDate: Date, endDate: Date) => void;
 }
 
-interface DateRange {
+interface InternalDateRange {
   startDate: Date;
   endDate: Date;
 }
 
 const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [dateRanges, setDateRanges] = useState<DateRange[]>([]);
+  const [dateRanges, setDateRanges] = useState<InternalDateRange[]>([]);
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
   
@@ -38,44 +43,74 @@ const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
       return;
     }
 
-    // Sort dates
-    const sortedDates = [...unavailableDates].sort((a, b) => a.getTime() - b.getTime());
-    
-    // Group consecutive dates into ranges
-    const ranges: DateRange[] = [];
-    let currentRange: DateRange | null = null;
-    
-    sortedDates.forEach((date, index) => {
-      if (!currentRange) {
-        // Start a new range
-        currentRange = {
-          startDate: new Date(date),
-          endDate: new Date(date)
-        };
+    // Process a mix of Dates and CustomDateRange objects into a flat array of Dates for processing
+    const flattenedDates: Date[] = [];
+    const directRanges: InternalDateRange[] = [];
+
+    unavailableDates.forEach(dateItem => {
+      if (dateItem instanceof Date) {
+        // Simple Date object
+        flattenedDates.push(new Date(dateItem));
       } else {
-        // Check if this date is consecutive with the current range
-        const prevDate = new Date(sortedDates[index - 1]);
-        const currentDate = new Date(date);
-        const dayDiff = (currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
+        // It's a CustomDateRange, add it directly to directRanges
+        directRanges.push({
+          startDate: new Date(dateItem.start),
+          endDate: new Date(dateItem.end)
+        });
         
-        if (dayDiff === 1) {
-          // Extend the current range
-          currentRange.endDate = new Date(date);
-        } else {
-          // End the current range and start a new one
-          ranges.push(currentRange);
+        // Also add each day in the range to flattenedDates for the calendar highlighting
+        const start = new Date(dateItem.start);
+        const end = new Date(dateItem.end);
+        const dayCount = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        
+        for (let i = 0; i < dayCount; i++) {
+          const date = new Date(start);
+          date.setDate(date.getDate() + i);
+          flattenedDates.push(new Date(date));
+        }
+      }
+    });
+
+    // Sort dates
+    const sortedDates = [...flattenedDates].sort((a, b) => a.getTime() - b.getTime());
+    
+    // Group consecutive dates into ranges (for single dates only, ranges are already handled)
+    const ranges: InternalDateRange[] = [...directRanges];
+    let currentRange: InternalDateRange | null = null;
+    
+    if (sortedDates.length > 0) {
+      sortedDates.forEach((date, index) => {
+        if (!currentRange) {
+          // Start a new range
           currentRange = {
             startDate: new Date(date),
             endDate: new Date(date)
           };
+        } else {
+          // Check if this date is consecutive with the current range
+          const prevDate = new Date(sortedDates[index - 1]);
+          const currentDate = new Date(date);
+          const dayDiff = (currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
+          
+          if (dayDiff === 1) {
+            // Extend the current range
+            currentRange.endDate = new Date(date);
+          } else {
+            // End the current range and start a new one
+            ranges.push(currentRange);
+            currentRange = {
+              startDate: new Date(date),
+              endDate: new Date(date)
+            };
+          }
         }
-      }
-      
-      // If this is the last date, add the current range
-      if (index === sortedDates.length - 1 && currentRange) {
-        ranges.push(currentRange);
-      }
-    });
+        
+        // If this is the last date, add the current range
+        if (index === sortedDates.length - 1 && currentRange) {
+          ranges.push(currentRange);
+        }
+      });
+    }
     
     setDateRanges(ranges);
   }, [unavailableDates]);
@@ -83,7 +118,23 @@ const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
   // Function to check if a date is unavailable
   const isDateUnavailable = (year: number, month: number, day: number) => {
     const checkDate = new Date(year, month, day).getTime();
-    return unavailableDates.some(date => date.getTime() === checkDate);
+    
+    return unavailableDates.some(date => {
+      if (date instanceof Date) {
+        const unavailableDate = new Date(date);
+        return (
+          unavailableDate.getFullYear() === year &&
+          unavailableDate.getMonth() === month &&
+          unavailableDate.getDate() === day
+        );
+      } else if (typeof date === 'object' && 'start' in date && 'end' in date) {
+        const startDate = new Date(date.start);
+        const endDate = new Date(date.end);
+        const currentDateObj = new Date(year, month, day);
+        return currentDateObj >= startDate && currentDateObj <= endDate;
+      }
+      return false;
+    });
   };
 
   const goToPreviousMonth = () => {
@@ -111,7 +162,7 @@ const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
     return `${startFormatted} - ${endFormatted}`;
   };
 
-  const handleRemoveRange = (range: DateRange) => {
+  const handleRemoveRange = (range: InternalDateRange) => {
     if (onRemoveRange) {
       onRemoveRange(range.startDate, range.endDate);
     }
@@ -161,7 +212,7 @@ const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
                     text-center p-2 text-sm border-r last:border-r-0
                     ${day === null ? 'bg-white text-gray-300' : 'bg-white text-gray-700'}
                     ${day !== null && isDateUnavailable(currentYear, currentMonth, day) 
-                      ? 'bg-red-300 text-red-800 font-medium' 
+                      ? 'bg-red-400/50 text-red-800 font-medium' 
                       : day === new Date().getDate() && currentMonth === new Date().getMonth() && currentYear === new Date().getFullYear() 
                         ? 'border border-green-300 font-medium' 
                         : ''}

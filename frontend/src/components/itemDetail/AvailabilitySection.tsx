@@ -2,8 +2,13 @@ import React from 'react';
 import { Calendar } from 'lucide-react';
 import AvailabilityCalendar from '@/components/listings/UnavailabilityCalendar';
 
+interface DateRange {
+  start: Date;
+  end: Date;
+}
+
 interface AvailabilitySectionProps {
-  unavailableDates: Date[];
+  unavailableDates: (Date | DateRange)[];
 }
 
 export default function AvailabilitySection({ unavailableDates }: AvailabilitySectionProps) {

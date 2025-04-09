@@ -5,14 +5,14 @@ interface ItemDetailsProps {
   condition: string;
   category: string;
   itemAge?: number;
-  securityDeposit?: number;
+  securityDeposit?: string;
 }
 
 export default function ItemDetails({
   condition = 'Excellent',
   category,
   itemAge,
-  securityDeposit = 0
+  securityDeposit = '0'
 }: ItemDetailsProps) {
   return (
     <div className="mb-10 pb-10 border-b border-gray-200">

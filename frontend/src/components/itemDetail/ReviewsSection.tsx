@@ -25,12 +25,21 @@ export default function ReviewsSection({
     { name: 'Sarah Khan', rating: 4, review: 'Good item, the quality was great. Vara staff was very helpful with setup. Would definitely rent again from this platform.', date: '2023-03-22' }
   ]
 }: ReviewsSectionProps) {
+  
+  // Format rating safely
+  const displayRating = () => {
+    if (typeof averageRating === 'number') {
+      return averageRating.toFixed(1);
+    }
+    return '0.0';
+  };
+  
   return (
     <section className="mt-10 bg-gradient-to-b from-green-50/50 to-white rounded-xl shadow-sm border border-green-100 p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold text-green-800 flex items-center gap-2">
           <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-          <span>{averageRating?.toFixed(1)} · {totalRentals} reviews</span>
+          <span>{displayRating()} · {totalRentals || 0} reviews</span>
         </h2>
         <Button
           variant="outline"

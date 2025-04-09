@@ -1,6 +1,6 @@
 // pages/ItemDetail.tsx
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useLocation, Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import NavBar from '@/components/home/NavBar';
 import Footer from '@/components/home/Footer';
@@ -22,12 +22,15 @@ import {
   HostInfo
 } from '@/components/itemDetail';
 import { DurationUnit } from '@/constants/rental';
+import productService from '@/services/product.service';
 
 // Generate mock listings
 const allListings = generateListings(40);
 
 export default function ItemDetailPage() {
   const { productId } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [similarItems, setSimilarItems] = useState<Product[]>([]);
@@ -35,25 +38,68 @@ export default function ItemDetailPage() {
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
 
   useEffect(() => {
+    // Check if product was passed via state (from modal)
+    const passedProduct = location.state?.product;
+    
     // Simulate API fetch with mock data
     const fetchProduct = async () => {
       setIsLoading(true);
       try {
-        // Find product in mock data
-        const foundProduct = allListings.find(item => item.id === productId);
-
-        if (foundProduct) {
-          setProduct(foundProduct);
-
+        // If we have a product passed from state, use it directly
+        if (passedProduct && passedProduct.id === productId) {
+          console.log("Using product from state:", passedProduct);
+          setProduct(passedProduct);
+          
           // Find similar items
           const similar = allListings
             .filter(item => 
               item.id !== productId &&
-              item.category === foundProduct.category
+              item.category === passedProduct.category
             )
             .slice(0, 4);
 
           setSimilarItems(similar);
+        } else {
+          // Otherwise, try to find the product from API/mock data
+          console.log("Fetching product from API/mock:", productId);
+          
+          try {
+            // Try to get the product from the API first
+            const apiProduct = await productService.getProduct(productId as string);
+            if (apiProduct) {
+              setProduct(apiProduct);
+              
+              // Find similar items
+              const similar = allListings
+                .filter(item => 
+                  item.id !== productId &&
+                  item.category === apiProduct.category
+                )
+                .slice(0, 4);
+
+              setSimilarItems(similar);
+              return;
+            }
+          } catch (error) {
+            console.warn("API product fetch failed, falling back to mock data:", error);
+          }
+          
+          // Fall back to mock data
+          const foundProduct = allListings.find(item => item.id === productId);
+
+          if (foundProduct) {
+            setProduct(foundProduct);
+
+            // Find similar items
+            const similar = allListings
+              .filter(item => 
+                item.id !== productId &&
+                item.category === foundProduct.category
+              )
+              .slice(0, 4);
+
+            setSimilarItems(similar);
+          }
         }
       } catch (error) {
         console.error('Error fetching product:', error);
@@ -63,7 +109,7 @@ export default function ItemDetailPage() {
     };
 
     fetchProduct();
-  }, [productId]);
+  }, [productId, location.state]);
 
   const handleQuickView = (itemId: string) => {
     setSelectedItem(itemId);
@@ -127,9 +173,9 @@ export default function ItemDetailPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-8 animate-fade-up">
           <ProductHeader
             title={product.title}
-            averageRating={product.averageRating}
-            totalRentals={product.rentalCount}
-            location={product.location}
+            averageRating={typeof product.averageRating === 'number' ? product.averageRating : 0}
+            totalRentals={product.rentalCount || 0}
+            location={product.location || 'Not specified'}
             category={product.category}
           />
         </div>
@@ -168,21 +214,26 @@ export default function ItemDetailPage() {
               <div className="animate-fade-left delay-500">
                 <ItemDetails
                   category={product.category}
-                  securityDeposit={product.securityDeposit}
                   condition="Good"
+                  securityDeposit={String(product.securityDeposit)}
                 />
               </div>
 
               {/* Availability Calendar */}
               <div className="animate-fade-left delay-600">
-                <AvailabilitySection unavailableDates={product.unavailableDates.map(date => new Date(date.date))} />
+                <AvailabilitySection 
+                  unavailableDates={product.unavailableDates.map(date => {
+                    // Convert to proper Date objects
+                    return new Date(date.date);
+                  })}
+                />
               </div>
 
               {/* Reviews Section */}
               <div className="animate-fade-left delay-700">
                 <ReviewsSection
-                  averageRating={product.averageRating}
-                  totalRentals={product.rentalCount}
+                  averageRating={typeof product.averageRating === 'number' ? product.averageRating : 0}
+                  totalRentals={product.rentalCount || 0}
                 />
               </div>
             </div>
@@ -192,8 +243,9 @@ export default function ItemDetailPage() {
               <div className="animate-fade-right delay-200">
                 <PricingCard
                   pricingTiers={product.pricingTiers}
-                  minRentalPeriod={product.pricingTiers[0].maxPeriod || 1}
-                  maxRentalPeriod={product.pricingTiers[0].maxPeriod || 30}
+                  maxRentalPeriod={product.pricingTiers[0]?.maxPeriod || 30}
+                  securityDeposit={product.securityDeposit}
+                  productId={product.id}
                 />
               </div>
             </div>
