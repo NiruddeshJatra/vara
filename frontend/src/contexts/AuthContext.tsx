@@ -40,12 +40,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   useEffect(() => {
-    console.log("Auth state changed:", {
-      isAuthenticated,
-      hasUser: !!user,
-      hasToken: !!localStorage.getItem(config.auth.tokenStorageKey),
-      hasRefreshToken: !!localStorage.getItem(config.auth.refreshTokenStorageKey)
-    });
   }, [isAuthenticated, user]);
 
   const login = async (email: string, password: string, rememberMe: boolean) => {

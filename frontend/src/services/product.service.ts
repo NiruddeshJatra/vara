@@ -464,69 +464,6 @@ class ProductService {
     });
     return response.data.average_rating;
   }
-
-  /**
-   * Get similar products based on category
-   * @param productId The ID of the current product (to exclude from results)
-   * @param category The category to search within
-   * @returns List of similar products
-   */
-  async getSimilarProducts(productId: string, category: string): Promise<Product[]> {
-    try {
-      const params = new URLSearchParams();
-      params.append('category', category);
-      params.append('exclude_id', productId);
-      params.append('limit', '4');
-      
-      const response = await api.get(`${config.products.listEndpoint}?${params.toString()}`);
-      
-      const products = response.data.results || response.data;
-      return products.map((product: any) => {
-        const productImages = product.productImages || [];
-        const images = productImages.map((img: any) => ({
-          ...img,
-          image: this.ensureFullImageUrl(img.image)
-        }));
-        
-        const pricingTiers = product.pricingTiers?.map((tier: any) => ({
-          id: tier.id,
-          durationUnit: tier.durationUnit,
-          price: tier.price,
-          maxPeriod: tier.maxPeriod
-        })) || [];
-
-        const unavailableDates = product.unavailableDates?.map((date: any) => ({
-          id: date.id,
-          date: date.date,
-          isRange: date.isRange,
-          rangeStart: date.rangeStart,
-          rangeEnd: date.rangeEnd
-        })) || [];
-        
-        return {
-          ...product,
-          productType: product.productType,
-          securityDeposit: product.securityDeposit,
-          purchaseYear: product.purchaseYear,
-          originalPrice: product.originalPrice,
-          ownershipHistory: product.ownershipHistory,
-          statusMessage: product.statusMessage,
-          statusChangedAt: product.statusChangedAt,
-          viewsCount: product.viewsCount,
-          rentalCount: product.rentalCount,
-          averageRating: product.averageRating,
-          createdAt: product.createdAt,
-          updatedAt: product.updatedAt,
-          images: images,
-          pricingTiers: pricingTiers,
-          unavailableDates: unavailableDates
-        };
-      });
-    } catch (error) {
-      console.error("Error fetching similar products:", error);
-      return [];
-    }
-  }
 }
 
 export default new ProductService(); 

@@ -73,9 +73,7 @@ const Advertisements = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        console.log('Fetching products from API...');
         const data = await productService.getActiveProducts();
-        console.log('Raw product data:', data);
         setAllListings(data);
         
         // Update category counts

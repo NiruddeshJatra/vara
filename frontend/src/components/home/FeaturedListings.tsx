@@ -1,11 +1,12 @@
 import { Button } from '../ui/button';
 import ListingsGrid from '../advertisements/ListingsGrid';
 import { useState } from 'react';
-import { Product } from '@/types/listings';
-import { mockFeaturedListings } from '@/data/mockFeaturedListings';
+import { generateListings } from '@/utils/mockDataGenerator';
+import ItemModal from '@/components/advertisements/ItemModal';
 
 const FeaturedListings = () => {
-  const [listings, setListings] = useState<Product[]>(mockFeaturedListings);
+  // Generate mock listings for display
+  const mockListings = generateListings(4);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
 
@@ -15,7 +16,7 @@ const FeaturedListings = () => {
   };
 
   const getSelectedItem = () => {
-    return listings.find(item => item.id === selectedItem) || null;
+    return mockListings.find(item => item.id === selectedItem) || null;
   };
 
   return (
@@ -36,21 +37,21 @@ const FeaturedListings = () => {
         <section className="py-6 animate-fade-up delay-200">
           <div className="container mx-auto px-4">
             <ListingsGrid
-              displayedListings={listings}
+              displayedListings={mockListings}
               handleQuickView={handleQuickView}
             />
           </div>
-          {/* <ItemModal
+          <ItemModal
             isOpen={isItemModalOpen}
             onOpenChange={setIsItemModalOpen}
             selectedItem={getSelectedItem()}
-          /> */}
+          />
         </section>
 
         <div className="text-center mt-6 animate-fade-up delay-300">
           <Button
             variant="outline"
-            className="py-6 px-8 text-md rounded-full font-semibold shadow-lg cursor-pointer transition-transform duration-300 ease-in-out hover:translate-y-[-2px] hover:shadow-xltext-sm text-black/70 text-green-700 bg-white hover:bg-lime-600 hover:border-none hover:text-white"
+            className="py-6 px-8 text-md rounded-full font-semibold shadow-lg cursor-pointer transition-transform duration-300 ease-in-out hover:translate-y-[-2px] hover:shadow-xltext-sm text-black/70 hover:text-white border border-green-600 text-green-700 bg-white hover:bg-lime-600 hover:border-none"
             style={{ animationDelay: '0.5s' }}
           >
             See All Available Items

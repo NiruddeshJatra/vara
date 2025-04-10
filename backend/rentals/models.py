@@ -43,30 +43,27 @@ class Rental(models.Model):
     )
 
     # Rental period
-    start_time = models.DateTimeField(help_text=_("When rental period starts"))
-    end_time = models.DateTimeField(help_text=_("When rental period ends"))
+    start_time = models.DateTimeField(help_text="When rental period starts")
+    end_time = models.DateTimeField(help_text="When rental period ends")
     duration = models.PositiveIntegerField(
-        help_text=_("Number of duration units"))
+        help_text="Number of duration units")
     duration_unit = models.CharField(
         max_length=10,
         choices=DURATION_UNIT_CHOICES,
-        help_text=_("Unit of duration (day, week, month)"))
+        help_text="Unit of duration (day, week, month)")
 
     # Cost information
     total_cost = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        help_text=_("Total rental cost including fees")
+        editable=False,
+        help_text="Total rental cost including fees"
     )
     service_fee = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        help_text=_("Service fee amount")
-    )
-    security_deposit = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        help_text=_("Security deposit amount")
+        editable=False,
+        help_text="Service fee amount"
     )
 
     # Rental details
@@ -74,12 +71,12 @@ class Rental(models.Model):
         max_length=255,
         blank=True,
         null=True,
-        help_text=_("Purpose of the rental")
+        help_text="Purpose of the rental"
     )
     notes = models.TextField(
         blank=True,
         null=True,
-        help_text=_("Additional notes about the rental")
+        help_text="Additional notes about the rental"
     )
     # Status tracking
     status = models.CharField(
@@ -135,8 +132,7 @@ class Rental(models.Model):
             return Decimal("0.00")
 
         base_cost = tier.price * self.duration
-        total_cost = base_cost + self.service_fee
-        return total_cost
+        return base_cost
 
     def calculate_end_time(self):
         """
@@ -164,12 +160,14 @@ class Rental(models.Model):
         """
         Calculate total cost and end time before saving
         """
-        if not self.total_cost:
-            self.total_cost = self.calculate_total_cost()
-        
-        # Ensure security deposit is set
-        if not self.security_deposit and self.product.security_deposit:
-            self.security_deposit = self.product.security_deposit
+        # Calculate total cost based on product's pricing tier
+        pricing_tier = self.product.pricing_tiers.filter(
+            duration_unit=self.duration_unit
+        ).first()
+
+        if pricing_tier:
+            self.total_cost = pricing_tier.price * self.duration
+            self.service_fee = self.total_cost * Decimal('0.2')  # 20% service fee
 
         # Calculate end time if not set
         if not self.end_time:

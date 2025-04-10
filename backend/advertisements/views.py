@@ -43,7 +43,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         if self.action == "list":
             if self.request.user.is_staff:
                 return queryset
-            return queryset.filter(Q(status="active") | Q(owner=self.request.user))
+            return queryset.filter(Q(status__in=["active", "draft"]) | Q(owner=self.request.user))
         return queryset
 
     def get_permissions(self):
@@ -224,4 +224,3 @@ class ProductViewSet(viewsets.ModelViewSet):
     @method_decorator(cache_page(60 * 15))  # Cache for 15 minutes
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
-

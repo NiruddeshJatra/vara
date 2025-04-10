@@ -2,11 +2,14 @@ import api from './api.service';
 import { RentalStatus } from '../constants/rental';
 import { RentalRequest, RentalRequestFormData } from '../types/listings';
 import config from '../config';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * Service for handling rental-related operations
  */
 class RentalService {
+  private navigate = useNavigate();
+
   /**
    * Create a new rental request
    * @param productId The ID of the product to rent
@@ -14,25 +17,60 @@ class RentalService {
    * @returns The created rental request
    */
   async createRentalRequest(productId: string, data: RentalRequestFormData): Promise<RentalRequest> {
+    // Get the product to calculate service fee
+    const product = await this.getProduct(productId);
+    const pricingTier = product.pricingTiers.find(
+      tier => tier.durationUnit === data.durationUnit
+    );
+
+    if (!pricingTier) {
+      throw new Error('No pricing tier found for selected duration');
+    }
+
+    // Calculate service fee (20% of total cost)
+    const totalCost = pricingTier.price * data.duration;
+    const serviceFee = totalCost * 0.2; // 20% service fee
+
     // Transform data to match backend expectations
     const rentalData = {
       product: productId,
-      start_time: data.startDate,
+      start_time: data.startDate?.toISOString(),
+      end_time: this.calculateEndTime(data.startDate, data.duration, data.durationUnit),
       duration: data.duration,
       duration_unit: data.durationUnit,
       purpose: data.purpose,
       notes: data.notes,
-      pickup_method: data.pickupMethod,
-      delivery_address: data.pickupMethod === 'delivery' ? data.deliveryAddress : null,
-      delivery_time: data.pickupMethod === 'delivery' ? data.deliveryTime : null
+      total_cost: totalCost,
+      service_fee: serviceFee
     };
 
     try {
       const response = await api.post(config.rentals.createEndpoint, rentalData);
+      this.navigate('/rentals');
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       throw new Error('Failed to create rental request');
     }
+  }
+
+  private calculateEndTime(startDate: Date, duration: number, durationUnit: string): string {
+    let endDate = new Date(startDate);
+    
+    switch (durationUnit) {
+      case 'day':
+        endDate.setDate(endDate.getDate() + duration);
+        break;
+      case 'week':
+        endDate.setDate(endDate.getDate() + duration * 7);
+        break;
+      case 'month':
+        endDate.setMonth(endDate.getMonth() + duration);
+        break;
+      default:
+        throw new Error(`Invalid duration unit: ${durationUnit}`);
+    }
+
+    return endDate.toISOString();
   }
 
   /**
@@ -156,6 +194,15 @@ class RentalService {
       return response.data;
     } catch (error) {
       throw new Error('Failed to upload rental photo');
+    }
+  }
+
+  private async getProduct(productId: string): Promise<any> {
+    try {
+      const response = await api.get(config.products.detailEndpoint(productId));
+      return response.data;
+    } catch (error) {
+      throw new Error('Failed to fetch product');
     }
   }
 }

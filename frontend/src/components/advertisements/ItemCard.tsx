@@ -22,26 +22,22 @@ const ItemCard = ({
 }: ItemCardProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   // Use a default image if product.images is empty
   const images = product.images && product.images.length > 0
     ? product.images
     : [{ id: 'default', image: 'https://placehold.co/600x400?text=No+Image', createdAt: new Date().toISOString() }];
 
-  const [imageError, setImageError] = useState(false);
-
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     const imgSrc = (e.target as HTMLImageElement).src;
     console.error('Image failed to load:', imgSrc);
-    
     setImageError(true);
-    const target = e.target as HTMLImageElement;
-    target.src = 'https://placehold.co/600x400?text=Error+Loading+Image';
   };
 
   const nextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setImageError(false); // Reset error state when changing images
+    setImageError(false);
     if (currentImageIndex < images.length - 1) {
       setCurrentImageIndex(currentImageIndex + 1);
     } else {
@@ -51,7 +47,7 @@ const ItemCard = ({
 
   const prevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setImageError(false); // Reset error state when changing images
+    setImageError(false);
     if (currentImageIndex > 0) {
       setCurrentImageIndex(currentImageIndex - 1);
     } else {
@@ -100,11 +96,21 @@ const ItemCard = ({
     >
       <div className="relative h-40 sm:h-48 md:h-60 overflow-hidden z-0">
         <img
-          src={images[currentImageIndex]?.image || 'https://placehold.co/600x400?text=No+Image'}
+          src={images[currentImageIndex].image}
           alt={product.title || 'Product image'}
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
           onError={handleImageError}
         />
+        {imageError && (
+          <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
+            <img 
+              src="https://placehold.co/600x400?text=Image+Not+Available" 
+              alt="Error loading image"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+        
         {/* Image navigation controls - only shown on hover for non-touch devices */}
         {isHovered && images.length > 1 && (
           <>

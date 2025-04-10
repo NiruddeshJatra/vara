@@ -39,11 +39,19 @@ class RentalViewSet(viewsets.ModelViewSet):
         """
         Create a new rental request
         """
+        print(f"\nReceived rental request data: {request.data}")
+        
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+            print(f"\nSerialized data is valid: {serializer.validated_data}")
+        except Exception as e:
+            print(f"\nValidation error: {str(e)}")
+            raise
 
         # Ensure user is not the owner of the product
         if request.user == serializer.validated_data['product'].owner:
+            print("\nError: User is trying to rent their own product")
             return Response(
                 {"error": "You cannot rent your own product"},
                 status=status.HTTP_400_BAD_REQUEST
@@ -52,6 +60,8 @@ class RentalViewSet(viewsets.ModelViewSet):
         # Check product availability
         start_time = serializer.validated_data['start_time']
         end_time = serializer.validated_data['end_time']
+        print(f"\nChecking availability for product {serializer.validated_data['product'].id}")
+        print(f"Start time: {start_time}, End time: {end_time}")
 
         if Rental.objects.filter(
             product=serializer.validated_data['product'],
@@ -59,6 +69,7 @@ class RentalViewSet(viewsets.ModelViewSet):
             start_time__lt=end_time,
             end_time__gt=start_time
         ).exists():
+            print("\nError: Product is not available during the selected period")
             return Response(
                 {"error": "Product is not available during the selected period"},
                 status=status.HTTP_400_BAD_REQUEST
@@ -79,6 +90,7 @@ class RentalViewSet(viewsets.ModelViewSet):
                 "note": "Rental request created"
             })
             rental.save()
+            print(f"\nSuccessfully created rental {rental.id}")
 
         headers = self.get_success_headers(serializer.data)
         return Response(

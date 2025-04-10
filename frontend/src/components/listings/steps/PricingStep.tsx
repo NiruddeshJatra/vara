@@ -19,7 +19,7 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
   // Initialize pricingTiers if it doesn't exist
   if (!formData.pricingTiers || formData.pricingTiers.length === 0) {
     onChange({ pricingTiers: [{ 
-      durationUnit: DurationUnit.DAY, 
+      durationUnit: 'day' as DurationUnit, 
       price: undefined,
       maxPeriod: undefined 
     }] });
@@ -45,7 +45,7 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
   const addPricingTier = () => {
     const updatedTiers = [...(formData.pricingTiers || [])];
     updatedTiers.push({ 
-      durationUnit: DurationUnit.DAY, 
+      durationUnit: 'day' as DurationUnit, 
       price: undefined,
       maxPeriod: 30
     });
@@ -61,11 +61,11 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
   // Get placeholder text based on duration unit
   const getPricePlaceholder = (durationUnit: DurationUnit) => {
     switch (durationUnit) {
-      case DurationUnit.DAY:
+      case 'day':
         return 'Enter price per day in Taka';
-      case DurationUnit.WEEK:
+      case 'week':
         return 'Enter price per week in Taka';
-      case DurationUnit.MONTH:
+      case 'month':
         return 'Enter price per month in Taka';
       default:
         return 'Enter price in Taka';
@@ -74,11 +74,11 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
 
   const getMaxPeriodPlaceholder = (durationUnit: DurationUnit) => {
     switch (durationUnit) {
-      case DurationUnit.DAY:
+      case 'day':
         return 'Maximum number of days (optional)';
-      case DurationUnit.WEEK:
+      case 'week':
         return 'Maximum number of weeks (optional)';
-      case DurationUnit.MONTH:
+      case 'month':
         return 'Maximum number of months (optional)';
       default:
         return 'Maximum period (optional)';
@@ -86,9 +86,9 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
   };
 
   const DURATION_UNIT_LABELS: Record<DurationUnit, string> = {
-    [DurationUnit.DAY]: 'Per Day',
-    [DurationUnit.WEEK]: 'Per Week',
-    [DurationUnit.MONTH]: 'Per Month'
+    day: 'Per Day',
+    week: 'Per Week',
+    month: 'Per Month'
   };
 
   return (

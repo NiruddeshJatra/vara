@@ -49,7 +49,7 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
       purchaseYear: new Date().getFullYear().toString(),
       originalPrice: 0,
       ownershipHistory: OwnershipHistory.FIRSTHAND,
-      pricingTiers: [{ durationUnit: DurationUnit.DAY, price: 0, maxPeriod: 30 }]
+      pricingTiers: [{ durationUnit: 'day', price: 0, maxPeriod: 30 }]
     };
   });
   const [errors, setErrors] = useState<FormError>({});
