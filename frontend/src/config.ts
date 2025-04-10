@@ -48,6 +48,27 @@ const config = {
     incrementViewsEndpoint: (id: string) => `/products/${id}/increment_views/`,
     updateRatingEndpoint: (id: string) => `/products/${id}/update_rating/`,
   },
+  
+  // Rental settings
+  rentals: {
+    // Rental endpoints
+    listEndpoint: '/rentals/',
+    myRentalsEndpoint: '/rentals/my-rentals/',
+    myListingsRentalsEndpoint: '/rentals/my-listings-rentals/',
+    detailEndpoint: (id: string) => `/rentals/${id}/`,
+    createEndpoint: '/rentals/',
+    updateEndpoint: (id: string) => `/rentals/${id}/`,
+    deleteEndpoint: (id: string) => `/rentals/${id}/`,
+    
+    // Status change endpoints
+    acceptEndpoint: (id: string) => `/rentals/${id}/accept/`,
+    rejectEndpoint: (id: string) => `/rentals/${id}/reject/`,
+    cancelEndpoint: (id: string) => `/rentals/${id}/cancel/`,
+    
+    // Rental photos endpoints
+    photosEndpoint: (rentalId: string) => `/rentals/${rentalId}/photos/`,
+    photoDetailEndpoint: (rentalId: string, photoId: string) => `/rentals/${rentalId}/photos/${photoId}/`,
+  },
 };
 
 export default config;

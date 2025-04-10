@@ -2,11 +2,7 @@
  * Rental-related constants for the frontend
  */
 
-export enum DurationUnit {
-  DAY = 'day',
-  WEEK = 'week',
-  MONTH = 'month'
-}
+export type DurationUnit = 'day' | 'week' | 'month';
 
 export enum RentalStatus {
   PENDING = 'pending',
@@ -16,12 +12,12 @@ export enum RentalStatus {
   COMPLETED = 'completed'
 }
 
-export const DURATION_UNIT_VALUES = Object.values(DurationUnit);
+export const DURATION_UNIT_VALUES: DurationUnit[] = ['day', 'week', 'month'];
 
 export const DURATION_UNIT_DISPLAY: Record<DurationUnit, string> = {
-  [DurationUnit.DAY]: 'Day',
-  [DurationUnit.WEEK]: 'Week',
-  [DurationUnit.MONTH]: 'Month'
+  day: 'Day',
+  week: 'Week',
+  month: 'Month'
 };
 
 export const RENTAL_STATUS_DISPLAY: Record<RentalStatus, string> = {

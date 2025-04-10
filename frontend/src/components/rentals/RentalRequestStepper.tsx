@@ -1,10 +1,12 @@
 // components/rentals/RentalRequestStepper.tsx
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import ProductDetailsStep from './steps/ProductDetailsStep';
 import PriceCalculationStep from './steps/PriceCalculationStep';
 import AdditionalDetailsStep from './steps/AdditionalDetailsStep';
 import ConfirmationStep from './steps/ConfirmationStep';
 import { FormErrors, DurationUnit, AvailabilityPeriod, Product, RentalRequestFormData } from '@/types/listings';
+import rentalService from '@/services/rental.service';
 
 interface Props {
   product: Product;
@@ -71,7 +73,7 @@ const RentalRequestStepper = ({ product }: Props) => {
         
         // Check for unavailable dates
         if (formData.startDate) {
-          const conflictingDates = checkDateConflicts(formData.startDate, formData.duration, formData.durationUnit || 'day');
+          const conflictingDates = checkDateConflicts(formData.startDate, formData.duration, formData.durationUnit);
           if (conflictingDates) {
             newErrors.startDate = 'Selected period includes unavailable dates';
           }
@@ -103,17 +105,16 @@ const RentalRequestStepper = ({ product }: Props) => {
         const rangeEnd = new Date(unavailable.rangeEnd);
         
         if (
-          (startDate <= rangeEnd && endDate >= rangeStart) // Overlap
+          (startDate >= rangeStart && startDate <= rangeEnd) ||
+          (endDate >= rangeStart && endDate <= rangeEnd) ||
+          (startDate <= rangeStart && endDate >= rangeEnd)
         ) {
           return true; // Conflict found
         }
       } else if (unavailable.date) {
         // Check for single date conflict
         const unavailableDate = new Date(unavailable.date);
-        if (
-          startDate <= unavailableDate && 
-          endDate >= unavailableDate
-        ) {
+        if (startDate <= unavailableDate && endDate >= unavailableDate) {
           return true; // Conflict found
         }
       }
@@ -125,33 +126,51 @@ const RentalRequestStepper = ({ product }: Props) => {
   // Helper function to calculate end date based on start date, duration and unit
   const calculateEndDate = (startDate: Date, duration: number, durationUnit: DurationUnit): Date => {
     const endDate = new Date(startDate);
-    
-    switch(durationUnit) {
+    switch (durationUnit) {
       case 'day':
         endDate.setDate(endDate.getDate() + duration);
         break;
       case 'week':
-        endDate.setDate(endDate.getDate() + (duration * 7));
+        endDate.setDate(endDate.getDate() + duration * 7);
         break;
       case 'month':
         endDate.setMonth(endDate.getMonth() + duration);
         break;
     }
-    
     return endDate;
   };
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     const stepErrors = validateStep();
+    setErrors(stepErrors);
+
     if (Object.keys(stepErrors).length === 0) {
       if (currentStep === 3) {
-        // Submit data here
-        console.log('Submitting rental request:', { ...formData, ...calculateTotalCost() });
-        setCurrentStep(4);
+        // Submit rental request when reaching the confirmation step
+        try {
+          await rentalService.createRentalRequest(product.id, formData);
+          toast.success('Rental request submitted successfully');
+          // Reset form after successful submission
+          setCurrentStep(1);
+          setFormData({
+            startDate: null,
+            duration: 1,
+            durationUnit: 'day',
+            purpose: '',
+            notes: '',
+            pickupMethod: 'self',
+            deliveryAddress: '',
+            deliveryTime: null,
+          });
+          setErrors({});
+        } catch (error) {
+          toast.error('Failed to submit rental request. Please try again.');
+          console.error('Rental request submission error:', error);
+        }
       } else {
         setCurrentStep(prev => prev + 1);
+        setErrors({});
       }
-      setErrors({});
     } else {
       console.log('Validation errors:', stepErrors);
       setErrors(stepErrors);

@@ -1,128 +1,180 @@
-from django.db import models, transaction
-from django.core.exceptions import ValidationError
-from django.core.validators import FileExtensionValidator
+from django.db import models
 from django.utils import timezone
-from datetime import timedelta
+from django.conf import settings
 from decimal import Decimal
-import uuid
-from django.utils.translation import gettext_lazy as _
-from users.models import CustomUser
 from advertisements.models import Product
+from datetime import timedelta
+import calendar
 
+# Rental status choices
+STATUS_CHOICES = [
+    ("pending", "Pending"),
+    ("approved", "Approved"),
+    ("rejected", "Rejected"),
+    ("cancelled", "Cancelled"),
+    ("completed", "Completed"),
+    ("in_progress", "In Progress"),
+]
+
+# Duration unit choices
+DURATION_UNIT_CHOICES = [
+    ("day", "Day"),
+    ("week", "Week"),
+    ("month", "Month"),
+]
 
 class Rental(models.Model):
-    STATUS_CHOICES = [
-        ("pending", "Pending"),
-        ("accepted", "Accepted"),
-        ("rejected", "Rejected"),
-        ("cancelled", "Cancelled"),
-        ("completed", "Completed"),
-        ("in_progress", "In Progress"),
-    ]
-
     renter = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name="rentals_as_renter"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="rentals_as_renter"
     )
     owner = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name="rentals_as_owner"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="rentals_as_owner"
     )
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
-        related_name="rentals",  # a single product can be rented multiple times by different users. Each rental instance represents a separate rental period for the same product.
+        related_name="rentals"
     )
-    start_time = models.DateTimeField(help_text=_("When renting period starts"))
-    end_time = models.DateTimeField(help_text=_("When renting period ends"))
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="pending")
+
+    # Rental period
+    start_time = models.DateTimeField(help_text="When rental period starts")
+    end_time = models.DateTimeField(help_text="When rental period ends")
+    duration = models.PositiveIntegerField(
+        help_text="Number of duration units")
+    duration_unit = models.CharField(
+        max_length=10,
+        choices=DURATION_UNIT_CHOICES,
+        help_text="Unit of duration (day, week, month)"
+    )
+
+    # Cost information
+    total_cost = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Total rental cost including fees"
+    )
+    service_fee = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Service fee amount"
+    )
     security_deposit = models.DecimalField(
-        max_digits=5, decimal_places=2, editable=False, default=Decimal("0.00")
+        max_digits=10,
+        decimal_places=2,
+        help_text="Security deposit amount"
     )
-    notes = models.TextField(blank=True, null=True)
+
+    # Rental details
+    purpose = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Purpose of the rental"
+    )
+    notes = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Additional notes about the rental"
+    )
+    # Status tracking
+    status = models.CharField(
+        max_length=50,
+        choices=STATUS_CHOICES,
+        default="pending",
+        help_text="Current status of the rental"
+    )
+    status_history = models.JSONField(
+        default=list,
+        help_text="History of status changes"
+    )
+
+    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    # TODO: Connection to the escrow payment, may add later.
-    # escrow_payment = models.OneToOneField(
-    #     "EscrowPayment", on_delete=models.CASCADE, related_name="rental_escrow", null=True, blank=True
-    # )
 
     class Meta:
         ordering = ["-created_at"]
-        indexes = [
-            models.Index(fields=["status", "created_at"]),
-            models.Index(fields=["owner", "renter"]),
-            models.Index(fields=["product", "status"]),
-        ]
-
-    def clean(self):
-        super().clean()
-        if not self.product.check_availability(self.start_time, self.end_time):
-            raise ValidationError(
-                "The product is not available for the selected time period."
-            )
-
-    # TODO: need to revisit this after building frontend
-    @property
-    def total_price(self):
-        duration = self.end_time - self.start_time
-        duration_days = duration.days
-        duration_hours = duration.total_seconds() / 3600
-
-        pricing = self.product.pricing
-        base_price = pricing.base_price
-        duration_unit = pricing.duration_unit
-
-        if duration_unit == "hour":
-            total_price = duration_hours * base_price
-        elif duration_unit == "day":
-            total_price = duration_days * base_price
-        elif duration_unit == "week":
-            total_price = (duration_days / 7) * base_price
-        elif duration_unit == "month":
-            total_price = (duration_days / 30) * base_price
-        else:
-            total_price = 0
-
-        return round(total_price, 2)
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        self.owner = self.product.owner
-        self.security_deposit = self.product.security_deposit
-        super().save(*args, **kwargs)
-
-    @property
-    def is_active(self):
-        now = timezone.now()
-        return (
-            self.status in ["in_progress", "accepted"]
-            and self.start_time <= now <= self.end_time
-        )
-
-    def approve_rental(self):
-        if self.status != "pending":
-            raise ValidationError("Can only approve pending rental requests")
-
-        self.status = "accepted"
-        self.save()
-
-    def reject_rental(self, reason=None):
-        if self.status != "pending":
-            raise ValidationError("Can only reject pending rental requests")
-
-        self.status = "rejected"
-        if reason:
-            self.notes = reason
-        self.save()
-
-    def complete_rental(self):
-        if self.status != "in_progress":
-            raise ValidationError("Can only complete rentals that are in progress")
-
-        self.status = "completed"
-        self.save()
+        verbose_name = "Rental"
+        verbose_name_plural = "Rentals"
 
     def __str__(self):
-        return f"Rental #{self.id} - {self.product.title} ({self.status})"
+        return f"{self.product.title} - {self.renter.username} ({self.status})"
+
+    def update_status(self, new_status: str, note: str = None):
+        """
+        Update rental status and add to history
+        """
+        if new_status not in dict(STATUS_CHOICES):
+            raise ValueError(f"Invalid status: {new_status}")
+
+        self.status = new_status
+        self.status_history.append({
+            "status": new_status,
+            "timestamp": timezone.now().isoformat(),
+            "note": note
+        })
+        self.save()
+
+    def calculate_total_cost(self) -> Decimal:
+        """
+        Calculate total cost based on product's pricing tier
+        """
+        if not self.product.pricing_tiers.exists():
+            return Decimal("0.00")
+
+        tier = self.product.pricing_tiers.filter(
+            duration_unit=self.duration_unit
+        ).first()
+
+        if not tier:
+            return Decimal("0.00")
+
+        base_cost = tier.price * self.duration
+        total_cost = base_cost + self.service_fee
+        return total_cost
+
+    def calculate_end_time(self) -> datetime:
+        """
+        Calculate the end time based on start time, duration, and duration unit
+        """
+        if not self.start_time or not self.duration or not self.duration_unit:
+            return None
+
+        end_time = self.start_time
+        
+        if self.duration_unit == "day":
+            end_time += timedelta(days=self.duration)
+        elif self.duration_unit == "week":
+            end_time += timedelta(weeks=self.duration)
+        elif self.duration_unit == "month":
+            # Add months by incrementing the month and adjusting the day
+            year = end_time.year + (end_time.month + self.duration - 1) // 12
+            month = (end_time.month + self.duration - 1) % 12 + 1
+            day = min(end_time.day, calendar.monthrange(year, month)[1])
+            end_time = end_time.replace(year=year, month=month, day=day)
+        
+        return end_time
+
+    def save(self, *args, **kwargs):
+        """
+        Calculate total cost and end time before saving
+        """
+        if not self.total_cost:
+            self.total_cost = self.calculate_total_cost()
+        
+        # Ensure security deposit is set
+        if not self.security_deposit and self.product.security_deposit:
+            self.security_deposit = self.product.security_deposit
+
+        # Calculate end time if not set
+        if not self.end_time:
+            self.end_time = self.calculate_end_time()
+
+        super().save(*args, **kwargs)
 
 
 class RentalPhoto(models.Model):
@@ -147,80 +199,3 @@ class RentalPhoto(models.Model):
     class Meta:
         verbose_name = _("Rental Photo")
         verbose_name_plural = _("Rental Photos")
-
-
-# class EscrowPayment(models.Model):
-#     """
-#     Represents an escrow payment for a rental.
-#     """
-
-#     ESCROW_STATUS_CHOICES = [
-#         ("HELD", "Payment Held in Escrow"),
-#         ("RELEASED", "Released to Owner"),
-#         ("REFUNDED", "Refunded to Renter"),
-#         ("DISPUTED", "Payment Disputed"),
-#     ]
-#     # Link escrow to a rental.
-#     rental = models.ForeignKey(
-#         Rental,
-#         on_delete=models.CASCADE,
-#         related_name="EscrowPayment"  # added related_name to avoid clash with Rental.escrow_payment
-#     )
-#     # Related payment record.
-#     payment = models.OneToOneField(
-#         Payment, on_delete=models.PROTECT, related_name="escrow_payment"
-#     )
-#     status = models.CharField(
-#         max_length=20, choices=ESCROW_STATUS_CHOICES, default="HELD"
-#     )
-#     held_amount = models.DecimalField(max_digits=10, decimal_places=2)
-#     release_date = models.DateTimeField(null=True, blank=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
-
-#     def release_to_owner(self):
-#         # Release funds held in escrow to the product owner.
-#         with transaction.atomic():
-#             if self.status != "HELD":
-#                 raise ValidationError(
-#                     "Cannot release funds that are not held in escrow"
-#                 )
-#             self.status = "RELEASED"
-#             self.release_date = timezone.now()
-#             self.save()
-#             Payment.objects.create(
-#                 user=self.rental.owner,
-#                 amount=self.held_amount,
-#                 payment_method="BANK_TRANSFER",
-#                 status="COMPLETED",
-#                 description=f"Rental payment release for rental #{self.rental.id}",
-#                 transaction_id=f"REL-{uuid.uuid4().hex[:8]}",
-#             )
-
-#     def refund_to_renter(self):
-#         # Refund the held escrow funds to the renter.
-#         with transaction.atomic():
-#             if self.status != "HELD":
-#                 raise ValidationError("Cannot refund funds that are not held in escrow")
-#             self.status = "REFUNDED"
-#             self.release_date = timezone.now()
-#             self.save()
-#             Payment.objects.create(
-#                 user=self.rental.renter,
-#                 amount=self.held_amount,
-#                 payment_method="BANK_TRANSFER",
-#                 status="REFUNDED",
-#                 description=f"Rental payment refund for rental #{self.rental.id}",
-#                 transaction_id=f"REF-{uuid.uuid4().hex[:8]}",
-#             )
-
-#     def dispute_payment(self, reason=None):
-#         # Mark the payment as disputed.
-#         with transaction.atomic():
-#             if self.status != "HELD":
-#                 raise ValidationError(
-#                     "Cannot dispute funds that are not held in escrow"
-#                 )
-#             self.status = "DISPUTED"
-#             self.save()
-#             Dispute.objects.create(escrow_payment=self, reason=reason, status="OPEN")

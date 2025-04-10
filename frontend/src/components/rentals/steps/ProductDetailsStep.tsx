@@ -76,14 +76,6 @@ const ProductDetailsStep = ({ product, formData, errors, onChange, onNext }: Pro
   // Add a handler to clear errors when input changes
   const handleInputChange = (data: Partial<RentalRequestFormData>) => {
     onChange(data);
-    // Clear error for the changed field
-    const field = Object.keys(data)[0];
-    if (errors[field as keyof FormErrors]) {
-      const newErrors = { ...errors };
-      delete newErrors[field as keyof FormErrors];
-      // Update errors state (this would typically be handled by the parent component)
-      // For now, we'll just clear the error locally
-    }
   };
 
   return (

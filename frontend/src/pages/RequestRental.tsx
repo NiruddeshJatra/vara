@@ -1,4 +1,3 @@
-// pages/RequestRental.tsx
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import Footer from '@/components/home/Footer';
 import RentalRequestStepper from '@/components/rentals/RentalRequestStepper';
