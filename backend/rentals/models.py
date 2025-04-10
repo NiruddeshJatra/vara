@@ -5,22 +5,24 @@ from decimal import Decimal
 from advertisements.models import Product
 from datetime import timedelta
 import calendar
+from django.core.validators import FileExtensionValidator
+from django.utils.translation import gettext_lazy as _
 
 # Rental status choices
 STATUS_CHOICES = [
-    ("pending", "Pending"),
-    ("approved", "Approved"),
-    ("rejected", "Rejected"),
-    ("cancelled", "Cancelled"),
-    ("completed", "Completed"),
-    ("in_progress", "In Progress"),
+    ("pending", _("Pending")),
+    ("approved", _("Approved")),
+    ("rejected", _("Rejected")),
+    ("cancelled", _("Cancelled")),
+    ("completed", _("Completed")),
+    ("in_progress", _("In Progress")),
 ]
 
 # Duration unit choices
 DURATION_UNIT_CHOICES = [
-    ("day", "Day"),
-    ("week", "Week"),
-    ("month", "Month"),
+    ("day", _("Day")),
+    ("week", _("Week")),
+    ("month", _("Month")),
 ]
 
 class Rental(models.Model):
@@ -41,31 +43,30 @@ class Rental(models.Model):
     )
 
     # Rental period
-    start_time = models.DateTimeField(help_text="When rental period starts")
-    end_time = models.DateTimeField(help_text="When rental period ends")
+    start_time = models.DateTimeField(help_text=_("When rental period starts"))
+    end_time = models.DateTimeField(help_text=_("When rental period ends"))
     duration = models.PositiveIntegerField(
-        help_text="Number of duration units")
+        help_text=_("Number of duration units"))
     duration_unit = models.CharField(
         max_length=10,
         choices=DURATION_UNIT_CHOICES,
-        help_text="Unit of duration (day, week, month)"
-    )
+        help_text=_("Unit of duration (day, week, month)"))
 
     # Cost information
     total_cost = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        help_text="Total rental cost including fees"
+        help_text=_("Total rental cost including fees")
     )
     service_fee = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        help_text="Service fee amount"
+        help_text=_("Service fee amount")
     )
     security_deposit = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        help_text="Security deposit amount"
+        help_text=_("Security deposit amount")
     )
 
     # Rental details
@@ -73,23 +74,23 @@ class Rental(models.Model):
         max_length=255,
         blank=True,
         null=True,
-        help_text="Purpose of the rental"
+        help_text=_("Purpose of the rental")
     )
     notes = models.TextField(
         blank=True,
         null=True,
-        help_text="Additional notes about the rental"
+        help_text=_("Additional notes about the rental")
     )
     # Status tracking
     status = models.CharField(
         max_length=50,
         choices=STATUS_CHOICES,
         default="pending",
-        help_text="Current status of the rental"
+        help_text=_("Current status of the rental")
     )
     status_history = models.JSONField(
         default=list,
-        help_text="History of status changes"
+        help_text=_("History of status changes")
     )
 
     # Timestamps
@@ -98,8 +99,8 @@ class Rental(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
-        verbose_name = "Rental"
-        verbose_name_plural = "Rentals"
+        verbose_name = _("Rental")
+        verbose_name_plural = _("Rentals")
 
     def __str__(self):
         return f"{self.product.title} - {self.renter.username} ({self.status})"
@@ -137,7 +138,7 @@ class Rental(models.Model):
         total_cost = base_cost + self.service_fee
         return total_cost
 
-    def calculate_end_time(self) -> datetime:
+    def calculate_end_time(self):
         """
         Calculate the end time based on start time, duration, and duration unit
         """

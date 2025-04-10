@@ -23,6 +23,11 @@ class ApiService {
     // Request interceptor for adding authentication token and transforming data
     this.api.interceptors.request.use(
       (reqConfig: AxiosRequestConfig) => {
+        // Skip authentication for public endpoints
+        if (reqConfig.url?.includes('/products/') && !reqConfig.url?.includes('/my_products/')) {
+          return reqConfig;
+        }
+
         const token = localStorage.getItem(config.auth.tokenStorageKey);
         if (token && reqConfig.headers) {
           reqConfig.headers.Authorization = `Bearer ${token}`;

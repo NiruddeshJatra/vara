@@ -46,13 +46,8 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     # all apps
     "advertisements",
-    "complaints",
     "rentals",
     "users.apps.UsersConfig",
-    "reviews.apps.ReviewsConfig",
-    "payments",
-    "messaging",
-    "notifications.apps.NotificationsConfig",
     # extra
     "django_filters",
     "channels",

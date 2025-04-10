@@ -81,7 +81,7 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
       case DurationUnit.MONTH:
         return 'Maximum number of months (optional)';
       default:
-        return 'Optional';
+        return 'Maximum period (optional)';
     }
   };
 

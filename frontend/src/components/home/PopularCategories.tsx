@@ -1,40 +1,41 @@
 import React from 'react';
-import { MonitorSmartphone, Hammer, Tent, Camera, PartyPopper, Car } from 'lucide-react';
+import { Smartphone, Hammer, Tent, Camera, PartyPopper, Car, Speaker, Guitar, Book } from 'lucide-react';
+import { Category, CATEGORY_DISPLAY } from '@/constants/productTypes';
 
 const categories = [
   {
-    icon: <MonitorSmartphone className="h-8 w-8 text-green-600" />,
-    name: 'Electronics & Gadgets',
+    icon: <Smartphone className="h-8 w-8 text-green-600" />,
+    name: CATEGORY_DISPLAY[Category.ELECTRONICS],
     items: '1,245 items',
     bgColor: 'bg-green-50'
   },
   {
     icon: <Hammer className="h-8 w-8 text-green-600" />,
-    name: 'Tools & Equipment',
+    name: CATEGORY_DISPLAY[Category.TOOLS_EQUIPMENT],
     items: '892 items',
     bgColor: 'bg-green-50'
   },
   {
     icon: <Tent className="h-8 w-8 text-green-600" />,
-    name: 'Outdoor & Adventure Gear',
+    name: CATEGORY_DISPLAY[Category.PARTY_EVENTS],
     items: '783 items',
     bgColor: 'bg-green-50'
   },
   {
     icon: <Camera className="h-8 w-8 text-green-600" />,
-    name: 'Photography & Video',
+    name: CATEGORY_DISPLAY[Category.PHOTOGRAPHY_VIDEOGRAPHY],
     items: '561 items',
     bgColor: 'bg-green-50'
   },
   {
     icon: <PartyPopper className="h-8 w-8 text-green-600" />,
-    name: 'Party & Event Supplies',
+    name: CATEGORY_DISPLAY[Category.SPORTS_FITNESS],
     items: '478 items',
     bgColor: 'bg-green-50'
   },
   {
     icon: <Car className="h-8 w-8 text-green-600" />,
-    name: 'Vehicles & Transportation',
+    name: CATEGORY_DISPLAY[Category.AUTOMOTIVE],
     items: '329 items',
     bgColor: 'bg-green-50'
   }

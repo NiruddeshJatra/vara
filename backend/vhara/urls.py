@@ -50,11 +50,6 @@ urlpatterns = [
     # Core functionality
     path('', include('advertisements.urls')),
     path('rentals/', include('rentals.urls')),
-    path('reviews/', include('reviews.urls')),
-    
-    # Additional features
-    path('complaints/', include('complaints.urls')),
-    path('messages/', include('messaging.urls')),
 ]
 
 # Serve media files in development

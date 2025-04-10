@@ -5,7 +5,8 @@ import ProductDetailsStep from './steps/ProductDetailsStep';
 import PriceCalculationStep from './steps/PriceCalculationStep';
 import AdditionalDetailsStep from './steps/AdditionalDetailsStep';
 import ConfirmationStep from './steps/ConfirmationStep';
-import { FormErrors, DurationUnit, AvailabilityPeriod, Product, RentalRequestFormData } from '@/types/listings';
+import { FormErrors, AvailabilityPeriod, Product, RentalRequestFormData } from '@/types/listings';
+import { DurationUnit, DURATION_UNIT_DISPLAY } from '@/constants/rental';
 import rentalService from '@/services/rental.service';
 
 interface Props {
@@ -18,13 +19,13 @@ const RentalRequestStepper = ({ product }: Props) => {
   // Set defaults for potentially missing properties
   const pricingTier = product.pricingTiers && product.pricingTiers.length > 0 
     ? product.pricingTiers[0] 
-    : { durationUnit: 'day' as DurationUnit, price: 0, maxPeriod: 30 };
+    : { durationUnit: DurationUnit.DAY, price: 0, maxPeriod: 30 };
   
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<RentalRequestFormData>({
     startDate: null,
     duration: 1,
-    durationUnit: pricingTier.durationUnit,
+    durationUnit: DurationUnit.DAY,
     purpose: '',
     notes: '',
     pickupMethod: 'self',
@@ -68,7 +69,7 @@ const RentalRequestStepper = ({ product }: Props) => {
           newErrors.duration = 'Minimum duration is 1';
         }
         if (selectedTier.maxPeriod && formData.duration > selectedTier.maxPeriod) {
-          newErrors.duration = `Maximum ${selectedTier.maxPeriod} ${selectedTier.durationUnit}s`;
+          newErrors.duration = `Maximum ${selectedTier.maxPeriod} ${DURATION_UNIT_DISPLAY[selectedTier.durationUnit].toLowerCase()}s`;
         }
         
         // Check for unavailable dates
@@ -109,31 +110,29 @@ const RentalRequestStepper = ({ product }: Props) => {
           (endDate >= rangeStart && endDate <= rangeEnd) ||
           (startDate <= rangeStart && endDate >= rangeEnd)
         ) {
-          return true; // Conflict found
+          return true;
         }
       } else if (unavailable.date) {
-        // Check for single date conflict
+        // Check for single date conflicts
         const unavailableDate = new Date(unavailable.date);
         if (startDate <= unavailableDate && endDate >= unavailableDate) {
-          return true; // Conflict found
+          return true;
         }
       }
     }
-    
-    return false; // No conflicts
+    return false;
   };
-  
-  // Helper function to calculate end date based on start date, duration and unit
+
   const calculateEndDate = (startDate: Date, duration: number, durationUnit: DurationUnit): Date => {
     const endDate = new Date(startDate);
     switch (durationUnit) {
-      case 'day':
+      case DurationUnit.DAY:
         endDate.setDate(endDate.getDate() + duration);
         break;
-      case 'week':
+      case DurationUnit.WEEK:
         endDate.setDate(endDate.getDate() + duration * 7);
         break;
-      case 'month':
+      case DurationUnit.MONTH:
         endDate.setMonth(endDate.getMonth() + duration);
         break;
     }
@@ -142,29 +141,13 @@ const RentalRequestStepper = ({ product }: Props) => {
 
   const handleNextStep = async () => {
     const stepErrors = validateStep();
-    setErrors(stepErrors);
-
     if (Object.keys(stepErrors).length === 0) {
       if (currentStep === 3) {
-        // Submit rental request when reaching the confirmation step
         try {
           await rentalService.createRentalRequest(product.id, formData);
-          toast.success('Rental request submitted successfully');
-          // Reset form after successful submission
-          setCurrentStep(1);
-          setFormData({
-            startDate: null,
-            duration: 1,
-            durationUnit: 'day',
-            purpose: '',
-            notes: '',
-            pickupMethod: 'self',
-            deliveryAddress: '',
-            deliveryTime: null,
-          });
-          setErrors({});
+          toast.success('Rental request submitted successfully!');
+          setCurrentStep(4);
         } catch (error) {
-          toast.error('Failed to submit rental request. Please try again.');
           console.error('Rental request submission error:', error);
         }
       } else {
