@@ -8,14 +8,14 @@ export type { ProductStatus, OwnershipHistory, ProductType, Category, DurationUn
 
 export type Product = {
   id: string;
-  owner: string; // Only the owner ID is exposed
+  owner: string;
   title: string;
   category: string;
   productType: string;
   description: string;
   location: string;
   securityDeposit: number | null;
-  purchaseYear: string; // Required field, no longer nullable
+  purchaseYear: string;
   originalPrice: number;
   ownershipHistory: string;
   status: string;
@@ -59,7 +59,7 @@ export type ListingFormData = {
   description: string;
   location: string;
   securityDeposit: number | null;
-  purchaseYear: string; // Required field, no longer nullable
+  purchaseYear: string;
   originalPrice: number;
   ownershipHistory: string;
   images: File[];
@@ -78,21 +78,48 @@ export type ListingFormData = {
 
 export type RentalRequest = {
   id: string;
-  product: string;
-  renter: string;
-  startDate: string;
-  endDate: string;
-  durationUnit: DurationUnit;
-  status: string;
+  product: string | Product; // Can be either a product ID or the full product object
+  renter: string; // User ID of the renter
+  owner: string; // User ID of the product owner
+  startDate: string; // ISO format date
+  endDate: string; // ISO format date
+  duration: number; // Number of duration units
+  durationUnit: DurationUnit; // The duration unit (day, week, month)
+  totalCost: number; // Total rental cost including fees
+  serviceFee: number; // Service fee amount
+  securityDeposit: number; // Security deposit amount
+  purpose?: string; // Purpose of rental
+  notes?: string; // Additional notes
+  pickupMethod: 'self' | 'delivery'; // How the item will be picked up
+  deliveryAddress?: string; // Delivery address if applicable
+  deliveryTime?: string; // ISO format date-time for delivery
+  status: RentalStatus; // Current status of the rental
+  statusHistory?: { // Optional history of status changes
+    status: RentalStatus;
+    timestamp: string;
+    note?: string;
+  }[];
   createdAt: string;
   updatedAt: string;
 };
 
 export type RentalRequestFormData = {
-  product: string;
-  startDate: string;
-  endDate: string;
-  durationUnit: DurationUnit;
+  startDate: Date | null;
+  duration: number;
+  durationUnit?: DurationUnit; // Which unit the renter selected
+  purpose?: string;
+  notes?: string;
+  pickupMethod?: 'self' | 'delivery';
+  deliveryAddress?: string;
+  deliveryTime?: Date | null;
+  totalCost?: number;
+  serviceFee?: number;
+  securityDeposit?: number;
+};
+
+export type AvailabilityPeriod = {
+  start: Date;
+  end: Date;
 };
 
 export type FormError = {
@@ -111,6 +138,10 @@ export type FormError = {
   'images.*'?: string[];
   // Generic error for non-field specific errors
   'non_field_errors'?: string[];
+};
+
+export type FormErrors = {
+  [key: string]: string;
 };
 
 export interface User {

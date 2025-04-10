@@ -13,28 +13,28 @@ class ProductService {
    */
   async getActiveProducts(): Promise<Product[]> {
     try {
-      const response = await api.get(config.products.listEndpoint);
-      console.log("API Response:", response.data);
-      console.log("First product debug data:", response.data.results?.[0]);
+      // Request all products by setting page_size to max_page_size
+      const response = await api.get(config.products.listEndpoint, {
+        params: {
+          page_size: 100  // Request up to 100 products
+        }
+      });
       
       // Handle both array and paginated responses
-      const products = Array.isArray(response.data) ? response.data : (response.data.results || []);
+      const products = Array.isArray(response.data) 
+        ? response.data 
+        : (response.data.results || []);
       
       // Transform the response data to match the frontend's expected structure
       return products.map((product: any) => {
         // Fix: Use camelCase property name that matches the API response
         const productImages = product.productImages || [];
         
-        // Debug the images array
-        console.log(`Product ${product.id} raw product_images:`, productImages);
-        
         // Transform image URLs to be complete URLs if they're relative paths
         const images = productImages.map((img: any) => ({
           ...img,
           image: this.ensureFullImageUrl(img.image)
         }));
-        
-        console.log(`Product ${product.id} has ${images.length} images`);
         
         // Transform pricing tiers - use camelCase from API response
         const pricingTiers = product.pricingTiers?.map((tier: any) => ({

@@ -7,6 +7,7 @@ import { Product } from '@/types/listings';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileCompletionModal } from '@/components/common/ProfileCompletionModal';
 import { CATEGORY_DISPLAY, PRODUCT_TYPE_DISPLAY } from '@/constants/productTypes';
+import { toast } from '@/components/ui/use-toast';
 
 interface ItemModalProps {
   isOpen: boolean;
@@ -80,7 +81,30 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
       setShowProfileModal(true);
       return;
     }
-    navigate(`/request-rental/${selectedItem.id}`, { state: { product: selectedItem } });
+    
+    // Validate product data before navigation
+    if (!selectedItem.pricingTiers || selectedItem.pricingTiers.length === 0) {
+      toast({
+        title: "Missing pricing information",
+        description: "This item cannot be rented as it has no pricing options.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Log data being passed to rental request page
+    console.log('Navigating to rental request with product data:', {
+      id: selectedItem.id,
+      title: selectedItem.title,
+      pricingTiers: selectedItem.pricingTiers.length,
+      images: selectedItem.images?.length || 0
+    });
+    
+    navigate(`/request-rental/${selectedItem.id}`, { 
+      state: { 
+        product: selectedItem
+      }
+    });
   };
 
   return (
@@ -194,14 +218,9 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
             <div className="space-y-2 pt-4">
               <Button 
                 className="w-full bg-green-600 hover:bg-green-700 text-white"
-                asChild
+                onClick={handleRequestRental}
               >
-                <Link 
-                  to={`/request-rental/${selectedItem.id}`}
-                  state={{ product: selectedItem }}
-                >
-                  Request Rental
-                </Link>
+                Request Rental
               </Button>
               <div className="flex gap-2">
                 <Button 

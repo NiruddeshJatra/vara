@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 20
     page_size_query_param = "page_size"
-    max_page_size = 100
+    max_page_size = 80
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -225,33 +225,3 @@ class ProductViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @action(detail=True, methods=["get"])
-    def debug_images(self, request, pk=None):
-        product = self.get_object()
-        
-        # Get all related images directly from DB
-        product_images = ProductImage.objects.filter(product=product)
-        
-        # Serialize the images with absolute URLs
-        image_serializer = ProductImageSerializer(
-            product_images, 
-            many=True,
-            context={'request': request}
-        )
-        
-        # Get the full product representation
-        product_serializer = self.get_serializer(product)
-        product_data = product_serializer.data
-        
-        # Debug info
-        debug_info = {
-            'product_id': str(product.id),
-            'product_title': product.title,
-            'images_from_db_count': product_images.count(),
-            'images_from_db': image_serializer.data,
-            'images_in_response': product_data.get('images', []),
-            'all_fields_in_response': list(product_data.keys()),
-            'serializer_class': self.get_serializer_class().__name__,
-        }
-        
-        return Response(debug_info)

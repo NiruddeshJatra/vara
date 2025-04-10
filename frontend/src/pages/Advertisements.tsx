@@ -26,12 +26,12 @@ const Advertisements = () => {
   const [location, setLocation] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([50, 10000]);
+  const [allListings, setAllListings] = useState<Product[]>([]);
+  const [visibleItems, setVisibleItems] = useState(allListings.length);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [visibleItems, setVisibleItems] = useState(16);
   const [availability, setAvailability] = useState('any');
-  const [allListings, setAllListings] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [categoriesWithCounts, setCategoriesWithCounts] = useState<AppCategory[]>([]);
 
@@ -76,7 +76,6 @@ const Advertisements = () => {
         console.log('Fetching products from API...');
         const data = await productService.getActiveProducts();
         console.log('Raw product data:', data);
-        console.log('First product pricing tiers:', data[0]?.pricingTiers);
         setAllListings(data);
         
         // Update category counts
@@ -280,13 +279,13 @@ const Advertisements = () => {
   };
 
   const loadMoreItems = () => {
-    setVisibleItems(prev => prev + 8);
+    setVisibleItems(allListings.length);
   };
 
   // Intersection Observer for infinite scrolling effect
   useEffect(() => {
     const observer = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && visibleItems < sortedListings.length) {
+      if (entries[0].isIntersecting) {
         loadMoreItems();
       }
     }, {
@@ -301,7 +300,7 @@ const Advertisements = () => {
         observer.unobserve(loadMoreTrigger);
       }
     };
-  }, [visibleItems, sortedListings.length]);
+  }, [allListings.length]);
 
   const getPageTitle = () => {
     if (selectedCategory) {

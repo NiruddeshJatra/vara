@@ -1,9 +1,12 @@
 // components/rentals/steps/ProductDetailsStep.tsx
-import { Input } from '@/components/ui/input';
-import { AlertCircle, ChevronRight, Info, Calendar } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { AlertCircle, ChevronRight, Info, MapPin, Clock, CalendarDays, Tag, Shield, Banknote } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import { Button } from '@/components/ui/button';
-import { RentalRequestFormData, Product, FormErrors } from '@/types/listings';
+import { RentalRequestFormData, Product, FormErrors, DurationUnit } from '@/types/listings';
+import { Badge } from '@/components/ui/badge';
+import { CATEGORY_DISPLAY, PRODUCT_TYPE_DISPLAY } from '@/constants/productTypes';
+import { format } from 'date-fns';
 
 interface Props {
   product: Product;
@@ -14,75 +17,232 @@ interface Props {
 }
 
 const ProductDetailsStep = ({ product, formData, errors, onChange, onNext }: Props) => {
+  const pricingTiers = product.pricingTiers || [];
+  
+  // State to keep track of the selected pricing tier
+  const [selectedTierIndex, setSelectedTierIndex] = useState(
+    pricingTiers.findIndex(tier => tier.durationUnit === formData.durationUnit) > -1 
+      ? pricingTiers.findIndex(tier => tier.durationUnit === formData.durationUnit) 
+      : 0
+  );
+
+  const selectedTier = pricingTiers.length > 0 
+    ? pricingTiers[selectedTierIndex] 
+    : { durationUnit: 'day' as DurationUnit, price: 0, maxPeriod: 30 };
+
+  const handleChangeTier = (index: number) => {
+    setSelectedTierIndex(index);
+    onChange({ 
+      durationUnit: pricingTiers[index].durationUnit,
+      duration: 1 // Reset duration when changing unit
+    });
+  };
+  
+  // Calculate the end date based on selected duration
+  const calculateEndDate = () => {
+    if (!formData.startDate) return null;
+    
+    const endDate = new Date(formData.startDate);
+    
+    switch(selectedTier.durationUnit) {
+      case 'day':
+        endDate.setDate(endDate.getDate() + (formData.duration));
+        break;
+      case 'week':
+        endDate.setDate(endDate.getDate() + (formData.duration * 7));
+        break;
+      case 'month':
+        endDate.setMonth(endDate.getMonth() + formData.duration);
+        break;
+    }
+    
+    return endDate;
+  };
+  
+  const endDate = calculateEndDate();
+
+  useEffect(() => {
+    // Initialize with default values if not already set
+    if (!formData.durationUnit && pricingTiers.length > 0) {
+      onChange({
+        durationUnit: pricingTiers[0].durationUnit,
+      });
+    }
+  }, [formData.durationUnit, pricingTiers, onChange]);
+
   return (
     <div className="space-y-4 md:space-y-6 px-2">
       <h2 className="text-2xl font-semibold text-green-800 mb-4">Item Details</h2>
       
-      <div className="bg-green-50/50 rounded-lg border border-gray-200 p-4 space-y-2">
-        <h3 className="text-lg font-medium text-gray-800">{product.title}</h3>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p className="text-gray-600">Owner</p>
-            <p className="font-medium text-green-900">{product.owner}</p>
-          </div>
-          <div>
-            <p className="text-gray-600">Category</p>
-            <p className="font-medium text-green-900">{product.category}</p>
-          </div>
-          <div>
-            <p className="text-gray-600">Price</p>
-            <p className="font-medium text-green-900">{product.pricingTiers[0].price} Taka per {product.pricingTiers[0].durationUnit}</p>
-          </div>
-          <div>
-            <p className="text-gray-600">Location</p>
-            <p className="font-medium text-green-900">{product.location}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Rental Start Date <span className="text-red-500">*</span>
-          </label>
-          <div className="relative">
-            <DatePicker
-              selected={formData.startDate}
-              onChange={(date: Date | null) => onChange({ startDate: date as Date })}
-              minDate={new Date()}
-              className="w-full p-2 border rounded-md text-sm md:text-base h-8 md:h-10 focus:ring-green-500 focus:border-green-500"
-              placeholderText="Select start date"
+      {/* Product Information Card */}
+      <div className="bg-gradient-to-br from-white to-lime-100 rounded-lg border border-gray-200 p-4 md:p-6">
+        <div className="flex flex-col md:flex-row md:items-start gap-4 mb-6">
+          {/* Product Image */}
+          <div className="min-w-[120px] w-full md:w-1/3">
+            <img
+              src={product.images && product.images.length > 0 ? product.images[0].image : '/placeholder-image.jpg'}
+              alt={product.title}
+              className="w-full h-[160px] object-cover rounded-md"
             />
-            <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
           </div>
-          {errors.startDate ? (
-            <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-              <AlertCircle size={14} /> {errors.startDate}
-            </p>
-          ) : (
-            <p className="text-xs text-gray-500">Choose when you want to start renting</p>
-          )}
+          
+          {/* Product Details */}
+          <div className="flex-1">
+            <h3 className="text-xl font-medium text-gray-800 mb-2">{product.title}</h3>
+            
+            <div className="flex flex-wrap gap-2 mb-3">
+              <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-100">
+                {CATEGORY_DISPLAY[product.category] || product.category}
+              </Badge>
+              <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-100">
+                {PRODUCT_TYPE_DISPLAY[product.productType] || product.productType}
+              </Badge>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+              <div className="flex items-center">
+                <MapPin size={14} className="text-green-600 mr-1.5" />
+                <span className="text-gray-700">{product.location || 'Location not specified'}</span>
+              </div>
+              
+              {product.securityDeposit && (
+                <div className="flex items-center">
+                  <Shield size={14} className="text-green-600 mr-1.5" />
+                  <span className="text-gray-700">Security Deposit: {product.securityDeposit} Taka</span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Rental Duration ({product.pricingTiers[0].durationUnit}s) <span className="text-red-500">*</span>
-          </label>
-          <Input
-            type="number"
-            max={product.pricingTiers[0].maxPeriod}
-            value={formData.duration}
-            onChange={(e) => onChange({ duration: Number(e.target.value) })}
-            className={`text-sm md:text-base h-8 md:h-10 focus:ring-green-500 focus:border-green-500 ${errors.duration ? 'border-red-500' : 'border-gray-300'}`}
-          />
-          {errors.duration ? (
-            <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-              <AlertCircle size={14} /> {errors.duration}
-            </p>
-          ) : (
-            <p className="text-xs text-gray-500">
-              {product.pricingTiers[0].maxPeriod ? `, maximum ${product.pricingTiers[0].maxPeriod} ${product.pricingTiers[0].durationUnit}s` : ''}
-            </p>
+        <div className="border-t border-gray-100 pt-4 space-y-5">
+          {/* Pricing Tier Selection */}
+          <div>
+            <label className="block text-base font-medium text-gray-800 mb-3">
+              Select Pricing Option
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {pricingTiers.map((tier, index) => (
+                <div
+                  key={index}
+                  onClick={() => handleChangeTier(index)}
+                  className={`p-4 rounded-md cursor-pointer border transition flex flex-col ${
+                    selectedTierIndex === index
+                      ? 'border-green-500 bg-green-50 shadow-sm'
+                      : 'border-gray-200 hover:border-green-300 bg-white'
+                  }`}
+                >
+                  <div className="font-medium text-lg flex items-center mb-1">
+                    <Banknote size={16} className="text-green-600 mr-1.5" />
+                    {tier.price} Taka
+                  </div>
+                  <div className="text-gray-700">per {tier.durationUnit}</div>
+                  {tier.maxPeriod && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      Maximum: {tier.maxPeriod} {tier.durationUnit}s
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Rental Duration Section */}
+          <div className="grid md:grid-cols-2 gap-5">
+            {/* Start Date */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Rental Start Date <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <DatePicker
+                  selected={formData.startDate}
+                  onChange={(date: Date | null) => onChange({ startDate: date as Date })}
+                  minDate={new Date()}
+                  className={`w-full p-2.5 border rounded-md text-sm md:text-base h-10 ${
+                    errors.startDate ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'focus:ring-green-500 focus:border-green-500'
+                  }`}
+                  placeholderText="Select start date"
+                />
+                <CalendarDays className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              </div>
+              {errors.startDate ? (
+                <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+                  <AlertCircle size={14} /> {errors.startDate}
+                </p>
+              ) : (
+                <p className="text-xs text-gray-500 mt-1">Choose when you want to start renting</p>
+              )}
+            </div>
+
+            {/* Duration */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Rental Duration <span className="text-red-500">*</span>
+              </label>
+              <div className="flex items-center">
+                <div className="relative w-full">
+                  <input
+                    type="number"
+                    value={formData.duration}
+                    onChange={(e) => onChange({ duration: parseInt(e.target.value) || 0 })}
+                    min={1}
+                    max={selectedTier.maxPeriod || 30}
+                    className={`pl-9 pr-2 py-2.5 w-full rounded-md border ${
+                      errors.duration
+                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                        : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
+                    } focus:outline-none focus:ring-1`}
+                  />
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
+                    <Clock size={16} />
+                  </span>
+                </div>
+                <span className="ml-2 text-gray-700">
+                  {selectedTier.durationUnit}(s)
+                </span>
+              </div>
+              {errors.duration ? (
+                <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+                  <AlertCircle size={14} /> {errors.duration}
+                </p>
+              ) : (
+                <p className="text-xs text-gray-500 mt-1">
+                  {selectedTier.maxPeriod ? `Maximum ${selectedTier.maxPeriod} ${selectedTier.durationUnit}s` : ''}
+                </p>
+              )}
+            </div>
+          </div>
+          
+          {/* Rental Period Summary */}
+          {formData.startDate && formData.duration > 0 && (
+            <div className="bg-green-50 p-3 rounded-md border border-green-100 mt-3">
+              <h4 className="text-sm font-medium text-green-800 mb-1">Rental Period Summary</h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span className="text-gray-600">Start Date:</span>
+                  <span className="ml-1.5 text-green-700 font-medium">{format(formData.startDate, 'MMMM d, yyyy')}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">End Date:</span>
+                  <span className="ml-1.5 text-green-700 font-medium">
+                    {endDate ? format(endDate, 'MMMM d, yyyy') : '-'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Duration:</span>
+                  <span className="ml-1.5 text-green-700 font-medium">
+                    {formData.duration} {selectedTier.durationUnit}{formData.duration > 1 ? 's' : ''}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Price:</span>
+                  <span className="ml-1.5 text-green-700 font-medium">
+                    {selectedTier.price * formData.duration} Taka
+                  </span>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>

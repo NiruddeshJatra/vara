@@ -23,11 +23,6 @@ const ItemCard = ({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Debug pricing data
-  console.log('ItemCard product:', product);
-  console.log('Pricing tiers:', product.pricingTiers);
-  console.log('First pricing tier:', product.pricingTiers?.[0]);
-
   // Use a default image if product.images is empty
   const images = product.images && product.images.length > 0
     ? product.images

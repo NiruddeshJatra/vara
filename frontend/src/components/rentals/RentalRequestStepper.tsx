@@ -1,5 +1,5 @@
 // components/rentals/RentalRequestStepper.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ProductDetailsStep from './steps/ProductDetailsStep';
 import PriceCalculationStep from './steps/PriceCalculationStep';
 import AdditionalDetailsStep from './steps/AdditionalDetailsStep';
@@ -11,10 +11,18 @@ interface Props {
 }
 
 const RentalRequestStepper = ({ product }: Props) => {
+  console.log('RentalRequestStepper received product:', product);
+  
+  // Set defaults for potentially missing properties
+  const pricingTier = product.pricingTiers && product.pricingTiers.length > 0 
+    ? product.pricingTiers[0] 
+    : { durationUnit: 'day' as DurationUnit, price: 0, maxPeriod: 30 };
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<RentalRequestFormData>({
     startDate: null,
-    duration: product.minRentalPeriod,
+    duration: 1,
+    durationUnit: pricingTier.durationUnit,
     purpose: '',
     notes: '',
     pickupMethod: 'self',
@@ -23,8 +31,15 @@ const RentalRequestStepper = ({ product }: Props) => {
   });
   const [errors, setErrors] = useState<FormErrors>({});
 
+  useEffect(() => {
+    console.log('Current form data:', formData);
+  }, [formData]);
+
   const calculateTotalCost = () => {
-    const baseCost = product.pricingTiers[0].price * formData.duration;
+    // Find pricing tier that matches the selected duration unit
+    const selectedTier = product.pricingTiers?.find(tier => tier.durationUnit === formData.durationUnit) || pricingTier;
+    
+    const baseCost = selectedTier.price * formData.duration;
     const serviceFee = baseCost * 0.05;
     const securityDeposit = product.securityDeposit || 0;
     return {
@@ -43,11 +58,23 @@ const RentalRequestStepper = ({ product }: Props) => {
         } else if (formData.startDate < new Date()) {
           newErrors.startDate = 'Start date must be in the future';
         }
-        if (formData.duration < product.pricingTiers[0].minPeriod) {
-          newErrors.duration = `Minimum ${product.pricingTiers[0].minPeriod} ${product.pricingTiers[0].durationUnit}s`;
+        
+        // Find pricing tier that matches the selected duration unit
+        const selectedTier = product.pricingTiers?.find(tier => tier.durationUnit === formData.durationUnit) || pricingTier;
+        
+        if (formData.duration < 1) {
+          newErrors.duration = 'Minimum duration is 1';
         }
-        if (product.pricingTiers[0].maxPeriod && formData.duration > product.pricingTiers[0].maxPeriod) {
-          newErrors.duration = `Maximum ${product.pricingTiers[0].maxPeriod} ${product.pricingTiers[0].durationUnit}s`;
+        if (selectedTier.maxPeriod && formData.duration > selectedTier.maxPeriod) {
+          newErrors.duration = `Maximum ${selectedTier.maxPeriod} ${selectedTier.durationUnit}s`;
+        }
+        
+        // Check for unavailable dates
+        if (formData.startDate) {
+          const conflictingDates = checkDateConflicts(formData.startDate, formData.duration, formData.durationUnit || 'day');
+          if (conflictingDates) {
+            newErrors.startDate = 'Selected period includes unavailable dates';
+          }
         }
         break;
       case 3:
@@ -59,18 +86,74 @@ const RentalRequestStepper = ({ product }: Props) => {
     }
     return newErrors;
   };
+  
+  // Helper function to check if the selected dates conflict with unavailable dates
+  const checkDateConflicts = (startDate: Date, duration: number, durationUnit: DurationUnit): boolean => {
+    if (!product.unavailableDates || product.unavailableDates.length === 0) {
+      return false; // No unavailable dates set
+    }
+    
+    const endDate = calculateEndDate(startDate, duration, durationUnit);
+    
+    // Check for conflicts with unavailable dates
+    for (const unavailable of product.unavailableDates) {
+      if (unavailable.isRange && unavailable.rangeStart && unavailable.rangeEnd) {
+        // Check for range conflicts
+        const rangeStart = new Date(unavailable.rangeStart);
+        const rangeEnd = new Date(unavailable.rangeEnd);
+        
+        if (
+          (startDate <= rangeEnd && endDate >= rangeStart) // Overlap
+        ) {
+          return true; // Conflict found
+        }
+      } else if (unavailable.date) {
+        // Check for single date conflict
+        const unavailableDate = new Date(unavailable.date);
+        if (
+          startDate <= unavailableDate && 
+          endDate >= unavailableDate
+        ) {
+          return true; // Conflict found
+        }
+      }
+    }
+    
+    return false; // No conflicts
+  };
+  
+  // Helper function to calculate end date based on start date, duration and unit
+  const calculateEndDate = (startDate: Date, duration: number, durationUnit: DurationUnit): Date => {
+    const endDate = new Date(startDate);
+    
+    switch(durationUnit) {
+      case 'day':
+        endDate.setDate(endDate.getDate() + duration);
+        break;
+      case 'week':
+        endDate.setDate(endDate.getDate() + (duration * 7));
+        break;
+      case 'month':
+        endDate.setMonth(endDate.getMonth() + duration);
+        break;
+    }
+    
+    return endDate;
+  };
 
   const handleNextStep = () => {
     const stepErrors = validateStep();
     if (Object.keys(stepErrors).length === 0) {
       if (currentStep === 3) {
         // Submit data here
+        console.log('Submitting rental request:', { ...formData, ...calculateTotalCost() });
         setCurrentStep(4);
       } else {
         setCurrentStep(prev => prev + 1);
       }
       setErrors({});
     } else {
+      console.log('Validation errors:', stepErrors);
       setErrors(stepErrors);
     }
   };
