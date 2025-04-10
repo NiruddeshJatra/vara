@@ -17,13 +17,14 @@ interface Props {
 }
 
 const PriceCalculationStep = ({ product, formData, onNext, onPrev }: Props) => {
-  // Use default values if product data is incomplete
-  const pricingTier = product.pricingTiers && product.pricingTiers.length > 0 
-    ? product.pricingTiers[0] 
-    : { durationUnit: 'day' as DurationUnit, price: 0, maxPeriod: 30 };
+  // Use the selected pricing tier from form data instead of defaulting to first one
+  const selectedTier = product.pricingTiers?.find(
+    (tier) => tier.durationUnit === formData.durationUnit
+  ) || { durationUnit: 'day' as DurationUnit, price: 0, maxPeriod: 30 };
   
-  const securityDeposit = product.securityDeposit || 0;
-  const durationUnit = pricingTier.durationUnit || 'day';
+  // Use form data's security deposit instead of product's
+  const securityDeposit = formData.securityDeposit || 0;
+  const durationUnit = formData.durationUnit || 'day';
   
   useEffect(() => {
     console.log('PriceCalculationStep - Product:', product);
@@ -66,7 +67,7 @@ const PriceCalculationStep = ({ product, formData, onNext, onPrev }: Props) => {
     }).format(amount);
   };
   
-  const basePrice = pricingTier.price || 0;
+  const basePrice = selectedTier.price || 0;
   const baseCost = basePrice * formData.duration;
   const serviceFee = formData.serviceFee || (baseCost * 0.05);
   const totalCost = formData.totalCost || (baseCost + serviceFee + securityDeposit);
@@ -103,6 +104,10 @@ const PriceCalculationStep = ({ product, formData, onNext, onPrev }: Props) => {
             Cost Breakdown
           </h3>
           <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Pricing Tier:</span>
+              <span className="font-medium text-gray-900">{selectedTier.durationUnit} ({selectedTier.maxPeriod} max)</span>
+            </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Base Price:</span>
               <span className="font-medium text-gray-900">{formatCurrency(basePrice)} per {durationUnit}</span>

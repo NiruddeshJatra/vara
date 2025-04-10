@@ -3,8 +3,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { ChevronLeft, ChevronRight, AlertCircle, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, AlertCircle, Calendar, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 import { FormErrors, RentalRequestFormData } from '@/types/listings';
 import { useEffect } from 'react';
 import DatePicker from 'react-datepicker';
@@ -18,10 +19,30 @@ interface Props {
 }
 
 const AdditionalDetailsStep = ({ formData, errors, onChange, onNext, onPrev }: Props) => {
+  const PURPOSE_OPTIONS = [
+    { value: 'event', label: 'Event/Party' },
+    { value: 'personal', label: 'Personal Use' },
+    { value: 'professional', label: 'Professional Use' },
+    { value: 'other', label: 'Other' }
+  ];
+
   useEffect(() => {
     console.log('AdditionalDetailsStep - Form data:', formData);
   }, [formData]);
-  
+
+  // Add a handler to clear errors when input changes
+  const handleInputChange = (data: Partial<RentalRequestFormData>) => {
+    onChange(data);
+    // Clear error for the changed field
+    const field = Object.keys(data)[0];
+    if (errors[field as keyof FormErrors]) {
+      const newErrors = { ...errors };
+      delete newErrors[field as keyof FormErrors];
+      // Update errors state (this would typically be handled by the parent component)
+      // For now, we'll just clear the error locally
+    }
+  };
+
   return (
     <div className="space-y-6 md:space-y-8 px-2">
       <h2 className="text-2xl font-semibold text-green-800 mb-4">Additional Information</h2>
@@ -31,19 +52,28 @@ const AdditionalDetailsStep = ({ formData, errors, onChange, onNext, onPrev }: P
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Purpose of Rental <span className="text-red-500">*</span>
           </label>
-          <Textarea
+          <Select
             value={formData.purpose || ''}
-            onChange={(e) => onChange({ purpose: e.target.value })}
-            className="min-h-[80px]"
-            placeholder="Please describe how you plan to use this item..."
-          />
+            onValueChange={(value) => handleInputChange({ purpose: value })}
+          >
+            <SelectTrigger className={errors.purpose ? 'border-red-500' : ''}>
+              {formData.purpose ? PURPOSE_OPTIONS.find(option => option.value === formData.purpose)?.label : "Select purpose"}
+            </SelectTrigger>
+            <SelectContent>
+              {PURPOSE_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {errors.purpose ? (
             <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
               <AlertCircle size={14} /> {errors.purpose}
             </p>
           ) : (
-            <p className="text-xs text-gray-500">
-              Sharing your purpose helps owners understand your rental needs
+            <p className="text-xs text-gray-500 mt-1">
+              Select the primary purpose of your rental
             </p>
           )}
         </div>
@@ -54,81 +84,26 @@ const AdditionalDetailsStep = ({ formData, errors, onChange, onNext, onPrev }: P
           </label>
           <Textarea
             value={formData.notes || ''}
-            onChange={(e) => onChange({ notes: e.target.value })}
+            onChange={(e) => handleInputChange({ notes: e.target.value })}
             className="min-h-[80px]"
-            placeholder="Any special requests or questions for the owner..."
+            placeholder="Any special requirements or preferences for the rental..."
           />
           <p className="text-xs text-gray-500">
-            Optional: Include any questions or special requirements
+            Optional: Include any specific requirements or preferences for your rental
           </p>
         </div>
         
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Pickup Method
-            </label>
-            <RadioGroup
-              value={formData.pickupMethod || 'self'}
-              onValueChange={(value) => onChange({ pickupMethod: value as 'self' | 'delivery' })}
-              className="flex flex-col space-y-1"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="self" id="self" />
-                <Label htmlFor="self" className="cursor-pointer">
-                  I'll pick it up myself
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="delivery" id="delivery" />
-                <Label htmlFor="delivery" className="cursor-pointer">
-                  Request delivery (may be subject to additional fees)
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
-          
-          {formData.pickupMethod === 'delivery' && (
-            <div className="space-y-4 bg-green-50/50 p-4 rounded-lg border border-green-100">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Delivery Address <span className="text-red-500">*</span>
-                </label>
-                <Textarea
-                  value={formData.deliveryAddress || ''}
-                  onChange={(e) => onChange({ deliveryAddress: e.target.value })}
-                  className="min-h-[60px]"
-                  placeholder="Enter your full delivery address..."
-                />
-                {errors.deliveryAddress ? (
-                  <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-                    <AlertCircle size={14} /> {errors.deliveryAddress}
-                  </p>
-                ) : null}
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Preferred Delivery Time
-                </label>
-                <div className="relative">
-                  <DatePicker
-                    selected={formData.deliveryTime}
-                    onChange={(date: Date | null) => onChange({ deliveryTime: date })}
-                    showTimeSelect
-                    dateFormat="MMMM d, yyyy h:mm aa"
-                    className="w-full p-2 border rounded-md text-sm md:text-base h-8 md:h-10 focus:ring-green-500 focus:border-green-500"
-                    placeholderText="Select preferred date and time"
-                    minDate={formData.startDate || new Date()}
-                  />
-                  <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                </div>
-                <p className="text-xs text-gray-500">
-                  Optional: Choose a preferred delivery time (subject to owner's availability)
-                </p>
-              </div>
-            </div>
-          )}
+        <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-4 rounded-lg border border-amber-200 mt-4">
+          <h3 className="text-sm font-semibold text-amber-800 mb-2 flex items-center gap-2">
+            <Info size={16} className="text-amber-600" />
+            Logistics Information
+          </h3>
+          <ul className="text-sm text-amber-700 space-y-1 list-disc pl-5">
+            <li>Vara will collect the item from the owner</li>
+            <li>Vara will deliver the item to you</li>
+            <li>Vara will collect the item at the end of the rental period</li>
+            <li>You do not need to coordinate directly with the owner</li>
+          </ul>
         </div>
       </div>
       

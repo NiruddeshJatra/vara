@@ -1,7 +1,7 @@
 // components/rentals/steps/ProductDetailsStep.tsx
 import { useState, useEffect } from 'react';
 import { AlertCircle, ChevronRight, Info, MapPin, Clock, CalendarDays, Tag, Shield, Banknote } from 'lucide-react';
-import DatePicker from 'react-datepicker';
+import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { RentalRequestFormData, Product, FormErrors, DurationUnit } from '@/types/listings';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +25,9 @@ const ProductDetailsStep = ({ product, formData, errors, onChange, onNext }: Pro
       ? pricingTiers.findIndex(tier => tier.durationUnit === formData.durationUnit) 
       : 0
   );
+
+  // State to control calendar visibility
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const selectedTier = pricingTiers.length > 0 
     ? pricingTiers[selectedTierIndex] 
@@ -69,6 +72,19 @@ const ProductDetailsStep = ({ product, formData, errors, onChange, onNext }: Pro
       });
     }
   }, [formData.durationUnit, pricingTiers, onChange]);
+
+  // Add a handler to clear errors when input changes
+  const handleInputChange = (data: Partial<RentalRequestFormData>) => {
+    onChange(data);
+    // Clear error for the changed field
+    const field = Object.keys(data)[0];
+    if (errors[field as keyof FormErrors]) {
+      const newErrors = { ...errors };
+      delete newErrors[field as keyof FormErrors];
+      // Update errors state (this would typically be handled by the parent component)
+      // For now, we'll just clear the error locally
+    }
+  };
 
   return (
     <div className="space-y-4 md:space-y-6 px-2">
@@ -154,17 +170,35 @@ const ProductDetailsStep = ({ product, formData, errors, onChange, onNext }: Pro
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Rental Start Date <span className="text-red-500">*</span>
               </label>
-              <div className="relative">
-                <DatePicker
-                  selected={formData.startDate}
-                  onChange={(date: Date | null) => onChange({ startDate: date as Date })}
-                  minDate={new Date()}
-                  className={`w-full p-2.5 border rounded-md text-sm md:text-base h-10 ${
-                    errors.startDate ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'focus:ring-green-500 focus:border-green-500'
-                  }`}
-                  placeholderText="Select start date"
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  value={formData.startDate ? format(formData.startDate, 'MMMM d, yyyy') : ''}
+                  onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+                  readOnly
+                  placeholder="Select start date"
+                  className={`w-full p-2.5 rounded-md border ${
+                    errors.startDate ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-green-300 focus:border-green-500 focus:ring-green-500'
+                  } focus:outline-none focus:ring-1 focus:ring-green-500`}
                 />
-                <CalendarDays className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                {isCalendarOpen && (
+                  <Calendar
+                    mode="single"
+                    selected={formData.startDate}
+                    onSelect={(date) => {
+                      handleInputChange({ startDate: date });
+                    }}
+                    className="rounded-md border border-gray-300 focus:border-green-500 focus:ring-green-500 bg-white absolute top-full left-0 mt-2 z-10"
+                    classNames={{
+                      day_selected:
+                        "bg-green-600 text-white hover:bg-green-700 hover:text-white focus:bg-green-700 focus:text-white rounded-md",
+                      day:
+                        "h-9 w-9 p-0 font-normal aria-selected:opacity-100",
+                      day_range_end: "bg-green-600 text-white",
+                      day_range_middle: "bg-green-600 text-white",
+                    }}
+                  />
+                )}
               </div>
               {errors.startDate ? (
                 <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
@@ -185,7 +219,7 @@ const ProductDetailsStep = ({ product, formData, errors, onChange, onNext }: Pro
                   <input
                     type="number"
                     value={formData.duration}
-                    onChange={(e) => onChange({ duration: parseInt(e.target.value) || 0 })}
+                    onChange={(e) => handleInputChange({ duration: parseInt(e.target.value) || 0 })}
                     min={1}
                     max={selectedTier.maxPeriod || 30}
                     className={`pl-9 pr-2 py-2.5 w-full rounded-md border ${
@@ -248,10 +282,10 @@ const ProductDetailsStep = ({ product, formData, errors, onChange, onNext }: Pro
       </div>
 
       <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-4 rounded-lg border border-amber-200 mt-4">
-        <h3 className="text-sm font-medium text-amber-800 mb-2 flex items-center gap-2">
+        <h4 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
           <Info size={16} className="text-amber-600" />
           Rental Tips
-        </h3>
+        </h4>
         <ul className="text-sm text-amber-700 space-y-1 list-disc pl-5">
           <li>Choose dates when you'll be available to pick up and return the item</li>
           <li>Consider any setup or learning time you might need</li>
