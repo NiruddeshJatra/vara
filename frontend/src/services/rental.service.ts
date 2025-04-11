@@ -2,14 +2,11 @@ import api from './api.service';
 import { RentalStatus } from '../constants/rental';
 import { RentalRequest, RentalRequestFormData } from '../types/listings';
 import config from '../config';
-import { useNavigate } from 'react-router-dom';
 
 /**
  * Service for handling rental-related operations
  */
 class RentalService {
-  private navigate = useNavigate();
-
   /**
    * Create a new rental request
    * @param productId The ID of the product to rent
@@ -46,7 +43,6 @@ class RentalService {
 
     try {
       const response = await api.post(config.rentals.createEndpoint, rentalData);
-      this.navigate('/rentals');
       return response.data;
     } catch (error: any) {
       throw new Error('Failed to create rental request');

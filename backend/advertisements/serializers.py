@@ -17,7 +17,8 @@ def validate_image_file(value):
     # Check file type
     ext = os.path.splitext(value.name)[1].lower()
     if ext not in [".jpg", ".jpeg", ".png"]:
-        raise serializers.ValidationError("Only JPG and PNG files are allowed.")
+        raise serializers.ValidationError(
+            "Only JPG and PNG files are allowed.")
 
     # Check file size (5MB limit)
     if value.size > 5 * 1024 * 1024:
@@ -38,7 +39,7 @@ def validate_image_file(value):
 
 class ProductImageSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = ProductImage
         fields = ["id", "image", "created_at"]
@@ -51,7 +52,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(obj.image.url)
             return obj.image.url
         return None
-        
+
     def validate_image(self, value):
         return validate_image_file(value)
 
@@ -77,7 +78,8 @@ class UnavailableDateSerializer(serializers.ModelSerializer):
                     _("End date must be after start date")
                 )
         elif not data.get("date"):
-            raise serializers.ValidationError(_("Date is required for single dates"))
+            raise serializers.ValidationError(
+                _("Date is required for single dates"))
         return data
 
     def to_internal_value(self, data):
@@ -85,7 +87,8 @@ class UnavailableDateSerializer(serializers.ModelSerializer):
         if isinstance(data, dict):
             if data.get("date"):
                 try:
-                    data["date"] = datetime.strptime(data["date"], "%Y-%m-%d").date()
+                    data["date"] = datetime.strptime(
+                        data["date"], "%Y-%m-%d").date()
                 except (ValueError, TypeError):
                     raise serializers.ValidationError(
                         {"date": "Date has wrong format. Use YYYY-MM-DD."}
@@ -119,9 +122,11 @@ class PricingTierSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data.get("price", 0) <= 0:
-            raise serializers.ValidationError(_("Price must be greater than 0"))
+            raise serializers.ValidationError(
+                _("Price must be greater than 0"))
         if data.get("max_period") is not None and data["max_period"] <= 0:
-            raise serializers.ValidationError(_("Max period must be greater than 0"))
+            raise serializers.ValidationError(
+                _("Max period must be greater than 0"))
         return data
 
 
@@ -135,15 +140,15 @@ class ProductSerializer(serializers.ModelSerializer):
     rental_count = serializers.IntegerField(read_only=True)
     status_message = serializers.CharField(read_only=True)
     status_changed_at = serializers.DateTimeField(read_only=True)
-    pricing_tiers = PricingTierSerializer(many=True, read_only=True)
-    unavailable_dates = UnavailableDateSerializer(many=True, read_only=True)
 
     # Write-only fields for input data
     images = serializers.ListField(
         child=serializers.ImageField(), write_only=True, required=False
     )
-    unavailable_dates_input = serializers.CharField(write_only=True, required=False)
-    pricing_tiers_input = serializers.CharField(write_only=True, required=False)
+    unavailable_dates_input = serializers.CharField(
+        write_only=True, required=False)
+    pricing_tiers_input = serializers.CharField(
+        write_only=True, required=False)
 
     class Meta:
         model = Product
@@ -162,15 +167,13 @@ class ProductSerializer(serializers.ModelSerializer):
             "status",
             "status_message",
             "status_changed_at",
-            "product_images",    # Read-only field for product images (mapped to proper relation)
-            "images",            # Write-only field for uploading images
+            "product_images",
+            "images",
             "views_count",
             "rental_count",
             "average_rating",
             "created_at",
             "updated_at",
-            "unavailable_dates",
-            "pricing_tiers",
             "unavailable_dates_input",
             "pricing_tiers_input",
         ]
@@ -186,7 +189,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # When updating, we need to know if this is an update request
@@ -198,7 +201,7 @@ class ProductSerializer(serializers.ModelSerializer):
             validate_image_file(image)
         return value
 
-    def validate_unavailable_dates(self, value):
+    def validate_unavailable_dates_input(self, value):
         """Parse and validate unavailable dates JSON string"""
         if not value:
             return []
@@ -209,9 +212,10 @@ class ProductSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(serializer.errors)
             return serializer.validated_data
         except json.JSONDecodeError:
-            raise serializers.ValidationError("Invalid JSON format for unavailable dates")
+            raise serializers.ValidationError(
+                "Invalid JSON format for unavailable dates")
 
-    def validate_pricing_tiers(self, value):
+    def validate_pricing_tiers_input(self, value):
         """Parse and validate pricing tiers JSON string"""
         if not value:
             return []
@@ -222,7 +226,8 @@ class ProductSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(serializer.errors)
             return serializer.validated_data
         except json.JSONDecodeError:
-            raise serializers.ValidationError("Invalid JSON format for pricing tiers")
+            raise serializers.ValidationError(
+                "Invalid JSON format for pricing tiers")
 
     def validate_purchase_year(self, value):
         if not value:
@@ -236,14 +241,17 @@ class ProductSerializer(serializers.ModelSerializer):
                     "Purchase year cannot be in the future."
                 )
             if year < 1900:
-                raise serializers.ValidationError("Purchase year seems invalid.")
+                raise serializers.ValidationError(
+                    "Purchase year seems invalid.")
             return str(year)
         except (TypeError, ValueError):
-            raise serializers.ValidationError("Purchase year must be a valid year.")
+            raise serializers.ValidationError(
+                "Purchase year must be a valid year.")
 
     def validate_original_price(self, value):
         if value <= 0:
-            raise serializers.ValidationError(_("Original price must be greater than 0"))
+            raise serializers.ValidationError(
+                _("Original price must be greater than 0"))
         return value
 
     @transaction.atomic
@@ -253,8 +261,12 @@ class ProductSerializer(serializers.ModelSerializer):
             # Extract related data
             images = validated_data.pop("images", [])
             unavailable_dates = validated_data.pop("unavailable_dates_input", [])
+            if not unavailable_dates:
+                unavailable_dates = validated_data.pop("unavailable_dates", [])
             pricing_tiers = validated_data.pop("pricing_tiers_input", [])
-            
+            if not pricing_tiers:
+                pricing_tiers = validated_data.pop("pricing_tiers", [])
+
             # Remove owner from validated_data if it exists
             validated_data.pop("owner", None)
 
@@ -279,28 +291,32 @@ class ProductSerializer(serializers.ModelSerializer):
             return product
         except Exception as e:
             logger.error(f"Error creating product: {str(e)}")
-            raise serializers.ValidationError(f"Error creating product: {str(e)}")
-          
-          
+            raise serializers.ValidationError(
+                f"Error creating product: {str(e)}")
+
     @transaction.atomic
     def update(self, instance, validated_data):
         logger.info(f"Update method called for product {instance.id}")
         # Extract related data
         images = validated_data.pop("images", [])
         unavailable_dates = validated_data.pop("unavailable_dates_input", [])
+        if not unavailable_dates:
+            unavailable_dates = validated_data.pop("unavailable_dates", [])
         pricing_tiers = validated_data.pop("pricing_tiers_input", [])
-        
+        if not pricing_tiers:
+            pricing_tiers = validated_data.pop("pricing_tiers", [])
+
         # Update the product fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-        
+
         # Handle images - add new ones if provided
         if images:
             # Create new images
             for image in images:
                 ProductImage.objects.create(product=instance, image=image)
-        
+
         # Handle unavailable dates - clear existing and create new ones
         if unavailable_dates:
             # Delete existing dates
@@ -308,7 +324,7 @@ class ProductSerializer(serializers.ModelSerializer):
             # Create new dates
             for date_data in unavailable_dates:
                 UnavailableDate.objects.create(product=instance, **date_data)
-        
+
         # Handle pricing tiers - clear existing and create new ones
         if pricing_tiers:
             # Delete existing tiers
@@ -316,5 +332,5 @@ class ProductSerializer(serializers.ModelSerializer):
             # Create new tiers
             for tier_data in pricing_tiers:
                 PricingTier.objects.create(product=instance, **tier_data)
-        
+
         return instance

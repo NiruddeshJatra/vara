@@ -251,7 +251,7 @@ class ProductService {
           range_start: date.rangeStart ? new Date(date.rangeStart).toISOString().split('T')[0] : null,
           range_end: date.rangeEnd ? new Date(date.rangeEnd).toISOString().split('T')[0] : null
         }));
-        formData.append('unavailable_dates', JSON.stringify(formattedDates));
+        formData.append('unavailable_dates_input', JSON.stringify(formattedDates));
       }
 
       // Format and append pricing tiers
@@ -261,7 +261,7 @@ class ProductService {
           price: tier.price,
           max_period: tier.maxPeriod || null
         }));
-        formData.append('pricing_tiers', JSON.stringify(formattedTiers));
+        formData.append('pricing_tiers_input', JSON.stringify(formattedTiers));
       }
 
       const response = await api.post<Product>(config.products.createEndpoint, formData, {
