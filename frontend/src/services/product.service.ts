@@ -221,27 +221,23 @@ class ProductService {
     try {
       const formData = new FormData();
       
-      // Append basic fields with proper field names
-      if (data.title) formData.append('title', data.title);
-      if (data.category) formData.append('category', data.category);
-      if (data.productType) formData.append('product_type', data.productType);
-      if (data.description) formData.append('description', data.description);
-      if (data.location) formData.append('location', data.location);
-      if (data.securityDeposit !== undefined) {
-        formData.append('security_deposit', data.securityDeposit.toString());
+      // Append basic fields
+      formData.append('title', data.title);
+      formData.append('category', data.category);
+      formData.append('product_type', data.productType);
+      formData.append('description', data.description);
+      formData.append('location', data.location);
+      if (data.securityDeposit !== null) {
+        formData.append('security_deposit', String(data.securityDeposit));
       }
-      if (data.purchaseYear) formData.append('purchase_year', data.purchaseYear);
-      if (data.originalPrice !== undefined) {
-        formData.append('original_price', data.originalPrice.toString());
-      }
-      if (data.ownershipHistory) formData.append('ownership_history', data.ownershipHistory);
+      formData.append('purchase_year', data.purchaseYear);
+      formData.append('original_price', String(data.originalPrice));
+      formData.append('ownership_history', data.ownershipHistory);
 
       // Append images
-      if (data.images && data.images.length > 0) {
-        data.images.forEach((image) => {
-          formData.append('images', image);
-        });
-      }
+      data.images.forEach((image) => {
+        formData.append('images', image);
+      });
 
       // Format and append unavailable dates
       if (data.unavailableDates && data.unavailableDates.length > 0) {
@@ -251,7 +247,7 @@ class ProductService {
           range_start: date.rangeStart ? new Date(date.rangeStart).toISOString().split('T')[0] : null,
           range_end: date.rangeEnd ? new Date(date.rangeEnd).toISOString().split('T')[0] : null
         }));
-        formData.append('unavailable_dates_input', JSON.stringify(formattedDates));
+        formData.append('unavailable_dates', JSON.stringify(formattedDates));
       }
 
       // Format and append pricing tiers
@@ -261,7 +257,7 @@ class ProductService {
           price: tier.price,
           max_period: tier.maxPeriod || null
         }));
-        formData.append('pricing_tiers_input', JSON.stringify(formattedTiers));
+        formData.append('pricing_tiers', JSON.stringify(formattedTiers));
       }
 
       const response = await api.post<Product>(config.products.createEndpoint, formData, {
@@ -272,7 +268,7 @@ class ProductService {
       return response.data;
     } catch (error) {
       console.error('Full API Error:', error);
-      throw new Error('Failed to create product. Please try again.');
+      throw error;
     }
   }
 
@@ -464,6 +460,8 @@ class ProductService {
     });
     return response.data.average_rating;
   }
+
+  
 }
 
-export default new ProductService(); 
+export default new ProductService();

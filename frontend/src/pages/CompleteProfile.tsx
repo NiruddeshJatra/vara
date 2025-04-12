@@ -8,7 +8,7 @@ import NationalIdStep from "@/components/auth/steps/NationalIdStep";
 import { ProfileFormData, ProfileFormErrors, ProfileCompletionData } from "@/types/auth";
 import { useAuth } from "@/contexts/AuthContext";
 import config from "@/config";
-import { validateProfileForm, validatePhoneNumber, validateLocation, validateDateOfBirth, validateNationalId } from '@/utils/validations';
+import { validateProfileForm, validatePhoneNumber, validateLocation, validateDateOfBirth, validateNationalId } from '@/utils/validations/auth.validations';
 import authService from "@/services/auth.service";
 
 const CompleteProfile = () => {

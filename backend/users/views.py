@@ -12,6 +12,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
+from django.utils.translation import gettext_lazy as _
 from .models import CustomUser
 from .serializers import (
     UserProfileSerializer,
@@ -118,7 +119,7 @@ class UserViewSet(viewsets.ModelViewSet):
         
         return Response(
             {
-                "message": "Profile completed successfully",
+                "message": _("Profile completed successfully"),
                 "data": serializer.data,
                 "profile_completed": True
             },
@@ -146,12 +147,12 @@ class UserViewSet(viewsets.ModelViewSet):
         password = request.data.get("password")
         if not password:
             return Response(
-                {"error": "Password is required"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": _("Password is required")}, status=status.HTTP_400_BAD_REQUEST
             )
 
         if not user.check_password(password):
             return Response(
-                {"error": "Invalid password"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": _("Invalid password")}, status=status.HTTP_400_BAD_REQUEST
             )
 
         # Soft delete: Mark user as inactive.
@@ -162,7 +163,7 @@ class UserViewSet(viewsets.ModelViewSet):
         Session.objects.filter(session_key=request.session.session_key).delete()
 
         return Response(
-            {"detail": "Account deleted successfully"},
+            {"detail": _("Account deleted successfully")},
             status=status.HTTP_204_NO_CONTENT,
         )
 
@@ -177,7 +178,7 @@ class CustomLoginView(APIView):
 
         if not email or not password:
             return Response(
-                {"error": "Email and password are required"},
+                {"error": _("Email and password are required")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -187,7 +188,7 @@ class CustomLoginView(APIView):
             # Check if user exists and is active
             if not user.is_active:
                 return Response(
-                    {"error": "This account has been deactivated"},
+                    {"error": _("This account has been deactivated")},
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
 
@@ -195,7 +196,7 @@ class CustomLoginView(APIView):
             if not user.is_email_verified:
                 return Response(
                     {
-                        "error": "Email is not verified. Please check your inbox for verification link."
+                        "error": _("Email is not verified. Please check your inbox for verification link.")
                     },
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
@@ -203,7 +204,7 @@ class CustomLoginView(APIView):
             # Check password
             if not user.check_password(password):
                 return Response(
-                    {"error": "Invalid credentials"},
+                    {"error": _("Invalid credentials")},
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
 
@@ -231,7 +232,7 @@ class CustomLoginView(APIView):
 
         except CustomUser.DoesNotExist:
             return Response(
-                {"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED
+                {"error": _("Invalid credentials")}, status=status.HTTP_401_UNAUTHORIZED
             )
 
 
@@ -265,14 +266,14 @@ class VerifyEmailView(APIView):
 
             return Response(
                 {
-                    "message": "Email verified successfully.",
+                    "message": _("Email verified successfully."),
                     "tokens": token_serializer,
                 },
                 status=status.HTTP_200_OK,
             )
         except CustomUser.DoesNotExist:
             return Response(
-                {"error": "Invalid verification token."},
+                {"error": _("Invalid verification token.")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -298,7 +299,7 @@ class VerifyEmailView(APIView):
 
             return Response(
                 {
-                    "message": "Email verified successfully",
+                    "message": _("Email verified successfully"),
                     "user": UserProfileSerializer(
                         user, context={"request": request}
                     ).data,
@@ -307,7 +308,7 @@ class VerifyEmailView(APIView):
             )
         except CustomUser.DoesNotExist:
             return Response(
-                {"error": "Invalid verification token"},
+                {"error": _("Invalid verification token")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -335,14 +336,14 @@ class ResendVerificationEmailView(APIView):
         email = request.data.get("email")
         if not email:
             return Response(
-                {"error": "Email is required."}, status=status.HTTP_400_BAD_REQUEST
+                {"error": _("Email is required.")}, status=status.HTTP_400_BAD_REQUEST
             )
         
         try:
             user = CustomUser.objects.get(email=email)
             if user.is_email_verified:
                 return Response(
-                    {"message": "Email is already verified."},
+                    {"message": _("Email is already verified.")},
                     status=status.HTTP_200_OK,
                 )
             
@@ -351,12 +352,12 @@ class ResendVerificationEmailView(APIView):
             send_verification_email(user, request)
             
             return Response(
-                {"message": "Verification email sent successfully."},
+                {"message": _("Verification email sent successfully.")},
                 status=status.HTTP_200_OK,
             )
         except CustomUser.DoesNotExist:
             return Response(
-                {"error": "User with this email does not exist."},
+                {"error": _("User with this email does not exist.")},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -372,7 +373,7 @@ class CustomRegisterView(APIView):
             user = serializer.save()
             return Response(
                 {
-                    "message": "Registration successful. Please check your email to verify your account.",
+                    "message": _("Registration successful. Please check your email to verify your account."),
                     "user": UserProfileSerializer(user, context={"request": request}).data,
                 },
                 status=status.HTTP_201_CREATED,
@@ -389,7 +390,7 @@ class PasswordResetRequestView(APIView):
         email = request.data.get('email')
         if not email:
             return Response(
-                {"error": "Email is required"},
+                {"error": _("Email is required")},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -408,13 +409,13 @@ class PasswordResetRequestView(APIView):
             send_password_reset_email(user, reset_url, request)
             
             return Response({
-                "message": "If your email is registered, you will receive password reset instructions."
+                "message": _("If your email is registered, you will receive password reset instructions.")
             })
             
         except CustomUser.DoesNotExist:
             # For security reasons, don't reveal if the email exists
             return Response({
-                "message": "If your email is registered, you will receive password reset instructions."
+                "message": _("If your email is registered, you will receive password reset instructions.")
             })
         except Exception as e:
             print(f"Password reset error: {str(e)}")  # Add debug logging
@@ -437,7 +438,7 @@ class PasswordResetConfirmView(APIView):
             # Verify token
             if not default_token_generator.check_token(user, token):
                 return Response(
-                    {"error": "Invalid or expired reset link"},
+                    {"error": _("Invalid or expired reset link")},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
@@ -447,13 +448,13 @@ class PasswordResetConfirmView(APIView):
             
             if not new_password1 or not new_password2:
                 return Response(
-                    {"error": "Both passwords are required"},
+                    {"error": _("Both passwords are required")},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
             if new_password1 != new_password2:
                 return Response(
-                    {"error": "Passwords do not match"},
+                    {"error": _("Passwords do not match")},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
@@ -462,12 +463,12 @@ class PasswordResetConfirmView(APIView):
             user.save()
             
             return Response({
-                "message": "Password has been reset successfully"
+                "message": _("Password has been reset successfully")
             })
             
         except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
             return Response(
-                {"error": "Invalid reset link"},
+                {"error": _("Invalid reset link")},
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
@@ -489,7 +490,7 @@ class CheckNationalIdView(APIView):
         
         if not national_id:
             return Response(
-                {"error": "National ID number is required"}, 
+                {"error": _("National ID number is required")}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -501,7 +502,7 @@ class CheckNationalIdView(APIView):
         
         return Response({
             "exists": exists,
-            "message": "National ID is already registered" if exists else "National ID is available"
+            "message": _("National ID is already registered") if exists else _("National ID is available")
         })
 
     def post(self, request):
@@ -512,7 +513,7 @@ class CheckNationalIdView(APIView):
         
         if not national_id:
             return Response(
-                {"error": "National ID number is required"}, 
+                {"error": _("National ID number is required")}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -524,7 +525,7 @@ class CheckNationalIdView(APIView):
         
         return Response({
             "exists": exists,
-            "message": "National ID is already registered" if exists else "National ID is available"
+            "message": _("National ID is already registered") if exists else _("National ID is available")
         })
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -558,7 +559,7 @@ class LogoutView(APIView):
             Session.objects.filter(session_key=request.session.session_key).delete()
             
             return Response(
-                {"message": "Logged out successfully."},
+                {"message": _("Logged out successfully.")},
                 status=status.HTTP_200_OK,
             )
         except Exception as e:

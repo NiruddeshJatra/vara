@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import AuthService from "@/services/auth.service";
 import { LoginData } from '@/types/auth';
-import { validateLoginForm } from '@/utils/validations';
+import { validateLoginForm } from '@/utils/validations/auth.validations';
 
 const Login = () => {
   const [email, setEmail] = useState("");

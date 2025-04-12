@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Rental, RentalPhoto
+from django.utils.translation import gettext_lazy as _
 
 
 class RentalSerializer(serializers.ModelSerializer):
@@ -43,21 +44,26 @@ class RentalSerializer(serializers.ModelSerializer):
             if duration <= 0:
                 print("\nError: Duration must be greater than 0")
                 raise serializers.ValidationError({
-                    'duration': 'Duration must be greater than 0'
+                    'duration': _('Duration must be greater than 0')
                 })
             
             if duration_unit not in ['day', 'week', 'month']:
                 print("\nError: Invalid duration unit. Must be one of: day, week, month")
                 raise serializers.ValidationError({
-                    'duration_unit': 'Invalid duration unit. Must be one of: day, week, month'
+                    'duration_unit': _('Invalid duration unit. Must be one of: day, week, month')
                 })
 
         # Validate start_time and end_time
         if 'start_time' in data and 'end_time' in data:
             if data['start_time'] >= data['end_time']:
-                print("\nError: End time must be after start time")
                 raise serializers.ValidationError({
-                    'end_time': 'End time must be after start time'
+                    'end_time': _('End time must be after start time')
+                })
+
+            from django.utils import timezone
+            if data['start_time'] < timezone.now():
+                raise serializers.ValidationError({
+                    'start_time': _('Start time cannot be in the past')
                 })
 
         print("\nRental data validation passed")
@@ -69,3 +75,18 @@ class RentalPhotoSerializer(serializers.ModelSerializer):
         model = RentalPhoto
         fields = ['id', 'photo', 'photo_type', 'created_at']
         read_only_fields = ['created_at']
+
+    def validate_photo(self, value):
+        """
+        Validate the photo file
+        """
+        # Check file size
+        if value.size > 5 * 1024 * 1024:  # 5MB
+            raise serializers.ValidationError(_("Photo size cannot exceed 5MB"))
+
+        # Check file type
+        allowed_types = ['image/jpeg', 'image/png', 'image/jpg']
+        if value.content_type not in allowed_types:
+            raise serializers.ValidationError(_("Only JPEG and PNG files are allowed"))
+
+        return value

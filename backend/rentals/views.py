@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.utils import timezone
 from django.db import transaction
+from django.utils.translation import gettext_lazy as _
 from .models import Rental, RentalPhoto
 from .serializers import RentalSerializer, RentalPhotoSerializer
 from django.db.models import Q
@@ -53,7 +54,7 @@ class RentalViewSet(viewsets.ModelViewSet):
         if request.user == serializer.validated_data['product'].owner:
             print("\nError: User is trying to rent their own product")
             return Response(
-                {"error": "You cannot rent your own product"},
+                {"error": _("You cannot rent your own product")},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -71,7 +72,7 @@ class RentalViewSet(viewsets.ModelViewSet):
         ).exists():
             print("\nError: Product is not available during the selected period")
             return Response(
-                {"error": "Product is not available during the selected period"},
+                {"error": _("Product is not available during the selected period")},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -87,7 +88,7 @@ class RentalViewSet(viewsets.ModelViewSet):
             rental.status_history.append({
                 "status": "pending",
                 "timestamp": timezone.now().isoformat(),
-                "note": "Rental request created"
+                "note": _("Rental request created")
             })
             rental.save()
             print(f"\nSuccessfully created rental {rental.id}")
@@ -117,17 +118,17 @@ class RentalViewSet(viewsets.ModelViewSet):
         try:
             if rental.status != 'pending':
                 raise ValidationError(
-                    "Rental must be in pending status to accept")
+                    _("Rental must be in pending status to accept"))
 
             rental.status = 'accepted'
             rental.status_history.append({
                 "status": "accepted",
                 "timestamp": timezone.now().isoformat(),
-                "note": "Rental request accepted"
+                "note": _("Rental request accepted")
             })
             rental.save()
 
-            return Response({"status": "Rental accepted"})
+            return Response({"status": _("Rental accepted")})
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -137,17 +138,17 @@ class RentalViewSet(viewsets.ModelViewSet):
         try:
             if rental.status != 'pending':
                 raise ValidationError(
-                    "Rental must be in pending status to reject")
+                    _("Rental must be in pending status to reject"))
 
             rental.status = 'rejected'
             rental.status_history.append({
                 "status": "rejected",
                 "timestamp": timezone.now().isoformat(),
-                "note": f"Rental request rejected: {request.data.get('reason', 'No reason provided')}"
+                "note": _("Rental request rejected: {reason}").format(reason=request.data.get('reason', _('No reason provided')))
             })
             rental.save()
 
-            return Response({"status": "Rental rejected"})
+            return Response({"status": _("Rental rejected")})
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -157,21 +158,21 @@ class RentalViewSet(viewsets.ModelViewSet):
         try:
             if rental.status not in ["pending", "accepted"]:
                 raise ValidationError(
-                    "Can only cancel pending or accepted rentals")
+                    _("Can only cancel pending or accepted rentals"))
 
             if rental.start_time < timezone.now():
                 raise ValidationError(
-                    "Cannot cancel after rental period has started")
+                    _("Cannot cancel after rental period has started"))
 
             rental.status = "cancelled"
             rental.status_history.append({
                 "status": "cancelled",
                 "timestamp": timezone.now().isoformat(),
-                "note": "Rental cancelled by renter"
+                "note": _("Rental cancelled by renter")
             })
             rental.save()
 
-            return Response({"status": "Rental cancelled"})
+            return Response({"status": _("Rental cancelled")})
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 

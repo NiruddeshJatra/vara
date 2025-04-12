@@ -185,6 +185,7 @@ const Rentals = () => {
     toast({
       title: "Action taken",
       description: `${action} action for rental #${rentalId} was successful.`,
+      variant: "default"
     });
   };
 

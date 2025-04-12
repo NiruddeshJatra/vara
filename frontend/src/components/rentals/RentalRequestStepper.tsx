@@ -5,8 +5,11 @@ import ProductDetailsStep from './steps/ProductDetailsStep';
 import PriceCalculationStep from './steps/PriceCalculationStep';
 import AdditionalDetailsStep from './steps/AdditionalDetailsStep';
 import ConfirmationStep from './steps/ConfirmationStep';
-import { FormErrors, DurationUnit, AvailabilityPeriod, Product, RentalRequestFormData } from '@/types/listings';
+import { Product } from '@/types/listings';
+import { RentalRequestFormData, RentalErrors } from '@/types/rentals';
+import { DurationUnit } from '@/constants/rental';
 import rentalService from '@/services/rental.service';
+import { validateRentalDetails, validateAdditionalDetails, validateAllRentalSteps } from '@/utils/validations/rental.validations';
 
 interface Props {
   product: Product;
@@ -27,11 +30,8 @@ const RentalRequestStepper = ({ product }: Props) => {
     durationUnit: pricingTier.durationUnit,
     purpose: '',
     notes: '',
-    pickupMethod: 'self',
-    deliveryAddress: '',
-    deliveryTime: null,
   });
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [errors, setErrors] = useState<RentalErrors>({});
 
   const calculateTotalCost = () => {
     // Find pricing tier that matches the selected duration unit
@@ -48,41 +48,16 @@ const RentalRequestStepper = ({ product }: Props) => {
   };
 
   const validateStep = () => {
-    const newErrors: FormErrors = {};
+    const selectedTier = product.pricingTiers?.find(tier => tier.durationUnit === formData.durationUnit) || pricingTier;
+    
     switch(currentStep) {
       case 1:
-        if (!formData.startDate) {
-          newErrors.startDate = 'Start date is required';
-        } else if (formData.startDate < new Date()) {
-          newErrors.startDate = 'Start date must be in the future';
-        }
-        
-        // Find pricing tier that matches the selected duration unit
-        const selectedTier = product.pricingTiers?.find(tier => tier.durationUnit === formData.durationUnit) || pricingTier;
-        
-        if (formData.duration < 1) {
-          newErrors.duration = 'Minimum duration is 1';
-        }
-        if (selectedTier.maxPeriod && formData.duration > selectedTier.maxPeriod) {
-          newErrors.duration = `Maximum ${selectedTier.maxPeriod} ${selectedTier.durationUnit}s`;
-        }
-        
-        // Check for unavailable dates
-        if (formData.startDate) {
-          const conflictingDates = checkDateConflicts(formData.startDate, formData.duration, formData.durationUnit);
-          if (conflictingDates) {
-            newErrors.startDate = 'Selected period includes unavailable dates';
-          }
-        }
-        break;
+        return validateRentalDetails(formData, selectedTier.maxPeriod, selectedTier.durationUnit);
       case 3:
-        if (!formData.purpose) newErrors.purpose = 'Purpose is required';
-        if (formData.pickupMethod === 'delivery' && !formData.deliveryAddress) {
-          newErrors.deliveryAddress = 'Delivery address is required';
-        }
-        break;
+        return validateAdditionalDetails(formData);
+      default:
+        return {};
     }
-    return newErrors;
   };
   
   // Helper function to check if the selected dates conflict with unavailable dates

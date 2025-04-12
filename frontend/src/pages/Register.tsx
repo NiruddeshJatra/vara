@@ -6,7 +6,7 @@ import NavBar from '@/components/home/NavBar';
 import BasicInfoStep from '@/components/auth/steps/BasicInfoStep';
 import { RegistrationData, RegistrationFormErrors } from '@/types/auth';
 import { useAuth } from '@/contexts/AuthContext';
-import { validateRegistrationForm } from '@/utils/validations';
+import { validateRegistrationForm } from '@/utils/validations/auth.validations';
 
 
 const Register = () => {

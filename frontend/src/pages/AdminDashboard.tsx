@@ -506,6 +506,7 @@ const AdminDashboard = () => {
                     onClick={() => toast({
                       title: "View all activity",
                       description: "Full activity log will be available soon",
+                      variant: "default",
                     })}
                   >
                     View All Activity
@@ -710,4 +711,4 @@ const styles = `
 .animate-slide-left {
   animation: slideLeft 0.3s ease-out forwards;
 }
-`; 
+`;

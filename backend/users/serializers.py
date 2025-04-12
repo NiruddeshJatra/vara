@@ -3,6 +3,7 @@ import re
 from .models import CustomUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from .email_service import send_verification_email
+from django.utils.translation import gettext_lazy as _
 
 
 class ProfilePictureSerializer(serializers.ModelSerializer):
@@ -30,11 +31,11 @@ class ProfilePictureSerializer(serializers.ModelSerializer):
         """
         try:
             if value.size > 5 * 1024 * 1024:  # 5MB limit
-                raise serializers.ValidationError("Image size cannot exceed 5MB")
+                raise serializers.ValidationError(_("Image size cannot exceed 5MB"))
         
         except AttributeError as e:
             raise serializers.ValidationError(
-                "Invalid file upload"
+                _("Invalid file upload")
             ) from e
 
         return value
@@ -78,15 +79,15 @@ class CustomRegisterSerializer(serializers.ModelSerializer):
         """
         # Check if passwords match
         if data["password1"] != data["password2"]:
-            raise serializers.ValidationError("Passwords do not match")
+            raise serializers.ValidationError(_("Passwords do not match"))
 
         # Check if username is already taken
         if CustomUser.objects.filter(username=data["username"]).exists():
-            raise serializers.ValidationError("Username is already taken")
+            raise serializers.ValidationError(_("Username is already taken"))
 
         # Check if email is already taken
         if CustomUser.objects.filter(email=data["email"]).exists():
-            raise serializers.ValidationError("Email is already registered")
+            raise serializers.ValidationError(_("Email is already registered"))
 
         return data
 
@@ -205,7 +206,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         if phone_number:
             # Basic phone number validation (can be enhanced)
             if not re.match(r'^\+?1?\d{9,15}$', phone_number):
-                raise serializers.ValidationError("Invalid phone number format")
+                raise serializers.ValidationError(_("Invalid phone number format"))
         return phone_number
 
     def validate_date_of_birth(self, date_of_birth):
@@ -228,10 +229,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
             age = today.year - date_of_birth.year - ((today.month, today.day) < (date_of_birth.month, date_of_birth.day))
             
             if age < 18:
-                raise serializers.ValidationError("You must be at least 18 years old to use this service")
+                raise serializers.ValidationError(_("You must be at least 18 years old to use this service"))
             
             if age > 120:
-                raise serializers.ValidationError("Please enter a valid date of birth")
+                raise serializers.ValidationError(_("Please enter a valid date of birth"))
                 
         return date_of_birth
 
@@ -300,7 +301,7 @@ class ProfileCompletionSerializer(serializers.ModelSerializer):
         """
         if phone_number:
             if not re.match(r"^(\+?88)?01[5-9]\d{8}$", phone_number):
-                raise serializers.ValidationError("Invalid phone number format")
+                raise serializers.ValidationError(_("Invalid phone number format"))
         return phone_number
 
     def validate(self, data):
@@ -328,7 +329,9 @@ class ProfileCompletionSerializer(serializers.ModelSerializer):
         for field in required_fields:
             if not data.get(field):
                 raise serializers.ValidationError({
-                    field: f"{field.replace('_', ' ').title()} is required for profile completion"
+                    field: _("{field} is required for profile completion").format(
+                        field=field.replace('_', ' ').title()
+                    )
                 })
         
         return data
@@ -369,5 +372,5 @@ class ProfileCompletionSerializer(serializers.ModelSerializer):
         if value:
             # Check if the national ID number is already in use
             if CustomUser.objects.filter(national_id_number=value).exclude(id=self.instance.id if self.instance else None).exists():
-                raise serializers.ValidationError("This national ID number is already registered")
+                raise serializers.ValidationError(_("This national ID number is already registered"))
         return value

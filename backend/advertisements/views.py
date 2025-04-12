@@ -6,6 +6,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.db.models import Q
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
+from django.utils.translation import gettext_lazy as _
 from .models import Product, ProductImage
 from .serializers import (
     ProductSerializer,
@@ -13,11 +14,8 @@ from .serializers import (
 )
 from .permissions import IsOwnerOrReadOnly
 from django.core.files.storage import default_storage
-import logging
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
-
-logger = logging.getLogger(__name__)
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -53,7 +51,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        logger.info(f"CREATE method called on ProductViewSet")
+        print("CREATE method called on ProductViewSet")
         try:
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
@@ -65,18 +63,18 @@ class ProductViewSet(viewsets.ModelViewSet):
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            logger.error(f"Error creating product: {str(e)}")
+            print(f"Error creating product: {str(e)}")
             return Response(
-                {"error": "An unexpected error occurred"},
+                {"error": _("An unexpected error occurred")},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
             
     @transaction.atomic
     def update(self, request, *args, **kwargs):
-        logger.info(f"Update method called with data: {request.data}")
+        print(f"Update method called with data: {request.data}")
         
         instance = self.get_object()
-        logger.info(f"Updating product with ID: {instance.id}")
+        print(f"Updating product with ID: {instance.id}")
         
         partial = kwargs.pop('partial', False)
         serializer = self.get_serializer(
@@ -86,14 +84,19 @@ class ProductViewSet(viewsets.ModelViewSet):
             context={'request': request, 'is_update': True}  # Mark this as an update
         )
         
-        serializer.is_valid(raise_exception=True)
-        
-        # Log validated data
-        logger.info(f"Validated data: {serializer.validated_data}")
-        
-        self.perform_update(serializer)
-        
-        return Response(serializer.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+            print(f"Validated data: {serializer.validated_data}")
+            self.perform_update(serializer)
+            return Response(serializer.data)
+        except ValidationError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(f"Error updating product: {str(e)}")
+            return Response(
+                {"error": _("An unexpected error occurred while updating the product")},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user, status="draft")
@@ -107,6 +110,12 @@ class ProductViewSet(viewsets.ModelViewSet):
         new_status = request.data.get("status")
         status_message = request.data.get("status_message", "")
 
+        if not new_status:
+            return Response(
+                {"error": _("Status is required")},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         try:
             product.update_status(new_status, status_message)
             return Response(self.get_serializer(product).data)
@@ -118,7 +127,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         product = self.get_object()
         if not request.FILES.get("image"):
             return Response(
-                {"error": "No image provided"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": _("No image provided")}, status=status.HTTP_400_BAD_REQUEST
             )
 
         # Create image serializer with proper context for absolute URLs
@@ -130,11 +139,11 @@ class ProductViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             # Explicitly save to product_images related name
             image = serializer.save(product=product)
-            logger.info(f"Added image {image.id} to product {product.id}")
+            print(f"Added image {image.id} to product {product.id}")
             
             # Refresh the product from DB to ensure we get latest images
             product = Product.objects.get(id=product.id)
-            logger.info(f"Product now has {product.product_images.count()} images")
+            print(f"Product now has {product.product_images.count()} images")
             
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -144,6 +153,12 @@ class ProductViewSet(viewsets.ModelViewSet):
         product = self.get_object()
         image_id = request.data.get("image_id")
 
+        if not image_id:
+            return Response(
+                {"error": _("Image ID is required")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         try:
             image = product.images.get(id=image_id)
             if image.image:
@@ -152,7 +167,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except ProductImage.DoesNotExist:
             return Response(
-                {"error": "Image not found"}, status=status.HTTP_404_NOT_FOUND
+                {"error": _("Image not found")}, status=status.HTTP_404_NOT_FOUND
             )
 
     @action(detail=True, methods=["get"])
@@ -168,7 +183,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             elif start_date and end_date:
                 is_available = product.is_date_range_available(start_date, end_date)
             else:
-                raise ValidationError("Provide either date or start_date and end_date")
+                raise ValidationError(_("Provide either date or start_date and end_date"))
 
             return Response({"available": is_available})
         except ValidationError as e:
@@ -182,7 +197,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         try:
             if not duration or not unit:
-                raise ValidationError("Provide duration and unit")
+                raise ValidationError(_("Provide duration and unit"))
 
             price = product.calculate_price(int(duration), unit)
             return Response({"price": price})
@@ -200,7 +215,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         product = self.get_object()
         try:
             product.submit_for_review()
-            return Response({"status": "submitted for review"})
+            return Response({"status": _("submitted for review")})
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 

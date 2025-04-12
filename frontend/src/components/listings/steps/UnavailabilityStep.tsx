@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, CalendarDays, Info, ChevronLeft, ChevronRight } from 'lucide-react';
+import { AlertCircle, CalendarDays, Info } from 'lucide-react';
 import { ListingFormData, FormError, UnavailableDate } from '@/types/listings';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -21,7 +21,6 @@ const UnavailabilityStep = ({ formData, errors, onChange, onNext, onBack }: Prop
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   // Convert UnavailableDate[] to Date[] for the calendar component
   const unavailableDatesAsDates = formData.unavailableDates
@@ -31,83 +30,37 @@ const UnavailabilityStep = ({ formData, errors, onChange, onNext, onBack }: Prop
   const handleSingleDateSelect = (selectedDate: Date | undefined) => {
     if (!selectedDate) return;
     
-    if (selectedDate < new Date()) {
-      setError("You can't select a date in the past.");
-      return;
-    }
+    const newUnavailableDate: UnavailableDate = {
+      id: '', // Will be set by the backend
+      date: selectedDate.toISOString(),
+      isRange: false,
+      rangeStart: null,
+      rangeEnd: null
+    };
     
-    // Check if date already exists
-    const dateExists = formData.unavailableDates.some(
-      date => date.date === selectedDate.toISOString()
-    );
-    
-    if (!dateExists) {
-      const newUnavailableDate: UnavailableDate = {
-        id: '', // Will be set by the backend
-        date: selectedDate.toISOString(),
-        isRange: false,
-        rangeStart: null,
-        rangeEnd: null
-      };
-      
-      onChange({
-        unavailableDates: [...formData.unavailableDates, newUnavailableDate],
-      });
-    }
+    onChange({
+      unavailableDates: [...formData.unavailableDates, newUnavailableDate],
+    });
     
     setDate(undefined);
   };
 
   const handleDateRangeSelect = (range: DateRange | undefined) => {
-    if (!range || !range.from) return;
+    if (!range || !range.from || !range.to) return;
     
     const newDates: UnavailableDate[] = [];
     const currentDate = new Date(range.from);
     
-    if (range.to) {
-      while (currentDate <= range.to) {
-        if (currentDate < new Date()) {
-          setError("You can't select a date in the past.");
-          return;
-        }
-        
-        // Check if date already exists
-        const dateExists = formData.unavailableDates.some(
-          date => date.date === currentDate.toISOString()
-        );
-        
-        if (!dateExists) {
-          newDates.push({
-            id: '', // Will be set by the backend
-            date: currentDate.toISOString(),
-            isRange: true,
-            rangeStart: range.from.toISOString(),
-            rangeEnd: range.to.toISOString()
-          });
-        }
-        
-        currentDate.setDate(currentDate.getDate() + 1);
-      }
-    } else {
-      if (range.from < new Date()) {
-        setError("You can't select a date in the past.");
-        return;
-      }
+    while (currentDate <= range.to) {
+      newDates.push({
+        id: '', // Will be set by the backend
+        date: currentDate.toISOString(),
+        isRange: true,
+        rangeStart: range.from.toISOString(),
+        rangeEnd: range.to.toISOString()
+      });
       
-      // Check if date already exists
-      const dateExists = formData.unavailableDates.some(
-        date => date.date === range.from.toISOString()
-      );
-      
-      if (!dateExists) {
-        newDates.push({
-          id: '', // Will be set by the backend
-          date: range.from.toISOString(),
-          isRange: false,
-          rangeStart: null,
-          rangeEnd: null
-        });
-      }
+      currentDate.setDate(currentDate.getDate() + 1);
     }
     
     if (newDates.length > 0) {
@@ -120,7 +73,6 @@ const UnavailabilityStep = ({ formData, errors, onChange, onNext, onBack }: Prop
   };
 
   const handleRemoveRange = (startDate: Date, endDate: Date) => {
-    // Create a new array without the dates in the range
     const newUnavailableDates = formData.unavailableDates.filter(date => {
       if (!date.date) return true;
       const dateTime = new Date(date.date).getTime();
@@ -223,9 +175,10 @@ const UnavailabilityStep = ({ formData, errors, onChange, onNext, onBack }: Prop
           </div>
         </div>
         
-        {error && (
+        {/* Display validation errors from props */}
+        {errors.unavailableDates && (
           <div className="text-red-500 flex items-center mt-2">
-            <AlertCircle size={16} className="mr-1" /> {error}
+            <AlertCircle size={16} className="mr-1" /> {errors.unavailableDates[0]}
           </div>
         )}
       </div>
@@ -256,4 +209,4 @@ const UnavailabilityStep = ({ formData, errors, onChange, onNext, onBack }: Prop
   );
 };
 
-export default UnavailabilityStep; 
+export default UnavailabilityStep;

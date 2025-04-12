@@ -1,17 +1,13 @@
 // components/rentals/steps/PriceCalculationStep.tsx
 import { ChevronLeft, ChevronRight, Calculator, Clock, Calendar, Banknote, Shield, BadgePercent } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { RentalRequestFormData, Product, DurationUnit } from '@/types/listings';
-import { useEffect } from 'react';
+import { RentalRequestFormData } from '@/types/rentals';
+import { Product } from '@/types/listings';
 import { format } from 'date-fns';
 
 interface Props {
   product: Product;
-  formData: RentalRequestFormData & {
-    totalCost: number;
-    serviceFee: number;
-    securityDeposit: number;
-  };
+  formData: RentalRequestFormData;
   onNext: () => void;
   onPrev: () => void;
 }
@@ -20,16 +16,11 @@ const PriceCalculationStep = ({ product, formData, onNext, onPrev }: Props) => {
   // Use the selected pricing tier from form data instead of defaulting to first one
   const selectedTier = product.pricingTiers?.find(
     (tier) => tier.durationUnit === formData.durationUnit
-  ) || { durationUnit: 'day' as DurationUnit, price: 0, maxPeriod: 30 };
+  ) || { durationUnit: 'day', price: 0, maxPeriod: 30 };
   
   // Use form data's security deposit instead of product's
   const securityDeposit = formData.securityDeposit || 0;
   const durationUnit = formData.durationUnit || 'day';
-  
-  useEffect(() => {
-    console.log('PriceCalculationStep - Product:', product);
-    console.log('PriceCalculationStep - Form data:', formData);
-  }, [product, formData]);
   
   const formatDate = (date: Date | null) => {
     if (!date) return 'Not set';
@@ -141,7 +132,7 @@ const PriceCalculationStep = ({ product, formData, onNext, onPrev }: Props) => {
           <div>
             <h3 className="text-lg font-semibold text-green-800">Total Cost</h3>
             <p className="text-sm text-green-700">
-              For {formData.duration} {durationUnit}{formData.duration > 1 ? 's' : ''}
+              For {formData.duration} {durationUnit}{formData.duration > 1 ? 's' : ''} 
             </p>
           </div>
           <div className="text-right">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
+import { AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import BasicDetailsStep from './steps/BasicDetailsStep';
 import ImageUploadStep from './steps/ImageUploadStep';
@@ -12,8 +12,16 @@ import { Category, ProductType } from '@/constants/productTypes';
 import { DURATION_UNIT_DISPLAY, DurationUnit } from '@/constants/rental';
 import { OwnershipHistory } from '@/constants/productAttributes';
 import productService from '@/services/product.service';
-import { toast } from 'react-hot-toast';
+import { toast } from '@/components/ui/use-toast';
 import { useLocation } from 'react-router-dom';
+import { 
+  validateBasicDetails, 
+  validateImageUpload, 
+  validateProductHistory, 
+  validatePricing, 
+  validateUnavailability,
+  validateAllSteps 
+} from '@/utils/validations/product.validations';
 
 interface ProductResponse {
   id: string;
@@ -78,73 +86,6 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [formData]);
 
-  const validateBasicDetails = (data: ListingFormData) => {
-    const newErrors: FormError = {};
-    if (!data.title) newErrors.title = ['Title is required'];
-    if (!data.productType) newErrors.productType = ['Product type is required'];
-    if (!data.description) newErrors.description = ['Description is required'];
-    if (!data.location) newErrors.location = ['Location is required'];
-    return newErrors;
-  };
-
-  const validateImageUpload = (data: ListingFormData) => {
-    const newErrors: FormError = {};
-    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-
-    if (data.images.length === 0) {
-      newErrors.images = ['At least one image required'];
-    } else {
-      // Check each image's size
-      data.images.forEach((file, index) => {
-        if (file.size > MAX_FILE_SIZE) {
-          newErrors.images = [`Image ${index + 1} is too large (${(file.size / (1024 * 1024)).toFixed(1)}MB). Maximum size is 5MB.`];
-        }
-      });
-    }
-    return newErrors;
-  };
-
-  const validateProductHistory = (data: ListingFormData) => {
-    const newErrors: FormError = {};
-    if (!data.purchaseYear) newErrors.purchaseYear = ['Purchase year is required'];
-    if (!data.originalPrice || data.originalPrice <= 0) newErrors.originalPrice = ['Original price is required and must be greater than 0'];
-    if (!data.ownershipHistory) newErrors.ownershipHistory = ['Ownership history is required'];
-    return newErrors;
-  };
-
-  const validatePricing = (data: ListingFormData) => {
-    const newErrors: FormError = {};
-
-    if (!data.pricingTiers || data.pricingTiers.length === 0) {
-      newErrors.pricingTiers = ['At least one pricing tier is required'];
-    } else {
-      // Check for duplicate duration units
-      const durationUnits = new Set();
-      data.pricingTiers.forEach((tier, index) => {
-        if (durationUnits.has(tier.durationUnit)) {
-          newErrors[`pricingTiers.${index}.durationUnit`] = ['Duplicate duration unit is not allowed'];
-        } else {
-          durationUnits.add(tier.durationUnit);
-        }
-
-        if (!tier.price || tier.price <= 0) {
-          newErrors[`pricingTiers.${index}.price`] = ['Price is required and must be greater than 0'];
-        }
-        if (tier.maxPeriod && tier.maxPeriod < 1) {
-          newErrors[`pricingTiers.${index}.maxPeriod`] = ['Maximum period must be at least 1'];
-        }
-      });
-    }
-
-    return newErrors;
-  };
-
-  const validateUnavailability = (data: ListingFormData) => {
-    const newErrors: FormError = {};
-    // Implementation of validateUnavailability
-    return newErrors;
-  };
-
   const handleNextStep = () => {
     let newErrors: FormError = {};
     setErrors({}); // Clear any existing errors before validation
@@ -156,10 +97,6 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
       newErrors = validateImageUpload(formData);
     } else if (currentStep === 3) {
       newErrors = validateProductHistory(formData);
-      if (Object.keys(newErrors).length > 0) {
-        setErrors(newErrors);
-        return;
-      }
     } else if (currentStep === 4) {
       newErrors = validatePricing(formData);
     } else if (currentStep === 5) {
@@ -186,25 +123,16 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
   };
 
   const handleSubmit = async () => {
-    // Validate all steps before submission
-    const basicDetailsErrors = validateBasicDetails(formData);
-    const imageErrors = validateImageUpload(formData);
-    const productHistoryErrors = validateProductHistory(formData);
-    const pricingErrors = validatePricing(formData);
-    const unavailabilityErrors = validateUnavailability(formData);
-
-    // Combine all errors
-    const allErrors = {
-      ...basicDetailsErrors,
-      ...imageErrors,
-      ...productHistoryErrors,
-      ...pricingErrors,
-      ...unavailabilityErrors
-    };
+    // Validate all steps using the combined validation
+    const allErrors = validateAllSteps(formData);
 
     if (Object.keys(allErrors).length > 0) {
       setErrors(allErrors);
-      toast.error('Please fix the errors before submitting');
+      toast({
+        title: "Validation Error",
+        description: "Please fix the errors before submitting",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -221,9 +149,17 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
         setProductId(response.id);
         setCurrentStep(6);
       }
-      toast.success(isEditing ? 'Listing updated successfully!' : 'Listing created successfully!');
+      toast({
+        title: "Success",
+        description: isEditing ? "Listing updated successfully!" : "Listing created successfully!",
+        variant: "default"
+      });
     } catch (error: any) {
-      toast.error(error instanceof Error ? error.message : 'Failed to save listing. Please try again.');
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save listing. Please try again.",
+        variant: "destructive"
+      });
 
       if (error.response?.data) {
         // Handle validation errors from the backend
@@ -317,6 +253,27 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
           </div>
 
           <form onSubmit={(e) => { e.preventDefault(); }} className="mt-4 md:mt-8">
+            {/* Display validation errors from backend */}
+            {Object.keys(errors).length > 0 && (
+              <div className="mb-6 space-y-2">
+                {Object.entries(errors).map(([key, value]) => (
+                  <div key={key} className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex items-start">
+                      <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 mr-2" />
+                      <div>
+                        <h3 className="text-sm font-medium text-red-800 capitalize">
+                          {key.split('_').join(' ')}
+                        </h3>
+                        <p className="text-sm text-red-700 mt-1">
+                          {Array.isArray(value) ? value[0] : value}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {currentStep === 1 && (
               <BasicDetailsStep
                 formData={formData}

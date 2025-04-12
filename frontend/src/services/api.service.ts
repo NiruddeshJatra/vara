@@ -94,6 +94,8 @@ class ApiService {
         // Handle product-specific errors
         if (error.response?.data && originalRequest.url?.includes('/products/')) {
           const errorData = error.response.data;
+          
+          // Log for debugging but format nicely for users
           console.error('Product API Error Details:', {
             status: error.response.status,
             data: errorData,
@@ -106,33 +108,40 @@ class ApiService {
           
           // Product validation errors
           if (error.response.status === 400) {
+            if (errorData.error) {
+              return Promise.reject(new Error(errorData.error));
+            }
+            
+            // Format field-specific errors nicely
+            const formattedErrors = [];
             if (errorData.images) {
-              return Promise.reject(new Error(`Image upload failed: ${errorData.images.join(', ')}`));
+              formattedErrors.push(`Images: ${errorData.images.join(', ')}`);
             }
             if (errorData.pricing_tiers) {
-              const pricingError = typeof errorData.pricing_tiers === 'string' 
-                ? errorData.pricing_tiers 
-                : JSON.stringify(errorData.pricing_tiers);
-              return Promise.reject(new Error(`Invalid pricing tiers: ${pricingError}`));
+              formattedErrors.push('Please add at least one pricing tier');
             }
             if (errorData.unavailable_dates) {
-              return Promise.reject(new Error(`Invalid date range: ${errorData.unavailable_dates}`));
+              formattedErrors.push('Please check your unavailable dates');
             }
             if (errorData.product_type) {
-              return Promise.reject(new Error(`Invalid product type: ${errorData.product_type}`));
+              formattedErrors.push(`Product type: ${errorData.product_type}`);
             }
             if (errorData.category) {
-              return Promise.reject(new Error(`Invalid category: ${errorData.category}`));
+              formattedErrors.push(`Category: ${errorData.category}`);
             }
             if (errorData.purchase_year) {
-              return Promise.reject(new Error(`Invalid purchase year: ${errorData.purchase_year}`));
+              formattedErrors.push(`Purchase year: ${errorData.purchase_year}`);
+            }
+
+            if (formattedErrors.length > 0) {
+              return Promise.reject(new Error(formattedErrors.join('\n')));
             }
           }
 
           // Product status errors
           if (error.response.status === 403) {
             if (errorData.detail?.includes('status')) {
-              return Promise.reject(new Error(`Cannot perform action in current status: ${errorData.detail}`));
+              return Promise.reject(new Error('This action is not allowed in the current status'));
             }
           }
         }

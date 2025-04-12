@@ -3,15 +3,17 @@ import { useState, useEffect } from 'react';
 import { AlertCircle, ChevronRight, Info, MapPin, Clock, CalendarDays, Tag, Shield, Banknote } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
-import { RentalRequestFormData, Product, FormErrors, DurationUnit } from '@/types/listings';
+import { RentalRequestFormData, RentalErrors } from '@/types/rentals';
+import { Product } from '@/types/listings';
 import { Badge } from '@/components/ui/badge';
 import { CATEGORY_DISPLAY, PRODUCT_TYPE_DISPLAY } from '@/constants/productTypes';
+import { DurationUnit } from '@/constants/rental';
 import { format } from 'date-fns';
 
 interface Props {
   product: Product;
   formData: RentalRequestFormData;
-  errors: FormErrors;
+  errors: RentalErrors;
   onChange: (data: Partial<RentalRequestFormData>) => void;
   onNext: () => void;
 }

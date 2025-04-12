@@ -104,12 +104,13 @@ const ProfileListings = () => {
       toast({
         title: "Success",
         description: "Listing deleted successfully.",
+        variant: "default"
       });
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to delete listing. Please try again.",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
@@ -230,4 +231,4 @@ const ProfileListings = () => {
   );
 };
 
-export default ProfileListings; 
+export default ProfileListings;
