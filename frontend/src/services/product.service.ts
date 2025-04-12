@@ -3,75 +3,81 @@ import { ProductStatus } from '../constants/productStatus';
 import { Product, ListingFormData } from '../types/listings';
 import config from '../config';
 
+interface ProductResponse {
+  data: any;
+  results?: any[];
+}
+
 /**
  * Service for handling product-related operations
  */
 class ProductService {
+  /**
+   * Transform a raw product from API to frontend format
+   * @param product Raw product data from API
+   * @returns Transformed product
+   */
+  private transformProduct(product: any): Product {
+    const productImages = product.productImages || [];
+    
+    const images = productImages.map((img: any) => ({
+      ...img,
+      image: this.ensureFullImageUrl(img.image)
+    }));
+
+    const pricingTiers = (product.pricing_tiers || product.pricingTiers || []).map((tier: any) => ({
+      ...tier,
+      durationUnit: tier.duration_unit || tier.durationUnit,
+      maxPeriod: tier.max_period || tier.maxPeriod
+    }));
+
+    const unavailableDates = (product.unavailable_dates || product.unavailableDates || []).map((date: any) => ({
+      ...date,
+      isRange: date.is_range || date.isRange,
+      rangeStart: date.range_start || date.rangeStart,
+      rangeEnd: date.range_end || date.rangeEnd
+    }));
+
+    return {
+      ...product,
+      productType: product.product_type || product.productType,
+      securityDeposit: product.security_deposit || product.securityDeposit,
+      purchaseYear: product.purchase_year || product.purchaseYear,
+      originalPrice: product.original_price || product.originalPrice,
+      ownershipHistory: product.ownership_history || product.ownershipHistory,
+      statusMessage: product.status_message || product.statusMessage,
+      statusChangedAt: product.status_changed_at || product.statusChangedAt,
+      viewsCount: product.views_count || product.viewsCount,
+      rentalCount: product.rental_count || product.rentalCount,
+      averageRating: product.average_rating ? parseFloat(product.average_rating) : (product.averageRating || 0),
+      createdAt: product.created_at || product.createdAt,
+      updatedAt: product.updated_at || product.updatedAt,
+      images,
+      pricingTiers,
+      unavailableDates
+    };
+  }
+
+  /**
+   * Extract products from API response
+   * @param response API response
+   * @returns Array of raw products
+   */
+  private extractProducts(response: ProductResponse): any[] {
+    return Array.isArray(response.data) ? response.data : (response.data.results || []);
+  }
+
   /**
    * Get all active products (visible to all users)
    * @returns List of active products
    */
   async getActiveProducts(): Promise<Product[]> {
     try {
-      // Request all products by setting page_size to max_page_size
       const response = await api.get(config.products.listEndpoint, {
-        params: {
-          page_size: 100  // Request up to 100 products
-        }
+        params: { page_size: 100 }
       });
       
-      // Handle both array and paginated responses
-      const products = Array.isArray(response.data) 
-        ? response.data 
-        : (response.data.results || []);
-      
-      // Transform the response data to match the frontend's expected structure
-      return products.map((product: any) => {
-        // Fix: Use camelCase property name that matches the API response
-        const productImages = product.productImages || [];
-        
-        // Transform image URLs to be complete URLs if they're relative paths
-        const images = productImages.map((img: any) => ({
-          ...img,
-          image: this.ensureFullImageUrl(img.image)
-        }));
-        
-        // Transform pricing tiers - use camelCase from API response
-        const pricingTiers = product.pricingTiers?.map((tier: any) => ({
-          id: tier.id,
-          durationUnit: tier.durationUnit,
-          price: tier.price,
-          maxPeriod: tier.maxPeriod
-        })) || [];
-
-        // Transform unavailable dates - use camelCase from API response
-        const unavailableDates = product.unavailableDates?.map((date: any) => ({
-          id: date.id,
-          date: date.date,
-          isRange: date.isRange,
-          rangeStart: date.rangeStart,
-          rangeEnd: date.rangeEnd
-        })) || [];
-        
-        return {
-          ...product,
-          productType: product.productType,
-          securityDeposit: product.securityDeposit,
-          purchaseYear: product.purchaseYear,
-          originalPrice: product.originalPrice,
-          ownershipHistory: product.ownershipHistory,
-          statusMessage: product.statusMessage,
-          statusChangedAt: product.statusChangedAt,
-          viewsCount: product.viewsCount,
-          rentalCount: product.rentalCount,
-          averageRating: product.averageRating,
-          createdAt: product.createdAt,
-          updatedAt: product.updatedAt,
-          images: images,
-          pricingTiers: pricingTiers,
-          unavailableDates: unavailableDates
-        };
-      });
+      return this.extractProducts(response).map(product => this.transformProduct(product));
     } catch (error) {
       console.error("Error fetching products:", error);
       return [];
@@ -114,46 +120,7 @@ class ProductService {
   async getUserProducts(): Promise<Product[]> {
     try {
       const response = await api.get(config.products.userProductsEndpoint);
-      const products = response.data.results || response.data;
-      
-      return products.map((product: any) => {
-        // Fix: Use camelCase property name that matches the API response
-        const productImages = product.productImages || [];
-        
-        // Transform image URLs to be complete URLs if they're relative paths
-        const images = productImages.map((img: any) => ({
-          ...img,
-          image: this.ensureFullImageUrl(img.image)
-        }));
-        
-        return {
-          ...product,
-          productType: product.product_type,
-          securityDeposit: product.security_deposit,
-          purchaseYear: product.purchase_year,
-          originalPrice: product.original_price,
-          ownershipHistory: product.ownership_history,
-          statusMessage: product.status_message,
-          statusChangedAt: product.status_changed_at,
-          viewsCount: product.views_count,
-          rentalCount: product.rental_count,
-          averageRating: product.average_rating ? parseFloat(product.average_rating) : 0,
-          createdAt: product.created_at,
-          updatedAt: product.updated_at,
-          images: images,
-          unavailableDates: product.unavailable_dates?.map((date: any) => ({
-            ...date,
-            isRange: date.is_range,
-            rangeStart: date.range_start,
-            rangeEnd: date.range_end
-          })) || [],
-          pricingTiers: product.pricing_tiers?.map((tier: any) => ({
-            ...tier,
-            durationUnit: tier.duration_unit,
-            maxPeriod: tier.max_period
-          })) || []
-        };
-      });
+      return this.extractProducts(response).map(product => this.transformProduct(product));
     } catch (error) {
       console.error("Error fetching user products:", error);
       return [];
@@ -168,44 +135,7 @@ class ProductService {
   async getProduct(productId: string): Promise<Product> {
     try {
       const response = await api.get(config.products.detailEndpoint(productId));
-      const product = response.data;
-      
-      // Fix: Use camelCase property name that matches the API response
-      const productImages = product.productImages || [];
-      
-      // Transform image URLs to be complete URLs if they're relative paths
-      const images = productImages.map((img: any) => ({
-        ...img,
-        image: this.ensureFullImageUrl(img.image)
-      }));
-      
-      return {
-        ...product,
-        productType: product.product_type,
-        securityDeposit: product.security_deposit,
-        purchaseYear: product.purchase_year,
-        originalPrice: product.original_price,
-        ownershipHistory: product.ownership_history,
-        statusMessage: product.status_message,
-        statusChangedAt: product.status_changed_at,
-        viewsCount: product.views_count,
-        rentalCount: product.rental_count,
-        averageRating: product.average_rating ? parseFloat(product.average_rating) : 0,
-        createdAt: product.created_at,
-        updatedAt: product.updated_at,
-        images: images,
-        unavailableDates: product.unavailable_dates?.map((date: any) => ({
-          ...date,
-          isRange: date.is_range,
-          rangeStart: date.range_start,
-          rangeEnd: date.range_end
-        })) || [],
-        pricingTiers: product.pricing_tiers?.map((tier: any) => ({
-          ...tier,
-          durationUnit: tier.duration_unit,
-          maxPeriod: tier.max_period
-        })) || []
-      };
+      return this.transformProduct(response.data);
     } catch (error) {
       console.error(`Error fetching product ${productId}:`, error);
       throw error;
@@ -462,8 +392,6 @@ class ProductService {
     });
     return response.data.average_rating;
   }
-
-  
 }
 
 export default new ProductService();

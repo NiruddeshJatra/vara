@@ -1,6 +1,11 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
-import { toast } from 'sonner';
-import config from '../config';
+import axios, {
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosError,
+  AxiosResponse,
+} from "axios";
+import { toast } from "@/components/ui/use-toast";
+import config from "../config";
 
 /**
  * Creates a configured Axios instance for API calls
@@ -16,7 +21,7 @@ class ApiService {
       baseURL: config.apiUrl,
       withCredentials: true,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
@@ -50,21 +55,28 @@ class ApiService {
         return response;
       },
       async (error: AxiosError) => {
-        const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
+        const originalRequest = error.config as AxiosRequestConfig & {
+          _retry?: boolean;
+        };
 
         // Handle 401 errors (unauthorized)
         if (
           error.response?.status === 401 &&
           !originalRequest._retry &&
           localStorage.getItem(config.auth.userStorageKey) &&
-          !(originalRequest.url && originalRequest.url.includes('complete_profile'))
+          !(
+            originalRequest.url &&
+            originalRequest.url.includes("complete_profile")
+          )
         ) {
           originalRequest._retry = true;
 
           try {
-            const refreshToken = localStorage.getItem(config.auth.refreshTokenStorageKey);
+            const refreshToken = localStorage.getItem(
+              config.auth.refreshTokenStorageKey
+            );
             if (!refreshToken) {
-              throw new Error('No refresh token available');
+              throw new Error("No refresh token available");
             }
 
             const refreshResponse = await axios.post(
@@ -74,42 +86,60 @@ class ApiService {
             );
 
             if (refreshResponse.data.access && originalRequest.headers) {
-              localStorage.setItem(config.auth.tokenStorageKey, refreshResponse.data.access);
+              localStorage.setItem(
+                config.auth.tokenStorageKey,
+                refreshResponse.data.access
+              );
               originalRequest.headers.Authorization = `Bearer ${refreshResponse.data.access}`;
               return this.api(originalRequest);
             }
           } catch (refreshError) {
-            if (!(originalRequest.url && originalRequest.url.includes('complete_profile'))) {
+            if (
+              !(
+                originalRequest.url &&
+                originalRequest.url.includes("complete_profile")
+              )
+            ) {
               localStorage.removeItem(config.auth.userStorageKey);
               localStorage.removeItem(config.auth.tokenStorageKey);
               localStorage.removeItem(config.auth.refreshTokenStorageKey);
-              toast.error('Your session has expired. Please log in again.');
-              window.location.href = '/login';
+              toast({
+                title: "Error",
+                description:
+                  error instanceof Error
+                    ? error.message
+                    : "Your session has expired. Please log in again.",
+                variant: "destructive",
+              });
+              window.location.href = "/login";
             }
             return Promise.reject(refreshError);
           }
         }
 
         // Handle product-specific errors
-        if (error.response?.data && originalRequest.url?.includes('/products/')) {
+        if (
+          error.response?.data &&
+          originalRequest.url?.includes("/products/")
+        ) {
           const errorData = error.response.data;
-          
+
           // Product validation errors
           if (error.response.status === 400) {
             if (errorData.error) {
               return Promise.reject(new Error(errorData.error));
             }
-            
+
             // Format field-specific errors nicely
             const formattedErrors = [];
             if (errorData.images) {
-              formattedErrors.push(`Images: ${errorData.images.join(', ')}`);
+              formattedErrors.push(`Images: ${errorData.images.join(", ")}`);
             }
             if (errorData.pricing_tiers) {
-              formattedErrors.push('Please add at least one pricing tier');
+              formattedErrors.push("Please add at least one pricing tier");
             }
             if (errorData.unavailable_dates) {
-              formattedErrors.push('Please check your unavailable dates');
+              formattedErrors.push("Please check your unavailable dates");
             }
             if (errorData.product_type) {
               formattedErrors.push(`Product type: ${errorData.product_type}`);
@@ -122,14 +152,16 @@ class ApiService {
             }
 
             if (formattedErrors.length > 0) {
-              return Promise.reject(new Error(formattedErrors.join('\n')));
+              return Promise.reject(new Error(formattedErrors.join("\n")));
             }
           }
 
           // Product status errors
           if (error.response.status === 403) {
-            if (errorData.detail?.includes('status')) {
-              return Promise.reject(new Error('This action is not allowed in the current status'));
+            if (errorData.detail?.includes("status")) {
+              return Promise.reject(
+                new Error("This action is not allowed in the current status")
+              );
             }
           }
         }
@@ -137,7 +169,7 @@ class ApiService {
         // Handle other API errors
         if (error.response?.data) {
           const errorData = error.response.data;
-          if (typeof errorData === 'string') {
+          if (typeof errorData === "string") {
             return Promise.reject(new Error(errorData));
           } else if (errorData.detail) {
             return Promise.reject(new Error(errorData.detail));
@@ -148,12 +180,18 @@ class ApiService {
           } else {
             const errorMessages = Object.entries(errorData)
               .map(([field, message]) => `${field}: ${message}`)
-              .join(', ');
-            return Promise.reject(new Error(`Validation error: ${errorMessages}`));
+              .join(", ");
+            return Promise.reject(
+              new Error(`Validation error: ${errorMessages}`)
+            );
           }
         }
 
-        return Promise.reject(new Error('Network error. Please check your connection and try again.'));
+        return Promise.reject(
+          new Error(
+            "Network error. Please check your connection and try again."
+          )
+        );
       }
     );
   }
@@ -163,11 +201,14 @@ class ApiService {
    */
   private transformToSnakeCase(obj: any): any {
     if (Array.isArray(obj)) {
-      return obj.map(item => this.transformToSnakeCase(item));
+      return obj.map((item) => this.transformToSnakeCase(item));
     }
-    if (obj !== null && typeof obj === 'object') {
+    if (obj !== null && typeof obj === "object") {
       return Object.keys(obj).reduce((acc: any, key: string) => {
-        const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+        const snakeKey = key.replace(
+          /[A-Z]/g,
+          (letter) => `_${letter.toLowerCase()}`
+        );
         acc[snakeKey] = this.transformToSnakeCase(obj[key]);
         return acc;
       }, {});
@@ -180,11 +221,13 @@ class ApiService {
    */
   private transformToCamelCase(obj: any): any {
     if (Array.isArray(obj)) {
-      return obj.map(item => this.transformToCamelCase(item));
+      return obj.map((item) => this.transformToCamelCase(item));
     }
-    if (obj !== null && typeof obj === 'object') {
+    if (obj !== null && typeof obj === "object") {
       return Object.keys(obj).reduce((acc: any, key: string) => {
-        const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+        const camelKey = key.replace(/_([a-z])/g, (_, letter) =>
+          letter.toUpperCase()
+        );
         acc[camelKey] = this.transformToCamelCase(obj[key]);
         return acc;
       }, {});
