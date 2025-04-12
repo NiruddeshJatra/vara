@@ -225,7 +225,7 @@ class ProductService {
       formData.append('title', data.title);
       formData.append('category', data.category);
       formData.append('product_type', data.productType);
-      formData.append('description', data.description);
+      formData.append('description', data.description || '');
       formData.append('location', data.location);
       if (data.securityDeposit !== null) {
         formData.append('security_deposit', String(data.securityDeposit));
@@ -235,12 +235,14 @@ class ProductService {
       formData.append('ownership_history', data.ownershipHistory);
 
       // Append images
-      data.images.forEach((image) => {
-        formData.append('images', image);
-      });
+      if (data.images?.length > 0) {
+        data.images.forEach((image) => {
+          formData.append('images', image);
+        });
+      }
 
       // Format and append unavailable dates
-      if (data.unavailableDates && data.unavailableDates.length > 0) {
+      if (data.unavailableDates?.length > 0) {
         const formattedDates = data.unavailableDates.map(date => ({
           date: date.date ? new Date(date.date).toISOString().split('T')[0] : null,
           is_range: date.isRange,
@@ -251,7 +253,7 @@ class ProductService {
       }
 
       // Format and append pricing tiers
-      if (data.pricingTiers && data.pricingTiers.length > 0) {
+      if (data.pricingTiers?.length > 0) {
         const formattedTiers = data.pricingTiers.map(tier => ({
           duration_unit: tier.durationUnit.toLowerCase(),
           price: tier.price,
@@ -267,7 +269,7 @@ class ProductService {
       });
       return response.data;
     } catch (error) {
-      console.error('Full API Error:', error);
+      console.error('\nAPI Error:', error);
       throw error;
     }
   }

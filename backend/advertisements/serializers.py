@@ -10,6 +10,7 @@ from .validators import (
     validate_pricing_tier,
 )
 from django.utils.translation import gettext_lazy as _
+import json
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -20,7 +21,6 @@ class ProductImageSerializer(serializers.ModelSerializer):
         fields = ["id", "image", "created_at"]
         read_only_fields = ["id", "created_at"]
 
-    # helps generate appropriate URLs whether the serializer is being used in an API view or a web view
     def get_image(self, obj):
         if obj.image:
             request = self.context.get("request")
@@ -79,10 +79,15 @@ class ProductSerializer(serializers.ModelSerializer):
     status_message = serializers.CharField(read_only=True)
     status_changed_at = serializers.DateTimeField(read_only=True)
 
-    # Unified fields that handle both read and write
-    images = serializers.ListField(child=serializers.ImageField(), required=False)
-    pricing_tiers = PricingTierSerializer(many=True, required=False)
-    unavailable_dates = UnavailableDateSerializer(many=True, required=False)
+    # For file uploads
+    images = serializers.ListField(
+        child=serializers.FileField(max_length=None, allow_empty_file=False, use_url=False),
+        required=False
+    )
+    
+    # For reading data
+    unavailable_dates = UnavailableDateSerializer(many=True, read_only=True)
+    pricing_tiers = PricingTierSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
@@ -128,6 +133,8 @@ class ProductSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.is_update = kwargs.get("instance") is not None
+        # Store the original data for custom processing
+        self._original_data = kwargs.get("data", {})
 
     def validate_images(self, value):
         for image in value:
@@ -152,46 +159,46 @@ class ProductSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        print("Create method called on ProductSerializer with data:", validated_data)
+        # Extract nested data
         images = validated_data.pop("images", [])
-        unavailable_dates = validated_data.pop("unavailable_dates", [])
-        pricing_tiers = validated_data.pop("pricing_tiers", [])
-        validated_data.pop("owner", None)
+        
+        # Process JSON fields directly from request data
+        unavailable_dates = []
+        pricing_tiers = []
+        
+        # Get original data (request data)
+        original_data = self.initial_data
+        
+        # Process unavailable dates
+        if 'unavailable_dates' in original_data:
+            try:
+                unavailable_dates_str = original_data['unavailable_dates']
+                if isinstance(unavailable_dates_str, list):
+                    unavailable_dates_str = unavailable_dates_str[0]  # Handle QueryDict lists
+                unavailable_dates = json.loads(unavailable_dates_str)
+            except Exception as e:
+                print(f"Error parsing unavailable dates: {str(e)}")
+        
+        # Process pricing tiers
+        if 'pricing_tiers' in original_data:
+            try:
+                pricing_tiers_str = original_data['pricing_tiers']
+                if isinstance(pricing_tiers_str, list):
+                    pricing_tiers_str = pricing_tiers_str[0]  # Handle QueryDict lists
+                pricing_tiers = json.loads(pricing_tiers_str)
+            except Exception as e:
+                print(f"Error parsing pricing tiers: {str(e)}")
+        
+        product = Product.objects.create(**validated_data)
 
-        print("Creating product with basic data")
-        product = Product.objects.create(
-            owner=self.context["request"].user, **validated_data
-        )
-        print("Product created with ID:", product.id)
-
-        print("Processing", len(images), "images")
         for image in images:
             ProductImage.objects.create(product=product, image=image)
 
-        print("Processing", len(unavailable_dates), "unavailable dates")
         for date_data in unavailable_dates:
-            try:
-                date = UnavailableDate.objects.create(product=product, **date_data)
-                print("Created unavailable date:", date)
-            except Exception as e:
-                print("Error creating unavailable date:", str(e))
-                raise
+            UnavailableDate.objects.create(product=product, **date_data)
 
-        print("Processing", len(pricing_tiers), "pricing tiers")
         for tier_data in pricing_tiers:
-            try:
-                tier = PricingTier.objects.create(product=product, **tier_data)
-                print("Created pricing tier:", tier)
-            except Exception as e:
-                print("Error creating pricing tier:", str(e))
-                raise
-
-        # Verify the related objects were created
-        print(
-            "Final counts - Images:", product.product_images.count(),
-            ", Dates:", product.unavailable_dates.count(),
-            ", Tiers:", product.pricing_tiers.count(),
-        )
+            PricingTier.objects.create(product=product, **tier_data)
 
         return product
 
@@ -199,35 +206,50 @@ class ProductSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         print(f"Update method called for product {instance.id}")
         images = validated_data.pop("images", None)
-        unavailable_dates = validated_data.pop("unavailable_dates", None)
-        pricing_tiers = validated_data.pop("pricing_tiers", None)
+        
+        # Process JSON fields directly from request data
+        unavailable_dates = None
+        pricing_tiers = None
+        
+        # Get original data (request data)
+        original_data = self.initial_data
+        
+        # Process unavailable dates
+        if 'unavailable_dates' in original_data:
+            try:
+                unavailable_dates_str = original_data['unavailable_dates']
+                if isinstance(unavailable_dates_str, list):
+                    unavailable_dates_str = unavailable_dates_str[0]  # Handle QueryDict lists
+                unavailable_dates = json.loads(unavailable_dates_str)
+                print(f"Parsed {len(unavailable_dates)} unavailable dates")
+            except Exception as e:
+                print(f"Error parsing unavailable dates: {str(e)}")
+        
+        # Process pricing tiers
+        if 'pricing_tiers' in original_data:
+            try:
+                pricing_tiers_str = original_data['pricing_tiers']
+                if isinstance(pricing_tiers_str, list):
+                    pricing_tiers_str = pricing_tiers_str[0]  # Handle QueryDict lists
+                pricing_tiers = json.loads(pricing_tiers_str)
+                print(f"Parsed {len(pricing_tiers)} pricing tiers")
+            except Exception as e:
+                print(f"Error parsing pricing tiers: {str(e)}")
 
-        # Update basic fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
 
-        # Handle images if provided
         if images:
             for image in images:
                 ProductImage.objects.create(product=instance, image=image)
 
-        # Handle unavailable dates if provided
         if unavailable_dates is not None:
-            # Validate all dates before deleting existing ones
-            for date_data in unavailable_dates:
-                validate_unavailable_date(date_data)
-
             UnavailableDate.objects.filter(product=instance).delete()
             for date_data in unavailable_dates:
                 UnavailableDate.objects.create(product=instance, **date_data)
 
-        # Handle pricing tiers if provided
         if pricing_tiers is not None:
-            # Validate all tiers before deleting existing ones
-            for tier_data in pricing_tiers:
-                validate_pricing_tier(tier_data)
-
             PricingTier.objects.filter(product=instance).delete()
             for tier_data in pricing_tiers:
                 PricingTier.objects.create(product=instance, **tier_data)

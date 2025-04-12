@@ -55,18 +55,6 @@ def validate_original_price(value):
     return value
 
 def validate_pricing_tier(data):
-    """
-    Unified validator that handles both single tier validation and array of tiers (JSON string or structured data).
-    
-    Args:
-        data: Can be:
-            - A string (JSON array of pricing tiers)
-            - A dict (single tier data)
-            - A list (array of tier data)
-    
-    Returns:
-        Validated and processed pricing tier data
-    """
     if isinstance(data, str):
         try:
             tiers = json.loads(data)
@@ -94,18 +82,6 @@ def validate_pricing_tier(data):
     return data
 
 def validate_unavailable_date(data):
-    """
-    Unified validator that handles both single date validation and array of dates (JSON string or structured data).
-    
-    Args:
-        data: Can be:
-            - A string (JSON array of dates)
-            - A dict (single date/range data)
-            - A list (array of date/range data)
-    
-    Returns:
-        Validated and processed date data
-    """
     if isinstance(data, str):
         try:
             dates = json.loads(data)

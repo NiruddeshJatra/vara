@@ -16,6 +16,7 @@ from .permissions import IsOwnerOrReadOnly
 from django.core.files.storage import default_storage
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
+import json
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -51,48 +52,39 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        print("CREATE method called on ProductViewSet")
         try:
             serializer = self.get_serializer(data=request.data)
+            
             serializer.is_valid(raise_exception=True)
+            
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
-            return Response(
-                serializer.data, status=status.HTTP_201_CREATED, headers=headers
-            )
-        except ValidationError as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         except Exception as e:
-            print(f"Error creating product: {str(e)}")
+            print("Error in create:", str(e))
             return Response(
-                {"error": _("An unexpected error occurred")},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
             
     @transaction.atomic
     def update(self, request, *args, **kwargs):
-        print(f"Update method called with data: {request.data}")
-        
         instance = self.get_object()
-        print(f"Updating product with ID: {instance.id}")
-        
         partial = kwargs.pop('partial', False)
         serializer = self.get_serializer(
             instance, 
             data=request.data, 
             partial=partial,
-            context={'request': request, 'is_update': True}  # Mark this as an update
+            context={'request': request, 'is_update': True}
         )
         
         try:
             serializer.is_valid(raise_exception=True)
-            print(f"Validated data: {serializer.validated_data}")
             self.perform_update(serializer)
             return Response(serializer.data)
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            print(f"Error updating product: {str(e)}")
             return Response(
                 {"error": _("An unexpected error occurred while updating the product")},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,

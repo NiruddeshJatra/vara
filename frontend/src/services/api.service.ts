@@ -35,7 +35,6 @@ class ApiService {
             reqConfig.data = this.transformToSnakeCase(reqConfig.data);
           }
         }
-
         return reqConfig;
       },
       (error: AxiosError) => Promise.reject(error)
@@ -94,17 +93,6 @@ class ApiService {
         // Handle product-specific errors
         if (error.response?.data && originalRequest.url?.includes('/products/')) {
           const errorData = error.response.data;
-          
-          // Log for debugging but format nicely for users
-          console.error('Product API Error Details:', {
-            status: error.response.status,
-            data: errorData,
-            request: {
-              url: originalRequest.url,
-              method: originalRequest.method,
-              data: originalRequest.data
-            }
-          });
           
           // Product validation errors
           if (error.response.status === 400) {
