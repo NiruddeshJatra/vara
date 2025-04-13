@@ -59,27 +59,6 @@ class RentalViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Check product availability
-            start_time = serializer.validated_data['start_time']
-            end_time = serializer.validated_data['end_time']
-            print(f"\nChecking availability for product {serializer.validated_data['product'].id}")
-            print(f"Start time: {start_time}, End time: {end_time}")
-
-            if Rental.objects.filter(
-                product=serializer.validated_data['product'],
-                status__in=['pending', 'accepted'],
-                start_time__lt=end_time,
-                end_time__gt=start_time
-            ).exists():
-                print("\nError: Product is not available during the selected period")
-                return Response(
-                    {
-                        "detail": force_str(_("Product is not available during the selected period")),
-                        "code": "product_unavailable"
-                    },
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
             # Create rental with transaction
             with transaction.atomic():
                 rental = serializer.save(

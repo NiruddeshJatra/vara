@@ -17,17 +17,19 @@ import { Link } from 'react-router-dom';
 
 const ConfirmationStep = () => {
   return (
-    <div className="space-y-6 md:space-y-8 px-2 py-6">
-      <div className="flex flex-col items-center text-center">
-        <div className="rounded-full bg-green-100 p-3 mb-4">
-          <CheckCircle2 className="h-12 w-12 text-green-600" />
+    <div className="space-y-6 md:space-y-8">
+      <div className="flex flex-col max-w-2xl">
+        <div className="flex flex-col items-center text-center mb-8">
+          <div className="rounded-full bg-green-100 p-3 mb-4">
+            <CheckCircle2 className="h-12 w-12 text-green-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-green-800 mb-2">Request Submitted</h2>
+          <p className="text-gray-600 max-w-md">
+            Your rental request has been submitted successfully. The owner will review your request shortly.
+          </p>
         </div>
-        <h2 className="text-2xl font-bold text-green-800 mb-2">Request Submitted</h2>
-        <p className="text-gray-600 max-w-md mb-6">
-          Your rental request has been submitted successfully. The owner will review your request shortly.
-        </p>
         
-        <div className="w-full max-w-md bg-green-50 rounded-lg p-6 mb-6 border border-green-100">
+        <div className="w-full bg-green-50 rounded-lg p-8 mb-6 border border-green-100">
           <h3 className="font-medium text-green-800 mb-3">What happens next?</h3>
           <ol className="space-y-3 text-sm text-left">
             <li className="flex items-start gap-2">
@@ -60,7 +62,7 @@ const ConfirmationStep = () => {
           </ol>
         </div>
         
-        <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+        <div className="flex flex-col sm:flex-row gap-4">
           <Button asChild className="bg-green-600 hover:bg-green-700 flex-1">
             <Link to="/rentals">
               View My Rentals

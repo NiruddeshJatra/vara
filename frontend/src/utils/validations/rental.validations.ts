@@ -1,6 +1,6 @@
 import { RentalRequestFormData, RentalErrors } from '@/types/rentals';
 import { UnavailableDate } from '@/types/listings';
-import { isWithinRange } from 'date-fns';
+import { isWithinInterval } from 'date-fns';
 import { DurationUnit } from '@/constants/rental';
 
 /**
@@ -16,7 +16,7 @@ export const validateRentalDetails = (
 
   // Start date validation
   if (!data.startDate) {
-    errors.startDate = ['Start date is required'];
+    errors.startDate = 'Start date is required';
   } else {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -24,23 +24,32 @@ export const validateRentalDetails = (
     startDate.setHours(0, 0, 0, 0);
 
     if (startDate < today) {
-      errors.startDate = ['Start date cannot be in the past'];
+      errors.startDate = 'Start date cannot be in the past';
     }
 
-    // Check if the date falls within any unavailable ranges
+    // Calculate end date for the rental period
+    const endDate = calculateEndDate(startDate, data.duration || 1, data.durationUnit || durationUnit);
+
+    // Check if any part of the rental period overlaps with unavailable dates
     if (unavailableDates?.length > 0) {
       for (const unavailable of unavailableDates) {
         if (unavailable.isRange && unavailable.rangeStart && unavailable.rangeEnd) {
-          const start = new Date(unavailable.rangeStart);
-          const end = new Date(unavailable.rangeEnd);
-          if (isWithinRange(startDate, start, end)) {
-            errors.startDate = ['This date is not available for rental'];
+          const unavailStart = new Date(unavailable.rangeStart);
+          const unavailEnd = new Date(unavailable.rangeEnd);
+          
+          // Check if rental period overlaps with unavailable range
+          if (
+            (startDate <= unavailEnd && endDate >= unavailStart) || // Rental period overlaps with unavailable range
+            (startDate >= unavailStart && endDate <= unavailEnd) // Rental period is within unavailable range
+          ) {
+            errors.startDate = 'The selected rental period overlaps with unavailable dates';
             break;
           }
         } else if (unavailable.date) {
           const unavailableDate = new Date(unavailable.date);
-          if (startDate.getTime() === unavailableDate.getTime()) {
-            errors.startDate = ['This date is not available for rental'];
+          // Check if single unavailable date falls within rental period
+          if (unavailableDate >= startDate && unavailableDate <= endDate) {
+            errors.startDate = 'The selected rental period includes unavailable dates';
             break;
           }
         }
@@ -50,16 +59,16 @@ export const validateRentalDetails = (
 
   // Duration validation
   if (!data.duration || data.duration < 1) {
-    errors.duration = ['Duration must be at least 1'];
+    errors.duration = 'Duration must be at least 1';
   } else if (maxPeriod && data.duration > maxPeriod) {
-    errors.duration = [`Maximum allowed duration is ${maxPeriod} ${durationUnit}${maxPeriod > 1 ? 's' : ''}`];
+    errors.duration = `Maximum allowed duration is ${maxPeriod} ${durationUnit}${maxPeriod > 1 ? 's' : ''}`;
   }
 
   // Duration unit validation
   if (!data.durationUnit) {
-    errors.durationUnit = ['Duration unit is required'];
+    errors.durationUnit = 'Duration unit is required';
   } else if (data.durationUnit !== durationUnit) {
-    errors.durationUnit = [`This item can only be rented by ${durationUnit}`];
+    errors.durationUnit = `This item can only be rented by ${durationUnit}`;
   }
 
   return errors;
@@ -73,16 +82,12 @@ export const validateAdditionalDetails = (data: RentalRequestFormData): RentalEr
 
   // Purpose validation
   if (!data.purpose) {
-    errors.purpose = ['Please specify the purpose of rental'];
-  } else if (data.purpose.length < 10) {
-    errors.purpose = ['Please provide more detail about your rental purpose'];
-  } else if (data.purpose.length > 500) {
-    errors.purpose = ['Purpose description is too long (maximum 500 characters)'];
+    errors.purpose = 'Please specify the purpose of rental';
   }
 
   // Notes validation (optional)
   if (data.notes && data.notes.length > 1000) {
-    errors.notes = ['Notes are too long (maximum 1000 characters)'];
+    errors.notes = 'Notes are too long (maximum 1000 characters)';
   }
 
   return errors;

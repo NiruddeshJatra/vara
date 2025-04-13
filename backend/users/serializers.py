@@ -63,6 +63,10 @@ class CustomRegisterSerializer(serializers.ModelSerializer):
             "marketing_consent",
             "profile_completed",
         ]
+        extra_kwargs = {
+            'password1': {'write_only': True},
+            'password2': {'write_only': True},
+        }
 
     def validate(self, data):
         """
@@ -101,18 +105,21 @@ class CustomRegisterSerializer(serializers.ModelSerializer):
         Returns:
             The created user instance
         """
-        # Remove password2 and other fields from validated_data
-        password = validated_data.pop("password1", None)
-        validated_data.pop("password2", None)
+        # Remove password fields from validated_data
+        password = validated_data.pop("password1")
+        validated_data.pop("password2")
         
-        # Create the user
-        user = CustomUser.objects.create_user(
+        # Create user instance but don't save to database yet
+        user = CustomUser(
             username=validated_data.get("username"),
             email=validated_data.get("email"),
-            password=password,
             marketing_consent=validated_data.get("marketing_consent", False),
             profile_completed=validated_data.get("profile_completed", False),
         )
+        
+        # Set password properly
+        user.set_password(password)
+        user.save()
         
         # Generate verification token and send email
         user.generate_verification_token()

@@ -123,11 +123,16 @@ const RentalRequestStepper = ({ product }: Props) => {
           });
           setErrors({});
         } catch (error: any) {
+          const errorMessage = error instanceof Error ? error.message : "Failed to submit rental request. Please try again.";
           toast({
-            title: "Error",
-            description: error instanceof Error ? error.message : "Failed to submit rental request. Please try again.",
+            title: "Request Failed",
+            description: errorMessage,
             variant: "destructive"
           });
+          // Update the form errors if they exist in the response
+          if (error.response?.data?.errors) {
+            setErrors(error.response.data.errors);
+          }
         } finally {
           setIsSubmitting(false);
           setLastSubmissionTime(null);

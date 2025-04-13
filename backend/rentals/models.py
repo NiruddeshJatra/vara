@@ -25,6 +25,14 @@ DURATION_UNIT_CHOICES = [
     ("month", _("Month")),
 ]
 
+# Rental purpose choices
+RENTAL_PURPOSE_CHOICES = [
+    ('event', 'Event/Party'),
+    ('personal', 'Personal Use'),
+    ('professional', 'Professional Use'),
+    ('other', 'Other'),
+]
+
 class Rental(models.Model):
     renter = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -66,13 +74,14 @@ class Rental(models.Model):
         help_text="Service fee amount"
     )
 
-    # Rental details
+    # Rental purpose
     purpose = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
+        max_length=20,
+        choices=RENTAL_PURPOSE_CHOICES,
         help_text="Purpose of the rental"
     )
+
+    # Rental details
     notes = models.TextField(
         blank=True,
         null=True,

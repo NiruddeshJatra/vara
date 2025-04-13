@@ -3,6 +3,7 @@
  */
 
 export type DurationUnit = 'day' | 'week' | 'month';
+export type RentalPurpose = 'event' | 'personal' | 'professional' | 'other';
 
 export enum RentalStatus {
   PENDING = 'pending',
@@ -19,6 +20,13 @@ export const DURATION_UNIT_DISPLAY: Record<DurationUnit, string> = {
   week: 'Week',
   month: 'Month'
 };
+
+export const RENTAL_PURPOSE_OPTIONS = [
+  { value: 'event', label: 'Event/Party' },
+  { value: 'personal', label: 'Personal Use' },
+  { value: 'professional', label: 'Professional Use' },
+  { value: 'other', label: 'Other' }
+] as const;
 
 export const RENTAL_STATUS_DISPLAY: Record<RentalStatus, string> = {
   [RentalStatus.PENDING]: 'Pending',
@@ -42,4 +50,4 @@ export const RENTAL_STATUS_ICONS: Record<RentalStatus, string> = {
   rejected: '❌',
   cancelled: '🚫',
   completed: '🏁'
-}; 
+};
