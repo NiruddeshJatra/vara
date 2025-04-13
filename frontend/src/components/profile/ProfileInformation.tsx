@@ -17,13 +17,12 @@ interface ProfileInformationProps {
     dob: string;
     bio: string;
     profilePicture: string;
-    isVerified: boolean;
   };
   isEditing: boolean;
   onSaveChanges: () => void;
   onCancelEdit: () => void;
   onInputChange: (field: string, value: string) => void;
-  onProfilePictureUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onProfilePictureUpload: (file: File) => void;
 }
 
 const ProfileInformation = ({
@@ -34,6 +33,22 @@ const ProfileInformation = ({
   onInputChange,
   onProfilePictureUpload
 }: ProfileInformationProps) => {
+  const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      // Create a preview URL for the UI
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === "string") {
+          onInputChange('profilePicture', reader.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+      // Call the upload handler with the file
+      onProfilePictureUpload(file);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -76,9 +91,6 @@ const ProfileInformation = ({
                     disabled
                     className="bg-green-50/70 pr-10 border-green-200 text-green-800"
                   />
-                  {userData.isVerified && (
-                    <CheckCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-green-600" />
-                  )}
                 </div>
               </div>
               
@@ -162,7 +174,7 @@ const ProfileInformation = ({
                             type="file" 
                             className="hidden" 
                             accept="image/jpeg,image/png,image/jpg"
-                            onChange={onProfilePictureUpload}
+                            onChange={handleProfilePictureChange}
                           />
                         </label>
                         <p className="text-green-700 text-xs mt-1">JPG, JPEG, PNG formats, max 5MB</p>

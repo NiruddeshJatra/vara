@@ -1,9 +1,14 @@
 from rest_framework import serializers
-import re
 from .models import CustomUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from .email_service import send_verification_email
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
+from .validators import (
+    validate_profile_picture,
+    validate_date_of_birth,
+    validate_phone_number
+)
 
 
 class ProfilePictureSerializer(serializers.ModelSerializer):
@@ -29,16 +34,7 @@ class ProfilePictureSerializer(serializers.ModelSerializer):
         Raises:
             ValidationError: If the file size exceeds 5MB or if the file is invalid
         """
-        try:
-            if value.size > 5 * 1024 * 1024:  # 5MB limit
-                raise serializers.ValidationError(_("Image size cannot exceed 5MB"))
-        
-        except AttributeError as e:
-            raise serializers.ValidationError(
-                _("Invalid file upload")
-            ) from e
-
-        return value
+        return validate_profile_picture(value)
 
 
 class CustomRegisterSerializer(serializers.ModelSerializer):
@@ -81,19 +77,7 @@ class CustomRegisterSerializer(serializers.ModelSerializer):
         Raises:
             ValidationError: If passwords don't match or username is already taken
         """
-        # Check if passwords match
-        if data["password1"] != data["password2"]:
-            raise serializers.ValidationError(_("Passwords do not match"))
-
-        # Check if username is already taken
-        if CustomUser.objects.filter(username=data["username"]).exists():
-            raise serializers.ValidationError(_("Username is already taken"))
-
-        # Check if email is already taken
-        if CustomUser.objects.filter(email=data["email"]).exists():
-            raise serializers.ValidationError(_("Email is already registered"))
-
-        return data
+        return validate_registration_data(data)
 
     def create(self, validated_data):
         """
@@ -130,14 +114,15 @@ class CustomRegisterSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """
-    Serializer for reading and updating basic user profile details.
+    Serializer for reading and updating user profile details.
     
-    This serializer provides fields for basic user information and includes
+    This serializer provides fields for user information, including
     computed fields like full_name and profile_picture_url.
     """
-    # Serializer for reading and updating basic user profile details
     full_name = serializers.SerializerMethodField()
     profile_picture_url = serializers.SerializerMethodField()
+    member_since = serializers.SerializerMethodField()
+    notification_count = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
@@ -152,13 +137,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "location",
             "profile_picture",
             "profile_picture_url",
-            "date_of_birth",
+            "is_trusted",
+            "average_rating",
+            "member_since",
+            "notification_count",
             "bio",
             "created_at",
-            "is_trusted",
-            "marketing_consent",
-            "profile_completed",
-            "is_email_verified",
+            "date_of_birth",
+            "profile_completed"
         ]
         read_only_fields = [
             "id",
@@ -166,7 +152,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "email",
             "created_at",
             "is_trusted",
-            "is_email_verified",
+            "average_rating",
+            "member_since",
+            "notification_count",
+            "profile_completed"
         ]
 
     def get_full_name(self, obj):
@@ -177,11 +166,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
             obj: The user instance
             
         Returns:
-            The user's full name or an empty string if not available
+            The user's full name
         """
-        if obj.first_name and obj.last_name:
-            return f"{obj.first_name} {obj.last_name}"
-        return ""
+        return f"{obj.first_name} {obj.last_name}" if obj.first_name and obj.last_name else ""
 
     def get_profile_picture_url(self, obj):
         """
@@ -197,6 +184,30 @@ class UserProfileSerializer(serializers.ModelSerializer):
             return obj.profile_picture.url
         return None
 
+    def get_member_since(self, obj):
+        """
+        Get the user's member since date in a readable format.
+        
+        Args:
+            obj: The user instance
+            
+        Returns:
+            Formatted date string
+        """
+        return obj.created_at.strftime("%B %Y")
+
+    def get_notification_count(self, obj):
+        """
+        Get the user's unread notification count.
+        
+        Args:
+            obj: The user instance
+            
+        Returns:
+            Number of unread notifications
+        """
+        return 2
+
     def validate_phone_number(self, phone_number):
         """
         Validate the phone number format.
@@ -210,11 +221,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         Raises:
             ValidationError: If the phone number format is invalid
         """
-        if phone_number:
-            # Basic phone number validation (can be enhanced)
-            if not re.match(r'^\+?1?\d{9,15}$', phone_number):
-                raise serializers.ValidationError(_("Invalid phone number format"))
-        return phone_number
+        return validate_phone_number(phone_number)
 
     def validate_date_of_birth(self, date_of_birth):
         """
@@ -229,19 +236,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         Raises:
             ValidationError: If the date of birth is invalid
         """
-        from datetime import date
-        
-        if date_of_birth:
-            today = date.today()
-            age = today.year - date_of_birth.year - ((today.month, today.day) < (date_of_birth.month, date_of_birth.day))
-            
-            if age < 18:
-                raise serializers.ValidationError(_("You must be at least 18 years old to use this service"))
-            
-            if age > 120:
-                raise serializers.ValidationError(_("Please enter a valid date of birth"))
-                
-        return date_of_birth
+        return validate_date_of_birth(date_of_birth)
 
 
 class TokenSerializer(serializers.Serializer):
@@ -306,10 +301,7 @@ class ProfileCompletionSerializer(serializers.ModelSerializer):
         Raises:
             ValidationError: If the phone number format is invalid
         """
-        if phone_number:
-            if not re.match(r"^(\+?88)?01[5-9]\d{8}$", phone_number):
-                raise serializers.ValidationError(_("Invalid phone number format"))
-        return phone_number
+        return validate_phone_number(phone_number)
 
     def validate(self, data):
         """

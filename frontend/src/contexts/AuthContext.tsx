@@ -2,9 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import AuthService from '../services/auth.service';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ProfileFormData, UserData } from '../types/auth';
+import { ProfileUpdateData, UserData } from '../types/auth';
 import config from '../config';
-
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -15,13 +14,20 @@ interface AuthContextType {
   logout: () => Promise<void>;
   verifyEmail: (token: string) => Promise<void>;
   resendVerificationEmail: (email: string) => Promise<void>;
-  updateProfile: (data: ProfileFormData) => Promise<void>;
+  updateProfile: (data: ProfileUpdateData) => Promise<void>;
   requestPasswordReset: (email: string) => Promise<void>;
   confirmPasswordReset: (uid: string, token: string, newPassword1: string, newPassword2: string) => Promise<void>;
   setUser: React.Dispatch<React.SetStateAction<UserData | null>>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const getErrorMessage = (error: any) => {
+  return error?.response?.data?.detail ||
+    error?.response?.data?.non_field_errors?.[0] ||
+    error.message ||
+    'An error occurred';
+};
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -31,16 +37,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const location = useLocation();
 
   useEffect(() => {
-    const currentUser = AuthService.getCurrentUser();
-    if (currentUser) {
-      setUser(currentUser);
-      setIsAuthenticated(true);
-    }
-    setLoading(false);
+    AuthService.getCurrentUser().then((currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        setIsAuthenticated(true);
+      }
+      setLoading(false);
+    });
   }, []);
 
   useEffect(() => {
-  }, [isAuthenticated, user]);
+    if (user) {
+      setIsAuthenticated(true);
+    } else {
+      setIsAuthenticated(false);
+    }
+  }, [user]);
 
   const login = async (email: string, password: string, rememberMe: boolean) => {
     try {
@@ -54,9 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const from = (location.state as any)?.from?.pathname || '/advertisements';
       navigate(from, { replace: true });
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.detail ||
-        error?.response?.data?.non_field_errors?.[0] ||
-        'Invalid email or password';
+      const errorMessage = getErrorMessage(error);
       toast.error(errorMessage);
       throw error;
     } finally {
@@ -126,33 +136,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await AuthService.resendVerificationEmail(email);
   };
 
-  const updateProfile = async (data: ProfileFormData) => {
+  const updateProfile = async (data: ProfileUpdateData): Promise<void> => {
     try {
       setLoading(true);
-      
-      // Check if we have a token before proceeding
-      const token = localStorage.getItem(config.auth.tokenStorageKey);
-      if (!token) {
-        console.error("No authentication token found in localStorage");
-        toast.error("Authentication error. Please log in again.");
-        logout(); // Force logout and redirect to login
-        throw new Error("No authentication token found");
-      }
-      
       const response = await AuthService.updateProfile(data);
       
-      // Update user state with new data and ensure profileComplete is set to true
+      // Update user state with new data
       setUser(prev => {
-        if (!prev) return { ...response, profileComplete: true };
-        return { ...prev, ...response, profileComplete: true };
+        if (!prev) return response;
+        return { ...prev, ...response };
       });
       
-      // Also update the user data in localStorage
+      // Update the user data in localStorage
       const userStr = localStorage.getItem(config.auth.userStorageKey);
       if (userStr) {
         try {
           const userData = JSON.parse(userStr);
-          const updatedUser = { ...userData, ...response, profileComplete: true };
+          const updatedUser = { ...userData, ...response };
           localStorage.setItem(config.auth.userStorageKey, JSON.stringify(updatedUser));
         } catch (error) {
           console.error('Error updating user data in localStorage:', error);
@@ -160,10 +160,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       toast.success('Profile updated successfully');
-      return response;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error updating profile:', error);
-      const errorMessage = error.message || 'Failed to update profile';
+      const errorMessage = getErrorMessage(error);
       toast.error(errorMessage);
       throw error;
     } finally {
@@ -175,8 +174,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       await AuthService.requestPasswordReset(email);
-    } catch (error) {
+      toast.success('Password reset email sent successfully');
+    } catch (error: any) {
       console.error('Error requesting password reset:', error);
+      const errorMessage = getErrorMessage(error);
+      toast.error(errorMessage);
       throw error;
     } finally {
       setLoading(false);
@@ -187,8 +189,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       await AuthService.confirmPasswordReset(uid, token, newPassword1, newPassword2);
-    } catch (error) {
+      toast.success('Password reset successful');
+    } catch (error: any) {
       console.error('Error confirming password reset:', error);
+      const errorMessage = getErrorMessage(error);
+      toast.error(errorMessage);
       throw error;
     } finally {
       setLoading(false);

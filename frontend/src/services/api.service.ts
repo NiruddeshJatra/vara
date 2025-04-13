@@ -33,10 +33,15 @@ class ApiService {
           reqConfig.headers.Authorization = `Bearer ${token}`;
         }
 
-        // Skip transformation for FormData requests
-        if (!(reqConfig.data instanceof FormData)) {
-          // Transform request data from camelCase to snake_case
-          if (reqConfig.data) {
+        // Transform request data from camelCase to snake_case
+        if (reqConfig.data) {
+          if (reqConfig.data instanceof FormData) {
+            const formData = new FormData();
+            for (const [key, value] of reqConfig.data.entries()) {
+              formData.append(this.transformToSnakeCase(key), value);
+            }
+            reqConfig.data = formData;
+          } else {
             reqConfig.data = this.transformToSnakeCase(reqConfig.data);
           }
         }
@@ -50,7 +55,15 @@ class ApiService {
       (response: AxiosResponse) => {
         // Transform response data from snake_case to camelCase
         if (response.data) {
-          response.data = this.transformToCamelCase(response.data);
+          if (response.data instanceof FormData) {
+            const formData = new FormData();
+            for (const [key, value] of response.data.entries()) {
+              formData.append(this.transformToCamelCase(key), value);
+            }
+            response.data = formData;
+          } else {
+            response.data = this.transformToCamelCase(response.data);
+          }
         }
         return response;
       },

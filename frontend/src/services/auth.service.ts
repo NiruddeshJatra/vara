@@ -1,7 +1,6 @@
 import axios from 'axios';
 import config from '../config';
-import { RegistrationData, ProfileFormData, LoginData, UserData } from '../types/auth';
-
+import { RegistrationData, ProfileUpdateData, LoginData, UserData } from '../types/auth';
 
 // Create a separate axios instance for auth endpoints (which don't use the /api prefix)
 // This configuration:
@@ -335,97 +334,104 @@ class AuthService {
     }
   }
 
-  async updateProfile(data: ProfileFormData): Promise<any> {
+  // Utility function to transform snake_case to camelCase
+  transformToCamelCase(obj: any): any {
+    if (Array.isArray(obj)) {
+      return obj.map((item) => this.transformToCamelCase(item));
+    }
+    if (obj !== null && typeof obj === "object") {
+      return Object.keys(obj).reduce((acc: any, key: string) => {
+        const camelKey = key.replace(/_([a-z])/g, (_, letter) =>
+          letter.toUpperCase()
+        );
+        acc[camelKey] = this.transformToCamelCase(obj[key]);
+        return acc;
+      }, {});
+    }
+    return obj;
+  }
+
+  // Get the current user's profile
+  async getCurrentUser(): Promise<UserData | null> {
     try {
-      // Log data for debugging (but hide sensitive file data)
-      console.log('Updating profile with data:', {
-        ...data,
-        nationalIdFront: data.nationalIdFront ? '(file data hidden)' : null,
-        nationalIdBack: data.nationalIdBack ? '(file data hidden)' : null
-      });
-  
-      // Get the current token before proceeding
       const token = localStorage.getItem(config.auth.tokenStorageKey);
       if (!token) {
-        console.error("Token missing in updateProfile");
-        // Try to get refresh token and refresh the access token
-        const refreshToken = localStorage.getItem(config.auth.refreshTokenStorageKey);
-        if (refreshToken) {
-          try {
-            const refreshResponse = await authApi.post(config.auth.refreshTokenEndpoint, {
-              refresh: refreshToken
-            });
-            
-            if (refreshResponse.data.access) {
-              // Update token and continue
-              localStorage.setItem(config.auth.tokenStorageKey, refreshResponse.data.access);
-            } else {
-              throw new Error('No authentication token found and refresh failed');
-            }
-          } catch (refreshError) {
-            console.error("Token refresh failed:", refreshError);
-            throw new Error('No authentication token found and refresh failed');
-          }
-        } else {
-          throw new Error('No authentication token found');
-        }
+        return null;
       }
-  
+
+      console.log('Fetching user profile...');
+      const response = await api.get(config.auth.profileEndpoint, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      console.log('Backend profile response:', response.data);
+      
+      // Transform snake_case to camelCase
+      const camelCaseData = this.transformToCamelCase(response.data);
+      console.log('Transformed profile data:', camelCaseData);
+      
+      // Update local storage with new user data
+      localStorage.setItem(config.auth.userStorageKey, JSON.stringify(camelCaseData));
+      
+      return camelCaseData;
+    } catch (error: any) {
+      console.error('Error fetching user profile:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      return null;
+    }
+  }
+
+  // Update user profile
+  async updateProfile(data: ProfileUpdateData): Promise<UserData> {
+    try {
+      const token = localStorage.getItem(config.auth.tokenStorageKey);
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      // Create form data for file uploads
       const formData = new FormData();
       
-      // Add profileCompleted field
-      const profileCompleted = data.profileCompleted !== undefined ? data.profileCompleted : true;
+      // Add file fields if they exist
+      if (data.profilePicture) {
+        formData.append('profile_picture', data.profilePicture);
+      }
       
-      // Transform camelCase to snake_case for backend
-      const transformedData = {
-        first_name: data.firstName,
-        last_name: data.lastName,
-        phone_number: data.phoneNumber,
-        location: data.location,
-        date_of_birth: data.dateOfBirth,
-        national_id_number: data.nationalIdNumber,
-        national_id_front: data.nationalIdFront,
-        national_id_back: data.nationalIdBack,
-        profile_completed: profileCompleted
-      };
-  
-      // Build the form data
-      Object.entries(transformedData).forEach(([key, value]) => {
-        if (value instanceof File) {
-          formData.append(key, value);
-        } else if (value !== null && value !== undefined) {
+      // Add other fields
+      Object.entries(data).forEach(([key, value]) => {
+        if (key !== 'profilePicture' && value !== null && value !== undefined) {
           formData.append(key, String(value));
         }
       });
-  
+
       // Get the updated token after possible refresh
       const updatedToken = localStorage.getItem(config.auth.tokenStorageKey);
       if (!updatedToken) {
         throw new Error('No authentication token found after refresh attempt');
       }
-  
-      // Make the API request
-      console.log('Making profile update request with token:', updatedToken.substring(0, 10) + '...');
-      const response = await authApi.post(config.auth.completeProfileEndpoint, formData, {
+
+      const response = await api.patch(config.auth.profileEndpoint, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${updatedToken}`
         },
       });
-  
-      console.log('Profile updated successfully:', response.data);
-      
+
       // Update local storage with new user data
-      const currentUser = this.getCurrentUser();
+      const currentUser = this.getCurrentUserFromStorage();
       if (currentUser) {
         const updatedUser = { 
           ...currentUser, 
-          ...response.data, 
-          profileComplete: true // Ensure this is set to true after successful profile completion
+          ...response.data
         };
         localStorage.setItem(config.auth.userStorageKey, JSON.stringify(updatedUser));
       }
-      
+
       return response.data;
     } catch (error: any) {
       console.error('Profile update error:', error);
@@ -434,6 +440,24 @@ class AuthService {
       }
       throw error;
     }
+  }
+
+  // Get the current user from local storage (cached version)
+  getCurrentUserFromStorage(): UserData | null {
+    const userStr = localStorage.getItem(config.auth.userStorageKey);
+    if (userStr) {
+      try {
+        const userData = JSON.parse(userStr);
+        return {
+          ...userData,
+          profileComplete: userData.profileComplete === true
+        };
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        return null;
+      }
+    }
+    return null;
   }
 
   // Check if a national ID is already registered
@@ -462,28 +486,9 @@ class AuthService {
     }
   }
 
-  // Get the current user from local storage
-  getCurrentUser(): UserData | null {
-    const userStr = localStorage.getItem(config.auth.userStorageKey);
-    if (userStr) {
-      try {
-        const userData = JSON.parse(userStr);
-        // Ensure profileComplete is a boolean
-        return {
-          ...userData,
-          profileComplete: userData.profileComplete === true
-        };
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-        return null;
-      }
-    }
-    return null;
-  }
-
   // Check if user is logged in
   isLoggedIn(): boolean {
-    return !!this.getCurrentUser();
+    return !!this.getCurrentUserFromStorage();
   }
 
   // Get access token

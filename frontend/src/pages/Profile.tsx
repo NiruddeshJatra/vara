@@ -8,47 +8,67 @@ import EmptyState from "@/components/profile/EmptyState";
 import NavBar from "@/components/home/NavBar";
 import Footer from "@/components/home/Footer";
 import ProfileListings from "@/components/profile/ProfileListings";
-
-// Mock user data
-const mockUserData = {
-  firstName: "Alex",
-  lastName: "Thompson",
-  email: "alex.thompson@example.com",
-  phone: "+1 (555) 123-4567",
-  location: "New York, NY",
-  dob: "1990-05-15",
-  bio: "I'm a passionate photographer and outdoor enthusiast. I love exploring new places and capturing the beauty of nature through my lens. When I'm not behind the camera, you can find me hiking, kayaking, or enjoying a good book in a cozy café.",
-  profilePicture: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=2080&auto=format&fit=crop",
-  isVerified: true,
-  joinDate: "January 2022",
-  responseRate: "97%",
-  responseTime: "Within 1 hour",
-  listings: [],
-  rentalHistory: [],
-  reviews: [],
-  // Fields needed by ProfileHeader
-  username: "alexthompson",
-  memberSince: "January 2022",
-  isTrustedSeller: true,
-  rating: 4.9,
-  notificationCount: 2
-};
+import { useAuth } from "@/contexts/AuthContext";
+import { ProfileUpdateData } from '@/types/auth';
 
 const Profile = () => {
   const { toast } = useToast();
-  const [userData, setUserData] = useState(mockUserData);
+  const { user, isAuthenticated, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
+  const [userData, setUserData] = useState(null);
 
-  // Simulate loading user data
   useEffect(() => {
-    // In a real application, this would fetch data from an API
-    const timer = setTimeout(() => {
-      setUserData(mockUserData);
-    }, 500);
+    if (user) {
+      setUserData({
+        ...user,
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        username: user.username || "",
+        profilePicture: user.profilePicture || "",
+        memberSince: user.memberSince || "",
+        isVerified: user.isTrusted || false,
+        isTrusted: user.isTrusted || false,
+        rating: user.averageRating || 0,
+        notificationCount: user.notificationCount || 0,
+        email: user.email || "",
+        phone: user.phoneNumber || "",
+        location: user.location || "",
+        dob: user.dateOfBirth || "",
+        bio: user.bio || "",
+        profileCompleted: user.profileCompleted || false
+      });
+    }
+  }, [user]);
 
-    return () => clearTimeout(timer);
-  }, []);
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-green-800 mb-4">
+            Please login to view your profile
+          </h2>
+          <button
+            onClick={() => window.location.href = "/auth/login/"}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!userData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse">
+          <div className="h-4 bg-green-200 rounded w-32 mb-4"></div>
+          <div className="h-3 bg-green-200 rounded w-48"></div>
+        </div>
+      </div>
+    );
+  }
 
   const handleEditProfile = () => {
     setIsEditing(true);
@@ -60,20 +80,50 @@ const Profile = () => {
     });
   };
 
-  const handleSaveChanges = () => {
-    setIsEditing(false);
-    toast({
-      title: "Profile updated",
-      description: "Your changes have been saved successfully",
-      variant: "default",
-      duration: 3000,
-    });
+  const handleSaveChanges = async () => {
+    try {
+      const updateData: ProfileUpdateData = {
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        email: userData.email,
+        phone: userData.phone,
+        location: userData.location,
+        dateOfBirth: userData.dob,
+        bio: userData.bio,
+        profilePicture: userData.profilePicture ? new File([userData.profilePicture], 'profile.jpg') : null
+      };
+
+      await updateProfile(updateData);
+      setIsEditing(false);
+      toast({
+        title: "Profile updated",
+        description: "Your changes have been saved successfully",
+        variant: "default",
+        duration: 3000,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update profile",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
   };
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    setUserData(mockUserData); // Reset to original data
-      toast({
+    setUserData({
+      ...userData,
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      email: user.email || "",
+      phone: user.phoneNumber || "",
+      location: user.location || "",
+      dob: user.dateOfBirth || "",
+      bio: user.bio || "",
+    });
+    toast({
       title: "Changes discarded",
       description: "Your profile was not updated",
       variant: "default",
@@ -88,8 +138,8 @@ const Profile = () => {
     }));
   };
 
-  const handleProfilePictureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
+  const handleProfilePictureUpload = (file: File) => {
+    if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         if (typeof reader.result === "string") {
@@ -97,40 +147,29 @@ const Profile = () => {
             ...prev,
             profilePicture: reader.result as string,
           }));
-
-      toast({
-        title: "Profile picture updated",
+          toast({
+            title: "Profile picture updated",
             description: "Your new profile picture has been uploaded",
             variant: "default",
             duration: 3000,
           });
         }
       };
-      reader.readAsDataURL(e.target.files[0]);
+      reader.readAsDataURL(file);
     }
-  };
-
-  const handleVerifyAccount = () => {
-    // In a real app, this would trigger a verification process
-    toast({
-      title: "Verification requested",
-      description: "We've sent a verification link to your email",
-      variant: "default",
-      duration: 3000,
-    });
   };
 
   return (
     <>
       <NavBar />
       <div className="min-h-screen bg-gradient-to-b from-green-50 to-white pt-20">
-        <div className="w-full ">
+        <div className="w-full">
           <ProfileHeader
             userData={userData}
             onEdit={handleEditProfile}
             isEditing={isEditing}
           />
-                  </div>
+        </div>
         <div className="max-w-7xl mx-auto px-6 sm:px-8 md:px-12 lg:px-16 pb-16">
           <Tabs defaultValue="profile" value={activeTab} onValueChange={setActiveTab} className="mt-8">
             <div className="border-b border-green-100">
@@ -160,7 +199,7 @@ const Profile = () => {
                   Reviews
                 </TabsTrigger>
               </TabsList>
-              </div>
+            </div>
 
             <TabsContent value="profile" className="pt-6">
               <ProfileInformation
@@ -182,7 +221,7 @@ const Profile = () => {
                 <div>
                   {/* Rental history content would go here */}
                   <p>Your rental history...</p>
-              </div>
+                </div>
               ) : (
                 <EmptyState
                   icon={History}
@@ -203,7 +242,7 @@ const Profile = () => {
                 <div>
                   {/* Reviews content would go here */}
                   <p>Your reviews...</p>
-              </div>
+                </div>
               ) : (
                 <EmptyState
                   icon={Star}

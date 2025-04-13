@@ -39,16 +39,15 @@ export interface UserData {
   firstName: string;
   lastName: string;
   phoneNumber: string;
+  dateOfBirth: string;
   location: string;
   profilePicture: string | null;
-  isVerified: boolean;
   isTrusted: boolean;
   averageRating: number;
-  dateOfBirth?: string;
-  nationalIdNumber?: string;
-  nationalIdFront?: string;
-  nationalIdBack?: string;
-  profileComplete: boolean;
+  memberSince: string;
+  notificationCount: number;
+  bio: string;
+  profileCompleted: boolean;
 }
 
 // API response
@@ -78,4 +77,15 @@ export interface RegistrationFormErrors {
 
 export type LoginFormErrors = {
   [K in keyof LoginData]?: string;
-};
+}
+
+export interface ProfileUpdateData {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
+  dateOfBirth?: string;
+  bio?: string;
+  profilePicture?: File | null;
+}

@@ -54,7 +54,7 @@ class UserViewSet(viewsets.ModelViewSet):
         "location",
         "is_trusted",
     ]
-    ordering_fields = ["created_at"]
+    ordering_fields = ["created_at", "average_rating", "last_login"]
     ordering = ["-created_at"]
 
     def get_queryset(self):
@@ -97,6 +97,22 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
+
+        # GET: Return user profile with additional computed fields
+        serializer = self.get_serializer(user)
+        data = serializer.data
+        
+        print("\nUser profile data being sent:")
+        print("User object:", user)
+        print("Serialized data:", data)
+        
+        # Add additional computed fields
+        data["member_since"] = user.created_at.strftime("%B %Y")
+        data["notification_count"] = 2  # TODO: Implement actual notification count
+        
+        print("Final response data:", data)
+        
+        return Response(data)
 
     @action(detail=False, methods=["post"])
     def complete_profile(self, request):
