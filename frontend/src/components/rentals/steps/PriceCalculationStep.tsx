@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { RentalRequestFormData } from '@/types/rentals';
 import { Product } from '@/types/listings';
 import { format } from 'date-fns';
+import { calculateEndDate } from '@/utils/validations/rental.validations';
 
 interface Props {
   product: Product;
@@ -13,38 +14,27 @@ interface Props {
 }
 
 const PriceCalculationStep = ({ product, formData, onNext, onPrev }: Props) => {
-  // Use the selected pricing tier from form data instead of defaulting to first one
   const selectedTier = product.pricingTiers?.find(
     (tier) => tier.durationUnit === formData.durationUnit
   ) || { durationUnit: 'day', price: 0, maxPeriod: 30 };
   
-  // Use form data's security deposit instead of product's
-  const securityDeposit = formData.securityDeposit || 0;
+  const basePrice = selectedTier.price || 0;
+  const duration = formData.duration || 0;
+  const baseCost = basePrice * duration;
+  const serviceFee = Math.round(baseCost * 0.05); // 5% service fee
+  const securityDeposit = product.securityDeposit || 0;
+  const totalCost = baseCost + serviceFee + Number(securityDeposit);
   const durationUnit = formData.durationUnit || 'day';
-  
+
   const formatDate = (date: Date | null) => {
     if (!date) return 'Not set';
     return format(date, 'MMMM dd, yyyy');
   };
   
-  // Calculate end date
-  const calculateEndDate = () => {
+  // Get end date using the shared function
+  const getEndDate = () => {
     if (!formData.startDate) return 'Not set';
-    
-    const endDate = new Date(formData.startDate);
-    
-    switch(durationUnit) {
-      case 'day':
-        endDate.setDate(endDate.getDate() + formData.duration);
-        break;
-      case 'week':
-        endDate.setDate(endDate.getDate() + (formData.duration * 7));
-        break;
-      case 'month':
-        endDate.setMonth(endDate.getMonth() + formData.duration);
-        break;
-    }
-    
+    const endDate = calculateEndDate(formData.startDate, duration, durationUnit);
     return format(endDate, 'MMMM dd, yyyy');
   };
   
@@ -57,11 +47,6 @@ const PriceCalculationStep = ({ product, formData, onNext, onPrev }: Props) => {
       maximumFractionDigits: 0
     }).format(amount);
   };
-  
-  const basePrice = selectedTier.price || 0;
-  const baseCost = basePrice * formData.duration;
-  const serviceFee = formData.serviceFee || (baseCost * 0.05);
-  const totalCost = formData.totalCost || (baseCost + serviceFee + securityDeposit);
 
   return (
     <div className="space-y-6 md:space-y-8 px-2">
@@ -80,11 +65,11 @@ const PriceCalculationStep = ({ product, formData, onNext, onPrev }: Props) => {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">End Date:</span>
-              <span className="font-medium text-gray-900">{calculateEndDate()}</span>
+              <span className="font-medium text-gray-900">{getEndDate()}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Duration:</span>
-              <span className="font-medium text-gray-900">{formData.duration} {durationUnit}{formData.duration > 1 ? 's' : ''}</span>
+              <span className="font-medium text-gray-900">{duration} {durationUnit}{duration > 1 ? 's' : ''}</span>
             </div>
           </div>
         </div>
@@ -132,7 +117,7 @@ const PriceCalculationStep = ({ product, formData, onNext, onPrev }: Props) => {
           <div>
             <h3 className="text-lg font-semibold text-green-800">Total Cost</h3>
             <p className="text-sm text-green-700">
-              For {formData.duration} {durationUnit}{formData.duration > 1 ? 's' : ''} 
+              For {duration} {durationUnit}{duration > 1 ? 's' : ''} 
             </p>
           </div>
           <div className="text-right">

@@ -212,14 +212,16 @@ const ProductDetailsStep = ({ product, formData, errors, onChange, onNext }: Pro
                 <div className="relative w-full">
                   <input
                     type="number"
-                    value={formData.duration}
-                    onChange={(e) => handleInputChange({ duration: parseInt(e.target.value) || 0 })}
+                    value={formData.duration || ''}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      onChange({ 
+                        duration: value === '' ? 0 : parseInt(value)
+                      });
+                    }}
                     min={1}
-                    max={selectedTier.maxPeriod || 30}
-                    className={`pl-9 pr-2 py-2.5 w-full rounded-md border ${
-                      errors.duration
-                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                        : 'border-gray-300 focus:border-green-500 focus:ring-green-500'
+                    className={`w-full pl-9 pr-3 py-2 border rounded-md ${
+                      errors.duration ? 'border-red-300' : 'border-green-300'
                     } focus:outline-none focus:ring-1`}
                   />
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
