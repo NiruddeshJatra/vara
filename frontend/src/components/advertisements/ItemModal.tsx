@@ -82,20 +82,9 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
       return;
     }
     
-    // Validate product data before navigation
-    if (!selectedItem.pricingTiers || selectedItem.pricingTiers.length === 0) {
-      toast({
-        title: "Missing pricing information",
-        description: "This item cannot be rented as it has no pricing options.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
+    // Navigate to rental request page with complete product data
     navigate(`/request-rental/${selectedItem.id}`, { 
-      state: { 
-        product: selectedItem
-      }
+      state: { product: selectedItem }
     });
   };
 

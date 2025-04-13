@@ -271,12 +271,7 @@ export default function ItemDetailPage() {
             {/* Right Column - Pricing Card */}
             <div className="lg:col-span-1">
               <div className="animate-fade-right delay-200 pricing-card-container">
-                <PricingCard
-                  pricingTiers={product.pricingTiers}
-                  maxRentalPeriod={product.pricingTiers[0]?.maxPeriod || 30}
-                  securityDeposit={product.securityDeposit}
-                  productId={product.id}
-                />
+                <PricingCard product={product} />
               </div>
             </div>
           </div>

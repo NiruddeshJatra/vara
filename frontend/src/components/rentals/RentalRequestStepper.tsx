@@ -9,16 +9,13 @@ import { Product } from '@/types/listings';
 import { RentalRequestFormData, RentalErrors } from '@/types/rentals';
 import { DurationUnit } from '@/constants/rental';
 import rentalService from '@/services/rental.service';
-import { validateRentalDetails, validateAdditionalDetails, validateAllRentalSteps } from '@/utils/validations/rental.validations';
+import { validateRentalDetails, validateAdditionalDetails } from '@/utils/validations/rental.validations';
 
 interface Props {
   product: Product;
 }
 
 const RentalRequestStepper = ({ product }: Props) => {
-  console.log('RentalRequestStepper received product:', product);
-  
-  // Set defaults for potentially missing properties
   const pricingTier = product.pricingTiers && product.pricingTiers.length > 0 
     ? product.pricingTiers[0] 
     : { durationUnit: 'day' as DurationUnit, price: 0, maxPeriod: 30 };
@@ -34,12 +31,11 @@ const RentalRequestStepper = ({ product }: Props) => {
   const [errors, setErrors] = useState<RentalErrors>({});
 
   const calculateTotalCost = () => {
-    // Find pricing tier that matches the selected duration unit
     const selectedTier = product.pricingTiers?.find(tier => tier.durationUnit === formData.durationUnit) || pricingTier;
-    
     const baseCost = selectedTier.price * formData.duration;
     const serviceFee = baseCost * 0.05;
     const securityDeposit = product.securityDeposit || 0;
+    
     return {
       totalCost: baseCost + serviceFee + securityDeposit,
       serviceFee,
@@ -52,63 +48,17 @@ const RentalRequestStepper = ({ product }: Props) => {
     
     switch(currentStep) {
       case 1:
-        return validateRentalDetails(formData, selectedTier.maxPeriod, selectedTier.durationUnit);
+        return validateRentalDetails(
+          formData, 
+          selectedTier.maxPeriod, 
+          selectedTier.durationUnit,
+          product.unavailableDates || []
+        );
       case 3:
         return validateAdditionalDetails(formData);
       default:
         return {};
     }
-  };
-  
-  // Helper function to check if the selected dates conflict with unavailable dates
-  const checkDateConflicts = (startDate: Date, duration: number, durationUnit: DurationUnit): boolean => {
-    if (!product.unavailableDates || product.unavailableDates.length === 0) {
-      return false; // No unavailable dates set
-    }
-    
-    const endDate = calculateEndDate(startDate, duration, durationUnit);
-    
-    // Check for conflicts with unavailable dates
-    for (const unavailable of product.unavailableDates) {
-      if (unavailable.isRange && unavailable.rangeStart && unavailable.rangeEnd) {
-        // Check for range conflicts
-        const rangeStart = new Date(unavailable.rangeStart);
-        const rangeEnd = new Date(unavailable.rangeEnd);
-        
-        if (
-          (startDate >= rangeStart && startDate <= rangeEnd) ||
-          (endDate >= rangeStart && endDate <= rangeEnd) ||
-          (startDate <= rangeStart && endDate >= rangeEnd)
-        ) {
-          return true; // Conflict found
-        }
-      } else if (unavailable.date) {
-        // Check for single date conflict
-        const unavailableDate = new Date(unavailable.date);
-        if (startDate <= unavailableDate && endDate >= unavailableDate) {
-          return true; // Conflict found
-        }
-      }
-    }
-    
-    return false; // No conflicts
-  };
-  
-  // Helper function to calculate end date based on start date, duration and unit
-  const calculateEndDate = (startDate: Date, duration: number, durationUnit: DurationUnit): Date => {
-    const endDate = new Date(startDate);
-    switch (durationUnit) {
-      case 'day':
-        endDate.setDate(endDate.getDate() + duration);
-        break;
-      case 'week':
-        endDate.setDate(endDate.getDate() + duration * 7);
-        break;
-      case 'month':
-        endDate.setMonth(endDate.getMonth() + duration);
-        break;
-    }
-    return endDate;
   };
 
   const handleNextStep = async () => {
@@ -119,26 +69,24 @@ const RentalRequestStepper = ({ product }: Props) => {
       if (currentStep === 3) {
         try {
           await rentalService.createRentalRequest(product.id, formData);
+          toast.success('Rental request submitted successfully!');
+          setCurrentStep(1);
+          setFormData({
+            startDate: null,
+            duration: 1,
+            durationUnit: 'day',
+            purpose: '',
+            notes: '',
+          });
+          setErrors({});
         } catch (error) {
           console.error('Rental request failed:', error);
+          toast.error('Failed to submit rental request. Please try again.');
         }
-        // Reset form after successful submission
-        setCurrentStep(1);
-        setFormData({
-          startDate: null,
-          duration: 1,
-          durationUnit: 'day',
-          purpose: '',
-          notes: '',
-        });
-        setErrors({});
       } else {
         setCurrentStep(prev => prev + 1);
         setErrors({});
       }
-    } else {
-      console.log('Validation errors:', stepErrors);
-      setErrors(stepErrors);
     }
   };
 
@@ -149,11 +97,11 @@ const RentalRequestStepper = ({ product }: Props) => {
 
   const getStepLabel = (step: number) => {
     switch(step) {
-      case 1: return "Rental Details";
-      case 2: return "Price Review";
-      case 3: return "Additional Info";
-      case 4: return "Confirmation";
-      default: return "";
+      case 1: return 'Rental Details';
+      case 2: return 'Price Details';
+      case 3: return 'Additional Info';
+      case 4: return 'Confirmation';
+      default: return '';
     }
   };
 
