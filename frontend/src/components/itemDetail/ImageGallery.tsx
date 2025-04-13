@@ -63,6 +63,7 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
             src={images[fullImageIndex]} 
             alt={`${title} full view`}
             className="w-full h-full object-contain" 
+            data-product-image
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.src = '/images/placeholder-image.jpg';
@@ -118,6 +119,7 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
                   src={img} 
                   alt={`${title} view ${idx + 1}`}
                   className="w-full h-full object-cover" 
+                  data-product-image
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = '/images/placeholder-image.jpg';
@@ -143,6 +145,7 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
             src={images[0]} 
             alt={`${title} main`}
             className="w-full h-full object-cover"
+            data-product-image
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.src = '/images/placeholder-image.jpg';
@@ -162,6 +165,7 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
                 src={img} 
                 alt={`${title} view ${idx + 2}`}
                 className="w-full h-full object-cover"
+                data-product-image
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = '/images/placeholder-image.jpg';
@@ -183,4 +187,4 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
       )}
     </div>
   );
-} 
+}

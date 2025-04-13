@@ -117,21 +117,20 @@ const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
   
   // Function to check if a date is unavailable
   const isDateUnavailable = (year: number, month: number, day: number) => {
-    const checkDate = new Date(year, month, day).getTime();
+    const checkDate = new Date(year, month, day);
+    checkDate.setHours(0, 0, 0, 0); // Normalize time to start of day
     
     return unavailableDates.some(date => {
       if (date instanceof Date) {
         const unavailableDate = new Date(date);
-        return (
-          unavailableDate.getFullYear() === year &&
-          unavailableDate.getMonth() === month &&
-          unavailableDate.getDate() === day
-        );
+        unavailableDate.setHours(0, 0, 0, 0); // Normalize time to start of day
+        return checkDate.getTime() === unavailableDate.getTime();
       } else if (typeof date === 'object' && 'start' in date && 'end' in date) {
         const startDate = new Date(date.start);
         const endDate = new Date(date.end);
-        const currentDateObj = new Date(year, month, day);
-        return currentDateObj >= startDate && currentDateObj <= endDate;
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(0, 0, 0, 0);
+        return checkDate >= startDate && checkDate <= endDate;
       }
       return false;
     });

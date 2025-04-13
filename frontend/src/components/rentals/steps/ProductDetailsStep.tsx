@@ -86,9 +86,9 @@ const ProductDetailsStep = ({ product, formData, errors, onChange, onNext }: Pro
       
       {/* Product Information Card */}
       <div className="bg-gradient-to-br from-white to-lime-100 rounded-lg border border-gray-200 p-4 md:p-6">
-        <div className="flex flex-col md:flex-row md:items-start gap-4 mb-6">
+        <div className="flex flex-col md:flex-row md:items-start gap-6 md:gap-8 mb-6">
           {/* Product Image */}
-          <div className="min-w-[120px] w-full md:w-1/3">
+          <div className="min-w-[120px] w-full md:w-1/3 md:max-w-[280px]">
             <img
               src={product.images && product.images.length > 0 ? product.images[0].image : '/placeholder-image.jpg'}
               alt={product.title}
@@ -97,10 +97,10 @@ const ProductDetailsStep = ({ product, formData, errors, onChange, onNext }: Pro
           </div>
           
           {/* Product Details */}
-          <div className="flex-1">
-            <h3 className="text-xl font-medium text-gray-800 mb-2">{product.title}</h3>
+          <div className="flex-1 space-y-4">
+            <h3 className="text-xl font-medium text-gray-800">{product.title}</h3>
             
-            <div className="flex flex-wrap gap-2 mb-3">
+            <div className="flex flex-wrap gap-2">
               <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-100">
                 {CATEGORY_DISPLAY[product.category] || product.category}
               </Badge>
@@ -109,7 +109,7 @@ const ProductDetailsStep = ({ product, formData, errors, onChange, onNext }: Pro
               </Badge>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+            <div className="space-y-3 text-sm">
               <div className="flex items-center">
                 <MapPin size={14} className="text-green-600 mr-1.5" />
                 <span className="text-gray-700">{product.location || 'Location not specified'}</span>

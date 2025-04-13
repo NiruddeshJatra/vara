@@ -28,15 +28,25 @@ const PricingCard: React.FC<PricingCardProps> = ({
       setShowProfileModal(true);
       return;
     }
+    
+    // Get product details from the DOM
+    const productDetails = {
+      id: productId,
+      pricingTiers,
+      maxRentalPeriod,
+      securityDeposit,
+      title: document.querySelector('h2')?.textContent || '',
+      category: document.querySelector('[data-category]')?.getAttribute('data-category') || '',
+      productType: document.querySelector('[data-product-type]')?.getAttribute('data-product-type') || '',
+      location: document.querySelector('[data-location]')?.textContent || '',
+      images: Array.from(document.querySelectorAll('[data-product-image]')).map(img => ({
+        image: (img as HTMLImageElement).src
+      }))
+    };
+
     navigate(`/request-rental/${productId}`, { 
       state: { 
-        product: {
-          id: productId,
-          basePrice: pricingTiers[0].price,
-          durationUnit: pricingTiers[0].durationUnit,
-          maxRentalPeriod,
-          securityDeposit: securityDeposit || 0
-        }
+        product: productDetails
       }
     });
   };
@@ -112,4 +122,4 @@ const PricingCard: React.FC<PricingCardProps> = ({
   );
 };
 
-export default PricingCard; 
+export default PricingCard;

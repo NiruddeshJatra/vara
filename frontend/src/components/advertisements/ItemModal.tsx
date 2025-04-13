@@ -92,14 +92,6 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
       return;
     }
     
-    // Log data being passed to rental request page
-    console.log('Navigating to rental request with product data:', {
-      id: selectedItem.id,
-      title: selectedItem.title,
-      pricingTiers: selectedItem.pricingTiers.length,
-      images: selectedItem.images?.length || 0
-    });
-    
     navigate(`/request-rental/${selectedItem.id}`, { 
       state: { 
         product: selectedItem

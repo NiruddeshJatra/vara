@@ -24,7 +24,7 @@ export default function ItemDetails({
             <Tag className="h-4 w-4 mr-3 text-green-600" />
             Category
           </h4>
-          <p className="text-green-700 font-medium">{CATEGORY_DISPLAY[category] || category}</p>
+          <p className="text-green-700 font-medium" data-category={category}>{CATEGORY_DISPLAY[category] || category}</p>
         </div>
         
         <div className="bg-green-50 p-4 rounded-lg">
@@ -32,7 +32,7 @@ export default function ItemDetails({
             <BoxSelect className="h-4 w-4 mr-3 text-green-600" />
             Product Type
           </h4>
-          <p className="text-green-700 font-medium">{PRODUCT_TYPE_DISPLAY[productType] || productType}</p>
+          <p className="text-green-700 font-medium" data-product-type={productType}>{PRODUCT_TYPE_DISPLAY[productType] || productType}</p>
         </div>
         
         {itemAge && (
@@ -57,4 +57,4 @@ export default function ItemDetails({
       </div>
     </div>
   );
-} 
+}
