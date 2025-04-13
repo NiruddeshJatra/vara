@@ -1,6 +1,6 @@
 // components/rentals/steps/ProductDetailsStep.tsx
 import { useState, useEffect } from 'react';
-import { AlertCircle, ChevronRight, Info, MapPin, Clock, CalendarDays, Tag, Shield, Banknote } from 'lucide-react';
+import { AlertCircle, ChevronRight, Info, MapPin, Clock, CalendarDays, Tag, Shield, Banknote, Loader2 } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { RentalRequestFormData, RentalErrors } from '@/types/rentals';
@@ -16,9 +16,10 @@ interface Props {
   errors: RentalErrors;
   onChange: (data: Partial<RentalRequestFormData>) => void;
   onNext: () => void;
+  loading?: boolean;
 }
 
-const ProductDetailsStep = ({ product, formData, errors, onChange, onNext }: Props) => {
+const ProductDetailsStep = ({ product, formData, errors, onChange, onNext, loading }: Props) => {
   const pricingTiers = product.pricingTiers || [];
   
   // State to keep track of the selected pricing tier
@@ -81,7 +82,7 @@ const ProductDetailsStep = ({ product, formData, errors, onChange, onNext }: Pro
   };
 
   return (
-    <div className="space-y-4 md:space-y-6 px-2">
+    <div className="space-y-6 md:space-y-8 px-2">
       <h2 className="text-2xl font-semibold text-green-800 mb-4">Item Details</h2>
       
       {/* Product Information Card */}
@@ -292,10 +293,20 @@ const ProductDetailsStep = ({ product, formData, errors, onChange, onNext }: Pro
 
       <div className="flex justify-end pt-4">
         <Button 
-          className="bg-green-600 hover:bg-green-700 text-white"
           onClick={onNext}
+          className="bg-green-600 hover:bg-green-700 text-white"
+          disabled={loading}
         >
-          Continue to Price Review <ChevronRight size={16} className="ml-1" />
+          {loading ? (
+            <>
+              <span className="mr-2">Processing</span>
+              <Loader2 className="h-4 w-4 animate-spin" />
+            </>
+          ) : (
+            <>
+              Continue to Price Details <ChevronRight size={16} className="ml-1" />
+            </>
+          )}
         </Button>
       </div>
     </div>

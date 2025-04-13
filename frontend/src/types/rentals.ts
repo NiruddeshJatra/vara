@@ -7,9 +7,10 @@ export type RentalRequestFormData = {
     durationUnit: DurationUnit;
     purpose: string;
     notes: string | null;
-    totalCost?: number;
+    baseCost?: number;
     serviceFee?: number;
     securityDeposit?: number;
+    totalCost?: number;
 };
 
 export type RentalRequest = {

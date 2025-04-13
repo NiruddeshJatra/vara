@@ -158,20 +158,21 @@ class Rental(models.Model):
 
     def save(self, *args, **kwargs):
         """
-        Calculate total cost and end time before saving
+        Calculate total cost and end time before saving only if not provided
         """
-        # Calculate total cost based on product's pricing tier
-        pricing_tier = self.product.pricing_tiers.filter(
-            duration_unit=self.duration_unit
-        ).first()
-
-        if pricing_tier:
-            self.total_cost = pricing_tier.price * self.duration
-            self.service_fee = self.total_cost * Decimal('0.2')  # 20% service fee
-
         # Calculate end time if not set
         if not self.end_time:
             self.end_time = self.calculate_end_time()
+
+        # Only calculate costs if they're not already set
+        if self.total_cost is None or self.service_fee is None:
+            pricing_tier = self.product.pricing_tiers.filter(
+                duration_unit=self.duration_unit
+            ).first()
+
+            if pricing_tier:
+                self.total_cost = pricing_tier.price * self.duration
+                self.service_fee = self.total_cost * Decimal('0.08')  # 8% service fee
 
         super().save(*args, **kwargs)
 

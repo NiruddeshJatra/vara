@@ -1,6 +1,6 @@
 import api from './api.service';
 import { RentalStatus } from '../constants/rental';
-import { RentalRequest, RentalRequestFormData } from '../types/listings';
+import { RentalRequest, RentalRequestFormData } from '../types/rentals';
 import config from '../config';
 
 /**
@@ -14,38 +14,43 @@ class RentalService {
    * @returns The created rental request
    */
   async createRentalRequest(productId: string, data: RentalRequestFormData): Promise<RentalRequest> {
-    // Get the product to calculate service fee
-    const product = await this.getProduct(productId);
-    const pricingTier = product.pricingTiers.find(
-      tier => tier.durationUnit === data.durationUnit
-    );
-
-    if (!pricingTier) {
-      throw new Error('No pricing tier found for selected duration');
-    }
-
-    // Calculate service fee (20% of total cost)
-    const totalCost = pricingTier.price * data.duration;
-    const serviceFee = totalCost * 0.2; // 20% service fee
-
-    // Transform data to match backend expectations
-    const rentalData = {
-      product: productId,
-      start_time: data.startDate?.toISOString(),
-      end_time: this.calculateEndTime(data.startDate, data.duration, data.durationUnit),
-      duration: data.duration,
-      duration_unit: data.durationUnit,
-      purpose: data.purpose,
-      notes: data.notes,
-      total_cost: totalCost,
-      service_fee: serviceFee
-    };
-
     try {
+      const rentalData = {
+        product: productId,
+        start_time: data.startDate?.toISOString(),
+        end_time: this.calculateEndTime(data.startDate, data.duration, data.durationUnit),
+        duration: data.duration,
+        duration_unit: data.durationUnit,
+        purpose: data.purpose,
+        notes: data.notes || '',
+        total_cost: data.totalCost,
+        service_fee: data.serviceFee
+      };
+
       const response = await api.post(config.rentals.createEndpoint, rentalData);
       return response.data;
     } catch (error: any) {
-      throw new Error('Failed to create rental request');
+      // Handle specific error cases
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        
+        // Handle own product error
+        if (errorData.code === 'own_product_rental') {
+          throw new Error("You cannot rent your own product");
+        }
+        
+        // Handle product unavailable error
+        if (errorData.code === 'product_unavailable') {
+          throw new Error("Product is not available during the selected period");
+        }
+
+        // Handle other validation errors
+        if (errorData.detail) {
+          throw new Error(errorData.detail);
+        }
+      }
+      
+      throw new Error('Failed to create rental request. Please try again.');
     }
   }
 

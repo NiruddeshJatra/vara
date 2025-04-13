@@ -117,6 +117,43 @@ class ApiService {
           }
         }
 
+        // Handle rental-specific errors
+        if (error.response?.data && originalRequest.url?.includes("/rentals/")) {
+          const errorData = error.response.data;
+
+          // Handle rental validation errors
+          if (error.response.status === 400) {
+            if (errorData.error) {
+              return Promise.reject(new Error(errorData.error));
+            }
+            if (errorData.detail && errorData.detail.includes("own product")) {
+              return Promise.reject(new Error("You cannot rent your own product"));
+            }
+
+            // Format field-specific errors nicely
+            const formattedErrors = [];
+            if (errorData.start_time) {
+              formattedErrors.push(`Start time: ${errorData.start_time.join(", ")}`);
+            }
+            if (errorData.duration) {
+              formattedErrors.push(`Duration: ${errorData.duration.join(", ")}`);
+            }
+            if (errorData.duration_unit) {
+              formattedErrors.push(`Duration unit: ${errorData.duration_unit.join(", ")}`);
+            }
+            if (errorData.purpose) {
+              formattedErrors.push(`Purpose: ${errorData.purpose.join(", ")}`);
+            }
+            if (errorData.product) {
+              formattedErrors.push(`Product: ${errorData.product.join(", ")}`);
+            }
+
+            if (formattedErrors.length > 0) {
+              return Promise.reject(new Error(formattedErrors.join("\n")));
+            }
+          }
+        }
+
         // Handle product-specific errors
         if (
           error.response?.data &&

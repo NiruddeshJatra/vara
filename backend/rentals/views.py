@@ -7,6 +7,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django.utils import timezone
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
+from django.utils.encoding import force_str
 from .models import Rental, RentalPhoto
 from .serializers import RentalSerializer, RentalPhotoSerializer
 from django.db.models import Q
@@ -46,59 +47,78 @@ class RentalViewSet(viewsets.ModelViewSet):
         try:
             serializer.is_valid(raise_exception=True)
             print(f"\nSerialized data is valid: {serializer.validated_data}")
+
+            # Ensure user is not the owner of the product
+            if request.user == serializer.validated_data['product'].owner:
+                print("\nError: User is trying to rent their own product")
+                return Response(
+                    {
+                        "detail": force_str(_("You cannot rent your own product")),
+                        "code": "own_product_rental"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Check product availability
+            start_time = serializer.validated_data['start_time']
+            end_time = serializer.validated_data['end_time']
+            print(f"\nChecking availability for product {serializer.validated_data['product'].id}")
+            print(f"Start time: {start_time}, End time: {end_time}")
+
+            if Rental.objects.filter(
+                product=serializer.validated_data['product'],
+                status__in=['pending', 'accepted'],
+                start_time__lt=end_time,
+                end_time__gt=start_time
+            ).exists():
+                print("\nError: Product is not available during the selected period")
+                return Response(
+                    {
+                        "detail": force_str(_("Product is not available during the selected period")),
+                        "code": "product_unavailable"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Create rental with transaction
+            with transaction.atomic():
+                rental = serializer.save(
+                    renter=request.user,
+                    owner=serializer.validated_data['product'].owner,
+                    status='pending',
+                    total_cost=serializer.validated_data.get('total_cost'),
+                    service_fee=serializer.validated_data.get('service_fee')
+                )
+
+                # Add initial status history
+                rental.status_history.append({
+                    "status": "pending",
+                    "timestamp": timezone.now().isoformat(),
+                    "note": force_str(_("Rental request created"))
+                })
+                rental.save()
+                print(f"\nSuccessfully created rental {rental.id}")
+
+            headers = self.get_success_headers(serializer.data)
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED,
+                headers=headers
+            )
+        except ValidationError as e:
+            return Response(
+                {"detail": force_str(str(e)), "code": "validation_error"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
-            print(f"\nValidation error: {str(e)}")
-            raise
-
-        # Ensure user is not the owner of the product
-        if request.user == serializer.validated_data['product'].owner:
-            print("\nError: User is trying to rent their own product")
+            print(f"\nUnexpected error: {str(e)}")
             return Response(
-                {"error": _("You cannot rent your own product")},
-                status=status.HTTP_400_BAD_REQUEST
+                {
+                    "detail": force_str(_("An unexpected error occurred while creating the rental request")),
+                    "code": "unexpected_error"
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-        # Check product availability
-        start_time = serializer.validated_data['start_time']
-        end_time = serializer.validated_data['end_time']
-        print(f"\nChecking availability for product {serializer.validated_data['product'].id}")
-        print(f"Start time: {start_time}, End time: {end_time}")
-
-        if Rental.objects.filter(
-            product=serializer.validated_data['product'],
-            status__in=['pending', 'accepted'],
-            start_time__lt=end_time,
-            end_time__gt=start_time
-        ).exists():
-            print("\nError: Product is not available during the selected period")
-            return Response(
-                {"error": _("Product is not available during the selected period")},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Create rental with transaction
-        with transaction.atomic():
-            rental = serializer.save(
-                renter=request.user,
-                owner=serializer.validated_data['product'].owner,
-                status='pending'
-            )
-
-            # Add initial status history
-            rental.status_history.append({
-                "status": "pending",
-                "timestamp": timezone.now().isoformat(),
-                "note": _("Rental request created")
-            })
-            rental.save()
-            print(f"\nSuccessfully created rental {rental.id}")
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED,
-            headers=headers
-        )
 
     @action(detail=False, methods=["get"], url_path="my-rentals")
     def my_rentals(self, request):

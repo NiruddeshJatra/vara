@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { AlertCircle } from 'lucide-react';
 import Footer from "@/components/home/Footer";
 import NavBar from "@/components/home/NavBar";
 import ContactDetailsStep from "@/components/auth/steps/ContactDetailsStep";
@@ -39,12 +40,34 @@ const CompleteProfile = () => {
   const handleInputChange = (
     eventOrValue: React.ChangeEvent<HTMLInputElement> | Partial<ProfileFormData>
   ) => {
+    let newData: Partial<ProfileFormData>;
     if ("target" in eventOrValue) {
       const { name, value } = eventOrValue.target;
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      newData = { [name]: value };
     } else {
-      setFormData((prev) => ({ ...prev, ...eventOrValue }));
+      newData = eventOrValue;
     }
+
+    // Clear errors for the fields that are being updated
+    const newErrors = { ...errors };
+    Object.keys(newData).forEach(key => {
+      delete newErrors[key as keyof ProfileFormErrors];
+      // Clear any nested errors
+      Object.keys(newErrors).forEach(errorKey => {
+        if (errorKey.startsWith(`${key}.`)) {
+          delete newErrors[errorKey as keyof ProfileFormErrors];
+        }
+      });
+    });
+    setErrors(newErrors);
+
+    // Update form data
+    setFormData(prev => ({
+      ...prev,
+      ...(("target" in eventOrValue) 
+        ? { [eventOrValue.target.name]: eventOrValue.target.value }
+        : eventOrValue)
+    }));
   };
 
   const handleFileUpload = (
@@ -218,6 +241,27 @@ const CompleteProfile = () => {
                 Please provide the following information to complete your profile
               </p>
             </div>
+
+            {/* Display validation errors from backend */}
+            {Object.keys(errors).length > 0 && (
+              <div className="mb-6 space-y-2 animate-fade-down">
+                {Object.entries(errors).map(([key, value]) => (
+                  <div key={key} className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex items-start">
+                      <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 mr-2" />
+                      <div>
+                        <h3 className="text-sm font-medium text-red-800 capitalize">
+                          {key.split('_').join(' ')}
+                        </h3>
+                        <p className="text-sm text-red-700 mt-1">
+                          {Array.isArray(value) ? value[0] : value}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div className="mb-8">
               <div className="flex items-center justify-between max-w-md mx-auto">

@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Shield } from 'lucide-react';
+import { Shield, AlertCircle } from 'lucide-react';
 import Footer from '@/components/home/Footer';
 import NavBar from '@/components/home/NavBar';
 import BasicInfoStep from '@/components/auth/steps/BasicInfoStep';
 import { RegistrationData, RegistrationFormErrors } from '@/types/auth';
 import { useAuth } from '@/contexts/AuthContext';
 import { validateRegistrationForm } from '@/utils/validations/auth.validations';
-
 
 const Register = () => {
   const [password, setPassword] = useState('');
@@ -37,22 +36,25 @@ const Register = () => {
     return validateRegistrationForm(formData);
   };
 
-  // If you remove this code:
-  // The form would become read-only - users couldn't change any fields
-  // All form inputs would be static and non-interactive
   const handleInputChange = (data: Partial<RegistrationData>) => {
+    // Clear errors for the fields that are being updated
+    const newErrors = { ...errors };
+    Object.keys(data).forEach(key => {
+      delete newErrors[key as keyof RegistrationFormErrors];
+      // Clear any nested errors
+      Object.keys(newErrors).forEach(errorKey => {
+        if (errorKey.startsWith(`${key}.`)) {
+          delete newErrors[errorKey as keyof RegistrationFormErrors];
+        }
+      });
+    });
+    setErrors(newErrors);
     setFormData(prev => ({
       ...prev,
       ...data
     }));
-
-    const fieldName = Object.keys(data)[0] as keyof RegistrationData;
-    if (errors[fieldName]) {
-      setErrors(prev => ({ ...prev, [fieldName]: undefined }));
-    }
   };
 
-  // triggered when the user submits the form, ensuring the data is valid before sending it to the server.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -62,8 +64,8 @@ const Register = () => {
       try {
         // Send data in camelCase, auth service will transform to snake_case
         const apiFormData: RegistrationData = {
-            email: formData.email,
-            username: formData.username,
+          email: formData.email,
+          username: formData.username,
           password1: formData.password1,
           password2: formData.password2,
           marketingConsent: formData.marketingConsent || false,
@@ -95,12 +97,33 @@ const Register = () => {
               <p className="text-gray-600">Join the Vara community to rent and lend items</p>
               <p className="text-sm text-amber-600 mt-2">Quick sign-up! Complete your profile after verification.</p>
             </div>
+
+            {/* Display validation errors from backend */}
+            {Object.keys(errors).length > 0 && (
+              <div className="mb-6 space-y-2 animate-fade-down">
+                {Object.entries(errors).map(([key, value]) => (
+                  <div key={key} className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex items-start">
+                      <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 mr-2" />
+                      <div>
+                        <h3 className="text-sm font-medium text-red-800 capitalize">
+                          {key.split('_').join(' ')}
+                        </h3>
+                        <p className="text-sm text-red-700 mt-1">
+                          {Array.isArray(value) ? value[0] : value}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
             
             <form onSubmit={handleSubmit} className="animate-fade-up delay-200">
               <BasicInfoStep
                 formData={formData}
                 errors={errors}
-                      onChange={handleInputChange}
+                onChange={handleInputChange}
                 onNext={handleSubmit}
                 loading={loading}
                 showConsent={true}

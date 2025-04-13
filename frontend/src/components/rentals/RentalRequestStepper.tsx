@@ -1,6 +1,7 @@
 // components/rentals/RentalRequestStepper.tsx
 import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
+import { AlertCircle } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 import ProductDetailsStep from './steps/ProductDetailsStep';
 import PriceCalculationStep from './steps/PriceCalculationStep';
 import AdditionalDetailsStep from './steps/AdditionalDetailsStep';
@@ -29,17 +30,22 @@ const RentalRequestStepper = ({ product }: Props) => {
     notes: '',
   });
   const [errors, setErrors] = useState<RentalErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false); // Track overall form processing
+  const [lastSubmissionTime, setLastSubmissionTime] = useState<number | null>(null);
 
   const calculateTotalCost = () => {
     const selectedTier = product.pricingTiers?.find(tier => tier.durationUnit === formData.durationUnit) || pricingTier;
     const baseCost = selectedTier.price * formData.duration;
-    const serviceFee = baseCost * 0.05;
+    const serviceFee = Math.round(baseCost * 0.08); // 8% service fee
     const securityDeposit = product.securityDeposit || 0;
+    const totalCost = baseCost + serviceFee; // Total doesn't include deposit as it's refundable
     
     return {
-      totalCost: baseCost + serviceFee + securityDeposit,
+      baseCost,
       serviceFee,
       securityDeposit,
+      totalCost
     };
   };
 
@@ -61,16 +67,53 @@ const RentalRequestStepper = ({ product }: Props) => {
     }
   };
 
+  const handleInputChange = (data: Partial<RentalRequestFormData>) => {
+    // Clear errors for the fields that are being updated
+    const newErrors = { ...errors };
+    Object.keys(data).forEach(key => {
+      delete newErrors[key];
+      delete newErrors.detail; // Clear any general errors as well
+      // Clear any nested errors
+      Object.keys(newErrors).forEach(errorKey => {
+        if (errorKey.startsWith(`${key}.`)) {
+          delete newErrors[errorKey];
+        }
+      });
+    });
+    setErrors(newErrors);
+    setFormData(prev => ({ ...prev, ...data }));
+  };
+
   const handleNextStep = async () => {
+    // Prevent rapid submissions
+    if (lastSubmissionTime && Date.now() - lastSubmissionTime < 2000) {
+      return;
+    }
+
     const stepErrors = validateStep();
     setErrors(stepErrors);
 
     if (Object.keys(stepErrors).length === 0) {
+      setIsProcessing(true);
+      
+      if (currentStep === 2) {
+        const costs = calculateTotalCost();
+        setFormData(prev => ({ ...prev, ...costs }));
+      }
+      
       if (currentStep === 3) {
+        setIsSubmitting(true);
+        setLastSubmissionTime(Date.now());
+        
         try {
           await rentalService.createRentalRequest(product.id, formData);
-          toast.success('Rental request submitted successfully!');
-          setCurrentStep(1);
+          toast({
+            title: "Success",
+            description: "Your rental request has been submitted successfully!",
+            variant: "default"
+          });
+          setCurrentStep(4);
+          // Reset form after successful submission
           setFormData({
             startDate: null,
             duration: 1,
@@ -79,20 +122,37 @@ const RentalRequestStepper = ({ product }: Props) => {
             notes: '',
           });
           setErrors({});
-        } catch (error) {
-          console.error('Rental request failed:', error);
-          toast.error('Failed to submit rental request. Please try again.');
+        } catch (error: any) {
+          toast({
+            title: "Error",
+            description: error instanceof Error ? error.message : "Failed to submit rental request. Please try again.",
+            variant: "destructive"
+          });
+        } finally {
+          setIsSubmitting(false);
+          setLastSubmissionTime(null);
         }
       } else {
         setCurrentStep(prev => prev + 1);
-        setErrors({});
       }
+      setIsProcessing(false);
     }
   };
 
   const handlePrevStep = () => {
     setCurrentStep(prev => prev - 1);
+    // Clear all errors when going back
     setErrors({});
+    setIsProcessing(false);
+    setLastSubmissionTime(null);
+    // Clear any step-specific form validation errors
+    if (currentStep === 3) {
+      setFormData(prev => ({
+        ...prev,
+        purpose: '',
+        notes: ''
+      }));
+    }
   };
 
   const getStepLabel = (step: number) => {
@@ -149,6 +209,27 @@ const RentalRequestStepper = ({ product }: Props) => {
             </div>
           </div>
 
+          {/* Display validation errors from backend */}
+          {Object.keys(errors).length > 0 && (
+            <div className="mb-6 space-y-2">
+              {Object.entries(errors).map(([key, value]) => (
+                <div key={key} className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-start">
+                    <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 mr-2" />
+                    <div>
+                      <h3 className="text-sm font-medium text-red-800 capitalize">
+                        {key === 'detail' ? 'Error' : key.split('_').join(' ')}
+                      </h3>
+                      <p className="text-sm text-red-700 mt-1">
+                        {Array.isArray(value) ? value[0] : value}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Steps */}
           <div className="mt-4 md:mt-8">
             {currentStep === 1 && (
@@ -156,8 +237,9 @@ const RentalRequestStepper = ({ product }: Props) => {
                 product={product}
                 formData={formData}
                 errors={errors}
-                onChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
+                onChange={handleInputChange}
                 onNext={handleNextStep}
+                loading={isProcessing}
               />
             )}
 
@@ -167,6 +249,7 @@ const RentalRequestStepper = ({ product }: Props) => {
                 formData={{ ...formData, ...calculateTotalCost() }}
                 onNext={handleNextStep}
                 onPrev={handlePrevStep}
+                loading={isProcessing}
               />
             )}
 
@@ -174,9 +257,10 @@ const RentalRequestStepper = ({ product }: Props) => {
               <AdditionalDetailsStep
                 formData={formData}
                 errors={errors}
-                onChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
+                onChange={handleInputChange}
                 onNext={handleNextStep}
                 onPrev={handlePrevStep}
+                loading={isSubmitting}
               />
             )}
 

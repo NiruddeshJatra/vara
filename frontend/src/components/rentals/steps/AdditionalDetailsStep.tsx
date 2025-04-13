@@ -12,9 +12,10 @@ interface Props {
   onChange: (data: Partial<RentalRequestFormData>) => void;
   onNext: () => void;
   onPrev: () => void;
+  loading?: boolean;
 }
 
-const AdditionalDetailsStep = ({ formData, errors, onChange, onNext, onPrev }: Props) => {
+const AdditionalDetailsStep = ({ formData, errors, onChange, onNext, onPrev, loading = false }: Props) => {
   const PURPOSE_OPTIONS = [
     { value: 'event', label: 'Event/Party' },
     { value: 'personal', label: 'Personal Use' },
@@ -95,6 +96,7 @@ const AdditionalDetailsStep = ({ formData, errors, onChange, onNext, onPrev }: P
           variant="outline" 
           className="border-green-300 hover:bg-green-50"
           onClick={onPrev}
+          disabled={loading}
         >
           <ChevronLeft size={16} className="mr-1" /> Back
         </Button>
@@ -102,8 +104,9 @@ const AdditionalDetailsStep = ({ formData, errors, onChange, onNext, onPrev }: P
         <Button 
           className="bg-green-600 hover:bg-green-700 text-white"
           onClick={onNext}
+          disabled={loading}
         >
-          Review & Confirm <ChevronRight size={16} className="ml-1" />
+          {loading ? 'Processing...' : 'Review & Confirm'} <ChevronRight size={16} className="ml-1" />
         </Button>
       </div>
     </div>

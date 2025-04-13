@@ -1,5 +1,5 @@
 // components/rentals/steps/PriceCalculationStep.tsx
-import { ChevronLeft, ChevronRight, Calculator, Clock, Calendar, Banknote, Shield, BadgePercent } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calculator, Clock, Calendar, Banknote, Shield, BadgePercent, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RentalRequestFormData } from '@/types/rentals';
 import { Product } from '@/types/listings';
@@ -8,12 +8,18 @@ import { calculateEndDate } from '@/utils/validations/rental.validations';
 
 interface Props {
   product: Product;
-  formData: RentalRequestFormData;
+  formData: RentalRequestFormData & {
+    baseCost: number;
+    serviceFee: number;
+    securityDeposit: number;
+    totalCost: number;
+  };
   onNext: () => void;
   onPrev: () => void;
+  loading?: boolean;
 }
 
-const PriceCalculationStep = ({ product, formData, onNext, onPrev }: Props) => {
+const PriceCalculationStep = ({ product, formData, onNext, onPrev, loading }: Props) => {
   const selectedTier = product.pricingTiers?.find(
     (tier) => tier.durationUnit === formData.durationUnit
   ) || { durationUnit: 'day', price: 0, maxPeriod: 30 };
@@ -21,9 +27,9 @@ const PriceCalculationStep = ({ product, formData, onNext, onPrev }: Props) => {
   const basePrice = selectedTier.price || 0;
   const duration = formData.duration || 0;
   const baseCost = basePrice * duration;
-  const serviceFee = Math.round(baseCost * 0.05); // 5% service fee
+  const serviceFee = Math.round(baseCost * 0.08); // 8% service fee
   const securityDeposit = product.securityDeposit || 0;
-  const totalCost = baseCost + serviceFee + Number(securityDeposit);
+  const totalCost = baseCost + serviceFee; // Total doesn't include deposit as it's refundable
   const durationUnit = formData.durationUnit || 'day';
 
   const formatDate = (date: Date | null) => {
@@ -95,7 +101,7 @@ const PriceCalculationStep = ({ product, formData, onNext, onPrev }: Props) => {
             <div className="flex justify-between text-sm">
               <span className="text-gray-600 flex items-center">
                 <BadgePercent className="h-3.5 w-3.5 mr-1 text-amber-600" />
-                Service Fee (5%):
+                Service Fee (8%):
               </span>
               <span className="font-medium text-gray-900">{formatCurrency(serviceFee)}</span>
             </div>
@@ -134,15 +140,26 @@ const PriceCalculationStep = ({ product, formData, onNext, onPrev }: Props) => {
           variant="outline" 
           className="border-green-300 hover:bg-green-50"
           onClick={onPrev}
+          disabled={loading}
         >
           <ChevronLeft size={16} className="mr-1" /> Back
         </Button>
         
         <Button 
-          className="bg-green-600 hover:bg-green-700 text-white"
           onClick={onNext}
+          className="bg-green-600 hover:bg-green-700 text-white"
+          disabled={loading}
         >
-          Continue to Additional Info <ChevronRight size={16} className="ml-1" />
+          {loading ? (
+            <>
+              <span className="mr-2">Processing</span>
+              <Loader2 className="h-4 w-4 animate-spin" />
+            </>
+          ) : (
+            <>
+              Continue to Additional Info <ChevronRight size={16} className="ml-1" />
+            </>
+          )}
         </Button>
       </div>
     </div>
