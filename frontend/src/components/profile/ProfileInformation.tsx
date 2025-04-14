@@ -6,22 +6,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Upload } from "lucide-react";
 import { DateOfBirthPicker } from "@/components/common/DateOfBirthPicker";
+import { useState } from 'react';
+import { UserData } from "@/types/auth";
 
 interface ProfileInformationProps {
-  userData: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    location: string;
-    dob: string;
-    bio: string;
-    profilePicture: string;
-  };
+  userData: UserData;
   isEditing: boolean;
   onSaveChanges: () => void;
   onCancelEdit: () => void;
-  onInputChange: (field: string, value: string) => void;
+  onInputChange: (field: keyof UserData, value: string) => void;
   onProfilePictureUpload: (file: File) => void;
 }
 
@@ -33,6 +26,9 @@ const ProfileInformation = ({
   onInputChange,
   onProfilePictureUpload
 }: ProfileInformationProps) => {
+  const [profilePictureFile, setProfilePictureFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
   const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -40,10 +36,12 @@ const ProfileInformation = ({
       const reader = new FileReader();
       reader.onloadend = () => {
         if (typeof reader.result === "string") {
-          onInputChange('profilePicture', reader.result as string);
+          setPreviewUrl(reader.result as string);
         }
       };
       reader.readAsDataURL(file);
+      // Store the file for backend submission
+      setProfilePictureFile(file);
       // Call the upload handler with the file
       onProfilePictureUpload(file);
     }
@@ -95,11 +93,11 @@ const ProfileInformation = ({
               </div>
               
               <div>
-                <Label htmlFor="phone" className="text-green-800 font-medium">Phone Number</Label>
+                <Label htmlFor="phoneNumber" className="text-green-800 font-medium">Phone Number</Label>
                 <Input 
-                  id="phone" 
-                  value={userData.phone} 
-                  onChange={(e) => onInputChange('phone', e.target.value)}
+                  id="phoneNumber" 
+                  value={userData.phoneNumber} 
+                  onChange={(e) => onInputChange('phoneNumber', e.target.value)}
                   disabled={!isEditing}
                   className={`border-green-300 bg-white text-green-800 ${!isEditing ? "bg-green-50/70 border-green-200" : ""}`}
                 />
@@ -118,8 +116,8 @@ const ProfileInformation = ({
               
               <div>
                 <DateOfBirthPicker
-                  value={userData.dob}
-                  onChange={(date) => onInputChange('dob', date)}
+                  value={userData.dateOfBirth}
+                  onChange={(date) => onInputChange('dateOfBirth', date)}
                   label="Date of Birth"
                   required={false}
                   className={!isEditing ? "opacity-70 pointer-events-none" : ""}
@@ -143,7 +141,7 @@ const ProfileInformation = ({
                   value={userData.bio} 
                   onChange={(e) => onInputChange('bio', e.target.value)}
                   disabled={!isEditing}
-                  className={`min-h-32 border-green-300 bg-white text-md text-green-800 ${!isEditing ? "bg-green-50/70 border-green-200" : ""}`}
+                  className="border-green-300 bg-white text-green-800"
                 />
                 <p className="text-green-700 text-sm mt-1">Tell others about yourself and your interests</p>
               </div>
@@ -155,7 +153,7 @@ const ProfileInformation = ({
                     <div className="flex items-center gap-4">
                       <Avatar className="w-16 h-16 rounded-full border-2 border-green-200">
                         <AvatarImage 
-                          src={userData.profilePicture} 
+                          src={previewUrl || userData.profilePicture || '/default-avatar.png'} 
                           className="object-cover"
                         />
                         <AvatarFallback className="bg-green-100 text-green-800">
@@ -187,17 +185,17 @@ const ProfileInformation = ({
           </CardContent>
         </Card>
       </div>
-      
+
       {isEditing && (
-        <div className="flex justify-end gap-4">
-          <Button 
-            variant="outline" 
+        <div className="flex justify-end space-x-4">
+          <Button
+            variant="outline"
             onClick={onCancelEdit}
-            className="border-green-300 text-green-700 hover:bg-green-50 hover:text-green-800"
+            className="bg-white hover:bg-green-50 text-green-700 hover:text-green-900"
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={onSaveChanges}
             className="bg-green-600 hover:bg-green-700 text-white"
           >
@@ -209,4 +207,4 @@ const ProfileInformation = ({
   );
 };
 
-export default ProfileInformation; 
+export default ProfileInformation;

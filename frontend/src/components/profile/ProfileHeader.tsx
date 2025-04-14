@@ -30,11 +30,11 @@ const ProfileHeader = ({ userData, isEditing, onEdit }: ProfileHeaderProps) => {
 
   return (
     <div className="bg-gradient-to-l from-leaf-100 to-green-50 rounded-xl shadow-md px-24 py-6 mb-8 border border-green-200">
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+      <div className="flex items-center space-x-8">
         <div className="relative">
           <Avatar className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-green-100">
             <AvatarImage 
-              src={userData?.profilePicture || undefined} 
+              src={userData?.profilePicture ? `${process.env.NEXT_PUBLIC_API_URL}${userData.profilePicture}` : '/default-avatar.png'} 
               alt={`${userData?.firstName || ''} ${userData?.lastName || ''}`}
               className="object-cover"
             />
@@ -82,20 +82,6 @@ const ProfileHeader = ({ userData, isEditing, onEdit }: ProfileHeaderProps) => {
           </Button>
         )}
       </div>
-      
-      {!isProfileComplete && (
-        <div className="mt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1 border-green-300 text-green-700 hover:bg-green-50 hover:text-green-800"
-            onClick={() => window.location.href = '/profile/complete'}
-          >
-            <AlertCircle className="w-4 h-4" />
-            Complete Profile
-          </Button>
-        </div>
-      )}
     </div>
   );
 };

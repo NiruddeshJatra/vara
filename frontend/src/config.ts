@@ -26,6 +26,7 @@ const config = {
     passwordResetConfirmEndpoint: '/auth/password-reset-confirm/',
     refreshTokenEndpoint: '/auth/token/refresh/',
     profileEndpoint: "/users/profiles/me/",
+    updateEndpoint: "/users/profiles/update_profile/",
     completeProfileEndpoint: '/users/profiles/complete_profile/',
   },
   

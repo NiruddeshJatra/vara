@@ -1,115 +1,54 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2, Eye, Banknote, Star } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { Listing } from '@/types/listings';
+import { Product } from '@/types/listings';
 import { Category, CATEGORY_DISPLAY } from '@/constants/productTypes';
-// Mock data for testing
-const mockListings: Listing[] = [
-  {
-    id: '1',
-    title: 'Professional DSLR Camera',
-    category: 'Electronics & Gadgets' as Category,
-    description: 'Canon EOS 5D Mark IV with 24-70mm lens. Perfect for professional photography.',
-    location: 'Dhaka, Bangladesh',
-    basePrice: 2000,
-    durationUnit: 'day',
-    images: ['https://images.unsplash.com/photo-1510127034890-ba27508e9f1c?q=80&w=2070&auto=format&fit=crop'],
-    unavailableDates: [],
-    securityDeposit: 5000,
-    condition: 'excellent',
-    itemAge: 2,
-    purchaseYear: '2022',
-    originalPrice: 250000,
-    ownershipHistory: 'firsthand',
-    pricingTiers: [
-      { durationUnit: 'day', price: 2000, maxPeriod: 7 },
-      { durationUnit: 'week', price: 12000, maxPeriod: 4 }
-    ],
-    owner: {
-      id: 'user1',
-      name: 'John Doe',
-      email: 'john@example.com'
-    }
-  },
-  {
-    id: '2',
-    title: 'Mountain Bike',
-    category: 'Sports & Fitness' as Category,
-    description: 'Trek Marlin 5 mountain bike, great condition, perfect for trails.',
-    location: 'Chittagong, Bangladesh',
-    basePrice: 800,
-    durationUnit: 'day',
-    images: ['https://images.unsplash.com/photo-1576435728678-68d0fbf94e91?q=80&w=2064&auto=format&fit=crop'],
-    unavailableDates: [],
-    securityDeposit: 3000,
-    condition: 'good',
-    itemAge: 1,
-    purchaseYear: '2023',
-    originalPrice: 45000,
-    ownershipHistory: 'firsthand',
-    pricingTiers: [
-      { durationUnit: 'day', price: 800, maxPeriod: 14 },
-      { durationUnit: 'week', price: 4500, maxPeriod: 8 }
-    ],
-    owner: {
-      id: 'user1',
-      name: 'John Doe',
-      email: 'john@example.com'
-    }
-  },
-  {
-    id: '3',
-    title: 'Camping Tent',
-    category: 'Outdoor & Camping' as Category,
-    description: '4-person camping tent with rain cover, barely used.',
-    location: 'Sylhet, Bangladesh',
-    basePrice: 500,
-    durationUnit: 'day',
-    images: ['https://images.unsplash.com/photo-1559526324-593bc073d938?q=80&w=2070&auto=format&fit=crop'],
-    unavailableDates: [],
-    securityDeposit: 2000,
-    condition: 'excellent',
-    itemAge: 1,
-    purchaseYear: '2023',
-    originalPrice: 15000,
-    ownershipHistory: 'firsthand',
-    pricingTiers: [
-      { durationUnit: 'day', price: 500, maxPeriod: 30 },
-      { durationUnit: 'week', price: 2500, maxPeriod: 12 }
-    ],
-    owner: {
-      id: 'user1',
-      name: 'John Doe',
-      email: 'john@example.com'
-    }
-  }
-];
+import productService from '@/services/product.service';
 
 const ProfileListings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [listings, setListings] = useState<Listing[]>(mockListings);
-  const [isLoading, setIsLoading] = useState(false);
+  const [listings, setListings] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        setIsLoading(true);
+        const userProducts = await productService.getUserProducts();
+        setListings(userProducts);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch your products. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchListings();
+  }, []);
 
   // Handle listing deletion
   const handleDeleteListing = async (listingId: string) => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await productService.deleteProduct(listingId);
       setListings(listings.filter(listing => listing.id !== listingId));
       toast({
         title: "Success",
-        description: "Listing deleted successfully.",
+        description: "Product deleted successfully.",
         variant: "default"
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to delete listing. Please try again.",
+        description: "Failed to delete product. Please try again.",
         variant: "destructive"
       });
     }
@@ -126,13 +65,13 @@ const ProfileListings = () => {
   };
 
   if (isLoading) {
-    return <div>Loading listings...</div>;
+    return <div>Loading products...</div>;
   }
 
   if (listings.length === 0) {
     return (
       <div className="text-center py-8">
-        <h3 className="text-lg font-medium text-gray-900">No Listings Yet</h3>
+        <h3 className="text-lg font-medium text-gray-900">No Products Yet</h3>
         <p className="mt-2 text-sm text-gray-500">
           You haven't uploaded any products for rent yet.
         </p>
@@ -152,7 +91,7 @@ const ProfileListings = () => {
         <Card key={listing.id} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
           <div className="relative h-60 overflow-hidden">
             <img
-              src={listing.images[0] || '/images/placeholder-image.jpg'}
+              src={listing.images[0]?.image || '/images/placeholder-image.jpg'}
               alt={listing.title}
               className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
               onError={(e) => {
@@ -168,12 +107,11 @@ const ProfileListings = () => {
           <CardHeader className="p-4">
             <CardTitle className="text-lg font-semibold text-gray-800 line-clamp-1">{listing.title}</CardTitle>
             <div className="flex items-center gap-2 mt-2">
-              <Badge variant="outline" className="text-green-700 border-green-200">
-                {listing.condition}
-              </Badge>
               <div className="flex items-center text-yellow-500">
                 <Star size={14} className="fill-current" />
-                <span className="ml-1 text-sm font-medium">4.5</span>
+                <span className="ml-1 text-sm font-medium">
+                  {typeof listing.averageRating === 'number' ? listing.averageRating.toFixed(1) : '0.0'}
+                </span>
               </div>
             </div>
           </CardHeader>
@@ -183,8 +121,12 @@ const ProfileListings = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <Banknote size={16} className="text-green-700 mr-1" />
-                <span className="text-lg font-bold text-green-700">{listing.pricingTiers[0].price}</span>
-                <span className="text-sm font-semibold text-green-700 ml-1">/{listing.pricingTiers[0].durationUnit}</span>
+                <span className="text-lg font-bold text-green-700">
+                  {listing.pricingTiers?.[0]?.price || 'N/A'}
+                </span>
+                <span className="text-sm font-semibold text-green-700 ml-1">
+                  /{listing.pricingTiers?.[0]?.durationUnit || 'N/A'}
+                </span>
               </div>
               {listing.securityDeposit > 0 && (
                 <div className="text-sm text-gray-500">

@@ -1,85 +1,47 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { History, Star } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileInformation from "@/components/profile/ProfileInformation";
-import EmptyState from "@/components/profile/EmptyState";
 import NavBar from "@/components/home/NavBar";
 import Footer from "@/components/home/Footer";
 import ProfileListings from "@/components/profile/ProfileListings";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthService from "@/services/auth.service";
-import { ProfileUpdateData } from '@/types/auth';
-import config from '@/config';
+import { ProfileUpdateData } from "@/types/auth";
 
 const Profile = () => {
   const { toast } = useToast();
-  const { user, isAuthenticated, updateProfile } = useAuth();
+  const { user, isAuthenticated, updateProfile, setUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
-  const [userData, setUserData] = useState({
-    profileCompleted: false,
-    firstName: "",
-    lastName: "",
-    username: "",
-    profilePicture: "",
-    memberSince: "",
-    isVerified: false,
-    isTrusted: false,
-    rating: 0,
-    notificationCount: 0,
-    email: "",
-    phone: "",
-    location: "",
-    dob: "",
-    bio: ""
-  });
   const [isLoading, setIsLoading] = useState(true);
+  const [profilePictureFile, setProfilePictureFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
         const currentUser = await AuthService.getCurrentUser();
-        
         if (currentUser) {
-          console.log('Initial profile fetch - Profile completion status:', currentUser.profileCompleted);
-          
-          // Set all data at once
-          setUserData({
-            ...userData,
-            ...currentUser,
-            firstName: currentUser.firstName || "",
-            lastName: currentUser.lastName || "",
-            username: currentUser.username || "",
-            profilePicture: currentUser.profilePicture || "",
-            memberSince: currentUser.memberSince || "",
-            isVerified: currentUser.isTrusted || false,
-            isTrusted: currentUser.isTrusted || false,
-            rating: currentUser.averageRating || 0,
-            notificationCount: currentUser.notificationCount || 0,
-            email: currentUser.email || "",
-            phone: currentUser.phoneNumber || "",
-            location: currentUser.location || "",
-            dob: currentUser.dateOfBirth || "",
-            bio: currentUser.bio || "",
-            profileCompleted: currentUser.profileCompleted || false
-          });
+          // Update the user data in AuthContext
+          setUser(currentUser);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch profile data",
+          variant: "destructive"
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, []);
-
-  useEffect(() => {
-    console.log('Profile state - Profile completion status:', userData?.profileCompleted);
-  }, [userData?.profileCompleted]);
+  }, []); // Empty dependency array to run only once on mount
 
   if (!isAuthenticated) {
     return (
@@ -112,6 +74,8 @@ const Profile = () => {
 
   const handleEditProfile = () => {
     setIsEditing(true);
+    // Reset the profile picture state
+    setProfilePictureFile(null);
     toast({
       title: "Edit mode activated",
       description: "You can now edit your profile information",
@@ -122,47 +86,57 @@ const Profile = () => {
 
   const handleSaveChanges = async () => {
     try {
+      // Create a ProfileUpdateData object with all fields
       const updateData: ProfileUpdateData = {
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        email: userData.email,
-        phone: userData.phone,
-        location: userData.location,
-        dateOfBirth: userData.dob,
-        bio: userData.bio,
-        profilePicture: userData.profilePicture ? new File([userData.profilePicture], 'profile.jpg') : null
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phoneNumber,
+        location: user.location,
+        dateOfBirth: user.dateOfBirth,
+        bio: user.bio,
+        profilePicture: profilePictureFile
       };
 
-      await updateProfile(updateData);
+      const response = await updateProfile(updateData);
+      
+      // Update the user state with the new data
+      setUser(response);
+      
+      // Reset edit mode
       setIsEditing(false);
+      setProfilePictureFile(null);
+      setPreviewUrl(null);
+      
       toast({
-        title: "Profile updated",
-        description: "Your changes have been saved successfully",
-        variant: "default",
-        duration: 3000,
+        title: "Success",
+        description: "Profile updated successfully",
       });
-    } catch (error: any) {
+    } catch (error) {
+      console.error('Error saving profile:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to update profile",
-        variant: "destructive",
-        duration: 3000,
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "Failed to update profile",
+        variant: "destructive"
       });
     }
   };
 
+  const handleInputChange = (field: keyof typeof user, value: string) => {
+    if (isEditing && user[field] !== value) {
+      // Create a copy of the user object and update the field
+      const updatedUser = { ...user, [field]: value };
+      setUser(updatedUser);
+    }
+  };
+
   const handleCancelEdit = () => {
+    // Reset the user state to the original values
+    const originalUser = { ...user };
+    setUser(originalUser);
     setIsEditing(false);
-    setUserData({
-      ...userData,
-      firstName: user.firstName || "",
-      lastName: user.lastName || "",
-      email: user.email || "",
-      phone: user.phoneNumber || "",
-      location: user.location || "",
-      dob: user.dateOfBirth || "",
-      bio: user.bio || "",
-    });
+    setProfilePictureFile(null);
+    setPreviewUrl(null);
     toast({
       title: "Changes discarded",
       description: "Your profile was not updated",
@@ -171,28 +145,13 @@ const Profile = () => {
     });
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setUserData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
   const handleProfilePictureUpload = (file: File) => {
-    if (file) {
+    if (file && isEditing) {
+      setProfilePictureFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         if (typeof reader.result === "string") {
-          setUserData((prev) => ({
-            ...prev,
-            profilePicture: reader.result as string,
-          }));
-          toast({
-            title: "Profile picture updated",
-            description: "Your new profile picture has been uploaded",
-            variant: "default",
-            duration: 3000,
-          });
+          setPreviewUrl(reader.result as string);
         }
       };
       reader.readAsDataURL(file);
@@ -205,7 +164,7 @@ const Profile = () => {
       <div className="min-h-screen bg-gradient-to-b from-green-50 to-white pt-20">
         <div className="w-full">
           <ProfileHeader
-            userData={userData}
+            userData={user}
             onEdit={handleEditProfile}
             isEditing={isEditing}
           />
@@ -226,24 +185,12 @@ const Profile = () => {
                 >
                   My Listings
                 </TabsTrigger>
-                <TabsTrigger
-                  value="rental-history"
-                  className="data-[state=active]:bg-white data-[state=active]:text-green-800 data-[state=active]:shadow-sm text-green-700"
-                >
-                  Rental History
-                </TabsTrigger>
-                <TabsTrigger
-                  value="reviews"
-                  className="data-[state=active]:bg-white data-[state=active]:text-green-800 data-[state=active]:shadow-sm text-green-700"
-                >
-                  Reviews
-                </TabsTrigger>
               </TabsList>
             </div>
 
             <TabsContent value="profile" className="pt-6">
               <ProfileInformation
-                userData={userData}
+                userData={user}
                 isEditing={isEditing}
                 onSaveChanges={handleSaveChanges}
                 onCancelEdit={handleCancelEdit}
@@ -254,48 +201,6 @@ const Profile = () => {
             
             <TabsContent value="listings">
               <ProfileListings />
-            </TabsContent>
-            
-            <TabsContent value="rental-history">
-              {userData.rentalHistory && userData.rentalHistory.length > 0 ? (
-                <div>
-                  {/* Rental history content would go here */}
-                  <p>Your rental history...</p>
-                </div>
-              ) : (
-                <EmptyState
-                  icon={History}
-                  title="No Rental History"
-                  description="You haven't rented any items yet. Explore our catalog to find what you need!"
-                  actionLabel="Browse Items"
-                  onAction={() => toast({
-                    title: "Browse Items",
-                    description: "Navigating to browse page",
-                    variant: "default"
-                  })}
-                />
-              )}
-            </TabsContent>
-            
-            <TabsContent value="reviews">
-              {userData.reviews && userData.reviews.length > 0 ? (
-                <div>
-                  {/* Reviews content would go here */}
-                  <p>Your reviews...</p>
-                </div>
-              ) : (
-                <EmptyState
-                  icon={Star}
-                  title="No Reviews Yet"
-                  description="You haven't received any reviews yet. Complete some transactions to build your reputation!"
-                  actionLabel="Explore Items"
-                  onAction={() => toast({
-                    title: "Explore Items",
-                    description: "Navigating to explore page",
-                    variant: "default"
-                  })}
-                />
-              )}
             </TabsContent>
           </Tabs>
         </div>

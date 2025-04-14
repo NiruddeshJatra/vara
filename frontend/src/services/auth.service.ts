@@ -330,47 +330,33 @@ class AuthService {
         throw new Error('No authentication token found');
       }
 
-      // Create form data for file uploads
       const formData = new FormData();
-      
-      // Add file fields if they exist
-      if (data.profilePicture) {
-        formData.append('profile_picture', data.profilePicture);
-      }
-      
-      // Add other fields
       Object.entries(data).forEach(([key, value]) => {
-        if (key !== 'profilePicture' && value !== null && value !== undefined) {
-          formData.append(key, String(value));
+        if (value !== null && value !== undefined) {
+          formData.append(key, value);
         }
       });
 
-      // Get the updated token after possible refresh
-      const updatedToken = localStorage.getItem(config.auth.tokenStorageKey);
-      if (!updatedToken) {
-        throw new Error('No authentication token found after refresh attempt');
-      }
-
-      const response = await api.patch(config.auth.profileEndpoint, formData, {
+      const response = await api.patch(config.auth.updateEndpoint, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${updatedToken}`
+          'Authorization': `Bearer ${token}`
         },
       });
 
-      // Update local storage with new user data
+      if (!response.data) {
+        throw new Error('Invalid response from profile update');
+      }
+
       const currentUser = this.getCurrentUserFromStorage();
       if (currentUser) {
-        const updatedUser = { 
-          ...currentUser, 
-          ...response.data
-        };
+        const updatedUser = { ...currentUser, ...response.data };
         localStorage.setItem(config.auth.userStorageKey, JSON.stringify(updatedUser));
       }
 
       return response.data;
     } catch (error: any) {
-      console.error('Error updating profile:', error);
+      console.error('AuthService - Profile update API error:', error);
       const errorMessage = getErrorMessage(error);
       toast({
         title: "Update Error",

@@ -14,7 +14,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   verifyEmail: (token: string) => Promise<void>;
   resendVerificationEmail: (email: string) => Promise<void>;
-  updateProfile: (data: ProfileUpdateData) => Promise<void>;
+  updateProfile: (data: ProfileUpdateData) => Promise<UserData>;
   requestPasswordReset: (email: string) => Promise<void>;
   confirmPasswordReset: (uid: string, token: string, newPassword1: string, newPassword2: string) => Promise<void>;
   setUser: React.Dispatch<React.SetStateAction<UserData | null>>;
@@ -98,8 +98,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       navigate(`/verify-email?email=${encodeURIComponent(data.email)}`);
     } catch (error: any) {
-      console.error('Registration error in context:', error);
-
       // If the error has a message (from our error handling in service)
       if (error instanceof Error && error.message) {
         toast({
@@ -166,42 +164,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await AuthService.resendVerificationEmail(email);
   };
 
-  const updateProfile = async (data: ProfileUpdateData): Promise<void> => {
+  const updateProfile = async (data: ProfileUpdateData) => {
     try {
       setLoading(true);
       const response = await AuthService.updateProfile(data);
       
-      // Update user state with new data
-      setUser(prev => {
-        if (!prev) return response;
-        return { ...prev, ...response };
-      });
-      
-      // Update the user data in localStorage
-      const userStr = localStorage.getItem(config.auth.userStorageKey);
-      if (userStr) {
-        try {
-          const userData = JSON.parse(userStr);
-          const updatedUser = { ...userData, ...response };
-          localStorage.setItem(config.auth.userStorageKey, JSON.stringify(updatedUser));
-        } catch (error) {
-          console.error('Error updating user data in localStorage:', error);
-        }
+      if (!response) {
+        throw new Error('No response received from profile update');
       }
       
-      toast({
-        title: "Success",
-        description: "Profile updated successfully",
-        variant: "default"
-      });
+      // Update local storage
+      localStorage.setItem(config.auth.userStorageKey, JSON.stringify(response));
+      
+      // Update user data only if it's different
+      if (JSON.stringify(user) !== JSON.stringify(response)) {
+        setUser(response);
+      }
+      
+      return response;
     } catch (error) {
-      console.error('Error updating profile:', error);
-      const errorMessage = getErrorMessage(error);
-      toast({
-        title: "Update Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
       throw error;
     } finally {
       setLoading(false);

@@ -28,8 +28,9 @@ class ProductService {
 
     const pricingTiers = (product.pricing_tiers || product.pricingTiers || []).map((tier: any) => ({
       ...tier,
-      durationUnit: tier.duration_unit || tier.durationUnit,
-      maxPeriod: tier.max_period || tier.maxPeriod
+      durationUnit: tier.duration_unit || tier.durationUnit || 'day',
+      maxPeriod: tier.max_period || tier.maxPeriod || 1,
+      price: typeof tier.price === 'number' ? tier.price : 0
     }));
 
     const unavailableDates = (product.unavailable_dates || product.unavailableDates || []).map((date: any) => ({
@@ -50,11 +51,15 @@ class ProductService {
       statusChangedAt: product.status_changed_at || product.statusChangedAt,
       viewsCount: product.views_count || product.viewsCount,
       rentalCount: product.rental_count || product.rentalCount,
-      averageRating: product.average_rating ? parseFloat(product.average_rating) : (product.averageRating || 0),
+      averageRating: product.average_rating !== null && product.average_rating !== undefined ? parseFloat(product.average_rating) : 0,
       createdAt: product.created_at || product.createdAt,
       updatedAt: product.updated_at || product.updatedAt,
       images,
-      pricingTiers,
+      pricingTiers: pricingTiers.length > 0 ? pricingTiers : [{
+        durationUnit: 'day',
+        maxPeriod: 1,
+        price: 0
+      }],
       unavailableDates
     };
   }

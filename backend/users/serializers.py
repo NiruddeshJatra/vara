@@ -123,6 +123,16 @@ class UserProfileSerializer(serializers.ModelSerializer):
     profile_picture_url = serializers.SerializerMethodField()
     member_since = serializers.SerializerMethodField()
     notification_count = serializers.SerializerMethodField()
+    bio = serializers.CharField(required=False, allow_blank=True)
+    location = serializers.CharField(required=False, allow_blank=True)
+    
+    # Add explicit profile_picture field with validator
+    profile_picture = serializers.ImageField(
+        required=False,
+        write_only=True,
+        allow_null=True,
+        validators=[validate_profile_picture]
+    )
 
     class Meta:
         model = CustomUser
@@ -155,7 +165,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "average_rating",
             "member_since",
             "notification_count",
-            "profile_completed"
+            "profile_completed",
+            "profile_picture_url"  # This is computed, should be read-only
         ]
 
     def get_full_name(self, obj):
@@ -237,6 +248,66 @@ class UserProfileSerializer(serializers.ModelSerializer):
             ValidationError: If the date of birth is invalid
         """
         return validate_date_of_birth(date_of_birth)
+
+    def validate(self, data):
+        """
+        Validate the profile data.
+        
+        Args:
+            data: The data to validate
+            
+        Returns:
+            The validated data
+        """
+        print("\nValidating profile data:", data)
+        
+        # Handle profile picture upload
+        profile_picture = data.get('profile_picture')
+        if profile_picture:
+            # Validate file size
+            if profile_picture.size > 10 * 1024 * 1024:  # 10MB limit
+                raise serializers.ValidationError({
+                    'profile_picture': ['File size must be less than 10MB']
+                })
+            
+            # Validate content type
+            if not profile_picture.content_type.startswith('image/'):
+                raise serializers.ValidationError({
+                    'profile_picture': ['File must be an image']
+                })
+
+        return data
+
+    def to_representation(self, instance):
+        """
+        Customize the representation of the serialized data.
+        
+        Args:
+            instance: The user instance
+            
+        Returns:
+            The serialized data with additional computed fields
+        """
+        data = super().to_representation(instance)
+        return data
+    
+    def update(self, instance, validated_data):
+        """
+        Custom update method to properly handle all fields, including files.
+        """
+        # Handle profile_picture separately
+        if 'profile_picture' in validated_data:
+            profile_picture = validated_data.pop('profile_picture')
+            instance.profile_picture = profile_picture
+        
+        # Update all other fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        # Save the instance
+        instance.save()
+        
+        return instance
 
 
 class TokenSerializer(serializers.Serializer):

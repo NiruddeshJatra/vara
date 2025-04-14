@@ -81,38 +81,51 @@ class UserViewSet(viewsets.ModelViewSet):
             return self.request.user
         return super().get_object()
 
-    @action(detail=False, methods=["get", "put", "patch"])
+    @action(detail=False, methods=["get"])
     def me(self, request):
-        """
-        Get the current user's profile.
-        
-        Returns:
-            Response: The user's profile data
-        """
-        # GET: Retrieve user profile
-        # PUT/PATCH: Update user profile (partial update supported)
+        """Get the current user's profile."""
         user = request.user
-        if request.method in ["put", "patch"]:
-            serializer = self.get_serializer(user, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data)
-
-        # GET: Return user profile with additional computed fields
         serializer = self.get_serializer(user)
-        data = serializer.data
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["put", "patch"])
+    def update_profile(self, request):
+        """Update the current user's profile."""
+        user = request.user
         
-        print("\nUser profile data being sent:")
-        print("User object:", user)
-        print("Serialized data:", data)
+        # Map frontend camelCase field names to backend snake_case field names
+        mapped_data = {}
+        field_mapping = {
+            'firstName': 'first_name',
+            'lastName': 'last_name',
+            'email': 'email',
+            'phone': 'phone_number',
+            'location': 'location',
+            'dateOfBirth': 'date_of_birth',
+            'bio': 'bio',
+            'profilePicture': 'profile_picture'
+        }
         
-        # Add additional computed fields
-        data["member_since"] = user.created_at.strftime("%B %Y")
-        data["notification_count"] = 2  # TODO: Implement actual notification count
+        # Map the field names correctly
+        for frontend_field, backend_field in field_mapping.items():
+            if frontend_field in request.data:
+                mapped_data[backend_field] = request.data.get(frontend_field)
         
-        print("Final response data:", data)
+        # Handle file uploads separately
+        if 'profilePicture' in request.FILES:
+            mapped_data['profile_picture'] = request.FILES.get('profilePicture')
         
-        return Response(data)
+        serializer = self.get_serializer(user, data=mapped_data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            user.refresh_from_db()  # Refresh to ensure we get the updated data
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Return updated profile data
+        updated_serializer = self.get_serializer(user)
+        return Response(updated_serializer.data)
 
     @action(detail=False, methods=["post"])
     def complete_profile(self, request):
