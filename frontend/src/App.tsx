@@ -41,7 +41,6 @@ const App = () => {
         <Sonner />
         <AdminAuthProvider>
           <PageTransition>
-            <ProfileCompletionButton />
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={
@@ -51,7 +50,12 @@ const App = () => {
                   <Index />
                 )
               } />
-              <Route path="/advertisements" element={<Advertisements />} />
+              <Route path="/advertisements" element={
+                <>
+                  <ProfileCompletionButton />
+                  <Advertisements />
+                </>
+              } />
               <Route path="/items/:productId" element={<ItemDetail />} />
               <Route path="/verify-email" element={<VerifyEmailNotice />} />
               <Route path="/auth/verify-email/:token" element={<EmailVerification />} />
@@ -126,7 +130,7 @@ const App = () => {
               <Route
                 path="/request-rental/:productId"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireCompleteProfile>
                     <RequestRental />
                   </ProtectedRoute>
                 }

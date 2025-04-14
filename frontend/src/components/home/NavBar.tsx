@@ -19,6 +19,7 @@ const NavBar = () => {
   const [location, setLocation] = useState('GEC, Chittagong');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
+  const [availability, setAvailability] = useState('any');
   const isHomePage = filepath.pathname === '/';
   const isAdvertismentsPage = filepath.pathname === '/advertisements';
   const isUploadProductPage = filepath.pathname === '/upload-product';
@@ -49,7 +50,7 @@ const NavBar = () => {
   };
 
   const handleUploadProduct = () => {
-    if (!user?.profileComplete) {
+    if (!user?.profileCompleted) {
       setShowProfileModal(true);
       return;
     }
@@ -86,6 +87,8 @@ const NavBar = () => {
               setFiltersOpen={setFiltersOpen}
               priceRange={priceRange}
               setPriceRange={setPriceRange}
+              availability={availability}
+              setAvailability={setAvailability}
             />
           </div>
         )}

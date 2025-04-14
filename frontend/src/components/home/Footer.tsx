@@ -79,7 +79,7 @@ const Footer = () => {
 
         {/* Copyright */}
         <div className="footer-copyright">
-          © 2025 Vhara, Inc. All rights reserved.
+          © 2025 Vara, Inc. All rights reserved.
         </div>
       </div>
     </footer>

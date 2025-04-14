@@ -3,11 +3,12 @@ from .models import CustomUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from .email_service import send_verification_email
 from django.utils.translation import gettext_lazy as _
-from django.utils import timezone
 from .validators import (
     validate_profile_picture,
     validate_date_of_birth,
-    validate_phone_number
+    validate_phone_number,
+    validate_registration_data,
+    validate_profile_completion,
 )
 
 
@@ -387,24 +388,7 @@ class ProfileCompletionSerializer(serializers.ModelSerializer):
         Raises:
             ValidationError: If required fields are missing
         """
-        # Ensure all required fields are present
-        required_fields = [
-            "first_name",
-            "last_name",
-            "phone_number",
-            "location",
-            "date_of_birth",
-        ]
-        
-        for field in required_fields:
-            if not data.get(field):
-                raise serializers.ValidationError({
-                    field: _("{field} is required for profile completion").format(
-                        field=field.replace('_', ' ').title()
-                    )
-                })
-        
-        return data
+        return validate_profile_completion(data)
 
     def update(self, instance, validated_data):
         """
@@ -420,27 +404,15 @@ class ProfileCompletionSerializer(serializers.ModelSerializer):
         # Set profile_completed to True when all required fields are present
         validated_data["profile_completed"] = True
         
+        # Handle file fields separately
+        if 'national_id_front' in validated_data:
+            instance.national_id_front = validated_data.pop('national_id_front')
+        if 'national_id_back' in validated_data:
+            instance.national_id_back = validated_data.pop('national_id_back')
+        
+        # Update all other fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         
         instance.save()
         return instance
-
-    def validate_national_id_number(self, value):
-        """
-        Validate the national ID number.
-        
-        Args:
-            value: The national ID number to validate
-            
-        Returns:
-            The validated national ID number
-            
-        Raises:
-            ValidationError: If the national ID number is invalid
-        """
-        if value:
-            # Check if the national ID number is already in use
-            if CustomUser.objects.filter(national_id_number=value).exclude(id=self.instance.id if self.instance else None).exists():
-                raise serializers.ValidationError(_("This national ID number is already registered"))
-        return value

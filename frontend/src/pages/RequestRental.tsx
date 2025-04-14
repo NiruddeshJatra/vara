@@ -24,7 +24,7 @@ export default function RequestRentalPage() {
       return;
     }
 
-    if (!user.profileComplete) {
+    if (!user.profileCompleted) {
       navigate('/auth/complete-profile', { state: { returnTo: location.pathname } });
       return;
     }
@@ -127,7 +127,7 @@ export default function RequestRentalPage() {
   }
 
   // No product or not authenticated
-  if (!product || !user?.profileComplete) {
+  if (!product || !user?.profileCompleted) {
     return null;
   }
 

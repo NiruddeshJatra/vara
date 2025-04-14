@@ -522,7 +522,7 @@ class CheckNationalIdView(APIView):
                 {"error": _("National ID number is required")}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+    
         # Check if the national ID is already registered with another user
         # Exclude the current user to allow them to keep their own national ID
         exists = CustomUser.objects.filter(
@@ -537,6 +537,12 @@ class CheckNationalIdView(APIView):
     def post(self, request):
         """
         Check if a national ID is already registered with another account.
+        
+        Args:
+            request: The HTTP request
+            
+        Returns:
+            Response: The result of the check
         """
         national_id = request.data.get('national_id_number')
         

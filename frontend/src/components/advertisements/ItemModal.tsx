@@ -77,7 +77,7 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
   };
 
   const handleRequestRental = () => {
-    if (!user?.profileComplete) {
+    if (!user?.profileCompleted) {
       setShowProfileModal(true);
       return;
     }

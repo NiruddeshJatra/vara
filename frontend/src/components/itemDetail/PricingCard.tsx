@@ -16,7 +16,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ product }) => {
   const { user } = useAuth();
 
   const handleRequestRental = () => {
-    if (!user?.profileComplete) {
+    if (!user?.profileCompleted) {
       setShowProfileModal(true);
       return;
     }

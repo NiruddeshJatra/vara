@@ -318,7 +318,12 @@ class ProductService {
    */
   async deleteProduct(productId: string): Promise<void> {
     try {
+      // First, fetch the product to get its related data
+      const product = await this.getProduct(productId);
+      
+      // Delete the product
       await api.delete(config.products.deleteEndpoint(productId));
+      
       toast({ 
         title: "Success", 
         description: "Product deleted successfully", 
@@ -326,7 +331,7 @@ class ProductService {
     } catch (error) {
       toast({ 
         title: "Deletion Failed", 
-        description: "Failed to delete product", 
+        description: "Failed to delete product. Please try again.", 
         variant: "destructive" 
       });
       throw error;
@@ -546,6 +551,29 @@ class ProductService {
         variant: "destructive" 
       });
       throw error;
+    }
+  }
+
+  /**
+   * Get similar products based on category
+   * @param category The product category
+   * @param excludeProductId ID of the product to exclude
+   * @returns List of similar products
+   */
+  async getSimilarProducts(category: string, excludeProductId: string): Promise<Product[]> {
+    try {
+      const response = await api.get(config.products.listEndpoint, {
+        params: {
+          category,
+          exclude_id: excludeProductId,
+          limit: 4
+        }
+      });
+      
+      return this.extractProducts(response).map(product => this.transformProduct(product));
+    } catch (error) {
+      console.error('Error fetching similar products:', error);
+      return [];
     }
   }
 }

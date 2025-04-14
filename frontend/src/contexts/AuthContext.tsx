@@ -66,9 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         variant: "default"
       });
       
-      // Get the redirect path from location state or default to advertisements
-      const from = (location.state as any)?.from?.pathname || '/advertisements';
-      navigate(from, { replace: true });
+      navigate('/advertisements', { replace: true });
     } catch (error: any) {
       const errorMessage = getErrorMessage(error);
       toast({
@@ -128,7 +126,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: "Logged out successfully",
         variant: "default"
       });
-      navigate('/auth/login/');
+      
+      // Clear any remaining auth-related data from session storage
+      sessionStorage.removeItem(config.auth.tokenStorageKey);
+      sessionStorage.removeItem(config.auth.refreshTokenStorageKey);
+      sessionStorage.removeItem(config.auth.userStorageKey);
+      
+      // Navigate to login page
+      navigate('/auth/login/', { replace: true });
     } catch (error) {
       console.error('Logout error:', error);
       toast({
@@ -136,10 +141,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: "Failed to log out. Please try again.",
         variant: "destructive"
       });
-      // Even if logout fails, clear local state
+      // Clear local state even if logout fails
       setUser(null);
       setIsAuthenticated(false);
-      navigate('/auth/login/');
+      // Clear session storage
+      sessionStorage.removeItem(config.auth.tokenStorageKey);
+      sessionStorage.removeItem(config.auth.refreshTokenStorageKey);
+      sessionStorage.removeItem(config.auth.userStorageKey);
+      // Navigate to login page with error state
+      navigate('/auth/login/', { replace: true, state: { error: true } });
     }
   };
 
@@ -173,12 +183,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('No response received from profile update');
       }
       
-      // Update local storage
+      // Update local storage with fresh data
       localStorage.setItem(config.auth.userStorageKey, JSON.stringify(response));
       
-      // Update user data only if it's different
-      if (JSON.stringify(user) !== JSON.stringify(response)) {
-        setUser(response);
+      // Always update user state with fresh data
+      setUser(response);
+      
+      // Force refresh of data
+      const freshUser = await AuthService.getCurrentUser();
+      if (freshUser) {
+        setUser(freshUser);
       }
       
       return response;

@@ -12,32 +12,34 @@ import { ProfileUpdateData } from "@/types/auth";
 
 const Profile = () => {
   const { toast } = useToast();
-  const { user, isAuthenticated, updateProfile, setUser } = useAuth();
+  const { user, isAuthenticated, setUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
   const [isLoading, setIsLoading] = useState(true);
   const [profilePictureFile, setProfilePictureFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
 
+  const refreshUserData = async () => {
+    try {
+      const currentUser = await AuthService.getCurrentUser();
+      if (currentUser) {
+        setUser(currentUser);
+      }
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to refresh profile data",
+        variant: "destructive"
+      });
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      try {
-        const currentUser = await AuthService.getCurrentUser();
-        if (currentUser) {
-          // Update the user data in AuthContext
-          setUser(currentUser);
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch profile data",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
-      }
+      await refreshUserData();
+      setIsLoading(false);
     };
 
     fetchData();
@@ -98,10 +100,16 @@ const Profile = () => {
         profilePicture: profilePictureFile
       };
 
-      const response = await updateProfile(updateData);
+      const response = await AuthService.updateProfile(updateData);
       
       // Update the user state with the new data
       setUser(response);
+      
+      // Force a refresh of the data
+      const freshUser = await AuthService.getCurrentUser();
+      if (freshUser) {
+        setUser(freshUser);
+      }
       
       // Reset edit mode
       setIsEditing(false);

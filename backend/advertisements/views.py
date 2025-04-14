@@ -131,11 +131,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             # Explicitly save to product_images related name
             image = serializer.save(product=product)
-            print(f"Added image {image.id} to product {product.id}")
-            
-            # Refresh the product from DB to ensure we get latest images
             product = Product.objects.get(id=product.id)
-            print(f"Product now has {product.product_images.count()} images")
             
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

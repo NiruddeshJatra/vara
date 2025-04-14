@@ -138,7 +138,7 @@ const ProfileInformation = ({
                 <Label htmlFor="bio" className="text-green-800 font-medium">Bio</Label>
                 <Textarea 
                   id="bio" 
-                  value={userData.bio} 
+                  value={userData.bio || ""} 
                   onChange={(e) => onInputChange('bio', e.target.value)}
                   disabled={!isEditing}
                   className="border-green-300 bg-white text-green-800"

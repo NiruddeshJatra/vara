@@ -136,11 +136,11 @@ class AuthService {
         localStorage.setItem(config.auth.refreshTokenStorageKey, response.data.tokens.refresh);
       }
 
-      // Store user data with profileComplete field
+      // Store user data with profileCompleted field
       if (response.data.user) {
         const userData = {
           ...response.data.user,
-          profileComplete: response.data.user.profile_completed === true
+          profileCompleted: response.data.user.profile_completed === true
         };
         localStorage.setItem(config.auth.userStorageKey, JSON.stringify(userData));
         return userData;
@@ -192,35 +192,21 @@ class AuthService {
   }
 
   // Logout the user
-  async logout(): Promise<any> {
+  async logout(): Promise<void> {
     try {
-      const refreshToken = localStorage.getItem('refresh_token');
-
-      if (refreshToken) {
-        // Send the refresh token to the blacklist endpoint
-        await axios.post(`${config.baseUrl}${config.auth.logoutEndpoint}`, {
-          refresh: refreshToken
-        });
-      }
-
-      // Clear local storage regardless of API response
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('user');
-
-      toast({
-        title: "Success",
-        description: "Logged out successfully",
-        variant: "default"
-      });
+      // Clear all auth-related data from local storage
+      localStorage.removeItem(config.auth.tokenStorageKey);
+      localStorage.removeItem(config.auth.refreshTokenStorageKey);
+      localStorage.removeItem(config.auth.userStorageKey);
+      
+      // Clear any auth-related data from session storage as well
+      sessionStorage.removeItem(config.auth.tokenStorageKey);
+      sessionStorage.removeItem(config.auth.refreshTokenStorageKey);
+      sessionStorage.removeItem(config.auth.userStorageKey);
+      
+      return Promise.resolve();
     } catch (error) {
-      console.error('Logout error:', error);
-      const errorMessage = getErrorMessage(error);
-      toast({
-        title: "Logout Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
+      console.error('Error during logout:', error);
       throw error;
     }
   }
@@ -289,6 +275,11 @@ class AuthService {
     return obj;
   }
 
+  // Helper: Convert camelCase to snake_case
+  toSnakeCase(str: string): string {
+    return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+  }
+
   // Get the current user's profile
   async getCurrentUser(): Promise<UserData | null> {
     try {
@@ -306,10 +297,16 @@ class AuthService {
       // Transform snake_case to camelCase
       const camelCaseData = this.transformToCamelCase(response.data);
       
-      // Update local storage with new user data
-      localStorage.setItem(config.auth.userStorageKey, JSON.stringify(camelCaseData));
+      // Ensure profileCompleted is a boolean
+      const userData = {
+        ...camelCaseData,
+        profileCompleted: !!camelCaseData.profileCompleted
+      };
       
-      return camelCaseData;
+      // Update local storage with new user data
+      localStorage.setItem(config.auth.userStorageKey, JSON.stringify(userData));
+      
+      return userData;
     } catch (error: any) {
       console.error('Error getting current user:', error);
       const errorMessage = getErrorMessage(error);
@@ -333,9 +330,15 @@ class AuthService {
       const formData = new FormData();
       Object.entries(data).forEach(([key, value]) => {
         if (value !== null && value !== undefined) {
-          formData.append(key, value);
+          formData.append(key, value); // Use camelCase keys only
         }
       });
+
+      // Debug: Print FormData keys and values
+      for (const pair of formData.entries()) {
+        // eslint-disable-next-line no-console
+        console.log(`[updateProfile] FormData: ${pair[0]} =`, pair[1]);
+      }
 
       const response = await api.patch(config.auth.updateEndpoint, formData, {
         headers: {
@@ -348,13 +351,19 @@ class AuthService {
         throw new Error('Invalid response from profile update');
       }
 
-      const currentUser = this.getCurrentUserFromStorage();
-      if (currentUser) {
-        const updatedUser = { ...currentUser, ...response.data };
-        localStorage.setItem(config.auth.userStorageKey, JSON.stringify(updatedUser));
-      }
+      // Transform snake_case to camelCase
+      const camelCaseData = this.transformToCamelCase(response.data);
+      
+      // Ensure profileCompleted is a boolean
+      const userData = {
+        ...camelCaseData,
+        profileCompleted: !!camelCaseData.profileCompleted
+      };
+      
+      // Update local storage with new user data
+      localStorage.setItem(config.auth.userStorageKey, JSON.stringify(userData));
 
-      return response.data;
+      return userData;
     } catch (error: any) {
       console.error('AuthService - Profile update API error:', error);
       const errorMessage = getErrorMessage(error);
@@ -367,21 +376,61 @@ class AuthService {
     }
   }
 
-  // Get the current user from local storage (cached version)
-  getCurrentUserFromStorage(): UserData | null {
-    const userStr = localStorage.getItem(config.auth.userStorageKey);
-    if (userStr) {
-      try {
-        const userData = JSON.parse(userStr);
-        return {
-          ...userData,
-          profileCompleted: userData.profileCompleted === true
-        };
-      } catch (error) {
-        return null;
+  // Complete user profile (initial onboarding)
+  async completeProfile(data: any): Promise<UserData> {
+    try {
+      const token = localStorage.getItem(config.auth.tokenStorageKey);
+      if (!token) {
+        throw new Error('No authentication token found');
       }
+      // Convert camelCase keys to snake_case for backend compatibility
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        // Convert keys to snake_case for backend
+        const snakeKey = this.toSnakeCase(key);
+        if (value !== undefined && value !== null) {
+          // Only append if value is string, File, or Blob
+          if (typeof value === 'string' || value instanceof Blob) {
+            formData.append(snakeKey, value);
+          } else if (typeof value === 'number' || typeof value === 'boolean') {
+            formData.append(snakeKey, String(value));
+          }
+        }
+      });
+      // Debug: Print FormData keys and values
+      for (const pair of formData.entries()) {
+        // eslint-disable-next-line no-console
+        console.log(`[completeProfile] FormData: ${pair[0]} =`, pair[1]);
+      }
+      const response = await api.post(config.auth.completeProfileEndpoint, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+      if (!response.data) {
+        throw new Error('Invalid response from profile completion');
+      }
+      // Transform snake_case to camelCase
+      const camelCaseData = this.transformToCamelCase(response.data);
+      // Ensure profileCompleted is a boolean
+      const userData = {
+        ...camelCaseData,
+        profileCompleted: !!camelCaseData.profileCompleted
+      };
+      // Update local storage with new user data
+      localStorage.setItem(config.auth.userStorageKey, JSON.stringify(userData));
+      return userData;
+    } catch (error: any) {
+      console.error('AuthService - Profile completion API error:', error);
+      const errorMessage = getErrorMessage(error);
+      toast({
+        title: "Profile Completion Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      throw error;
     }
-    return null;
   }
 
   // Check if a national ID is already registered
@@ -415,7 +464,7 @@ class AuthService {
 
   // Check if user is logged in
   isLoggedIn(): boolean {
-    return !!this.getCurrentUserFromStorage();
+    return !!this.getCurrentUser();
   }
 
   // Get access token

@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import NavBar from '@/components/home/NavBar';
 import Footer from '@/components/home/Footer';
 import { Product } from '@/types/listings';
-import { generateListings } from '@/utils/mockDataGenerator';
 import ItemModal from '@/components/advertisements/ItemModal';
+import { toast } from '@/components/ui/use-toast';
 
 // Import modular components
 import {
@@ -22,11 +22,7 @@ import {
   HostInfo,
   ProductHistory
 } from '@/components/itemDetail';
-import { DurationUnit } from '@/constants/rental';
 import productService from '@/services/product.service';
-
-// Generate mock listings
-const allListings = generateListings(40);
 
 // Add custom styles for sticky element
 const stickyStyles = `
@@ -47,7 +43,6 @@ const stickyStyles = `
 export default function ItemDetailPage() {
   const { productId } = useParams();
   const location = useLocation();
-  const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [similarItems, setSimilarItems] = useState<Product[]>([]);
@@ -58,7 +53,7 @@ export default function ItemDetailPage() {
     // Check if product was passed via state (from modal)
     const passedProduct = location.state?.product;
     
-    // Simulate API fetch with mock data
+    // Fetch product data from API
     const fetchProduct = async () => {
       setIsLoading(true);
       try {
@@ -66,60 +61,27 @@ export default function ItemDetailPage() {
         if (passedProduct && passedProduct.id === productId) {
           console.log("Using product from state:", passedProduct);
           setProduct(passedProduct);
-          
-          // Find similar items
-          const similar = allListings
-            .filter(item => 
-              item.id !== productId &&
-              item.category === passedProduct.category
-            )
-            .slice(0, 4);
-
-          setSimilarItems(similar);
         } else {
-          // Otherwise, try to find the product from API/mock data
-          console.log("Fetching product from API/mock:", productId);
-          
-          try {
-            // Try to get the product from the API first
-            const apiProduct = await productService.getProduct(productId as string);
-            if (apiProduct) {
-              setProduct(apiProduct);
-              
-              // Find similar items
-              const similar = allListings
-                .filter(item => 
-                  item.id !== productId &&
-                  item.category === apiProduct.category
-                )
-                .slice(0, 4);
-
-              setSimilarItems(similar);
-              return;
-            }
-          } catch (error) {
-            console.warn("API product fetch failed, falling back to mock data:", error);
+          // Fetch product from API
+          console.log("Fetching product from API:", productId);
+          const apiProduct = await productService.getProduct(productId as string);
+          if (apiProduct) {
+            setProduct(apiProduct);
           }
-          
-          // Fall back to mock data
-          const foundProduct = allListings.find(item => item.id === productId);
+        }
 
-          if (foundProduct) {
-            setProduct(foundProduct);
-
-            // Find similar items
-            const similar = allListings
-              .filter(item => 
-                item.id !== productId &&
-                item.category === foundProduct.category
-              )
-              .slice(0, 4);
-
-            setSimilarItems(similar);
-          }
+        // Fetch similar items from API
+        if (product) {
+          const similarResponse = await productService.getSimilarProducts(product.category, productId as string);
+          setSimilarItems(similarResponse || []);
         }
       } catch (error) {
         console.error('Error fetching product:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load product details",
+          variant: "destructive"
+        });
       } finally {
         setIsLoading(false);
       }
@@ -134,7 +96,7 @@ export default function ItemDetailPage() {
   };
 
   const getSelectedItem = () => {
-    return allListings.find(item => item.id === selectedItem) || null;
+    return similarItems.find(item => item.id === selectedItem) || null;
   };
 
   if (isLoading) {

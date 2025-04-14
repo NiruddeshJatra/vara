@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { AlertCircle } from 'lucide-react';
 import Footer from "@/components/home/Footer";
 import NavBar from "@/components/home/NavBar";
 import ContactDetailsStep from "@/components/auth/steps/ContactDetailsStep";
 import NationalIdStep from "@/components/auth/steps/NationalIdStep";
-import { ProfileFormData, ProfileFormErrors, ProfileCompletionData } from "@/types/auth";
+import { ProfileFormData, ProfileFormErrors } from "@/types/auth";
 import { useAuth } from "@/contexts/AuthContext";
 import config from "@/config";
 import { validateProfileForm, validatePhoneNumber, validateLocation, validateDateOfBirth, validateNationalId } from '@/utils/validations/auth.validations';
@@ -28,50 +27,24 @@ const CompleteProfile = () => {
   });
   const [errors, setErrors] = useState<ProfileFormErrors>({});
   const [isCheckingId, setIsCheckingId] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Redirect if profile is already complete
   useEffect(() => {
     if (user?.profileCompleted === true) {
       toast.info("Your profile is already complete.");
       navigate("/profile");
     }
-  }, [user?.profileCompleted, navigate]);
-
-  if (user?.profileCompleted === true) {
-    return null;
-  }
+  }, [user, navigate]);
 
   const handleInputChange = (
     eventOrValue: React.ChangeEvent<HTMLInputElement> | Partial<ProfileFormData>
   ) => {
-    let newData: Partial<ProfileFormData>;
     if ("target" in eventOrValue) {
       const { name, value } = eventOrValue.target;
-      newData = { [name]: value };
+      setFormData((prev) => ({ ...prev, [name]: value }));
     } else {
-      newData = eventOrValue;
+      setFormData((prev) => ({ ...prev, ...eventOrValue }));
     }
-
-    // Clear errors for the fields that are being updated
-    const newErrors = { ...errors };
-    Object.keys(newData).forEach(key => {
-      delete newErrors[key as keyof ProfileFormErrors];
-      // Clear any nested errors
-      Object.keys(newErrors).forEach(errorKey => {
-        if (errorKey.startsWith(`${key}.`)) {
-          delete newErrors[errorKey as keyof ProfileFormErrors];
-        }
-      });
-    });
-    setErrors(newErrors);
-
-    // Update form data
-    setFormData(prev => ({
-      ...prev,
-      ...(("target" in eventOrValue) 
-        ? { [eventOrValue.target.name]: eventOrValue.target.value }
-        : eventOrValue)
-    }));
   };
 
   const handleFileUpload = (
@@ -171,29 +144,54 @@ const CompleteProfile = () => {
     window.scrollTo(0, 0);
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setIsSubmitting(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (authLoading) return;
+
+    // Debug: Print formData before sending
+    // eslint-disable-next-line no-console
+    console.log('[CompleteProfile] Submitting formData:', formData);
 
     try {
-      // Validate form data
-      const validationErrors = validateForm();
-      if (Object.keys(validationErrors).length > 0) {
-        setErrors(validationErrors);
+      // Check token before submission
+      const token = localStorage.getItem(config.auth.tokenStorageKey);
+      if (!token) {
+        toast.error("No authentication token found. Please log in again.");
+        navigate("/auth/login");
         return;
       }
 
-      // Update profile
-      await updateProfile(formData);
+      // Make sure we have the profileCompleted field
+      const updatedFormData = {
+        ...formData,
+        profileCompleted: true
+      };
+
+      // Call the dedicated completeProfile service method
+      await authService.completeProfile(updatedFormData);
       toast.success("Profile completed successfully!");
-      navigate("/profile");
-    } catch (error) {
-      console.error('Error completing profile:', error);
-      toast.error("Failed to complete profile. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+      navigate("/advertisements");
+    } catch (error: any) {
+      // Handle specific error for duplicate national ID
+      if (error.message && error.message.includes("National ID is already registered")) {
+        setErrors(prev => ({
+          ...prev,
+          nationalIdNumber: "This National ID is already registered with another account"
+        }));
+        setCurrentStep(2); // Go back to the national ID step
+        window.scrollTo(0, 0);
+        toast.error("This National ID is already registered with another account");
+        return;
+      }
+      // Handle other errors
+      toast.error(error.message || "Failed to complete profile");
     }
   };
+
+  // If user's profile is already complete, don't render the form
+  if (user?.profileCompleted === true) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -210,27 +208,6 @@ const CompleteProfile = () => {
                 Please provide the following information to complete your profile
               </p>
             </div>
-
-            {/* Display validation errors from backend */}
-            {Object.keys(errors).length > 0 && (
-              <div className="mb-6 space-y-2 animate-fade-down">
-                {Object.entries(errors).map(([key, value]) => (
-                  <div key={key} className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <div className="flex items-start">
-                      <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 mr-2" />
-                      <div>
-                        <h3 className="text-sm font-medium text-red-800 capitalize">
-                          {key.split('_').join(' ')}
-                        </h3>
-                        <p className="text-sm text-red-700 mt-1">
-                          {Array.isArray(value) ? value[0] : value}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
 
             <div className="mb-8">
               <div className="flex items-center justify-between max-w-md mx-auto">
