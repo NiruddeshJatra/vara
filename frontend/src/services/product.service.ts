@@ -2,6 +2,7 @@ import api from './api.service';
 import { ProductStatus } from '../constants/productStatus';
 import { Product, ListingFormData } from '../types/listings';
 import config from '../config';
+import { toast } from '@/components/ui/use-toast';
 
 interface ProductResponse {
   data: any;
@@ -79,7 +80,11 @@ class ProductService {
       
       return this.extractProducts(response).map(product => this.transformProduct(product));
     } catch (error) {
-      console.error("Error fetching products:", error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to fetch products", 
+        variant: "destructive" 
+      });
       return [];
     }
   }
@@ -122,7 +127,11 @@ class ProductService {
       const response = await api.get(config.products.userProductsEndpoint);
       return this.extractProducts(response).map(product => this.transformProduct(product));
     } catch (error) {
-      console.error("Error fetching user products:", error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to fetch your products", 
+        variant: "destructive" 
+      });
       return [];
     }
   }
@@ -137,7 +146,11 @@ class ProductService {
       const response = await api.get(config.products.detailEndpoint(productId));
       return this.transformProduct(response.data);
     } catch (error) {
-      console.error(`Error fetching product ${productId}:`, error);
+      toast({ 
+        title: "Error", 
+        description: `Failed to fetch product ${productId}`, 
+        variant: "destructive" 
+      });
       throw error;
     }
   }
@@ -197,9 +210,19 @@ class ProductService {
           'Content-Type': 'multipart/form-data',
         },
       });
+      
+      toast({ 
+        title: "Success", 
+        description: "Product created successfully", 
+      });
+      
       return response.data;
-    } catch (error) {
-      console.error('\nAPI Error:', error);
+    } catch (error: any) {
+      toast({ 
+        title: "Product Creation Failed", 
+        description: error.response?.data?.detail || "Failed to create product", 
+        variant: "destructive" 
+      });
       throw error;
     }
   }
@@ -257,11 +280,29 @@ class ProductService {
           'Content-Type': 'multipart/form-data'
         },
       });
+      
+      toast({ 
+        title: "Success", 
+        description: "Product updated successfully", 
+      });
+      
       return response.data;
     } catch (error: any) {
       if (error.response?.data?.images) {
+        toast({ 
+          title: "Image Upload Failed", 
+          description: error.response.data.images.join(', '), 
+          variant: "destructive" 
+        });
         throw new Error(`Image upload failed: ${error.response.data.images.join(', ')}`);
       }
+      
+      toast({ 
+        title: "Update Failed", 
+        description: error.response?.data?.detail || "Failed to update product", 
+        variant: "destructive" 
+      });
+      
       throw error;
     }
   }
@@ -271,7 +312,20 @@ class ProductService {
    * @param productId The ID of the product to delete
    */
   async deleteProduct(productId: string): Promise<void> {
-    await api.delete(config.products.deleteEndpoint(productId));
+    try {
+      await api.delete(config.products.deleteEndpoint(productId));
+      toast({ 
+        title: "Success", 
+        description: "Product deleted successfully", 
+      });
+    } catch (error) {
+      toast({ 
+        title: "Deletion Failed", 
+        description: "Failed to delete product", 
+        variant: "destructive" 
+      });
+      throw error;
+    }
   }
 
   /**
@@ -281,14 +335,29 @@ class ProductService {
    * @returns The created image
    */
   async uploadImage(productId: string, image: File): Promise<any> {
-    const formData = new FormData();
-    formData.append('image', image);
-    const response = await api.post(`${config.products.detailEndpoint(productId)}/upload_image/`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
+    try {
+      const formData = new FormData();
+      formData.append('image', image);
+      const response = await api.post(`${config.products.detailEndpoint(productId)}/upload_image/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      toast({ 
+        title: "Success", 
+        description: "Image uploaded successfully", 
+      });
+      
+      return response.data;
+    } catch (error) {
+      toast({ 
+        title: "Upload Failed", 
+        description: "Failed to upload image", 
+        variant: "destructive" 
+      });
+      throw error;
+    }
   }
 
   /**
@@ -297,9 +366,23 @@ class ProductService {
    * @param imageId The ID of the image to delete
    */
   async deleteImage(productId: string, imageId: string): Promise<void> {
-    await api.delete(`${config.products.detailEndpoint(productId)}/delete_image/`, {
-      data: { image_id: imageId }
-    });
+    try {
+      await api.delete(`${config.products.detailEndpoint(productId)}/delete_image/`, {
+        data: { image_id: imageId }
+      });
+      
+      toast({ 
+        title: "Success", 
+        description: "Image deleted successfully", 
+      });
+    } catch (error) {
+      toast({ 
+        title: "Deletion Failed", 
+        description: "Failed to delete image", 
+        variant: "destructive" 
+      });
+      throw error;
+    }
   }
 
   /**
@@ -316,15 +399,24 @@ class ProductService {
     startDate?: string,
     endDate?: string
   ): Promise<{ available: boolean }> {
-    const params = new URLSearchParams();
-    if (date) params.append('date', date);
-    if (startDate) params.append('start_date', startDate);
-    if (endDate) params.append('end_date', endDate);
+    try {
+      const params = new URLSearchParams();
+      if (date) params.append('date', date);
+      if (startDate) params.append('start_date', startDate);
+      if (endDate) params.append('end_date', endDate);
 
-    const response = await api.get(
-      `${config.products.availabilityEndpoint(productId)}?${params.toString()}`
-    );
-    return response.data;
+      const response = await api.get(
+        `${config.products.availabilityEndpoint(productId)}?${params.toString()}`
+      );
+      return response.data;
+    } catch (error) {
+      toast({ 
+        title: "Availability Check Failed", 
+        description: "Failed to check product availability", 
+        variant: "destructive" 
+      });
+      throw error;
+    }
   }
 
   /**
@@ -339,10 +431,19 @@ class ProductService {
     duration: number,
     unit: string
   ): Promise<{ price: number }> {
-    const response = await api.get(
-      `${config.products.pricingEndpoint(productId)}?duration=${duration}&unit=${unit}`
-    );
-    return response.data;
+    try {
+      const response = await api.get(
+        `${config.products.pricingEndpoint(productId)}?duration=${duration}&unit=${unit}`
+      );
+      return response.data;
+    } catch (error) {
+      toast({ 
+        title: "Pricing Information Failed", 
+        description: "Failed to get pricing information", 
+        variant: "destructive" 
+      });
+      throw error;
+    }
   }
 
   /**
@@ -351,8 +452,23 @@ class ProductService {
    * @returns The updated product
    */
   async submitForReview(productId: string): Promise<Product> {
-    const response = await api.post(config.products.submitForReviewEndpoint(productId));
-    return response.data;
+    try {
+      const response = await api.post(config.products.submitForReviewEndpoint(productId));
+      
+      toast({ 
+        title: "Success", 
+        description: "Product submitted for review", 
+      });
+      
+      return response.data;
+    } catch (error) {
+      toast({ 
+        title: "Submission Failed", 
+        description: "Failed to submit product for review", 
+        variant: "destructive" 
+      });
+      throw error;
+    }
   }
 
   /**
@@ -363,11 +479,26 @@ class ProductService {
    * @returns The updated product
    */
   async updateStatus(productId: string, status: keyof typeof ProductStatus, message?: string): Promise<Product> {
-    const response = await api.patch(config.products.updateStatusEndpoint(productId), {
-      status,
-      message,
-    });
-    return response.data;
+    try {
+      const response = await api.patch(config.products.updateStatusEndpoint(productId), {
+        status,
+        message,
+      });
+      
+      toast({ 
+        title: "Status Updated", 
+        description: `Product status changed to ${status}`, 
+      });
+      
+      return response.data;
+    } catch (error) {
+      toast({ 
+        title: "Status Update Failed", 
+        description: "Failed to update product status", 
+        variant: "destructive" 
+      });
+      throw error;
+    }
   }
 
   /**
@@ -376,8 +507,13 @@ class ProductService {
    * @returns The updated view count
    */
   async incrementViews(productId: string): Promise<number> {
-    const response = await api.post(config.products.incrementViewsEndpoint(productId));
-    return response.data.views_count;
+    try {
+      const response = await api.post(config.products.incrementViewsEndpoint(productId));
+      return response.data.views_count;
+    } catch (error) {
+      // Silent failure for view counts
+      return 0;
+    }
   }
 
   /**
@@ -387,10 +523,25 @@ class ProductService {
    * @returns The updated average rating
    */
   async updateRating(productId: string, rating: number): Promise<number> {
-    const response = await api.post(config.products.updateRatingEndpoint(productId), {
-      rating,
-    });
-    return response.data.average_rating;
+    try {
+      const response = await api.post(config.products.updateRatingEndpoint(productId), {
+        rating,
+      });
+      
+      toast({ 
+        title: "Rating Updated", 
+        description: "Thank you for your rating", 
+      });
+      
+      return response.data.average_rating;
+    } catch (error) {
+      toast({ 
+        title: "Rating Failed", 
+        description: "Failed to update product rating", 
+        variant: "destructive" 
+      });
+      throw error;
+    }
   }
 }
 

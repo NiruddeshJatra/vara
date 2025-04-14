@@ -28,14 +28,18 @@ const CompleteProfile = () => {
   });
   const [errors, setErrors] = useState<ProfileFormErrors>({});
   const [isCheckingId, setIsCheckingId] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Redirect if profile is already complete
   useEffect(() => {
-    if (user?.profileComplete === true) {
+    if (user?.profileCompleted === true) {
       toast.info("Your profile is already complete.");
       navigate("/profile");
     }
-  }, [user, navigate]);
+  }, [user?.profileCompleted, navigate]);
+
+  if (user?.profileCompleted === true) {
+    return null;
+  }
 
   const handleInputChange = (
     eventOrValue: React.ChangeEvent<HTMLInputElement> | Partial<ProfileFormData>
@@ -167,64 +171,29 @@ const CompleteProfile = () => {
     window.scrollTo(0, 0);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (authLoading) return;
-  
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+
     try {
-      // Check token before submission
-      const token = localStorage.getItem(config.auth.tokenStorageKey);
-      if (!token) {
-        toast.error("No authentication token found. Please log in again.");
-        navigate("/auth/login");
+      // Validate form data
+      const validationErrors = validateForm();
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
         return;
       }
-  
-      // Make sure we have the profileCompleted field
-      const updatedFormData = {
-        ...formData,
-        profileCompleted: true
-      };
-  
-      console.log("Submitting profile data with token:", token.substring(0, 10) + "...");
-      const response = await updateProfile(updatedFormData);
-      
-      // Update the user's profile completion status in local storage
-      const currentUser = authService.getCurrentUser();
-      if (currentUser) {
-        const updatedUser = {
-          ...currentUser,
-          profileComplete: true
-        };
-        localStorage.setItem(config.auth.userStorageKey, JSON.stringify(updatedUser));
-      }
-      
-      // Force a refresh of the user context to update the UI
-      window.location.href = "/profile";
-    } catch (error: any) {
-      console.error("Profile update error:", error);
-      
-      // Handle specific error for duplicate national ID
-      if (error.message && error.message.includes("National ID is already registered")) {
-        setErrors(prev => ({
-          ...prev,
-          nationalIdNumber: "This National ID is already registered with another account"
-        }));
-        setCurrentStep(2); // Go back to the national ID step
-        window.scrollTo(0, 0);
-        toast.error("This National ID is already registered with another account");
-        return;
-      }
-      
-      // Handle other errors
-      toast.error(error.message || "Failed to update profile");
+
+      // Update profile
+      await updateProfile(formData);
+      toast.success("Profile completed successfully!");
+      navigate("/profile");
+    } catch (error) {
+      console.error('Error completing profile:', error);
+      toast.error("Failed to complete profile. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
-  // If user's profile is already complete, don't render the form
-  if (user?.profileComplete === true) {
-    return null;
-  }
 
   return (
     <div className="flex flex-col min-h-screen">

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AuthService from '../services/auth.service';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 import { ProfileUpdateData, UserData } from '../types/auth';
 import config from '../config';
 
@@ -60,14 +60,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userData = await AuthService.login({ email, password, rememberMe });
       setUser(userData);
       setIsAuthenticated(true);
-      toast.success('Login successful!');
+      toast({
+        title: "Success",
+        description: "Login successful!",
+        variant: "default"
+      });
       
       // Get the redirect path from location state or default to advertisements
       const from = (location.state as any)?.from?.pathname || '/advertisements';
       navigate(from, { replace: true });
     } catch (error: any) {
       const errorMessage = getErrorMessage(error);
-      toast.error(errorMessage);
+      toast({
+        title: "Login Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
       throw error;
     } finally {
       setLoading(false);
@@ -83,19 +91,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true); // Loading indicators (like spinners or loading text) will be shown and buttons will be disabled during registration
       await AuthService.register(data); // Make API request to register the user
-      toast.success(
-        'Registration successful! Please check your email to verify your account.',
-        { duration: 5000 }
-      );
+      toast({
+        title: "Registration Success",
+        description: "Registration successful! Please check your email to verify your account.",
+        variant: "default"
+      });
       navigate(`/verify-email?email=${encodeURIComponent(data.email)}`);
     } catch (error: any) {
       console.error('Registration error in context:', error);
 
       // If the error has a message (from our error handling in service)
       if (error instanceof Error && error.message) {
-        toast.error(error.message);
+        toast({
+          title: "Registration Error",
+          description: error.message,
+          variant: "destructive"
+        });
       } else {
-        toast.error('Registration failed. Please try again.');
+        toast({
+          title: "Registration Error",
+          description: "Registration failed. Please try again.",
+          variant: "destructive"
+        });
       }
       throw error;
     } finally {
@@ -108,10 +125,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await AuthService.logout();
       setUser(null);
       setIsAuthenticated(false);
-      toast.success('Logged out successfully');
+      toast({
+        title: "Success",
+        description: "Logged out successfully",
+        variant: "default"
+      });
       navigate('/auth/login/');
     } catch (error) {
       console.error('Logout error:', error);
+      toast({
+        title: "Logout Error",
+        description: "Failed to log out. Please try again.",
+        variant: "destructive"
+      });
       // Even if logout fails, clear local state
       setUser(null);
       setIsAuthenticated(false);
@@ -126,7 +152,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(response.user);
         setIsAuthenticated(true);
       }
-      toast.success('Email verified successfully');
+      toast({
+        title: "Success",
+        description: "Email verified successfully",
+        variant: "default"
+      });
     } catch (error) {
       throw error;
     }
@@ -159,11 +189,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
       
-      toast.success('Profile updated successfully');
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+        variant: "default"
+      });
     } catch (error) {
       console.error('Error updating profile:', error);
       const errorMessage = getErrorMessage(error);
-      toast.error(errorMessage);
+      toast({
+        title: "Update Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
       throw error;
     } finally {
       setLoading(false);
@@ -174,11 +212,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       await AuthService.requestPasswordReset(email);
-      toast.success('Password reset email sent successfully');
+      toast({
+        title: "Success",
+        description: "Password reset email sent successfully",
+        variant: "default"
+      });
     } catch (error: any) {
       console.error('Error requesting password reset:', error);
       const errorMessage = getErrorMessage(error);
-      toast.error(errorMessage);
+      toast({
+        title: "Reset Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
       throw error;
     } finally {
       setLoading(false);
@@ -189,11 +235,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       await AuthService.confirmPasswordReset(uid, token, newPassword1, newPassword2);
-      toast.success('Password reset successful');
+      toast({
+        title: "Success",
+        description: "Password reset successful",
+        variant: "default"
+      });
     } catch (error: any) {
       console.error('Error confirming password reset:', error);
       const errorMessage = getErrorMessage(error);
-      toast.error(errorMessage);
+      toast({
+        title: "Reset Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
       throw error;
     } finally {
       setLoading(false);

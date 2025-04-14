@@ -117,66 +117,27 @@ class ApiService {
               localStorage.removeItem(config.auth.tokenStorageKey);
               localStorage.removeItem(config.auth.refreshTokenStorageKey);
               toast({
-                title: "Error",
-                description:
-                  error instanceof Error
-                    ? error.message
-                    : "Your session has expired. Please log in again.",
-                variant: "destructive",
+                title: "Session Expired",
+                description: "Your session has expired. Please log in again.",
+                variant: "destructive"
               });
-              window.location.href = "/login";
-            }
-            return Promise.reject(refreshError);
-          }
-        }
-
-        // Handle rental-specific errors
-        if (error.response?.data && originalRequest.url?.includes("/rentals/")) {
-          const errorData = error.response.data;
-
-          // Handle rental validation errors
-          if (error.response.status === 400) {
-            if (errorData.error) {
-              return Promise.reject(new Error(errorData.error));
-            }
-            if (errorData.detail && errorData.detail.includes("own product")) {
-              return Promise.reject(new Error("You cannot rent your own product"));
-            }
-
-            // Format field-specific errors nicely
-            const formattedErrors = [];
-            if (errorData.start_time) {
-              formattedErrors.push(`Start time: ${errorData.start_time.join(", ")}`);
-            }
-            if (errorData.duration) {
-              formattedErrors.push(`Duration: ${errorData.duration.join(", ")}`);
-            }
-            if (errorData.duration_unit) {
-              formattedErrors.push(`Duration unit: ${errorData.duration_unit.join(", ")}`);
-            }
-            if (errorData.purpose) {
-              formattedErrors.push(`Purpose: ${errorData.purpose.join(", ")}`);
-            }
-            if (errorData.product) {
-              formattedErrors.push(`Product: ${errorData.product.join(", ")}`);
-            }
-
-            if (formattedErrors.length > 0) {
-              return Promise.reject(new Error(formattedErrors.join("\n")));
+              window.location.href = config.auth.loginEndpoint;
             }
           }
         }
 
-        // Handle product-specific errors
-        if (
-          error.response?.data &&
-          originalRequest.url?.includes("/products/")
-        ) {
+        // Handle API errors
+        if (error.response?.data) {
           const errorData = error.response.data;
-
-          // Product validation errors
+          
+          // Handle 400 errors (bad request)
           if (error.response.status === 400) {
             if (errorData.error) {
+              toast({
+                title: "Error",
+                description: errorData.error,
+                variant: "destructive"
+              });
               return Promise.reject(new Error(errorData.error));
             }
 
@@ -202,6 +163,11 @@ class ApiService {
             }
 
             if (formattedErrors.length > 0) {
+              toast({
+                title: "Validation Error",
+                description: formattedErrors.join("\n"),
+                variant: "destructive"
+              });
               return Promise.reject(new Error(formattedErrors.join("\n")));
             }
           }
@@ -209,33 +175,66 @@ class ApiService {
           // Product status errors
           if (error.response.status === 403) {
             if (errorData.detail?.includes("status")) {
+              toast({
+                title: "Status Error",
+                description: "This action is not allowed in the current status",
+                variant: "destructive"
+              });
               return Promise.reject(
                 new Error("This action is not allowed in the current status")
               );
             }
           }
-        }
 
-        // Handle other API errors
-        if (error.response?.data) {
-          const errorData = error.response.data;
+          // Handle other API errors
           if (typeof errorData === "string") {
+            toast({
+              title: "Error",
+              description: errorData,
+              variant: "destructive"
+            });
             return Promise.reject(new Error(errorData));
           } else if (errorData.detail) {
+            toast({
+              title: "Error",
+              description: errorData.detail,
+              variant: "destructive"
+            });
             return Promise.reject(new Error(errorData.detail));
           } else if (errorData.non_field_errors) {
+            toast({
+              title: "Error",
+              description: errorData.non_field_errors[0],
+              variant: "destructive"
+            });
             return Promise.reject(new Error(errorData.non_field_errors[0]));
           } else if (errorData.message) {
+            toast({
+              title: "Error",
+              description: errorData.message,
+              variant: "destructive"
+            });
             return Promise.reject(new Error(errorData.message));
           } else {
             const errorMessages = Object.entries(errorData)
               .map(([field, message]) => `${field}: ${message}`)
               .join(", ");
+            toast({
+              title: "Validation Error",
+              description: `Validation error: ${errorMessages}`,
+              variant: "destructive"
+            });
             return Promise.reject(
               new Error(`Validation error: ${errorMessages}`)
             );
           }
         }
+
+        toast({
+          title: "Network Error",
+          description: "Network error. Please check your connection and try again.",
+          variant: "destructive"
+        });
 
         return Promise.reject(
           new Error(

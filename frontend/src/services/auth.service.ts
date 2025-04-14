@@ -1,5 +1,6 @@
 import axios from 'axios';
 import config from '../config';
+import { toast } from '@/components/ui/use-toast';
 import { RegistrationData, ProfileUpdateData, LoginData, UserData } from '../types/auth';
 
 // Create a separate axios instance for auth endpoints (which don't use the /api prefix)
@@ -49,32 +50,15 @@ authApi.interceptors.request.use(request => {
     request.headers['Authorization'] = `Bearer ${token}`;
   }
 
-  console.log('Auth API Request:', {
-    url: request.url,
-    method: request.method,
-    data: request.data,
-    headers: request.headers
-  });
   return request;
 });
 
 // Add response debugging for development
 authApi.interceptors.response.use(
   response => {
-    console.log('Auth API Response:', {
-      status: response.status,
-      data: response.data,
-      url: response.config.url
-    });
     return response;
   },
   error => {
-    console.error('Auth API Error:', {
-      status: error.response?.status,
-      data: error.response?.data,
-      url: error.config?.url,
-      message: error.message
-    });
     return Promise.reject(error);
   }
 );
@@ -87,26 +71,12 @@ api.interceptors.request.use(request => {
     request.headers.Authorization = `Bearer ${token}`;
   }
 
-  // Log request details for debugging
-  console.log('API Request:', {
-    url: request.url,
-    method: request.method,
-    data: request.data,
-    headers: request.headers
-  });
-
   return request;
 });
 
 // Add response interceptor for token refresh
 api.interceptors.response.use(
   response => {
-    // Log successful responses for debugging
-    console.log('API Response:', {
-      status: response.status,
-      data: response.data,
-      url: response.config.url
-    });
     return response;
   },
   async error => {
@@ -120,7 +90,6 @@ api.interceptors.response.use(
         // Try to refresh the token
         const refreshToken = localStorage.getItem(config.auth.refreshTokenStorageKey);
         if (!refreshToken) {
-          console.error('No refresh token found');
           return Promise.reject(error);
         }
 
@@ -137,7 +106,6 @@ api.interceptors.response.use(
           return api(originalRequest);
         }
       } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError);
         // Only clear auth data and redirect if it's not a profile completion request
         if (!originalRequest.url || !originalRequest.url.includes('complete_profile')) {
           localStorage.removeItem(config.auth.tokenStorageKey);
@@ -148,14 +116,6 @@ api.interceptors.response.use(
       }
     }
 
-    // Log error responses for debugging
-    console.error('API Error:', {
-      status: error.response?.status,
-      data: error.response?.data,
-      url: error.config?.url,
-      message: error.message
-    });
-
     return Promise.reject(error);
   }
 );
@@ -164,15 +124,11 @@ class AuthService {
   // Login the user and store user details and token
   async login(data: LoginData): Promise<UserData> {
     try {
-      console.log('Attempting login with email:', data.email);
-
       const response = await authApi.post(config.auth.loginEndpoint, {
         email: data.email,
         password: data.password,
         remember: data.rememberMe
       });
-
-      console.log('Login successful:', response.data);
 
       // Make sure we properly store tokens
       if (response.data.tokens) {
@@ -192,18 +148,13 @@ class AuthService {
 
       return response.data.user;
     } catch (error: any) {
-      console.error('Login error details:', {
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message
+      console.error('Login error:', error);
+      const errorMessage = getErrorMessage(error);
+      toast({
+        title: "Login Error",
+        description: errorMessage,
+        variant: "destructive"
       });
-
-      // Handle unverified user error
-      if (error.response?.status === 401 &&
-        error.response?.data?.detail === 'Email address is not verified.') {
-        throw new Error('UNVERIFIED_EMAIL');
-      }
-
       throw error;
     }
   }
@@ -215,12 +166,6 @@ class AuthService {
   // 4. Includes specific error handling for common registration issues
   async register(data: RegistrationData): Promise<any> {
     try {
-      console.log('Attempting registration with data:', {
-        ...data,
-        password1: '(hidden for security)',
-        password2: '(hidden for security)'
-      });
-
       // Transform camelCase to snake_case for backend
       const apiData = {
         email: data.email,
@@ -233,40 +178,15 @@ class AuthService {
 
       const response = await authApi.post(config.auth.registerEndpoint, apiData);
 
-      console.log('Registration successful:', response.data);
       return response.data;
     } catch (error: any) {
-      console.error('Registration error details:', {
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message
-      });
-
-      // Handle common registration errors
-      if (error.response?.status === 400) {
-        const errorData = error.response.data;
-
-        // Check if the error is about existing email/username
-        if (errorData.email && errorData.email[0].includes('already exists')) {
-          throw new Error('An account with this email already exists.');
-        }
-        if (errorData.username && errorData.username[0].includes('already exists')) {
-          throw new Error('This username is already taken.');
-        }
-
-        // Handle password errors
-        if (errorData.password1) {
-          throw new Error(errorData.password1[0]);
-        }
-        if (errorData.password2) {
-          throw new Error(errorData.password2[0]);
-        }
-        if (errorData.non_field_errors) {
-          throw new Error(errorData.non_field_errors[0]);
-        }
-      }
-
       console.error('Registration error:', error);
+      const errorMessage = getErrorMessage(error);
+      toast({
+        title: "Registration Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
       throw error;
     }
   }
@@ -288,13 +208,19 @@ class AuthService {
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('user');
 
-      return { success: true };
+      toast({
+        title: "Success",
+        description: "Logged out successfully",
+        variant: "default"
+      });
     } catch (error) {
-      // Even if the API call fails, we should clear local storage
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('user');
-
+      console.error('Logout error:', error);
+      const errorMessage = getErrorMessage(error);
+      toast({
+        title: "Logout Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
       throw error;
     }
   }
@@ -319,6 +245,12 @@ class AuthService {
       return response.data;
     } catch (error) {
       console.error('Email verification error:', error);
+      const errorMessage = getErrorMessage(error);
+      toast({
+        title: "Verification Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
       throw error;
     }
   }
@@ -329,7 +261,13 @@ class AuthService {
       const response = await authApi.post(config.auth.resendVerificationEndpoint, { email });
       return response.data;
     } catch (error) {
-      console.error('Resend verification error:', error);
+      console.error('Resend verification email error:', error);
+      const errorMessage = getErrorMessage(error);
+      toast({
+        title: "Resend Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
       throw error;
     }
   }
@@ -359,30 +297,28 @@ class AuthService {
         return null;
       }
 
-      console.log('Fetching user profile...');
       const response = await api.get(config.auth.profileEndpoint, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-
-      console.log('Backend profile response:', response.data);
       
       // Transform snake_case to camelCase
       const camelCaseData = this.transformToCamelCase(response.data);
-      console.log('Transformed profile data:', camelCaseData);
       
       // Update local storage with new user data
       localStorage.setItem(config.auth.userStorageKey, JSON.stringify(camelCaseData));
       
       return camelCaseData;
     } catch (error: any) {
-      console.error('Error fetching user profile:', {
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message
+      console.error('Error getting current user:', error);
+      const errorMessage = getErrorMessage(error);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive"
       });
-      return null;
+      throw error;
     }
   }
 
@@ -434,10 +370,13 @@ class AuthService {
 
       return response.data;
     } catch (error: any) {
-      console.error('Profile update error:', error);
-      if (error.response?.data?.detail) {
-        throw new Error(error.response.data.detail);
-      }
+      console.error('Error updating profile:', error);
+      const errorMessage = getErrorMessage(error);
+      toast({
+        title: "Update Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
       throw error;
     }
   }
@@ -450,10 +389,9 @@ class AuthService {
         const userData = JSON.parse(userStr);
         return {
           ...userData,
-          profileComplete: userData.profileComplete === true
+          profileCompleted: userData.profileCompleted === true
         };
       } catch (error) {
-        console.error('Error parsing user data:', error);
         return null;
       }
     }
@@ -475,13 +413,16 @@ class AuthService {
         }
       });
       
-      // Log the response for debugging
-      console.log('National ID check response:', response.data);
-      
       // The backend returns {exists: true/false}
       return response.data.exists === true;
     } catch (error) {
-      console.error('National ID check error:', error);
+      console.error('Error checking national ID:', error);
+      const errorMessage = getErrorMessage(error);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
       throw error;
     }
   }
@@ -501,27 +442,51 @@ class AuthService {
     try {
       const response = await authApi.post(config.auth.passwordResetEndpoint, { email });
       return response.data;
-    } catch (error) {
-      console.error('Password reset request error:', error);
+    } catch (error: any) {
+      console.error('Error requesting password reset:', error);
+      const errorMessage = getErrorMessage(error);
+      toast({
+        title: "Reset Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
       throw error;
     }
   }
 
   // Confirm password reset
-  async confirmPasswordReset(uid: string, token: string, new_password1: string, new_password2: string): Promise<any> {
+  async confirmPasswordReset(uid: string, token: string, newPassword1: string, newPassword2: string): Promise<any> {
     try {
       const response = await authApi.post(
         `${config.auth.passwordResetConfirmEndpoint}${uid}/${token}/`,
         {
-          new_password1,
-          new_password2
+          newPassword1,
+          newPassword2
         }
       );
       return response.data;
-    } catch (error) {
-      console.error('Password reset confirmation error:', error);
+    } catch (error: any) {
+      console.error('Error confirming password reset:', error);
+      const errorMessage = getErrorMessage(error);
+      toast({
+        title: "Reset Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
       throw error;
     }
+  }
+}
+
+function getErrorMessage(error: any): string {
+  if (error.response?.data?.detail) {
+    return error.response.data.detail;
+  } else if (error.response?.data?.error) {
+    return error.response.data.error;
+  } else if (error.message) {
+    return error.message;
+  } else {
+    return 'An unknown error occurred.';
   }
 }
 

@@ -9,37 +9,77 @@ import NavBar from "@/components/home/NavBar";
 import Footer from "@/components/home/Footer";
 import ProfileListings from "@/components/profile/ProfileListings";
 import { useAuth } from "@/contexts/AuthContext";
+import AuthService from "@/services/auth.service";
 import { ProfileUpdateData } from '@/types/auth';
+import config from '@/config';
 
 const Profile = () => {
   const { toast } = useToast();
   const { user, isAuthenticated, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState({
+    profileCompleted: false,
+    firstName: "",
+    lastName: "",
+    username: "",
+    profilePicture: "",
+    memberSince: "",
+    isVerified: false,
+    isTrusted: false,
+    rating: 0,
+    notificationCount: 0,
+    email: "",
+    phone: "",
+    location: "",
+    dob: "",
+    bio: ""
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      setUserData({
-        ...user,
-        firstName: user.firstName || "",
-        lastName: user.lastName || "",
-        username: user.username || "",
-        profilePicture: user.profilePicture || "",
-        memberSince: user.memberSince || "",
-        isVerified: user.isTrusted || false,
-        isTrusted: user.isTrusted || false,
-        rating: user.averageRating || 0,
-        notificationCount: user.notificationCount || 0,
-        email: user.email || "",
-        phone: user.phoneNumber || "",
-        location: user.location || "",
-        dob: user.dateOfBirth || "",
-        bio: user.bio || "",
-        profileCompleted: user.profileCompleted || false
-      });
-    }
-  }, [user]);
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const currentUser = await AuthService.getCurrentUser();
+        
+        if (currentUser) {
+          console.log('Initial profile fetch - Profile completion status:', currentUser.profileCompleted);
+          
+          // Set all data at once
+          setUserData({
+            ...userData,
+            ...currentUser,
+            firstName: currentUser.firstName || "",
+            lastName: currentUser.lastName || "",
+            username: currentUser.username || "",
+            profilePicture: currentUser.profilePicture || "",
+            memberSince: currentUser.memberSince || "",
+            isVerified: currentUser.isTrusted || false,
+            isTrusted: currentUser.isTrusted || false,
+            rating: currentUser.averageRating || 0,
+            notificationCount: currentUser.notificationCount || 0,
+            email: currentUser.email || "",
+            phone: currentUser.phoneNumber || "",
+            location: currentUser.location || "",
+            dob: currentUser.dateOfBirth || "",
+            bio: currentUser.bio || "",
+            profileCompleted: currentUser.profileCompleted || false
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    console.log('Profile state - Profile completion status:', userData?.profileCompleted);
+  }, [userData?.profileCompleted]);
 
   if (!isAuthenticated) {
     return (
@@ -59,7 +99,7 @@ const Profile = () => {
     );
   }
 
-  if (!userData) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse">

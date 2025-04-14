@@ -1,7 +1,8 @@
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import PageLoader from '@/components/common/PageLoader';
+import { toast } from '@/components/ui/use-toast';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -18,22 +19,36 @@ interface ProtectedRouteProps {
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAuth = true, requireCompleteProfile = false }) => {
   const { isAuthenticated, loading, user } = useAuth();
   const location = useLocation();
-  
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log('ProtectedRoute - Auth status:', { isAuthenticated, profileCompleted: user?.profileCompleted });
+  }, [isAuthenticated, user?.profileCompleted]);
+
   if (loading) {
     return <PageLoader />;
   }
   
-  if (requireAuth && !isAuthenticated) {
-    // Redirect to login page but save the attempted location
-    return <Navigate to="/auth/login/" state={{ from: location }} replace />;
+  if (!isAuthenticated && requireAuth) {
+    toast({
+      title: "Authentication Required",
+      description: "Please log in to access this page",
+      variant: "destructive"
+    });
+    return <Navigate to="/auth/login/" replace />;
   }
   
-  if (!requireAuth && isAuthenticated) {
+  if (isAuthenticated && !requireAuth) {
     // Redirect to advertisements page if already authenticated
     return <Navigate to="/advertisements" replace />;
   }
 
-  if (requireCompleteProfile && !user?.profileComplete) {
+  if (requireCompleteProfile && !user?.profileCompleted) {
+    toast({
+      title: "Profile Incomplete",
+      description: "Please complete your profile to access this page",
+      variant: "destructive"
+    });
     return <Navigate to="/auth/complete-profile" state={{ from: location }} replace />;
   }
   

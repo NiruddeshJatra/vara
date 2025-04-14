@@ -2,6 +2,7 @@ import api from './api.service';
 import { RentalStatus } from '../constants/rental';
 import { RentalRequest, RentalRequestFormData } from '../types/rentals';
 import config from '../config';
+import { toast } from '@/components/ui/use-toast';
 
 /**
  * Service for handling rental-related operations
@@ -28,6 +29,12 @@ class RentalService {
       };
 
       const response = await api.post(config.rentals.createEndpoint, rentalData);
+      
+      toast({ 
+        title: "Rental Request Created", 
+        description: "Your rental request has been submitted successfully" 
+      });
+      
       return response.data;
     } catch (error: any) {
       // Handle specific error cases
@@ -36,20 +43,40 @@ class RentalService {
         
         // Handle own product error
         if (errorData.code === 'own_product_rental') {
+          toast({ 
+            title: "Rental Request Failed", 
+            description: "You cannot rent your own product", 
+            variant: "destructive" 
+          });
           throw new Error("You cannot rent your own product");
         }
         
         // Handle product unavailable error
         if (errorData.code === 'product_unavailable') {
+          toast({ 
+            title: "Product Unavailable", 
+            description: "Product is not available during the selected period", 
+            variant: "destructive" 
+          });
           throw new Error("Product is not available during the selected period");
         }
 
         // Handle other validation errors
         if (errorData.detail) {
+          toast({ 
+            title: "Validation Error", 
+            description: errorData.detail, 
+            variant: "destructive" 
+          });
           throw new Error(errorData.detail);
         }
       }
       
+      toast({ 
+        title: "Request Failed", 
+        description: "Failed to create rental request. Please try again.", 
+        variant: "destructive" 
+      });
       throw new Error('Failed to create rental request. Please try again.');
     }
   }
@@ -94,14 +121,36 @@ class RentalService {
           endpoint = config.rentals.cancelEndpoint(requestId);
           break;
         default:
+          toast({ 
+            title: "Invalid Status", 
+            description: `Invalid rental status: ${status}`, 
+            variant: "destructive" 
+          });
           throw new Error(`Invalid rental status: ${status}`);
       }
       
       const response = await api.post(endpoint, {
         reason: status === RentalStatus.REJECTED ? 'No reason provided' : undefined
       });
+      
+      const statusMessages = {
+        [RentalStatus.APPROVED]: "Rental request approved",
+        [RentalStatus.REJECTED]: "Rental request rejected",
+        [RentalStatus.CANCELLED]: "Rental request cancelled"
+      };
+      
+      toast({ 
+        title: "Status Updated", 
+        description: statusMessages[status] || `Status updated to ${status}`
+      });
+      
       return response.data;
     } catch (error) {
+      toast({ 
+        title: "Status Update Failed", 
+        description: `Failed to update rental status to ${status}`, 
+        variant: "destructive" 
+      });
       throw new Error(`Failed to update rental status to ${status}`);
     }
   }
@@ -115,6 +164,11 @@ class RentalService {
       const response = await api.get(config.rentals.myRentalsEndpoint);
       return response.data;
     } catch (error) {
+      toast({ 
+        title: "Fetch Failed", 
+        description: "Failed to fetch your rentals", 
+        variant: "destructive" 
+      });
       throw new Error('Failed to fetch user rentals');
     }
   }
@@ -129,6 +183,11 @@ class RentalService {
       const response = await api.get(config.rentals.listEndpoint);
       return response.data.filter(rental => rental.product.id === productId);
     } catch (error) {
+      toast({ 
+        title: "Fetch Failed", 
+        description: "Failed to fetch product rentals", 
+        variant: "destructive" 
+      });
       throw new Error('Failed to fetch product rentals');
     }
   }
@@ -143,6 +202,11 @@ class RentalService {
       const response = await api.get(config.rentals.detailEndpoint(requestId));
       return response.data;
     } catch (error) {
+      toast({ 
+        title: "Fetch Failed", 
+        description: "Failed to fetch rental request details", 
+        variant: "destructive" 
+      });
       throw new Error('Failed to fetch rental request');
     }
   }
@@ -156,6 +220,11 @@ class RentalService {
       const response = await api.get(config.rentals.myListingsRentalsEndpoint);
       return response.data;
     } catch (error) {
+      toast({ 
+        title: "Fetch Failed", 
+        description: "Failed to fetch your listings' rentals", 
+        variant: "destructive" 
+      });
       throw new Error('Failed to fetch user listings rentals');
     }
   }
@@ -170,6 +239,11 @@ class RentalService {
       const response = await api.get(config.rentals.photosEndpoint(rentalId));
       return response.data;
     } catch (error) {
+      toast({ 
+        title: "Fetch Failed", 
+        description: "Failed to fetch rental photos", 
+        variant: "destructive" 
+      });
       throw new Error('Failed to fetch rental photos');
     }
   }
@@ -192,8 +266,19 @@ class RentalService {
           'Content-Type': 'multipart/form-data'
         }
       });
+      
+      toast({ 
+        title: "Photo Uploaded", 
+        description: "Rental photo uploaded successfully" 
+      });
+      
       return response.data;
     } catch (error) {
+      toast({ 
+        title: "Upload Failed", 
+        description: "Failed to upload rental photo", 
+        variant: "destructive" 
+      });
       throw new Error('Failed to upload rental photo');
     }
   }
@@ -203,6 +288,11 @@ class RentalService {
       const response = await api.get(config.products.detailEndpoint(productId));
       return response.data;
     } catch (error) {
+      toast({ 
+        title: "Fetch Failed", 
+        description: "Failed to fetch product details", 
+        variant: "destructive" 
+      });
       throw new Error('Failed to fetch product');
     }
   }
