@@ -4,12 +4,6 @@ import { toast } from '@/components/ui/use-toast';
 import { RegistrationData, ProfileUpdateData, LoginData, UserData } from '../types/auth';
 
 // Create a separate axios instance for auth endpoints (which don't use the /api prefix)
-// This configuration:
-// 1. Uses the base URL without /api prefix
-// 2. Sends cookies with requests (needed for authentication)
-// 3. Automatically sets JSON content type
-// 4. Includes CSRF token for security
-// 5. Logs all requests for debugging
 const authApi = axios.create({
   baseURL: config.baseUrl,
   withCredentials: true,
@@ -26,6 +20,30 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Helper function to consistently manage storage
+const storage = {
+  getToken: () => localStorage.getItem(config.auth.tokenStorageKey),
+  setToken: (token: string) => localStorage.setItem(config.auth.tokenStorageKey, token),
+  getRefreshToken: () => localStorage.getItem(config.auth.refreshTokenStorageKey),
+  setRefreshToken: (token: string) => localStorage.setItem(config.auth.refreshTokenStorageKey, token),
+  getUser: () => {
+    const userData = localStorage.getItem(config.auth.userStorageKey);
+    return userData ? JSON.parse(userData) : null;
+  },
+  setUser: (user: UserData) => localStorage.setItem(config.auth.userStorageKey, JSON.stringify(user)),
+  clearAll: () => {
+    // Clear from localStorage
+    localStorage.removeItem(config.auth.tokenStorageKey);
+    localStorage.removeItem(config.auth.refreshTokenStorageKey);
+    localStorage.removeItem(config.auth.userStorageKey);
+    
+    // Clear from sessionStorage as well to ensure complete cleanup
+    sessionStorage.removeItem(config.auth.tokenStorageKey);
+    sessionStorage.removeItem(config.auth.refreshTokenStorageKey);
+    sessionStorage.removeItem(config.auth.userStorageKey);
+  }
+};
 
 // Get CSRF token from cookies
 function getCsrfToken() {
@@ -44,8 +62,8 @@ authApi.interceptors.request.use(request => {
     request.headers['X-CSRFToken'] = csrfToken;
   }
 
-  // Add authentication token if available
-  const token = localStorage.getItem(config.auth.tokenStorageKey);
+  // Add authentication token if available - using our storage helper
+  const token = storage.getToken();
   if (token && request.headers) {
     request.headers['Authorization'] = `Bearer ${token}`;
   }
@@ -65,8 +83,8 @@ authApi.interceptors.response.use(
 
 // Add request interceptor to include authentication token
 api.interceptors.request.use(request => {
-  // Add authentication token if available
-  const token = localStorage.getItem(config.auth.tokenStorageKey);
+  // Add authentication token if available - using our storage helper
+  const token = storage.getToken();
   if (token && request.headers) {
     request.headers.Authorization = `Bearer ${token}`;
   }
@@ -88,8 +106,9 @@ api.interceptors.response.use(
 
       try {
         // Try to refresh the token
-        const refreshToken = localStorage.getItem(config.auth.refreshTokenStorageKey);
+        const refreshToken = storage.getRefreshToken();
         if (!refreshToken) {
+          storage.clearAll(); // Clean up any partial state
           return Promise.reject(error);
         }
 
@@ -99,7 +118,7 @@ api.interceptors.response.use(
 
         if (response.data.access) {
           // Update the access token
-          localStorage.setItem(config.auth.tokenStorageKey, response.data.access);
+          storage.setToken(response.data.access);
 
           // Retry the original request with the new token
           originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
@@ -108,9 +127,7 @@ api.interceptors.response.use(
       } catch (refreshError) {
         // Only clear auth data and redirect if it's not a profile completion request
         if (!originalRequest.url || !originalRequest.url.includes('complete_profile')) {
-          localStorage.removeItem(config.auth.tokenStorageKey);
-          localStorage.removeItem(config.auth.refreshTokenStorageKey);
-          localStorage.removeItem(config.auth.userStorageKey);
+          storage.clearAll();
           window.location.href = config.auth.loginEndpoint;
         }
       }
@@ -124,6 +141,9 @@ class AuthService {
   // Login the user and store user details and token
   async login(data: LoginData): Promise<UserData> {
     try {
+      // Clear any existing data before login
+      storage.clearAll();
+      
       const response = await authApi.post(config.auth.loginEndpoint, {
         email: data.email,
         password: data.password,
@@ -132,8 +152,8 @@ class AuthService {
 
       // Make sure we properly store tokens
       if (response.data.tokens) {
-        localStorage.setItem(config.auth.tokenStorageKey, response.data.tokens.access);
-        localStorage.setItem(config.auth.refreshTokenStorageKey, response.data.tokens.refresh);
+        storage.setToken(response.data.tokens.access);
+        storage.setRefreshToken(response.data.tokens.refresh);
       }
 
       // Store user data with profileCompleted field
@@ -142,7 +162,7 @@ class AuthService {
           ...response.data.user,
           profileCompleted: response.data.user.profile_completed === true
         };
-        localStorage.setItem(config.auth.userStorageKey, JSON.stringify(userData));
+        storage.setUser(userData);
         return userData;
       }
 
@@ -159,11 +179,6 @@ class AuthService {
     }
   }
 
-  // This function:
-  // 1. Takes user registration data
-  // 2. Makes a secure API call to register the user
-  // 3. Returns the server's response or throws an error
-  // 4. Includes specific error handling for common registration issues
   async register(data: RegistrationData): Promise<any> {
     try {
       // Transform camelCase to snake_case for backend
@@ -194,16 +209,8 @@ class AuthService {
   // Logout the user
   async logout(): Promise<void> {
     try {
-      // Clear all auth-related data from local storage
-      localStorage.removeItem(config.auth.tokenStorageKey);
-      localStorage.removeItem(config.auth.refreshTokenStorageKey);
-      localStorage.removeItem(config.auth.userStorageKey);
-      
-      // Clear any auth-related data from session storage as well
-      sessionStorage.removeItem(config.auth.tokenStorageKey);
-      sessionStorage.removeItem(config.auth.refreshTokenStorageKey);
-      sessionStorage.removeItem(config.auth.userStorageKey);
-      
+      // Use our storage helper to clear all auth data consistently
+      storage.clearAll();
       return Promise.resolve();
     } catch (error) {
       console.error('Error during logout:', error);
@@ -219,13 +226,13 @@ class AuthService {
 
       // If verification is successful and returns tokens, store them
       if (response.data.tokens) {
-        localStorage.setItem(config.auth.tokenStorageKey, response.data.tokens.access);
-        localStorage.setItem(config.auth.refreshTokenStorageKey, response.data.tokens.refresh);
+        storage.setToken(response.data.tokens.access);
+        storage.setRefreshToken(response.data.tokens.refresh);
       }
 
       // If user data is returned, store it
       if (response.data.user) {
-        localStorage.setItem(config.auth.userStorageKey, JSON.stringify(response.data.user));
+        storage.setUser(response.data.user);
       }
 
       return response.data;
@@ -280,10 +287,10 @@ class AuthService {
     return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
   }
 
-  // Get the current user's profile
+  // Get the current user's profile with fresh data from server
   async getCurrentUser(): Promise<UserData | null> {
     try {
-      const token = localStorage.getItem(config.auth.tokenStorageKey);
+      const token = storage.getToken();
       if (!token) {
         return null;
       }
@@ -304,10 +311,16 @@ class AuthService {
       };
       
       // Update local storage with new user data
-      localStorage.setItem(config.auth.userStorageKey, JSON.stringify(userData));
+      storage.setUser(userData);
       
       return userData;
     } catch (error: any) {
+      // If there's an auth error, clear everything
+      if (error.response?.status === 401) {
+        storage.clearAll();
+        return null;
+      }
+      
       console.error('Error getting current user:', error);
       const errorMessage = getErrorMessage(error);
       toast({
@@ -322,7 +335,7 @@ class AuthService {
   // Update user profile
   async updateProfile(data: ProfileUpdateData): Promise<UserData> {
     try {
-      const token = localStorage.getItem(config.auth.tokenStorageKey);
+      const token = storage.getToken();
       if (!token) {
         throw new Error('No authentication token found');
       }
@@ -361,7 +374,7 @@ class AuthService {
       };
       
       // Update local storage with new user data
-      localStorage.setItem(config.auth.userStorageKey, JSON.stringify(userData));
+      storage.setUser(userData);
 
       return userData;
     } catch (error: any) {
@@ -379,10 +392,11 @@ class AuthService {
   // Complete user profile (initial onboarding)
   async completeProfile(data: any): Promise<UserData> {
     try {
-      const token = localStorage.getItem(config.auth.tokenStorageKey);
+      const token = storage.getToken();
       if (!token) {
         throw new Error('No authentication token found');
       }
+      
       // Convert camelCase keys to snake_case for backend compatibility
       const formData = new FormData();
       Object.entries(data).forEach(([key, value]) => {
@@ -397,29 +411,36 @@ class AuthService {
           }
         }
       });
+      
       // Debug: Print FormData keys and values
       for (const pair of formData.entries()) {
         // eslint-disable-next-line no-console
         console.log(`[completeProfile] FormData: ${pair[0]} =`, pair[1]);
       }
+      
       const response = await api.post(config.auth.completeProfileEndpoint, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`
         },
       });
+      
       if (!response.data) {
         throw new Error('Invalid response from profile completion');
       }
+      
       // Transform snake_case to camelCase
       const camelCaseData = this.transformToCamelCase(response.data);
+      
       // Ensure profileCompleted is a boolean
       const userData = {
         ...camelCaseData,
         profileCompleted: !!camelCaseData.profileCompleted
       };
+      
       // Update local storage with new user data
-      localStorage.setItem(config.auth.userStorageKey, JSON.stringify(userData));
+      storage.setUser(userData);
+      
       return userData;
     } catch (error: any) {
       console.error('AuthService - Profile completion API error:', error);
@@ -436,7 +457,7 @@ class AuthService {
   // Check if a national ID is already registered
   async checkNationalId(nationalId: string): Promise<boolean> {
     try {
-      const token = localStorage.getItem(config.auth.tokenStorageKey);
+      const token = storage.getToken();
       if (!token) {
         throw new Error('No authentication token found');
       }
@@ -464,12 +485,14 @@ class AuthService {
 
   // Check if user is logged in
   isLoggedIn(): boolean {
-    return !!this.getCurrentUser();
+    const token = storage.getToken();
+    const user = storage.getUser();
+    return !!(token && user);
   }
 
   // Get access token
   getAccessToken(): string | null {
-    return localStorage.getItem(config.auth.tokenStorageKey);
+    return storage.getToken();
   }
 
   // Request password reset

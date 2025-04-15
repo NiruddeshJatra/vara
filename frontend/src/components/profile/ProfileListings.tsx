@@ -21,8 +21,8 @@ const ProfileListings = () => {
   const fetchListings = async () => {
     try {
       setIsLoading(true);
-      const userProducts = await productService.getUserProducts();
-      setListings(userProducts);
+      const { products } = await productService.getUserProducts();
+      setListings(products);
     } catch (error) {
       toast({
         title: "Error",
@@ -71,7 +71,7 @@ const ProfileListings = () => {
 
   // Handle listing edit
   const handleEditListing = (listingId: string) => {
-    navigate(`/create-listing/${listingId}`, {
+    navigate(`/upload-product/`, {
       state: { 
         initialData: listings.find(listing => listing.id === listingId),
         isEditing: true,
@@ -93,12 +93,12 @@ const ProfileListings = () => {
     return (
       <div className="text-center py-8">
         <h3 className="text-lg font-medium text-gray-900">No Products Yet</h3>
-        <p className="mt-2 text-sm text-gray-500">
+        <p className="mt-2 text-sm text-gray-500 bg-green-600">
           You haven't uploaded any products for rent yet.
         </p>
         <Button
           className="mt-4"
-          onClick={() => navigate('/create-listing')}
+          onClick={() => navigate('/upload-product/')}
         >
           Upload Your First Product
         </Button>

@@ -39,6 +39,8 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        # Optimize DB queries for product list
+        queryset = queryset.select_related('owner').prefetch_related('product_images')
         if self.action == "list":
             if self.request.user.is_staff:
                 return queryset

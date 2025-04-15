@@ -18,6 +18,7 @@ interface AuthContextType {
   requestPasswordReset: (email: string) => Promise<void>;
   confirmPasswordReset: (uid: string, token: string, newPassword1: string, newPassword2: string) => Promise<void>;
   setUser: React.Dispatch<React.SetStateAction<UserData | null>>;
+  refreshUserData: () => Promise<void>; // New method to force refresh user data
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,6 +30,19 @@ const getErrorMessage = (error: any) => {
     'An error occurred';
 };
 
+// Helper function to clear all auth data from storage
+const clearAuthStorage = () => {
+  // Clear from localStorage
+  localStorage.removeItem(config.auth.tokenStorageKey);
+  localStorage.removeItem(config.auth.refreshTokenStorageKey);
+  localStorage.removeItem(config.auth.userStorageKey);
+  
+  // Clear from sessionStorage
+  sessionStorage.removeItem(config.auth.tokenStorageKey);
+  sessionStorage.removeItem(config.auth.refreshTokenStorageKey);
+  sessionStorage.removeItem(config.auth.userStorageKey);
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<UserData | null>(null);
@@ -36,16 +50,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    AuthService.getCurrentUser().then((currentUser) => {
+  // This function forces a refresh of user data from the server
+  const refreshUserData = async () => {
+    try {
+      setLoading(true);
+      const currentUser = await AuthService.getCurrentUser();
       if (currentUser) {
         setUser(currentUser);
         setIsAuthenticated(true);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
       }
+    } catch (error) {
+      console.error("Error refreshing user data:", error);
+      // If we can't get fresh data, clear everything to be safe
+      setUser(null);
+      setIsAuthenticated(false);
+      clearAuthStorage();
+    } finally {
       setLoading(false);
-    });
+    }
+  };
+
+  // Initial load of user data
+  useEffect(() => {
+    refreshUserData();
   }, []);
 
+  // Update authentication status when user changes
   useEffect(() => {
     if (user) {
       setIsAuthenticated(true);
@@ -54,9 +87,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [user]);
 
+  // Listen for location changes to refresh user data when needed
+  // This helps when navigating between pages or after actions
+  useEffect(() => {
+    // Only refresh if we're already authenticated
+    // This prevents unnecessary API calls when browsing public pages
+    if (isAuthenticated) {
+      refreshUserData();
+    }
+  }, [location.pathname]);
+
   const login = async (email: string, password: string, rememberMe: boolean) => {
     try {
       setLoading(true);
+      // First clear any existing auth data
+      clearAuthStorage();
+      
       const userData = await AuthService.login({ email, password, rememberMe });
       setUser(userData);
       setIsAuthenticated(true);
@@ -80,15 +126,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // The register function handles:
-  // 1. Making the API request to register the user
-  // 2. Error handling and displaying error messages
-  // 3. Managing the loading state
-  // 4. Updating the user state after successful registration
   const register = async (data: any) => {
     try {
-      setLoading(true); // Loading indicators (like spinners or loading text) will be shown and buttons will be disabled during registration
-      await AuthService.register(data); // Make API request to register the user
+      setLoading(true);
+      await AuthService.register(data);
       toast({
         title: "Registration Success",
         description: "Registration successful! Please check your email to verify your account.",
@@ -96,7 +137,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       navigate(`/verify-email?email=${encodeURIComponent(data.email)}`);
     } catch (error: any) {
-      // If the error has a message (from our error handling in service)
       if (error instanceof Error && error.message) {
         toast({
           title: "Registration Error",
@@ -119,18 +159,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     try {
       await AuthService.logout();
+      // Clear React state
       setUser(null);
       setIsAuthenticated(false);
+      
+      // Clear all storage
+      clearAuthStorage();
+      
       toast({
         title: "Success",
         description: "Logged out successfully",
         variant: "default"
       });
-      
-      // Clear any remaining auth-related data from session storage
-      sessionStorage.removeItem(config.auth.tokenStorageKey);
-      sessionStorage.removeItem(config.auth.refreshTokenStorageKey);
-      sessionStorage.removeItem(config.auth.userStorageKey);
       
       // Navigate to login page
       navigate('/auth/login/', { replace: true });
@@ -141,13 +181,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: "Failed to log out. Please try again.",
         variant: "destructive"
       });
-      // Clear local state even if logout fails
+      
+      // Clear local state and storage even if logout fails
       setUser(null);
       setIsAuthenticated(false);
-      // Clear session storage
-      sessionStorage.removeItem(config.auth.tokenStorageKey);
-      sessionStorage.removeItem(config.auth.refreshTokenStorageKey);
-      sessionStorage.removeItem(config.auth.userStorageKey);
+      clearAuthStorage();
+      
       // Navigate to login page with error state
       navigate('/auth/login/', { replace: true, state: { error: true } });
     }
@@ -190,10 +229,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(response);
       
       // Force refresh of data
-      const freshUser = await AuthService.getCurrentUser();
-      if (freshUser) {
-        setUser(freshUser);
-      }
+      await refreshUserData();
       
       return response;
     } catch (error) {
@@ -261,7 +297,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     resendVerificationEmail,
     requestPasswordReset,
     confirmPasswordReset,
-    setUser
+    setUser,
+    refreshUserData // Expose the refresh function
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

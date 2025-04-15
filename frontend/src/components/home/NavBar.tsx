@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, User, LogOut, Settings, Home, Package, MessageSquare, Plus, SlidersHorizontal } from 'lucide-react';
+import { Menu, X, User, LogOut, Home, Package, Plus, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -16,7 +16,7 @@ const NavBar = () => {
   const { isAuthenticated, logout, user } = useAuth();
   const [showSearchInNav, setShowSearchInNav] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [location, setLocation] = useState('GEC, Chittagong');
+  const [location, setLocation] = useState('GEC, Chittagong');    
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
   const [availability, setAvailability] = useState('any');

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { Star, Eye, ChevronLeft, ChevronRight, Banknote, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ interface ItemCardProps {
   searchScore?: number;
 }
 
-const ItemCard = ({
+const ItemCard = React.memo(({
   product,
   onQuickView,
   style,
@@ -100,6 +100,7 @@ const ItemCard = ({
           alt={product.title || 'Product image'}
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
           onError={handleImageError}
+          loading="lazy"
         />
         {imageError && (
           <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
@@ -107,6 +108,7 @@ const ItemCard = ({
               src="https://placehold.co/600x400?text=Image+Not+Available" 
               alt="Error loading image"
               className="w-full h-full object-cover"
+              loading="lazy"
             />
           </div>
         )}
@@ -194,6 +196,6 @@ const ItemCard = ({
       </div>
     </div>
   );
-};
+});
 
 export default ItemCard;

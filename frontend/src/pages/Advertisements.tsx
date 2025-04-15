@@ -4,7 +4,7 @@ import Footer from '@/components/home/Footer';
 import CompactSearchBar from '@/components/advertisements/CompactSearchBar';
 import CategoryScroll from '@/components/advertisements/CategoryScroll';
 import ItemModal from '@/components/advertisements/ItemModal';
-import ListingsGrid from '@/components/advertisements/ListingsGrid';
+import VirtualizedListingsGrid from '@/components/advertisements/VirtualizedListingsGrid';
 import LoadMoreTrigger from '@/components/advertisements/LoadMoreTrigger';
 import { CATEGORY_DISPLAY, CATEGORY_VALUES } from '@/constants/productTypes';
 import '../styles/main.css';
@@ -12,6 +12,8 @@ import { Product } from '@/types/listings';
 import { addDays, addMonths, isWithinInterval, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import productService from '@/services/product.service';
 import { toast } from 'react-hot-toast';
+import { useQuery } from '@tanstack/react-query';
+import debounce from 'lodash/debounce';
 
 type AppCategory = {
   id: string;
@@ -23,17 +25,57 @@ type AppCategory = {
 
 const Advertisements = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [location, setLocation] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([50, 10000]);
   const [allListings, setAllListings] = useState<Product[]>([]);
-  const [visibleItems, setVisibleItems] = useState(allListings.length);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [visibleItems, setVisibleItems] = useState(0);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [availability, setAvailability] = useState('any');
-  const [loading, setLoading] = useState(true);
   const [categoriesWithCounts, setCategoriesWithCounts] = useState<AppCategory[]>([]);
+  const PAGE_SIZE = 40;
+
+  // Debounce search input
+  const debouncedSetSearchTerm = debounce((value: string) => {
+    setDebouncedSearchTerm(value);
+  }, 350);
+
+  useEffect(() => {
+    debouncedSetSearchTerm(searchTerm);
+    return () => {
+      debouncedSetSearchTerm.cancel();
+    };
+  }, [searchTerm]);
+
+  // TanStack Query for fetching products
+  const {
+    data: productData,
+    isLoading: productsLoading,
+    isError: productsError,
+    refetch: refetchProducts,
+    isFetching: productsFetching
+  } = useQuery<{ products: Product[]; count: number }, Error>({
+    queryKey: ['products', page, selectedCategory, debouncedSearchTerm, priceRange, availability],
+    queryFn: async () => {
+      // You can add filters here as needed
+      return await productService.getActiveProducts(page, PAGE_SIZE);
+    }
+  });
+
+  useEffect(() => {
+    if (productData) {
+      setAllListings(prev => (page === 1 ? productData.products : [...prev, ...productData.products]));
+      setTotalCount(productData.count);
+      setHasMore(((productData.products?.length || 0) + allListings.length) < (productData.count || 0));
+      setVisibleItems((productData.products?.length || 0) + allListings.length);
+    }
+  }, [productData]);
 
   // Generate categories from constants
   useEffect(() => {
@@ -44,7 +86,6 @@ const Advertisements = () => {
       image: '',
       count: 0 // This will be updated when we get the actual data
     }));
-    
     setCategoriesWithCounts(initialCategories);
   }, []);
 
@@ -64,38 +105,8 @@ const Advertisements = () => {
       'automotive': 'car',
       'other': 'more-horizontal'
     };
-    
     return iconMap[categoryId] || 'tag';
   }
-
-  // Fetch products from API
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const data = await productService.getActiveProducts();
-        setAllListings(data);
-        
-        // Update category counts
-        const categoryCounts = data.reduce((counts: Record<string, number>, product) => {
-          counts[product.category] = (counts[product.category] || 0) + 1;
-          return counts;
-        }, {});
-        
-        // Update categories with counts
-        setCategoriesWithCounts(prev => prev.map(category => ({
-          ...category,
-          count: categoryCounts[category.id] || 0
-        })));
-      } catch (error) {
-        toast.error('Failed to load products. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
 
   // Helper function to check if a product is available during a specific date range
   const isProductAvailableDuring = (product: Product, startDate: Date, endDate: Date): boolean => {
@@ -110,7 +121,6 @@ const Advertisements = () => {
         // Handle date range
         const rangeStart = parseISO(unavailable.rangeStart);
         const rangeEnd = parseISO(unavailable.rangeEnd);
-        
         // Check if there's an overlap between the two ranges
         return (
           (rangeStart <= endDate && rangeEnd >= startDate)
@@ -129,7 +139,6 @@ const Advertisements = () => {
   // Calculate availability filter date range based on selected option
   const getAvailabilityDateRange = (): { start: Date, end: Date } | null => {
     const today = new Date();
-    
     switch (availability) {
       case 'next3days':
         return {
@@ -280,26 +289,6 @@ const Advertisements = () => {
     setVisibleItems(allListings.length);
   };
 
-  // Intersection Observer for infinite scrolling effect
-  useEffect(() => {
-    const observer = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting) {
-        loadMoreItems();
-      }
-    }, {
-      threshold: 0.1
-    });
-    const loadMoreTrigger = document.getElementById('load-more-trigger');
-    if (loadMoreTrigger) {
-      observer.observe(loadMoreTrigger);
-    }
-    return () => {
-      if (loadMoreTrigger) {
-        observer.unobserve(loadMoreTrigger);
-      }
-    };
-  }, [allListings.length]);
-
   const getPageTitle = () => {
     if (selectedCategory) {
       return `${CATEGORY_DISPLAY[selectedCategory]} Items`;
@@ -351,10 +340,16 @@ const Advertisements = () => {
               </span>
             </h1>
 
-            {loading ? (
+            {productsLoading || productsError ? (
               <div className="p-6 sm:p-8 md:p-10 text-center animate-scale-up">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mx-auto mb-4"></div>
-                <p className="text-gray-500 text-sm sm:text-base">Loading products...</p>
+                {productsError ? (
+                  <h2 className="text-lg sm:text-xl font-medium text-gray-700 mb-2">Failed to Load Products</h2>
+                ) : (
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mx-auto mb-4"></div>
+                )}
+                <p className="text-gray-500 text-sm sm:text-base">
+                  {productsError ? 'Please try again later.' : 'Loading products...'}
+                </p>
               </div>
             ) : sortedListings.length === 0 ? (
               <div className="p-6 sm:p-8 md:p-10 text-center animate-scale-up">
@@ -366,9 +361,11 @@ const Advertisements = () => {
             ) : (
               <>
                 <div className="animate-fade-up delay-400">
-                  <ListingsGrid
+                  <VirtualizedListingsGrid
                     displayedListings={displayedListings}
                     handleQuickView={handleQuickView}
+                    searchTerm={searchTerm}
+                    loading={productsLoading || productsFetching}
                   />
                 </div>
 

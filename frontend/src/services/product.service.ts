@@ -75,22 +75,24 @@ class ProductService {
 
   /**
    * Get all active products (visible to all users)
-   * @returns List of active products
+   * @param page Page number
+   * @param pageSize Number of products per page
+   * @returns List of active products and total count
    */
-  async getActiveProducts(): Promise<Product[]> {
+  async getActiveProducts(page = 1, pageSize = 20): Promise<{ products: Product[]; count: number }> {
     try {
       const response = await api.get(config.products.listEndpoint, {
-        params: { page_size: 100 }
+        params: { page, page_size: pageSize }
       });
-      
-      return this.extractProducts(response).map(product => this.transformProduct(product));
+      const products = this.extractProducts(response).map(product => this.transformProduct(product));
+      return { products, count: response.data.count || products.length };
     } catch (error) {
       toast({ 
         title: "Error", 
         description: "Failed to fetch products", 
         variant: "destructive" 
       });
-      return [];
+      return { products: [], count: 0 };
     }
   }
 
@@ -124,20 +126,25 @@ class ProductService {
   }
 
   /**
-   * Get all products for the current user
-   * @returns List of products
+   * Get all products for the current user (paginated)
+   * @param page Page number
+   * @param pageSize Number of products per page
+   * @returns List of products and total count
    */
-  async getUserProducts(): Promise<Product[]> {
+  async getUserProducts(page = 1, pageSize = 40): Promise<{ products: Product[]; count: number }> {
     try {
-      const response = await api.get(config.products.userProductsEndpoint);
-      return this.extractProducts(response).map(product => this.transformProduct(product));
+      const response = await api.get(config.products.userProductsEndpoint, {
+        params: { page, page_size: pageSize }
+      });
+      const products = this.extractProducts(response).map(product => this.transformProduct(product));
+      return { products, count: response.data.count || products.length };
     } catch (error) {
       toast({ 
         title: "Error", 
         description: "Failed to fetch your products", 
         variant: "destructive" 
       });
-      return [];
+      return { products: [], count: 0 };
     }
   }
 
@@ -149,11 +156,15 @@ class ProductService {
   async getProduct(productId: string): Promise<Product> {
     try {
       const response = await api.get(config.products.detailEndpoint(productId));
+      // If the API returns paginated data, extract the first product
+      if (Array.isArray(response.data.results) && response.data.results.length > 0) {
+        return this.transformProduct(response.data.results[0]);
+      }
       return this.transformProduct(response.data);
     } catch (error) {
       toast({ 
         title: "Error", 
-        description: `Failed to fetch product ${productId}`, 
+        description: `Failed to fetch product ${productId}`,
         variant: "destructive" 
       });
       throw error;
