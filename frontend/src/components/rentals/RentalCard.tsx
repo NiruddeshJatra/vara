@@ -1,8 +1,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { differenceInDays, formatDistanceToNow } from "date-fns";
-import { Rental } from "@/pages/Rentals";
+import { differenceInDays, formatDistanceToNow, isValid } from "date-fns";
+import { Rental } from "@/types/rentals";
+import { RentalStatus } from '@/constants/rental';
 import { Clock, ThumbsUp, ThumbsDown, Calendar as CalendarIcon, Eye, Shield } from "lucide-react";
 
 interface RentalCardProps {
@@ -20,25 +21,36 @@ const RentalCard = ({
 }: RentalCardProps) => {
   const statusConfig = {
     pending: { color: 'bg-amber-100 text-amber-800 border-amber-300', icon: <Clock className="h-4 w-4" /> },
-    accepted: { color: 'bg-blue-100 text-blue-800 border-blue-300', icon: <ThumbsUp className="h-4 w-4" /> },
-    in_progress: { color: 'bg-green-100 text-green-800 border-green-300', icon: <ThumbsUp className="h-4 w-4" /> },
+    approved: { color: 'bg-blue-100 text-blue-800 border-blue-300', icon: <ThumbsUp className="h-4 w-4" /> },
     completed: { color: 'bg-purple-100 text-purple-800 border-purple-300', icon: <ThumbsUp className="h-4 w-4" /> },
     rejected: { color: 'bg-red-100 text-red-800 border-red-300', icon: <ThumbsDown className="h-4 w-4" /> },
     cancelled: { color: 'bg-orange-100 text-orange-800 border-orange-300', icon: <ThumbsDown className="h-4 w-4" /> }
   };
 
-  const formatDate = (dateString: string) => 
-    new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return dateString && isValid(date)
+      ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      : 'N/A';
+  };
 
   const getTimeInfo = () => {
     const now = new Date();
-    const start = new Date(rental.startTime);
-    const end = new Date(rental.endTime);
-    
-    if (rental.status === 'in_progress') return `${differenceInDays(end, now)}d left`;
-    if (rental.status === 'accepted') return `Starts in ${differenceInDays(start, now)}d`;
-    if (rental.status === 'pending') {
-      const timeAgo = formatDistanceToNow(new Date(rental.createdAt))
+    const start = new Date(rental.startDate);
+    const end = new Date(rental.endDate);
+
+    if (!rental.startDate || !isValid(start) || !rental.endDate || !isValid(end)) {
+      return "N/A";
+    }
+
+    if (rental.status === RentalStatus.APPROVED) {
+      if (now < start) return `Starts in ${differenceInDays(start, now)}d`;
+      if (now >= start && now <= end) return `${differenceInDays(end, now)}d left`;
+    }
+    if (rental.status === RentalStatus.PENDING) {
+      const created = new Date(rental.createdAt);
+      if (!rental.createdAt || !isValid(created)) return "N/A";
+      const timeAgo = formatDistanceToNow(created)
         .replace(/about|over|almost|less than/g, '')
         .replace('months', 'mo')
         .replace('month', 'mo')
@@ -51,9 +63,10 @@ const RentalCard = ({
         .trim();
       return `Requested ${timeAgo} ago`;
     }
-    
-    // Format "Completed X time ago" more concisely
-    const completedTime = formatDistanceToNow(new Date(rental.updatedAt))
+    // For completed/cancelled/etc.
+    const updated = new Date(rental.updatedAt);
+    if (!rental.updatedAt || !isValid(updated)) return "N/A";
+    const completedTime = formatDistanceToNow(updated)
       .replace(/about|over|almost|less than/g, '')
       .replace('months', 'mo')
       .replace('month', 'mo')
@@ -64,26 +77,29 @@ const RentalCard = ({
       .replace('hours', 'hr')
       .replace('hour', 'hr')
       .trim();
-    
-    return `Completed ${completedTime} ago`;
+    return `Updated ${completedTime} ago`;
   };
 
-  const profile = userRole === 'renter' 
-    ? { name: rental.ownerName, image: rental.ownerImage }
-    : { name: rental.renterName, image: rental.renterImage };
+  const profile = userRole === 'renter'
+    ? { name: rental.owner || 'Owner', image: '' }
+    : { name: rental.renter || 'Renter', image: '' };
+
+  const imageUrl = rental.product?.images?.[0]?.image || '';
+  const productTitle = rental.product?.title || '';
+  const price = rental.totalCost;
 
   return (
-    <div className="flex h-64 bg-gradient-to-r from-white to-leaf-100 rounded-lg border border-green-300 overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
+    <div className="flex h-64 bg-gradient-to-r from-white to-leaf-100 rounded-lg border overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
       {/* Image Section */}
       <div className="w-1/2 relative">
         <img 
-          src={rental.itemImage} 
-          alt={rental.itemTitle}
+          src={imageUrl} 
+          alt={productTitle}
           className="w-full h-full object-cover"
         />
         <div className="absolute top-3 left-3">
-          <Badge className={`${statusConfig[rental.status as keyof typeof statusConfig].color} px-2 py-1 flex items-center gap-1 border text-xs`}>
-            {statusConfig[rental.status as keyof typeof statusConfig].icon}
+          <Badge className={`${statusConfig[rental.status as keyof typeof statusConfig]?.color ?? ''} px-2 py-1 flex items-center gap-1 border text-xs`}>
+            {statusConfig[rental.status as keyof typeof statusConfig]?.icon}
             {rental.status.charAt(0).toUpperCase() + rental.status.slice(1).replace('_', ' ')}
           </Badge>
         </div>
@@ -93,13 +109,13 @@ const RentalCard = ({
       <div className="w-3/5 pl-8 pr-6 py-4 flex flex-col justify-between">
         <div>
           <div className="flex justify-between items-start mb-2">
-            <h3 className="text-lg font-semibold text-green-900 truncate">{rental.itemTitle}</h3>
-            <span className="text-lg font-bold text-green-700">৳{rental.totalPrice}</span>
+            <h3 className="text-lg font-semibold text-green-900 truncate">{productTitle}</h3>
+            <span className="text-lg font-bold text-green-700">৳{price}</span>
           </div>
 
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
             <CalendarIcon className="h-4 w-4 text-green-600" />
-            <span>{formatDate(rental.startTime)} - {formatDate(rental.endTime)}</span>
+            <span>{formatDate(rental.startDate)} - {formatDate(rental.endDate)}</span>
           </div>
 
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">

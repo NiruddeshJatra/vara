@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import ItemCard from './ItemCard';
 import ProductCardSkeleton from './ProductCardSkeleton';
 import { Product } from '@/types/listings';
-import EmptyState from './EmptyState';
 
 interface VirtualizedListingsGridProps {
   displayedListings: Product[];

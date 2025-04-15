@@ -37,6 +37,39 @@ export type RentalRequest = {
     updatedAt: string;
 };
 
+export type Review = {
+    id: string;
+    userName: string;
+    userImage?: string;
+    rating: number;
+    comment: string;
+    createdAt: string;
+};
+
+export type Rental = {
+    id: number;
+    product: Product;
+    reviews: Review[];
+    startDate: string;
+    endDate: string;
+    duration: number;
+    durationUnit: DurationUnit;
+    totalCost: number;
+    serviceFee: number;
+    securityDeposit: number;
+    status: RentalStatus;
+    statusHistory?: {
+        status: RentalStatus;
+        timestamp: string;
+        note?: string;
+    }[];
+    createdAt: string;
+    updatedAt: string;
+    notes?: string;
+    renter: string;
+    owner: string;
+};
+
 export type RentalErrors = {
     [key: string]: string;
 };

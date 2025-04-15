@@ -9,12 +9,11 @@ from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 from django.utils.encoding import force_str
 from .models import Rental, RentalPhoto
-from .serializers import RentalSerializer, RentalPhotoSerializer
+from .serializers import RentalReadSerializer, RentalWriteSerializer, RentalPhotoSerializer
 from django.db.models import Q
 
 
 class RentalViewSet(viewsets.ModelViewSet):
-    serializer_class = RentalSerializer
     permission_classes = [IsAuthenticated]
 
     class IsProductRenter(BasePermission):
@@ -24,6 +23,11 @@ class RentalViewSet(viewsets.ModelViewSet):
     class IsProductOwner(BasePermission):
         def has_object_permission(self, request, view, obj):
             return request.user == obj.owner
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve', 'my_rentals', 'my_listings_rentals']:
+            return RentalReadSerializer
+        return RentalWriteSerializer
 
     def get_queryset(self):
         user = self.request.user
@@ -42,48 +46,41 @@ class RentalViewSet(viewsets.ModelViewSet):
         Create a new rental request
         """
         print(f"\nReceived rental request data: {request.data}")
-        
         serializer = self.get_serializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
-            print(f"\nSerialized data is valid: {serializer.validated_data}")
+            validated_data = serializer.validated_data
 
-            # Ensure user is not the owner of the product
-            if request.user == serializer.validated_data['product'].owner:
+            product = validated_data['product']
+            owner = product.owner
+            renter = request.user
+
+            # Prevent user from renting their own product
+            if renter == owner:
                 print("\nError: User is trying to rent their own product")
                 return Response(
                     {
-                        "detail": force_str(_("You cannot rent your own product")),
-                        "code": "own_product_rental"
+                        "detail": force_str(_("You cannot rent your own product.")),
+                        "code": "cannot_rent_own_product"
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Create rental with transaction
-            with transaction.atomic():
-                rental = serializer.save(
-                    renter=request.user,
-                    owner=serializer.validated_data['product'].owner,
-                    status='pending',
-                    total_cost=serializer.validated_data.get('total_cost'),
-                    service_fee=serializer.validated_data.get('service_fee')
-                )
-
-                # Add initial status history
-                rental.status_history.append({
-                    "status": "pending",
-                    "timestamp": timezone.now().isoformat(),
-                    "note": force_str(_("Rental request created"))
-                })
-                rental.save()
-                print(f"\nSuccessfully created rental {rental.id}")
-
-            headers = self.get_success_headers(serializer.data)
-            return Response(
-                serializer.data,
-                status=status.HTTP_201_CREATED,
-                headers=headers
+            rental = Rental(
+                product=product,
+                owner=owner,
+                renter=renter,
+                start_time=validated_data['start_time'],
+                end_time=validated_data['end_time'],
+                duration=validated_data['duration'],
+                duration_unit=validated_data['duration_unit'],
+                purpose=validated_data['purpose'],
+                notes=validated_data.get('notes', ''),
             )
+            rental.save()
+
+            read_serializer = RentalReadSerializer(rental, context={'request': request})
+            return Response(read_serializer.data, status=status.HTTP_201_CREATED)
         except ValidationError as e:
             return Response(
                 {"detail": force_str(str(e)), "code": "validation_error"},

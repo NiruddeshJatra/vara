@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Rental } from "@/pages/Rentals";
+import { Rental } from "@/types/rentals";
 import { 
   MessageSquare, 
   Star, 
@@ -21,6 +21,7 @@ import {
 import { differenceInCalendarDays, format } from "date-fns";
 import ReviewForm from "./ReviewForm";
 import { useState } from "react";
+import { RentalStatus } from '@/constants/rental';
 
 interface RentalDetailModalProps {
   rental: Rental;
@@ -38,20 +39,28 @@ const RentalDetailModal = ({
   const [activeTab, setActiveTab] = useState<string>("details");
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   
+  // --- Rental status logic: Only use valid statuses from RentalStatus enum. ---
+  // Valid: 'pending', 'approved', 'rejected', 'cancelled', 'completed'
+  // Treat 'approved' as "in progress" for UI/logic
+
+  const isPending = rental.status === RentalStatus.PENDING;
+  const isApproved = rental.status === RentalStatus.APPROVED; // "In progress"
+  const isRejected = rental.status === RentalStatus.REJECTED;
+  const isCancelled = rental.status === RentalStatus.CANCELLED;
+  const isCompleted = rental.status === RentalStatus.COMPLETED;
+
   // Status badge configuration
-  const getStatusConfig = (status: string) => {
+  const getStatusConfig = (status: RentalStatus) => {
     switch(status) {
-      case 'pending':
+      case RentalStatus.PENDING:
         return { color: 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200', label: 'Pending Approval' };
-      case 'accepted':
-        return { color: 'bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200', label: 'Accepted' };
-      case 'in_progress':
+      case RentalStatus.APPROVED:
         return { color: 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200', label: 'In Progress' };
-      case 'completed':
+      case RentalStatus.COMPLETED:
         return { color: 'bg-purple-100 text-purple-800 border-purple-300 hover:bg-purple-200', label: 'Completed' };
-      case 'rejected':
+      case RentalStatus.REJECTED:
         return { color: 'bg-red-100 text-red-800 border-red-300 hover:bg-red-200', label: 'Rejected' };
-      case 'cancelled':
+      case RentalStatus.CANCELLED:
         return { color: 'bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-200 hover:bg-orange-200', label: 'Cancelled' };
       default:
         return { color: 'bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200', label: 'Unknown' };
@@ -59,45 +68,46 @@ const RentalDetailModal = ({
   };
 
   const statusConfig = getStatusConfig(rental.status);
-  const rentalDuration = differenceInCalendarDays(new Date(rental.endTime), new Date(rental.startTime));
   
-  // Calculate service fee (8% of base price total)
-  const serviceFee = Math.round(rental.basePrice * rentalDuration * 0.08);
-  
-  // Sample images for the carousel
-  const sampleImages = [
-    rental.itemImage,
-    "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
-    "https://images.unsplash.com/photo-1520209759809-a9bcb6cb3241?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
-    "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
-    "https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
-  ];
+  // --- Use real API data instead of mock/sample data. Keep design unchanged. ---
+  // Images
+  const productImages = Array.isArray(rental.product?.images)
+    ? rental.product.images.map((img: any) => img.image)
+    : [];
+  const hasImages = productImages.length > 0;
 
-  // Sample reviews data
-  const sampleReviews = [
-    {
-      id: 1,
-      userName: "Ahmed Khan",
-      userImage: "https://randomuser.me/api/portraits/men/32.jpg",
-      rating: 5,
-      comment: "Great experience renting this item. The owner was very helpful and the item was in excellent condition.",
-      createdAt: "2023-06-15T10:30:00Z"
-    },
-    {
-      id: 2,
-      userName: "Sara Rahman",
-      userImage: "https://randomuser.me/api/portraits/women/44.jpg",
-      rating: 4,
-      comment: "The item was as described. Pickup and return process was smooth.",
-      createdAt: "2023-05-22T14:15:00Z"
-    }
-  ];
+  // Reviews (if you have real reviews, otherwise keep as empty array)
+  const reviews = Array.isArray(rental.reviews) ? rental.reviews : [];
+
+  // Dates (camelCase)
+  const safeDate = (dateStr: string | null | undefined) => {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? null : d;
+  };
+  const startDate = safeDate(rental.startDate);
+  const endDate = safeDate(rental.endDate);
+  const formatDate = (date: Date | null) => date ? format(date, 'MMM d, yyyy') : 'N/A';
+
+  // Price and service fee
+  const totalCost = typeof rental.totalCost === 'number' ? rental.totalCost : 0;
+  const serviceFee = typeof rental.serviceFee === 'number' ? rental.serviceFee : 0;
+
+  // Product info
+  const productTitle = typeof rental.product?.title === 'string' ? rental.product.title : 'Product';
+  const productCategory = typeof rental.product?.category === 'string' ? rental.product.category : '';
+  const productDescription = typeof rental.product?.description === 'string' ? rental.product.description : '';
+  const securityDeposit = typeof rental.product?.securityDeposit === 'number' ? rental.product.securityDeposit : 0;
+
+  // Rental duration
+  const rentalDuration = startDate && endDate ? differenceInCalendarDays(endDate, startDate) : 'N/A';
 
   const navigateImage = (direction: 'prev' | 'next') => {
+    if (!hasImages) return;
     if (direction === 'prev') {
-      setActiveImageIndex(prev => (prev === 0 ? sampleImages.length - 1 : prev - 1));
+      setActiveImageIndex(prev => (prev === 0 ? productImages.length - 1 : prev - 1));
     } else {
-      setActiveImageIndex(prev => (prev === sampleImages.length - 1 ? 0 : prev + 1));
+      setActiveImageIndex(prev => (prev === productImages.length - 1 ? 0 : prev + 1));
     }
   };
 
@@ -109,17 +119,17 @@ const RentalDetailModal = ({
           <div className="flex items-center gap-3">
             <div>
               <h2 className="text-lg font-bold text-green-800">Rental #{rental.id}</h2>
-              <p className="text-sm text-green-600">{rental.itemTitle}</p>
-                        </div>
-              </div>
-              
+              <p className="text-sm text-green-600">{productTitle}</p>
+            </div>
+          </div>
+          
           <div className="flex items-center">
             <Badge className={`${statusConfig.color} text-xs px-2.5 py-0.5 mr-8 font-medium hover:opacity`}>
               {statusConfig.label}
-                </Badge>
-              </div>
-            </div>
-            
+            </Badge>
+          </div>
+        </div>
+        
         {/* Main content wrapper - flex-grow to take available space */}
         <div className="flex flex-col md:flex-row flex-grow overflow-hidden">
           {/* Left column - Images and price - Scrollable independently */}
@@ -127,11 +137,17 @@ const RentalDetailModal = ({
             <div className="space-y-5">
               {/* Main image view */}
               <div className="relative rounded-lg overflow-hidden bg-white border border-green-200 shadow-md aspect-square">
-                <img 
-                  src={sampleImages[activeImageIndex]} 
-                  alt={`${rental.itemTitle} - Image ${activeImageIndex + 1}`}
-                  className="w-full h-full object-contain"
-                />
+                {hasImages ? (
+                  <img 
+                    src={productImages[activeImageIndex]} 
+                    alt={`${productTitle} - Image ${activeImageIndex + 1}`}
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full w-full bg-gray-100 text-gray-500">
+                    No images available
+                  </div>
+                )}
                 
                 {/* Navigation arrows */}
                 <div className="absolute inset-0 flex items-center justify-between px-4 opacity-0 hover:opacity-100 transition-opacity">
@@ -154,13 +170,13 @@ const RentalDetailModal = ({
                 {/* Image counter badge */}
                 <div className="absolute bottom-3 right-3 bg-green-700/80 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
                   <Camera className="h-3 w-3" />
-                  <span>{activeImageIndex + 1} of {sampleImages.length}</span>
-                    </div>
-                  </div>
+                  <span>{hasImages ? `${activeImageIndex + 1} of ${productImages.length}` : 'No images'}</span>
+                </div>
+              </div>
               
               {/* Thumbnails */}
               <div className="grid grid-cols-5 gap-1.5">
-                {sampleImages.map((image, index) => (
+                {productImages.map((image, index) => (
                   <button 
                     key={index}
                     className={`aspect-square rounded overflow-hidden border-2 transition-all ${
@@ -172,7 +188,7 @@ const RentalDetailModal = ({
                   >
                     <img 
                       src={image} 
-                      alt={`${rental.itemTitle} - Thumbnail ${index + 1}`}
+                      alt={`${productTitle} - Thumbnail ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
                   </button>
@@ -183,26 +199,26 @@ const RentalDetailModal = ({
               <div className="bg-gradient-to-r from-green-50 to-white rounded-lg p-4 border border-green-200 shadow-sm">
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="text-base font-semibold text-green-800">Price Summary</h3>
-                  <span className="text-lg font-bold text-green-700">৳{rental.totalPrice}</span>
+                  <span className="text-lg font-bold text-green-700">৳{totalCost}</span>
                 </div>
                 
                 <div className="space-y-2 text-sm text-gray-600">
                   <div className="flex justify-between">
                     <span>Base price</span>
-                    <span>৳{rental.basePrice} × {rentalDuration} days</span>
-                    </div>
+                    <span>৳{rental.totalCost} × {rentalDuration} days</span>
+                  </div>
                   <div className="flex justify-between">
                     <span>Service fee</span>
                     <span>৳{serviceFee}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Security deposit</span>
-                    <span>৳{rental.securityDeposit}</span>
+                    <span>৳{securityDeposit}</span>
                   </div>
                   <Separator className="my-2 bg-green-100" />
                   <div className="flex justify-between font-medium text-green-800">
                     <span>Total</span>
-                    <span>৳{rental.totalPrice}</span>
+                    <span>৳{totalCost}</span>
                   </div>
                 </div>
               </div>
@@ -259,14 +275,14 @@ const RentalDetailModal = ({
                         <div className="flex-1 bg-white p-3 rounded border border-green-300 text-center">
                           <p className="text-xs text-gray-500 uppercase mb-1">Start Date</p>
                           <p className="text-sm font-medium text-gray-800">
-                            {format(new Date(rental.startTime), "MMM d, yyyy")}
+                            {formatDate(startDate)}
                           </p>
-            </div>
-            
+                        </div>
+                        
                         <div className="flex-1 bg-white p-3 rounded border border-green-300 text-center">
                           <p className="text-xs text-gray-500 uppercase mb-1">End Date</p>
                           <p className="text-sm font-medium text-gray-800">
-                            {format(new Date(rental.endTime), "MMM d, yyyy")}
+                            {formatDate(endDate)}
                           </p>
                         </div>
                         
@@ -284,14 +300,15 @@ const RentalDetailModal = ({
                   <div className="bg-white rounded-lg border border-green-200 overflow-hidden">
                     <div className="bg-gradient-to-r from-green-50 to-white px-4 py-3 border-b border-green-100">
                       <h3 className="text-base font-semibold text-green-800">Item Details</h3>
-                </div>
+                    </div>
+                    
                     <div className="p-4">
-                  <div>
+                      <div>
                         <h4 className="text-xs font-medium text-gray-500 mb-2">Specifications</h4>
                         <ul className="space-y-2.5">
                           <li className="flex justify-between text-sm">
                             <span className="text-gray-600">Category</span>
-                            <span className="font-medium text-gray-800">{rental.itemCategory}</span>
+                            <span className="font-medium text-gray-800">{productCategory}</span>
                           </li>
                           <Separator className="bg-green-50" />
                           <li className="flex justify-between text-sm">
@@ -301,7 +318,7 @@ const RentalDetailModal = ({
                           <Separator className="bg-green-50" />
                           <li className="flex justify-between text-sm">
                             <span className="text-gray-600">Security Deposit</span>
-                            <span className="font-medium text-gray-800">৳{rental.securityDeposit}</span>
+                            <span className="font-medium text-gray-800">৳{securityDeposit}</span>
                           </li>
                         </ul>
                       </div>
@@ -316,13 +333,13 @@ const RentalDetailModal = ({
                         <div>
                           <p className="font-medium text-gray-800 text-sm mb-1">Special Notes</p>
                           <p className="text-xs text-gray-700">{rental.notes}</p>
-                </div>
-              </div>
-              </div>
-                )}
-          </TabsContent>
-          
-          {/* Timeline Tab */}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+                
+                {/* Timeline Tab */}
                 <TabsContent value="timeline" className="space-y-5">
                   <div className="bg-gradient-to-r from-green-50 to-white rounded-lg border border-green-200 overflow-hidden">
                     <div className="px-4 py-3 border-b border-green-100">
@@ -337,68 +354,68 @@ const RentalDetailModal = ({
                           <div>
                             <h4 className="text-sm font-medium text-green-800">Request Submitted</h4>
                             <p className="text-xs text-gray-600 mt-1">
-                              {format(new Date(rental.createdAt), "MMMM d, yyyy")}
+                              {formatDate(startDate)}
                             </p>
                             <p className="mt-2 text-xs text-gray-700 bg-green-50/50 p-2 rounded border border-green-100">
-                              Rental request was submitted for {rental.itemTitle}.
+                              Rental request was submitted for {productTitle}.
                             </p>
                           </div>
-                </div>
-                
-                {(rental.status !== 'pending') && (
+                        </div>
+                        
+                        {(rental.status !== RentalStatus.PENDING) && (
                           <div className="relative pl-8 pb-8">
                             <div className={`absolute left-0 top-1 h-5 w-5 rounded-full ${
-                              rental.status === 'rejected' ? 'bg-red-500' : 'bg-green-600'
+                              rental.status === RentalStatus.REJECTED ? 'bg-red-500' : 'bg-green-600'
                             } border-3 border-white shadow-sm`}></div>
                             <div className="absolute left-2.5 top-6 h-full w-px bg-green-100"></div>
                             <div>
                               <h4 className="text-sm font-medium text-green-800">
-                      Request {rental.status === 'rejected' ? 'Rejected' : 'Approved'}
+                                Request {rental.status === RentalStatus.REJECTED ? 'Rejected' : 'Approved'}
                               </h4>
                               <p className="text-xs text-gray-600 mt-1">
-                                {format(new Date(rental.updatedAt), "MMMM d, yyyy")}
+                                {formatDate(endDate)}
                               </p>
                               <p className="mt-2 text-xs text-gray-700 bg-green-50/50 p-2 rounded border border-green-100">
-                                {rental.status === 'rejected' 
+                                {rental.status === RentalStatus.REJECTED 
                                   ? 'The rental request was rejected.' 
                                   : 'The rental request was approved and confirmed.'}
                               </p>
-                    </div>
-                  </div>
-                )}
-                
-                {(rental.status === 'in_progress' || rental.status === 'completed') && (
+                            </div>
+                          </div>
+                        )}
+                        
+                        {(isApproved || isCompleted) && (
                           <div className="relative pl-8 pb-8">
                             <div className="absolute left-0 top-1 h-5 w-5 rounded-full bg-lime-600 border-3 border-white shadow-sm"></div>
                             <div className="absolute left-2.5 top-6 h-full w-px bg-green-100"></div>
                             <div>
                               <h4 className="text-sm font-medium text-green-800">Rental Started</h4>
                               <p className="text-xs text-gray-600 mt-1">
-                                {format(new Date(rental.startTime), "MMMM d, yyyy")}
+                                {formatDate(startDate)}
                               </p>
                               <p className="mt-2 text-xs text-gray-700 bg-green-50/50 p-2 rounded border border-green-100">
-                                The {rental.itemCategory} was picked up and the rental period began.
+                                The {productCategory} was picked up and the rental period began.
                               </p>
-                    </div>
-                  </div>
-                )}
-                
-                {rental.status === 'completed' && (
+                            </div>
+                          </div>
+                        )}
+                        
+                        {isCompleted && (
                           <div className="relative pl-8">
                             <div className="absolute left-0 top-1 h-5 w-5 rounded-full bg-purple-600 border-3 border-white shadow-sm"></div>
                             <div>
                               <h4 className="text-sm font-medium text-green-800">Rental Completed</h4>
                               <p className="text-xs text-gray-600 mt-1">
-                                {format(new Date(rental.endTime), "MMMM d, yyyy")}
+                                {formatDate(endDate)}
                               </p>
                               <p className="mt-2 text-xs text-gray-700 bg-green-50/50 p-2 rounded border border-green-100">
                                 The item was returned in good condition and the rental was completed.
                               </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            </div>
                   </div>
                   
                   {/* Documentation Photos */}
@@ -408,56 +425,56 @@ const RentalDetailModal = ({
                     </div>
                     
                     <div className="p-4 space-y-5">
-              {/* Pre-rental photos */}
+                      {/* Pre-rental photos */}
                       <div>
                         <h4 className="font-medium text-green-700 text-sm mb-2">Pre-Rental Condition</h4>
-              {rental.status === 'pending' || rental.status === 'accepted' ? (
+                        {(isPending || isApproved) ? (
                           <div className="border border-dashed border-green-200 rounded p-3 text-center bg-green-50/30">
                             <p className="text-green-600 text-xs">
-                    Photos will be available once the rental begins.
-                  </p>
-                </div>
-              ) : (
+                              Photos will be available once the rental begins.
+                            </p>
+                          </div>
+                        ) : (
                           <div className="grid grid-cols-3 gap-2">
-                  {[1, 2, 3].map((i) => (
+                            {[1, 2, 3].map((i) => (
                               <div key={`pre-${i}`} className="aspect-square rounded overflow-hidden border border-green-200 shadow-sm">
-                      <img 
-                        src={`https://images.unsplash.com/photo-151${i + 2000000}?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80`} 
-                        alt={`Pre-rental photo ${i}`}
+                                <img 
+                                  src={`https://images.unsplash.com/photo-151${i + 2000000}?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80`} 
+                                  alt={`Pre-rental photo ${i}`}
                                   className="w-full h-full object-cover hover:scale-105 transition-transform"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-              
-              {/* Post-rental photos */}
+                      
+                      {/* Post-rental photos */}
                       <div>
                         <h4 className="font-medium text-green-700 text-sm mb-2">Post-Rental Condition</h4>
-              {rental.status !== 'completed' ? (
+                        {(isPending || isApproved) ? (
                           <div className="border border-dashed border-green-200 rounded p-3 text-center bg-green-50/30">
                             <p className="text-green-600 text-xs">
-                    Photos will be available once the rental is completed.
-                  </p>
-                </div>
-              ) : (
+                              Photos will be available once the rental is completed.
+                            </p>
+                          </div>
+                        ) : (
                           <div className="grid grid-cols-3 gap-2">
-                  {[4, 5, 6].map((i) => (
+                            {[4, 5, 6].map((i) => (
                               <div key={`post-${i}`} className="aspect-square rounded overflow-hidden border border-green-200 shadow-sm">
-                      <img 
-                        src={`https://images.unsplash.com/photo-151${i + 2000000}?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80`} 
-                        alt={`Post-rental photo ${i}`}
+                                <img 
+                                  src={`https://images.unsplash.com/photo-151${i + 2000000}?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80`} 
+                                  alt={`Post-rental photo ${i}`}
                                   className="w-full h-full object-cover hover:scale-105 transition-transform"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
-            </div>
-          </TabsContent>
+                  </div>
+                </TabsContent>
                 
                 {/* Reviews Tab */}
                 <TabsContent value="reviews" className="space-y-5">
@@ -470,9 +487,9 @@ const RentalDetailModal = ({
                     </div>
                     
                     <div className="p-4">
-                      {sampleReviews.length > 0 ? (
+                      {reviews.length > 0 ? (
                         <div className="space-y-4">
-                          {sampleReviews.map((review) => (
+                          {reviews.map((review) => (
                             <div key={review.id} className="pb-4 border-b border-green-100 last:border-0 last:pb-0">
                               <div className="flex items-start gap-3">
                                 <Avatar className="h-8 w-8 border border-gray-200">
@@ -499,7 +516,7 @@ const RentalDetailModal = ({
                                           ))}
                                         </div>
                                         <span className="ml-2 text-xs text-gray-500">
-                                          {format(new Date(review.createdAt), 'MMM d, yyyy')}
+                                          {formatDate(new Date(review.createdAt))}
                                         </span>
                                       </div>
                                     </div>
@@ -525,7 +542,7 @@ const RentalDetailModal = ({
                   </div>
                   
                   {/* Review form appears if rental is completed */}
-                  {rental.status === "completed" && (
+                  {isCompleted && (
                     <div className="bg-gradient-to-r from-green-50 to-lime-50 rounded-lg border border-green-200 overflow-hidden">
                       <div className="px-4 py-3 border-b border-green-100">
                         <div className="flex items-center gap-2">
@@ -535,17 +552,17 @@ const RentalDetailModal = ({
                       </div>
                       
                       <div className="p-4">
-            <ReviewForm 
-              rentalId={rental.id} 
-              userRole={userRole} 
-              onSubmit={(rating, review) => {
-                onStatusAction(rental.id, 'submitReview');
-                onClose();
-              }} 
-            />
+                        <ReviewForm 
+                          rentalId={rental.id} 
+                          userRole={userRole} 
+                          onSubmit={(rating, review) => {
+                            onStatusAction(rental.id, 'submitReview');
+                            onClose();
+                          }} 
+                        />
                       </div>
-          </div>
-        )}
+                    </div>
+                  )}
                 </TabsContent>
               </Tabs>
             </div>
@@ -555,18 +572,18 @@ const RentalDetailModal = ({
         {/* Action buttons - Fixed position at bottom of modal */}
         <div className="border-t border-green-200 bg-gradient-to-r from-green-50 to-white px-5 py-3 flex flex-wrap gap-2 justify-end flex-shrink-0 sticky bottom-0 z-10">
           {/* Contextual buttons based on status and user role */}
-          {rental.status === 'pending' && userRole === 'renter' && (
-              <Button 
-                variant="outline" 
+          {isPending && userRole === 'renter' && (
+            <Button 
+              variant="outline" 
               size="sm"
-                onClick={() => onStatusAction(rental.id, 'cancel')}
+              onClick={() => onStatusAction(rental.id, 'cancel')}
               className="border-red-300 text-red-600 hover:bg-red-50 text-xs"
-              >
-                Cancel Request
-              </Button>
+            >
+              Cancel Request
+            </Button>
           )}
           
-          {rental.status === 'pending' && userRole === 'owner' && (
+          {isPending && userRole === 'owner' && (
             <>
               <Button 
                 variant="outline" 
@@ -578,15 +595,15 @@ const RentalDetailModal = ({
               </Button>
               <Button 
                 size="sm"
-                onClick={() => onStatusAction(rental.id, 'accept')}
+                onClick={() => onStatusAction(rental.id, 'approve')}
                 className="bg-gradient-to-r from-green-600 to-lime-600 hover:opacity-90 text-white text-xs"
               >
-                Accept Request
+                Approve Request
               </Button>
             </>
           )}
           
-          {rental.status === 'accepted' && (
+          {isApproved && (
             <Button 
               variant="outline" 
               size="sm"
@@ -597,7 +614,7 @@ const RentalDetailModal = ({
             </Button>
           )}
           
-          {rental.status === 'in_progress' && userRole === 'renter' && (
+          {isApproved && userRole === 'renter' && (
             <Button 
               size="sm"
               onClick={() => onStatusAction(rental.id, 'complete')}
@@ -607,7 +624,7 @@ const RentalDetailModal = ({
             </Button>
           )}
           
-          {rental.status === 'in_progress' && userRole === 'owner' && (
+          {isApproved && userRole === 'owner' && (
             <Button 
               size="sm"
               onClick={() => onStatusAction(rental.id, 'confirmReturn')}

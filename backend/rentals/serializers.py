@@ -1,14 +1,41 @@
 from rest_framework import serializers
 from .models import Rental, RentalPhoto, RENTAL_PURPOSE_CHOICES
 from .validators import validate_rental_data, validate_rental_photo
+from advertisements.serializers import ProductSerializer
+from users.serializers import UserProfileSerializer
 
 
-class RentalSerializer(serializers.ModelSerializer):
+class RentalWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rental
         fields = [
             'id',
             'product',
+            'start_time',
+            'end_time',
+            'duration',
+            'duration_unit',
+            'purpose',
+            'notes',
+        ]
+        read_only_fields = ['id']
+
+    def validate(self, data):
+        return validate_rental_data(data)
+
+
+class RentalReadSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)
+    owner = UserProfileSerializer(read_only=True)
+    renter = UserProfileSerializer(read_only=True)
+
+    class Meta:
+        model = Rental
+        fields = [
+            'id',
+            'product',
+            'owner',
+            'renter',
             'start_time',
             'end_time',
             'duration',
