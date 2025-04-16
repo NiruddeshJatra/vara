@@ -64,7 +64,7 @@ const CompactSearchBar = ({
                   placeholder="What do you need to borrow today?" 
                   value={searchTerm} 
                   onChange={e => setSearchTerm(e.target.value)} 
-                  className={`text-xs pl-9 ${inNav ? 'h-10' : 'h-11 sm:h-12'} border-green-400 focus:border-green-500`} 
+                  className={`text-xs pl-9 ${inNav ? 'h-10 md:h-9' : 'h-11 sm:h-12'} border-green-400 focus:border-green-500`} 
                 />
               </div>
               <div className="relative flex-1">
@@ -74,12 +74,12 @@ const CompactSearchBar = ({
                   placeholder="Select your location" 
                   value={location} 
                   onChange={e => setLocation(e.target.value)} 
-                  className={`text-xs pl-9 ${inNav ? 'h-10' : 'h-11 sm:h-12'} border-green-400 focus:border-green-500`} 
+                  className={`text-xs pl-9 ${inNav ? 'h-10 md:h-9' : 'h-11 sm:h-12'} border-green-400 focus:border-green-500`} 
                 />
               </div>
               <Button 
                 type="submit" 
-                className={` bg-green-700 hover:bg-green-800 text-xs sm:text-sm font-medium ${inNav ? 'h-10 w-10 rounded-full p-0' : 'px-4 sm:px-8 h-11 sm:h-12 rounded-md'} flex items-center justify-center`}
+                className={` bg-green-700 hover:bg-green-800 text-xs sm:text-sm font-medium ${inNav ? 'h-10 md:h-9 w-10 md:w-9 rounded-full p-0' : 'px-4 sm:px-8 h-11 sm:h-12 rounded-md'} flex items-center justify-center`}
               >
                 <Search className={`${inNav ? 'h-5 w-5' : 'h-4 w-4 mr-2'} `} />
                 {inNav ? '' : 'Find Items'}

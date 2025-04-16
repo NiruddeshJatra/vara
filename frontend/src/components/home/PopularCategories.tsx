@@ -43,15 +43,17 @@ const categories = [
 const PopularCategories = () => {
   return (
     <section id="browse-items" className="section relative bg-gradient-to-b from-green-50 to-white nature-pattern animate-fade-up">
-      {/* Background elements */}
-      <div className="fluid-shape fluid-shape-1"></div>
-      <div className="dots-pattern dots-pattern-1"></div>
-      
       <div className="container mx-auto">
         <div className="section-title animate-fade-up">
-          <span className="inline-block text-sm font-medium bg-green-600/10 text-green-600 px-4 py-1.5 rounded-full mb-4">Categories</span>
-          <h2 className="font-bold text-green-800 mb-3">What Are You Looking For?</h2>
-          <p className="text-green-700/80 mb-3">Explore our most popular categories with thousands of items available to rent</p>
+          <span className="inline-block px-4 py-1.5 text-xs md:text-sm font-medium rounded-full bg-green-600/10 text-green-600 mb-4">
+            Categories
+          </span>
+          <h2 className="text-2xl md:text-4xl font-bold text-green-800 mb-4">
+            Popular Categories
+          </h2>
+          <p className="text-green-700/80 mb-3 text-center text-[0.85rem]">
+            Explore trending item types and discover what's available in your area.
+          </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
@@ -63,11 +65,11 @@ const PopularCategories = () => {
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <div className="flex items-center p-6">
-                <div className={`${category.bgColor} w-16 h-16 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform duration-300`}>
+                <div className={`${category.bgColor} w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center mr-4 group-hover:scale-105 transition-transform duration-300`}>
                   {category.icon}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg text-green-800 group-hover:text-green-600 transition-colors">{category.name}</h3>
+                  <h3 className="font-semibold text-sm md:text-lg text-green-800 group-hover:text-green-600 transition-colors">{category.name}</h3>
                   <p className="text-sm text-green-700/80">{category.items}</p>
                 </div>
               </div>

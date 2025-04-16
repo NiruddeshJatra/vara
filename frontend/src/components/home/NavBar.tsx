@@ -59,24 +59,22 @@ const NavBar = () => {
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${headerStyle}`}>
-      <div className="container mx-auto px-4 flex items-center justify-between">
+      <div className="container mx-auto px-3 lg:px-4 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center gap-4">
-          <Link to="/" className={`text-xl md:text-2xl font-bold flex items-center ${(!isHomePage || isScrolled) ? "text-green-900" : "text-green-300"}`}>
-            <span className="text-lime-500 mr-1">V</span>ara
+        <div className="flex items-center gap-4 ml-4 md:ml-4 lg:ml-0">
+          <Link to="/" className={`text-[1.3rem] md:text-[1.4rem] lg:text-2xl tracking-wide font-bold flex items-center ${(!isHomePage || isScrolled) ? "text-green-900" : "text-green-300"}`}>
+            <span className="text-lime-500">V</span>ara
           </Link>
           {/* Conditional Slogan */}
           {!showSearchInNav && (
-            <p className={`hidden md:block text-xs mt-1 ${
-              (!isHomePage || isScrolled) ? "text-green-600" : "text-green-400/80"
-            }`}>
+            <p className={`hidden md:block text-xs ml-2 mt-1 ${(!isHomePage || isScrolled) ? "text-green-600" : "text-green-400/80"}`}>
               Borrow What You Need, Lend What You Don't
             </p>
           )}
         </div>
         
         {showSearchInNav && (
-          <div className="hidden md:flex flex-1 mx-4 items-center justify-center">
+          <div className="hidden md:flex flex-1 mx-6 lg:mx-4 max-w-sm lg:max-w-xl items-center justify-center ml-12">
             <CompactSearchBar 
               inNav={true}
               searchTerm={searchTerm}
@@ -94,7 +92,7 @@ const NavBar = () => {
         )}
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center space-x-8 ml-auto mr-12">
+        <div className="hidden md:flex items-center space-x-3 md:space-x-4 lg:space-x-8 ml-auto mr-4 lg:mr-12">
           {isAuthenticated && !showSearchInNav && !isUploadProductPage && (
             <>
               <Button 
@@ -120,7 +118,7 @@ const NavBar = () => {
         </div>
 
         {/* Desktop Action Buttons */}
-        <div className="hidden md:flex items-center space-x-4 mr-8">
+        <div className="hidden md:flex items-center space-x-2 md:space-x-3 lg:space-x-4 mr-4 lg:mr-12">
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -159,92 +157,74 @@ const NavBar = () => {
               {/* Show login button if we're not on the login page */}
               {!filepath.pathname.includes('/auth/login/') && (
                 <Link to="/auth/login/">
-                  <Button variant="outline" size="sm" className="border-green-500 text-green-700 hover:bg-green-50 hover:text-green-800">Log In</Button>
+                  <Button variant="outline" className="border-green-500 text-green-700 hover:bg-green-50 hover:text-green-800 font-semibold py-1 lg:py-2 px-4 md:px-4 lg:px-5 rounded-full hover:scale-105 transition-all duration-200 text-xs md:text-xs lg:text-sm">Log In</Button>
                 </Link>
               )}
               {/* Show register button if we're not on the register page */}
               {!filepath.pathname.includes('/auth/registration/') && (
                 <Link to="/auth/registration/">
-                  <Button size="sm" className="bg-green-600 hover:bg-green-700">Sign Up</Button>
+                  <Button className="bg-green-600 hover:bg-green-700 text-white font-semibold py-1 lg:py-2 px-4 md:px-4 lg:px-5 rounded-full hover:scale-105 transition-all duration-200 text-xs md:text-xs lg:text-sm">Sign Up</Button>
                 </Link>
               )}
             </>
           )}
         </div>
 
-        {/* Mobile Menu Button - Moved to the right */}
-        <div className="md:hidden flex items-center ml-auto">
-          <button 
-            className="flex items-center"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
+        {/* Mobile Menu Button */}
+        <button
+          className="md:hidden p-2 rounded-full bg-transparent transition-colors"
+          aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          {isMobileMenuOpen ? (
+            <X size={36} className="text-green-500" />
+          ) : (
+            <span className="block w-7 h-5 mr-4">
+              <span className={`block w-full h-1 ${(!isHomePage || isScrolled) ? "bg-green-600" : "bg-green-500"} mb-1.5`}></span>
+              <span className={`block w-full h-1 ${(!isHomePage || isScrolled) ? "bg-green-600" : "bg-green-500"} mb-1.5`}></span>
+              <span className={`block w-full h-1 ${(!isHomePage || isScrolled) ? "bg-green-600" : "bg-green-500"}`}></span>
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-white/95 backdrop-blur-sm border-t border-green-100 animate-fade-in">
+        <div className="md:hidden bg-transparent backdrop-blur-sm animate-fade-in">
           <div className="container mx-auto px-4 py-4 flex flex-col items-center space-y-4">
-            <Link to="/" className="text-sm font-medium py-2 hover:text-green-600 transition-colors">Home</Link>
-            
-            {isAuthenticated ? (
+            {isAuthenticated && (
               <>
-                <Link to="/advertisements" className="text-sm font-medium py-2 hover:text-green-600 transition-colors flex items-center gap-2">
-                  <Home size={16} /> Browse Items
+                <Link to="/rentals" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2">
+                  <Package size={18} /> My Rentals
                 </Link>
-                <Link to="/rentals" className="text-sm font-medium py-2 hover:text-green-600 transition-colors flex items-center gap-2">
-                  <Package size={16} /> My Rentals
+                <Link to="/profile" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2">
+                  <User size={18} /> Profile
                 </Link>
-                <Link to="/profile" className="text-sm font-medium py-2 hover:text-green-600 transition-colors flex items-center gap-2">
-                  <User size={16} /> Profile
-                </Link>
-                <button 
-                  onClick={handleLogout}
-                  className="text-sm font-medium py-2 hover:text-green-600 transition-colors flex items-center gap-2"
+                <Button
+                  onClick={handleUploadProduct}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-full mt-2 flex items-center justify-center gap-2"
                 >
-                  <LogOut size={16} /> Log Out
-                </button>
-              </>
-            ) : (
-              <>
-                {/* Show login link if we're on the register page */}
-                {filepath.pathname.includes('/auth/registration/') && (
-                  <Link to="/auth/login/" className="text-sm font-medium py-2 hover:text-green-600 transition-colors">Login</Link>
-                )}
-                {/* Show register link if we're on the login page */}
-                {filepath.pathname.includes('/auth/login/') && (
-                  <Link to="/auth/registration/" className="text-sm font-medium py-2 hover:text-green-600 transition-colors">Register</Link>
-                )}
-                {/* Show these links on other pages */}
-                {!filepath.pathname.includes('/auth/') && (
-                  <>
-                    <Link to="/auth/login/" className="text-sm font-medium py-2 hover:text-green-600 transition-colors">Login</Link>
-                    <Link to="/auth/registration/" className="text-sm font-medium py-2 hover:text-green-600 transition-colors">Register</Link>
-                  </>
-                )}
+                  <Plus size={18} /> Upload Product
+                </Button>
+                <Button
+                  onClick={handleLogout}
+                  variant="outline"
+                  className="w-full border-green-600 text-green-600 hover:bg-green-50 font-semibold py-2 rounded-full mt-2 flex items-center justify-center gap-2"
+                >
+                  <LogOut size={18} /> Log Out
+                </Button>
               </>
             )}
-            
-            <div className="pt-4 flex flex-col items-center space-y-3">
-              {!isAuthenticated && (
-                <>
-                  {/* Show login button if we're not on the login page */}
-                  {!filepath.pathname.includes('/auth/login/') && (
-                    <Link to="/auth/login/" className="w-full">
-                      <Button variant="outline" className="w-full border-green-600 text-green-600 hover:bg-green-50">Log In</Button>
-                    </Link>
-                  )}
-                  {/* Show register button if we're not on the register page */}
-                  {!filepath.pathname.includes('/auth/registration/') && (
-                    <Link to="/auth/registration/" className="w-full">
-                      <Button className="w-full bg-green-600 hover:bg-green-700">Sign Up</Button>
-                    </Link>
-                  )}
-                </>
-              )}
-            </div>
+            {!isAuthenticated && (
+              <>
+                <Link to="/auth/login/" className="w-full">
+                  <Button variant="outline" className="w-full border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700 font-semibold py-2 rounded-full mt-2">Log In</Button>
+                </Link>
+                <Link to="/auth/registration/" className="w-full">
+                  <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-full mt-2">Sign Up</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

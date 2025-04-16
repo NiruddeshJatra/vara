@@ -94,7 +94,7 @@ const ItemCard = React.memo(({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="relative h-40 sm:h-48 md:h-60 overflow-hidden z-0">
+      <div className="relative h-48 md:h-60 overflow-hidden z-0">
         <img
           src={images[currentImageIndex].image}
           alt={product.title || 'Product image'}
@@ -189,8 +189,8 @@ const ItemCard = React.memo(({
             onClick={handleQuickView}
           >
             <Eye size={14} className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden xs:inline">Quick View</span>
-            <span className="xs:hidden">Quick View</span>
+            <span className="hidden xs:inline text-[10px] sm:text-xs hover:text-green-600">Quick View</span>
+            <span className="xs:hidden text-[12px] sm:text-xs hover:text-green-600">Quick View</span>
           </Button>
         </div>
       </div>
