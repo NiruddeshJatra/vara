@@ -135,14 +135,15 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
 
   return (
     <div className="relative">
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
+      {/* Desktop layout */}
+      <div className="hidden md:grid grid-cols-5 gap-2">
         {/* Main Large Image (3/5 width) */}
-        <div 
-          className="md:col-span-3 aspect-[4/3] rounded-lg overflow-hidden cursor-pointer"
+        <div
+          className="aspect-[4/3] rounded-lg overflow-hidden cursor-pointer col-span-3"
           onClick={() => handleImageClick(0)}
         >
-          <img 
-            src={images[0]} 
+          <img
+            src={images[0]}
             alt={`${title} main`}
             className="w-full h-full object-cover"
             data-product-image
@@ -152,17 +153,16 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
             }}
           />
         </div>
-        
         {/* Right Side Grid (2/5 width) */}
-        <div className="md:col-span-2 grid grid-cols-2 gap-2">
+        <div className="col-span-2 grid grid-cols-2 gap-2">
           {images.slice(1, 5).map((img, idx) => (
-            <div 
-              key={idx} 
+            <div
+              key={idx}
               className="aspect-square rounded-lg overflow-hidden cursor-pointer"
               onClick={() => handleImageClick(idx + 1)}
             >
-              <img 
-                src={img} 
+              <img
+                src={img}
                 alt={`${title} view ${idx + 2}`}
                 className="w-full h-full object-cover"
                 data-product-image
@@ -175,11 +175,67 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
           ))}
         </div>
       </div>
-      
-      {/* Show all photos button */}
+
+      {/* Mobile layout */}
+      <div className="md:hidden flex flex-col gap-3 relative">
+        {/* Main Image */}
+        <div
+          className="aspect-[4/3] rounded-lg overflow-hidden cursor-pointer"
+          onClick={() => handleImageClick(0)}
+        >
+          <img
+            src={images[0]}
+            alt={`${title} main`}
+            className="w-full h-full object-cover"
+            data-product-image
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = '/images/placeholder-image.jpg';
+            }}
+          />
+        </div>
+        {/* 2x2 grid for 4 images */}
+        <div className="grid grid-cols-2 gap-2">
+          {images.slice(1, 5).map((img, idx) => (
+            <div
+              key={idx}
+              className={
+                `aspect-[4/3] rounded-lg overflow-hidden cursor-pointer relative` +
+                (idx === 3 && images.length > 1 ? ' flex items-end justify-end' : '')
+              }
+              onClick={() => handleImageClick(idx + 1)}
+            >
+              <img
+                src={img}
+                alt={`${title} view ${idx + 2}`}
+                className="w-full h-full object-cover"
+                data-product-image
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/images/placeholder-image.jpg';
+                }}
+              />
+              {/* Show all photos button only on the last (bottom-right) image */}
+              {idx === 3 && images.length > 1 && (
+                <button
+                  className="absolute bottom-2 right-2 z-30 bg-white/90 text-gray-900 rounded-full px-3 py-1.5 font-medium shadow-md hover:bg-white transition-colors flex items-center text-xs sm:text-sm md:hidden"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAllPhotosClick();
+                  }}
+                >
+                  <span className="mr-1">Show all photos</span>
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Show all photos button for desktop/tablet */}
       {images.length > 1 && (
-        <button 
-          className="absolute bottom-4 right-4 bg-white/90 text-gray-900 rounded-full px-4 py-2 font-medium shadow-md hover:bg-white transition-colors flex items-center text-sm"
+        <button
+          className="hidden md:absolute md:bottom-4 md:right-4 md:left-auto md:translate-x-0 md:flex z-30 bg-white/90 text-gray-900 rounded-full px-4 py-2 font-medium shadow-md hover:bg-white transition-colors items-center text-xs sm:text-sm"
           onClick={handleAllPhotosClick}
         >
           <span className="mr-1">Show all photos</span>

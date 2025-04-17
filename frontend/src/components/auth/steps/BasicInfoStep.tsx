@@ -86,9 +86,9 @@ const BasicInfoStep = ({
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <h2 className="text-2xl font-semibold text-green-800">
+      <h4 className="text-md md:text-xl font-semibold text-green-800">
         Basic Information
-      </h2>
+      </h4>
 
       <div className="space-y-4 sm:space-y-6">
         <div>
@@ -261,11 +261,11 @@ const BasicInfoStep = ({
                 />
               </div>
               <div className="ml-3 grid gap-1 sm:gap-1.5 leading-none">
-                <label htmlFor="termsAgreed" className="text-xs sm:text-sm font-medium leading-tight sm:leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                <label htmlFor="termsAgreed" className="text-xs/5 sm:text-sm/6 text-gray-700 font-medium leading-tight sm:leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                   I agree to the <Link to="/terms" className="text-green-600 hover:text-green-700 hover:underline">Terms of Service</Link> and <Link to="/privacy" className="text-green-600 hover:text-green-700 hover:underline">Privacy Policy</Link> <span className="text-red-500">*</span>
                 </label>
                 {errors.termsAgreed && (
-                  <p className="mt-1 text-xs sm:text-sm text-red-500 flex items-center gap-1">
+                  <p className="mt-1 text-xs/5 sm:text-sm/6 text-red-500 flex items-center gap-1">
                     <AlertCircle size={14} className="text-red-500" /> {errors.termsAgreed}
                   </p>
                 )}
@@ -285,7 +285,7 @@ const BasicInfoStep = ({
                 />
               </div>
               <div className="ml-3 grid gap-1 sm:gap-1.5 leading-none">
-                <label htmlFor="marketingConsent" className="text-xs sm:text-sm font-medium leading-tight sm:leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                <label htmlFor="marketingConsent" className="text-xs sm:text-sm text-gray-700 font-medium leading-tight sm:leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                   I agree to receive marketing communications from Vara
                 </label>
               </div>
@@ -293,15 +293,6 @@ const BasicInfoStep = ({
           </div>
         </div>
       )}
-
-      <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-3 sm:p-4 rounded-lg border border-amber-200 mt-3 sm:mt-4">
-        <h3 className="text-xs sm:text-sm font-medium text-amber-800 mb-1 sm:mb-2 flex items-center gap-1 sm:gap-2">
-          Security Tips
-        </h3>
-        <ul className="text-xs/5 sm:text-sm/6 text-amber-700 space-y-0.5 sm:space-y-1 list-disc pl-4 sm:pl-5">
-          {/* Add security tips here as needed */}
-        </ul>
-      </div>
 
       <div className="flex flex-col sm:flex-row items-center justify-between mt-6 sm:mt-8 gap-4 sm:gap-0">
         <div className="flex items-center space-x-2 order-2 sm:order-1">

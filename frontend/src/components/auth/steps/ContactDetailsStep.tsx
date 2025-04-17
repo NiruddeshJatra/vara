@@ -15,7 +15,7 @@ interface Props {
 const ContactDetailsStep = ({ profileFormData, errors, onChange, onNext, loading = false }: Props) => {
   return (
     <div className="space-y-4 sm:space-y-6">
-      <h2 className="text-2xl font-semibold text-green-800">Contact Details</h2>
+      <h4 className="text-md md:text-xl font-semibold text-green-800">Contact Details</h4>
 
       <div className="space-y-4 sm:space-y-6">
         <div>

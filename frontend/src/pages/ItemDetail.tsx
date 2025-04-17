@@ -150,9 +150,9 @@ export default function ItemDetailPage() {
       <style>{stickyStyles}</style>
       <NavBar />
 
-      <main className="flex-grow pt-20 pb-20 bg-gradient-to-b from-green-50 to-white">
+      <main className="flex-grow pt-20 pb-20 px-4 bg-gradient-to-b from-green-50 to-white">
         {/* Title Section */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-8 animate-fade-up">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 my-4 sm:my-8 animate-fade-up">
           <ProductHeader
             title={product.title}
             averageRating={typeof product.averageRating === 'number' ? product.averageRating : 0}
@@ -163,15 +163,15 @@ export default function ItemDetailPage() {
         </div>
 
         {/* Image Gallery Section */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 animate-fade-up delay-100">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 mb-6 sm:mb-10 animate-fade-up delay-100">
           <ImageGallery images={product.images.map(img => img.image)} title={product.title} />
         </div>
 
         {/* Main Content Grid */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8 md:gap-12">
             {/* Left Column - Content */}
-            <div className="lg:col-span-2 space-y-8">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-8">
               {/* Host/Vhara Section */}
               <div className="animate-fade-left delay-200">
                 <HostInfo />
@@ -240,7 +240,7 @@ export default function ItemDetailPage() {
         </div>
 
         {/* Similar Items */}
-        <div id="similar-items-section" className="animate-fade-up delay-1000 mt-12">
+        <div id="similar-items-section" className="animate-fade-up delay-1000 mt-8 sm:mt-12">
           <SimilarItems
             items={similarItems}
             onQuickView={handleQuickView}

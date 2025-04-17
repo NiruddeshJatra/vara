@@ -31,45 +31,45 @@ export default function ProductHistory({
 
   return (
     <div className="mb-10 pb-10 border-b border-gray-200">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">Product History</h2>
+      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-4">Product History</h3>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-6">
         {purchaseYear && (
           <div className="bg-green-50 p-4 rounded-lg">
-            <h4 className="font-semibold text-green-900 mb-1 flex items-center">
+            <h4 className="text-lg sm:text-xl font-semibold text-green-900 mb-1 flex items-center">
               <ShoppingBag className="h-4 w-4 mr-3 text-green-600" />
               Purchase Year
             </h4>
-            <p className="text-green-700 font-medium">{purchaseYear}</p>
+            <p className="pl-6 text-green-700 font-medium text-sm sm:text-base">{purchaseYear}</p>
           </div>
         )}
         
         {ownershipHistory && (
           <div className="bg-green-50 p-4 rounded-lg">
-            <h4 className="font-semibold text-green-900 mb-1 flex items-center">
+            <h4 className="text-lg sm:text-xl font-semibold text-green-900 mb-1 flex items-center">
               <History className="h-4 w-4 mr-3 text-green-600" />
               Ownership
             </h4>
-            <p className="text-green-700 font-medium">{getOwnershipDisplay(ownershipHistory)}</p>
+            <p className="pl-6 text-green-700 font-medium text-sm sm:text-base">{getOwnershipDisplay(ownershipHistory)}</p>
           </div>
         )}
         
         {originalPrice > 0 && (
           <div className="bg-green-50 p-4 rounded-lg">
-            <h4 className="font-semibold text-green-900 mb-1 flex items-center">
+            <h4 className="text-lg sm:text-xl font-semibold text-green-900 mb-1 flex items-center">
               <Banknote className="h-4 w-4 mr-3 text-green-600" />
               Original Price
             </h4>
-            <p className="text-green-700 font-medium">{formatPrice(originalPrice)}</p>
+            <p className="pl-6 text-green-700 font-medium text-sm sm:text-base">{formatPrice(originalPrice)}</p>
           </div>
         )}
         
         <div className="bg-green-50 p-4 rounded-lg">
-          <h4 className="font-semibold text-green-900 mb-1 flex items-center">
+          <h4 className="text-lg sm:text-xl font-semibold text-green-900 mb-1 flex items-center">
             <BarChart3 className="h-4 w-4 mr-3 text-green-600" />
             Total Rentals
           </h4>
-          <p className="text-green-700 font-medium">{totalRentals}</p>
+          <p className="pl-6 text-green-700 font-medium text-sm sm:text-base">{totalRentals}</p>
         </div>
       </div>
       

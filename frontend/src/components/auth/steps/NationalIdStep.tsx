@@ -179,16 +179,16 @@ const NationalIdStep = ({ profileFormData, errors, onChange, onFileUpload, onNex
             <h3 className="text-xs sm:text-sm font-medium">Important Information</h3>
           </div>
           <div className="space-y-3">
-            <p className="text-xs sm:text-sm text-gray-600">
+            <p className="text-xs/5 sm:text-sm/6 text-amber-700">
               We need your National ID for verification purposes only. Your information will be kept confidential and used solely for account verification.
             </p>
-            <p className="text-xs sm:text-sm text-gray-600">
+            <p className="text-xs/5 sm:text-sm/6 text-amber-700">
               Please ensure both sides of your National ID are clearly visible and the text is legible.
             </p>
           </div>
         </div>
 
-        <div className="flex justify-between pt-4">
+        <div className="flex justify-between pt-4 space-x-6">
           <Button
             variant="outline"
             onClick={onPrev}

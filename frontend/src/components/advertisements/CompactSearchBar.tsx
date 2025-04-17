@@ -66,7 +66,7 @@ const CompactSearchBar = ({
                     placeholder="What do you need to borrow today?"
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
-                    className={`text-[10px] sm:text-xs pl-9 ${inNav ? 'h-8 md:h-9' : 'h-9 sm:h-10 md:h-11 lg:w-60'} border-green-400 focus:border-green-500`}
+                    className={`text-[10px] text-xs pl-9 ${inNav ? 'h-8 md:h-9 text-[8px]' : 'h-9 sm:h-10 md:h-11 lg:w-60'} border-green-400 focus:border-green-500`}
                   />
                 </div>
                 <div className="relative flex-1">
@@ -76,7 +76,7 @@ const CompactSearchBar = ({
                     placeholder="Select your location"
                     value={location}
                     onChange={e => setLocation(e.target.value)}
-                    className={`text-[10px] sm:text-xs pl-9 ${inNav ? 'h-8 md:h-9' : 'h-9 sm:h-10 md:h-11 lg:w-60'} border-green-400 focus:border-green-500`}
+                    className={`text-[10px] sm:text-xs pl-9 ${inNav ? 'h-8 md:h-9 text-xs' : 'h-9 sm:h-10 md:h-11 lg:w-60'} border-green-400 focus:border-green-500`}
                   />
                 </div>
               </div>

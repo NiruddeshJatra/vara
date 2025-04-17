@@ -114,7 +114,7 @@ export function DateOfBirthPicker({
                     <SelectTrigger className="w-[100px]">
                       <SelectValue placeholder="Year" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="text-xs sm:text-md">
                       {years.map((y) => (
                         <SelectItem key={y} value={y.toString()}>
                           {y}
@@ -134,7 +134,7 @@ export function DateOfBirthPicker({
                     <SelectTrigger className="w-[120px]">
                       <SelectValue placeholder="Month" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="text-xs sm:text-md">
                       {months.map((m) => (
                         <SelectItem key={m.value} value={m.value.toString()}>
                           {m.label}
@@ -154,7 +154,7 @@ export function DateOfBirthPicker({
                     <SelectTrigger className="w-[70px]">
                       <SelectValue placeholder="Day" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="text-xs sm:text-md">
                       {days.map((d) => (
                         <SelectItem key={d} value={d.toString()}>
                           {d}

@@ -93,11 +93,11 @@ const ProfileListings = () => {
     return (
       <div className="text-center py-8">
         <h3 className="text-lg font-medium text-gray-900">No Products Yet</h3>
-        <p className="mt-2 text-sm text-gray-500 bg-green-600">
+        <p className="mt-2 text-sm text-gray-500">
           You haven't uploaded any products for rent yet.
         </p>
         <Button
-          className="mt-4"
+          className="mt-4 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full shadow-md font-semibold text-sm sm:text-base transition-all duration-200"
           onClick={() => navigate('/upload-product/')}
         >
           Upload Your First Product

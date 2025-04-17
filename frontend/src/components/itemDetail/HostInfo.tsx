@@ -9,8 +9,8 @@ export default function HostInfo() {
           <User className="h-7 w-7 text-green-600" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Hosted and verified by Vara</h2>
-          <p className="text-gray-600">You'll rent from the owner, but we handle everything</p>
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Hosted and verified by Vara</h2>
+          <p className="text-sm sm:text-base text-gray-600">You'll rent from the owner, but we handle everything</p>
         </div>
       </div>
     </div>

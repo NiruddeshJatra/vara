@@ -2,12 +2,11 @@ import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, Calendar, Clock, MapPin, Star, Banknote, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, Star, Banknote, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Product } from '@/types/listings';
 import { useAuth } from '@/contexts/AuthContext';
-import { ProfileCompletionModal } from '@/components/common/ProfileCompletionModal';
 import { CATEGORY_DISPLAY, PRODUCT_TYPE_DISPLAY } from '@/constants/productTypes';
-import { toast } from '@/components/ui/use-toast';
 
 interface ItemModalProps {
   isOpen: boolean;
@@ -91,11 +90,11 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-3xl bg-gradient-to-b from-white to-lime-50 p-8"
+        className="item-modal-content max-w-[85vw] md:max-w-3xl bg-gradient-to-b from-white to-lime-50 p-4 sm:p-6 md:p-8 rounded-lg"
         aria-describedby="item-modal-description"
       >
         <DialogHeader>
-          <DialogTitle className="px-2 text-xl font-semibold text-green-800">
+          <DialogTitle className="item-modal-title px-1 text-base sm:text-xl font-semibold text-green-800">
             Item Quick View
           </DialogTitle>
         </DialogHeader>
@@ -104,13 +103,13 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
           Quick view modal for {selectedItem.title || 'product'} showing details and rental options
         </div>
         
-        <div className="flex flex-col md:flex-row gap-10">
-          <div className="md:w-1/2" ref={leftPanelRef}>
+        <div className="item-modal-flex flex flex-col md:flex-row gap-4 sm:gap-8 md:gap-10">
+          <div className="item-modal-image md:w-1/2" ref={leftPanelRef}>
             <div className="relative rounded-lg overflow-hidden">
               <img 
                 src={selectedItem.images?.[currentImageIndex]?.image || 'https://placehold.co/600x400?text=No+Image'} 
                 alt={selectedItem.title || 'Product image'} 
-                className="w-full h-auto object-cover" 
+                className="w-full h-[160px] sm:h-[200px] md:h-auto object-cover" 
                 onError={handleImageError}
               />
               
@@ -146,67 +145,67 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
                 </div>
               )}
             </div>
-            
-            {/* Second image - only shown if there's space */}
-            {showSecondImage && selectedItem.images?.[1] && (
-              <div className="mt-2 relative rounded-lg overflow-hidden">
-                <img
-                  src={selectedItem.images[1].image}
-                  alt="Additional view"
-                  className="w-full h-auto object-cover"
-                  onError={handleImageError}
-                />
-              </div>
-            )}
           </div>
           
-          <div className="md:w-1/2 space-y-3" ref={rightPanelRef}>
-            <h2 className="text-2xl font-bold text-green-800">{selectedItem.title || 'Untitled Product'}</h2>
-            <div className="flex items-center">
+          <div className="item-modal-details md:w-1/2 space-y-2 sm:space-y-3 mb-2" ref={rightPanelRef}>
+            <h2 className="item-modal-title text-lg sm:text-2xl font-bold text-green-800">{selectedItem.title || 'Untitled Product'}</h2>
+            <div className="flex items-center gap-1 sm:gap-2">
               <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-              <span className="ml-1 text-sm font-medium">
+              <span className="text-xs sm:text-sm font-medium">
                 {displayRating()}
               </span>
-              <span className="ml-1 text-xs text-gray-500">({selectedItem.rentalCount || 0} rentals)</span>
+              <span className="text-xs text-gray-500">({selectedItem.rentalCount || 0} rentals)</span>
+              <Badge
+                variant="outline"
+                className="bg-green-50 text-xs sm:text-sm font-medium text-green-700 hover:bg-green-100"
+              >
+                {CATEGORY_DISPLAY[selectedItem.category] || selectedItem.category}
+              </Badge>
+              <Badge
+                variant="outline"
+                className="bg-green-50 text-xs sm:text-sm font-medium text-green-700 hover:bg-green-100"
+              >
+                {PRODUCT_TYPE_DISPLAY[selectedItem.productType] ||
+                  selectedItem.productType}
+              </Badge>
             </div>
-            <p className="text-sm text-green-700">{CATEGORY_DISPLAY[selectedItem.category] || selectedItem.category}</p>
-            
+
             {/* Pricing Tiers Section */}
-            <div className="bg-green-50 p-4 rounded-lg space-y-3">
-              <h3 className="text-lg font-semibold text-green-800">Rental Options</h3>
+            <div className="item-modal-pricing bg-green-50 px-3 sm:px-4 py-2 sm:py-4 rounded-lg space-y-2 sm:space-y-3">
+              <h3 className="text-base sm:text-lg font-semibold text-green-800">Rental Options</h3>
               {selectedItem.pricingTiers && selectedItem.pricingTiers.length > 0 ? (
                 selectedItem.pricingTiers.map((tier, index) => (
-                  <div key={tier.id || index} className="flex justify-between items-center p-2 rounded">
-                    <div className="flex items-center">
-                      <Banknote size={18} className="text-green-700 mr-2" />
+                  <div key={tier.id || index} className="flex justify-between items-center rounded">
+                    <div className="flex items-center gap-1">
+                      <Banknote size={16} className="text-green-700" />
                       <div>
-                        <span className="text-lg font-bold text-green-800">{tier.price}</span>
-                        <span className="text-sm text-gray-600 ml-1">per {tier.durationUnit}</span>
+                        <span className="text-sm sm:text-lg font-bold text-green-800">{tier.price}</span>
+                        <span className="text-xs sm:text-sm text-gray-600 ml-1">per {tier.durationUnit}</span>
                       </div>
                     </div>
                     {tier.maxPeriod && (
-                      <span className="text-sm text-gray-600">
+                      <span className="text-xs sm:text-sm text-gray-600">
                         Max: {tier.maxPeriod} {tier.durationUnit}s
                       </span>
                     )}
                   </div>
                 ))
               ) : (
-                <p className="text-gray-600">No pricing information available</p>
+                <p className="text-xs text-gray-600">No pricing information available</p>
               )}
             </div>
             
-            <div className="space-y-2 pt-4">
+            <div className="space-y-1 sm:space-y-2 pt-2 sm:pt-4">
               <Button 
-                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                className="item-modal-btn w-full bg-green-600 hover:bg-green-700 text-white py-2 text-xs sm:text-sm"
                 onClick={handleRequestRental}
               >
                 Request Rental
               </Button>
-              <div className="flex gap-2">
+              <div className="flex gap-1 sm:gap-2">
                 <Button 
                   variant="outline" 
-                  className="flex-1 border-green-300"
+                  className="item-modal-btn flex-1 border-green-300 py-2 text-xs sm:text-sm"
                   asChild
                 >
                   <Link 
@@ -216,7 +215,7 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
                     View Full Details
                   </Link>
                 </Button>
-                <Button variant="outline" className="border-green-300">
+                <Button variant="outline" className="item-modal-btn border-green-300 py-2">
                   <Heart className="h-4 w-4 text-green-800" />
                 </Button>
               </div>
