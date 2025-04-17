@@ -1,0 +1,46 @@
+.unavailability-calendar-root {
+  width: 100%;
+  max-width: 100%;
+  font-size: 1rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.unavailability-calendar-title {
+  font-size: 1.08rem;
+}
+
+.unavailability-calendar-weekdays {
+  font-size: 0.85rem;
+}
+
+.unavailability-calendar-day {
+  font-size: 0.95rem;
+}
+
+.unavailability-calendar-range {
+  font-size: 0.92rem;
+}
+
+@media (max-width: 600px) {
+  .unavailability-calendar-root {
+    max-width: 98vw;
+    padding: 0.5rem !important;
+    font-size: 0.88rem;
+  }
+  .unavailability-calendar-title {
+    font-size: 0.97rem;
+  }
+  .unavailability-calendar-weekdays {
+    font-size: 0.72rem;
+    padding: 0.1rem 0;
+  }
+  .unavailability-calendar-day {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.2rem;
+  }
+  .unavailability-calendar-range {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.3rem;
+  }
+}

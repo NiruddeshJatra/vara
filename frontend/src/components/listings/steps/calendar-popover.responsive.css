@@ -1,0 +1,46 @@
+.rdp {
+  font-size: 1rem;
+  min-width: 520px;
+  max-width: 98vw;
+}
+.rdp-months {
+  gap: 0.5rem;
+}
+.rdp-month {
+  padding: 0.5rem 0.3rem;
+}
+.rdp-table {
+  font-size: 0.97rem;
+}
+.rdp-head_cell, .rdp-cell {
+  padding: 0.2rem 0.25rem;
+}
+.rdp-day {
+  min-width: 1.8rem;
+  min-height: 1.8rem;
+  font-size: 0.97rem;
+}
+@media (max-width: 600px) {
+  .rdp {
+    font-size: 0.82rem;
+    min-width: 170px;
+    max-width: 98vw;
+  }
+  .rdp-months {
+    gap: 0.2rem;
+  }
+  .rdp-month {
+    padding: 0.15rem 0.05rem;
+  }
+  .rdp-table {
+    font-size: 0.81rem;
+  }
+  .rdp-head_cell, .rdp-cell {
+    padding: 0.07rem 0.07rem;
+  }
+  .rdp-day {
+    min-width: 1.2rem;
+    min-height: 1.2rem;
+    font-size: 0.8rem;
+  }
+}

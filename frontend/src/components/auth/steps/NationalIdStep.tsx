@@ -48,9 +48,9 @@ const NationalIdStep = ({ profileFormData, errors, onChange, onFileUpload, onNex
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-green-800">National ID Verification</h2>
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div>
-          <label htmlFor="nationalIdNumber" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="nationalIdNumber" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
             National ID Number <span className="text-red-500">*</span>
           </label>
           <Input
@@ -60,11 +60,11 @@ const NationalIdStep = ({ profileFormData, errors, onChange, onFileUpload, onNex
             value={profileFormData.nationalIdNumber}
             onChange={(e) => onChange({ nationalIdNumber: e.target.value })}
             error={!!errors.nationalIdNumber}
-            className={`w-full ${errors.nationalIdNumber ? 'border-red-500' : ''}`}
+            className={`w-full h-9 sm:h-10 text-sm ${errors.nationalIdNumber ? 'border-red-500' : ''}`}
             disabled={loading}
           />
           {errors.nationalIdNumber && (
-            <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+            <p className="mt-1 text-xs sm:text-sm text-red-500 flex items-center gap-1">
               <AlertCircle size={14} /> {errors.nationalIdNumber}
             </p>
           )}
@@ -75,7 +75,7 @@ const NationalIdStep = ({ profileFormData, errors, onChange, onFileUpload, onNex
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
               National ID Front <span className="text-red-500">*</span>
             </label>
             {!previewFront ? (
@@ -117,14 +117,14 @@ const NationalIdStep = ({ profileFormData, errors, onChange, onFileUpload, onNex
               </div>
             )}
             {errors.nationalIdFront && (
-              <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+              <p className="mt-1 text-xs sm:text-sm text-red-500 flex items-center gap-1">
                 <AlertCircle size={14} /> {errors.nationalIdFront}
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
               National ID Back <span className="text-red-500">*</span>
             </label>
             {!previewBack ? (
@@ -166,24 +166,23 @@ const NationalIdStep = ({ profileFormData, errors, onChange, onFileUpload, onNex
               </div>
             )}
             {errors.nationalIdBack && (
-              <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+              <p className="mt-1 text-xs sm:text-sm text-red-500 flex items-center gap-1">
                 <AlertCircle size={14} /> {errors.nationalIdBack}
               </p>
             )}
           </div>
         </div>
 
-        <div className="bg-amber-50/50 rounded-lg border border-amber-200 p-4 space-y-4">
+        <div className="bg-amber-50/50 rounded-lg border border-amber-200 p-3 sm:p-4 space-y-4">
           <div className="flex items-center gap-2 text-amber-800 mb-2">
             <Shield className="h-5 w-5" />
-            <h3 className="text-lg font-medium">Important Information</h3>
+            <h3 className="text-xs sm:text-sm font-medium">Important Information</h3>
           </div>
-
           <div className="space-y-3">
-            <p className="text-sm text-gray-600">
+            <p className="text-xs sm:text-sm text-gray-600">
               We need your National ID for verification purposes only. Your information will be kept confidential and used solely for account verification.
             </p>
-            <p className="text-sm text-gray-600">
+            <p className="text-xs sm:text-sm text-gray-600">
               Please ensure both sides of your National ID are clearly visible and the text is legible.
             </p>
           </div>
@@ -199,10 +198,20 @@ const NationalIdStep = ({ profileFormData, errors, onChange, onFileUpload, onNex
           </Button>
           <Button
             type="submit"
-            className="bg-green-600 hover:bg-green-700 text-white"
-            disabled={loading || !profileFormData.nationalIdFront || !profileFormData.nationalIdBack || !profileFormData.nationalIdNumber}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 w-full sm:w-auto"
+            onClick={onNext}
+            disabled={loading}
           >
-            {loading ? 'Verifying...' : 'Verify & Complete'} <ChevronRight size={16} className="ml-2" />
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                Processing...
+              </div>
+            ) : (
+              <div className="flex items-center justify-center">
+                Next <ChevronRight className="ml-2 h-4 w-4" />
+              </div>
+            )}
           </Button>
         </div>
       </div>

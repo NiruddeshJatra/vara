@@ -7,6 +7,7 @@ import BasicInfoStep from '@/components/auth/steps/BasicInfoStep';
 import { RegistrationData, RegistrationFormErrors } from '@/types/auth';
 import { useAuth } from '@/contexts/AuthContext';
 import { validateRegistrationForm } from '@/utils/validations/auth.validations';
+import { Label } from '@/components/ui/label';
 
 const Register = () => {
   const [password, setPassword] = useState('');
@@ -89,63 +90,63 @@ const Register = () => {
     <div className="flex flex-col min-h-screen">
       <NavBar />
       
-      <main className="flex-grow pt-16 pb-16">
-        <div className="bg-gradient-to-b from-green-300 to-lime-100/20 pt-8">
-          <div className="max-w-3xl mx-auto bg-gradient-to-b from-white to-lime-50 rounded-lg shadow-subtle md:p-8 animate-fade-up">
-            <div className="text-center mb-8 animate-fade-up">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Create Your Account</h1>
-              <p className="text-gray-600">Join the Vara community to rent and lend items</p>
-              <p className="text-sm text-amber-600 mt-2">Quick sign-up! Complete your profile after verification.</p>
-            </div>
+      <main className="flex-grow pt-16 sm:pt-20 md:pt-24 pb-16">
+        <div className="bg-gradient-to-b from-green-300 to-lime-100/20 pt-4 sm:pt-6 md:pt-8 px-4 sm:px-6">
+            <div className="max-w-3xl mx-auto bg-gradient-to-b from-white to-lime-50 rounded-lg shadow-subtle p-4 sm:p-6 md:p-8 animate-fade-up">
+              <div className="text-center mb-4 sm:mb-6 md:mb-8 animate-fade-up">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2">Create Your Account</h1>
+                <p className="text-sm sm:text-base text-gray-600">Join the Vara community to rent and lend items</p>
+                <p className="text-xs sm:text-sm text-amber-600 mt-2">Quick sign-up! Complete your profile after verification.</p>
+              </div>
 
-            {/* Display validation errors from backend */}
-            {Object.keys(errors).length > 0 && (
-              <div className="mb-6 space-y-2 animate-fade-down">
-                {Object.entries(errors).map(([key, value]) => (
-                  <div key={key} className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <div className="flex items-start">
-                      <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 mr-2" />
-                      <div>
-                        <h3 className="text-sm font-medium text-red-800 capitalize">
-                          {key.split('_').join(' ')}
-                        </h3>
-                        <p className="text-sm text-red-700 mt-1">
-                          {Array.isArray(value) ? value[0] : value}
-                        </p>
+              {/* Display validation errors from backend */}
+              {Object.keys(errors).length > 0 && (
+                <div className="mb-6 space-y-2 animate-fade-down">
+                  {Object.entries(errors).map(([key, value]) => (
+                    <div key={key} className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <div className="flex items-start">
+                        <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 mr-2" />
+                        <div>
+                          <h3 className="text-sm font-medium text-red-800 capitalize">
+                            {key.split('_').join(' ')}
+                          </h3>
+                          <p className="text-sm text-red-700 mt-1">
+                            {Array.isArray(value) ? value[0] : value}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+              
+              <form onSubmit={handleSubmit} className="animate-fade-up delay-200">
+                <BasicInfoStep
+                  formData={formData}
+                  errors={errors}
+                  onChange={handleInputChange}
+                  onNext={handleSubmit}
+                  loading={loading}
+                  showConsent={true}
+                  password={password}
+                  confirmPassword={confirmPassword}
+                  onPasswordChange={handlePasswordChange}
+                  onConfirmPasswordChange={handleConfirmPasswordChange}
+                />
+              </form>
+            </div>
             
-            <form onSubmit={handleSubmit} className="animate-fade-up delay-200">
-              <BasicInfoStep
-                formData={formData}
-                errors={errors}
-                onChange={handleInputChange}
-                onNext={handleSubmit}
-                loading={loading}
-                showConsent={true}
-                password={password}
-                confirmPassword={confirmPassword}
-                onPasswordChange={handlePasswordChange}
-                onConfirmPasswordChange={handleConfirmPasswordChange}
-              />
-            </form>
-          </div>
-          
-          <div className="mt-8 flex justify-center items-center space-x-4 pb-8 animate-fade-up delay-300">
-            <div className="flex items-center text-gray-500 text-sm">
-              <Shield className="h-5 w-5 text-green-600 mr-2" />
-              <span>Secure Registration</span>
+            <div className="mt-8 flex justify-center items-center space-x-4 pb-8 animate-fade-up delay-300">
+              <div className="flex items-center text-gray-500 text-sm">
+                <Shield className="h-5 w-5 text-green-600 mr-2" />
+                <span>Secure Registration</span>
+              </div>
+              <div className="text-gray-500 text-sm">
+                <Link to="/auth/login/" className="text-green-600 hover:text-green-700 font-medium">
+                  Already have an account? Sign in
+                </Link>
+              </div>
             </div>
-            <div className="text-gray-500 text-sm">
-              <Link to="/auth/login/" className="text-green-600 hover:text-green-700 font-medium">
-                Already have an account? Sign in
-              </Link>
-            </div>
-          </div>
         </div>
       </main>
       

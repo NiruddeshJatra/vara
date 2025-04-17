@@ -96,7 +96,7 @@ const CategoryScroll = ({
     : 'bg-transparent';
 
   return (
-    <div className={`sticky top-[68px] sm:top-[68px] border-b border-gray-200 z-50 ${categoryBarStyle}`}>
+    <div className={`sticky top-[68px] sm:top-[68px] border-b border-gray-200 z-10 ${categoryBarStyle}`}>
       <div className="flex items-center justify-between container mx-auto px-2 sm:px-4">
         <div className="flex items-center justify-center w-full">
           {showScrollButtons && (

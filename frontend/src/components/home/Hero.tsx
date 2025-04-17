@@ -8,7 +8,7 @@ const Hero = () => {
   const [location, setLocation] = useState('');
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center pt-24 pb-16 overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center pt-12 lg:pt-24 pb-16 overflow-hidden">
       {/* Nature-inspired background with gradients and overlay */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-green-800 to-green-600"></div>
       
@@ -31,7 +31,7 @@ const Hero = () => {
           </p>
           
           {/* Search UI */}
-          <div className="w-full max-w-xs sm:max-w-md md:max-w-xl lg:max-w-2xl bg-white/80 backdrop-blur-sm border border-green-100 rounded-xl shadow-sm p-2 sm:p-4 mb-6 sm:mb-8 mx-auto">
+          <div className="w-full max-w-xs sm:max-w-md md:max-w-xl lg:max-w-2xl bg-white/80 backdrop-blur-sm border border-green-100 rounded-xl shadow-sm p-2 sm:p-4 mb-4 sm:mb-6 md:mb-8 mx-auto">
             <div className="flex flex-col md:flex-row gap-2 sm:gap-3">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-3 sm:top-4 h-4 w-4 text-green-600/60" />

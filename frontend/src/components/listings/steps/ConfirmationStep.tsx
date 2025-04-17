@@ -73,45 +73,45 @@ const ConfirmationStep = ({ formData, onEdit, isEditing = false, productId }: Pr
   const unavailableRanges = getUnavailableDateRanges();
 
   return (
-    <div className="space-y-10">
-      <div className="space-y-10">
+    <div className="space-y-10 sm:space-y-12">
+      <div className="space-y-10 sm:space-y-12">
         <div className="text-center">
           <div className="text-green-600">
-            <CheckCircle size={48} className="mx-auto" />
+            <CheckCircle size={48} className="mx-auto my-3" />
           </div>
-          <h2 className="text-2xl font-bold text-green-600 mb-2">
+          <h2 className="text-xl sm:text-2xl font-bold text-green-600 mb-2">
             {isEditing ? 'Listing Updated Successfully!' : 'Listing Created Successfully!'}
           </h2>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-xs sm:text-base">
             {isEditing
               ? 'Your product listing has been updated.'
               : 'Your product is now available for rent.'}
           </p>
         </div>
 
-        <div className="max-w-lg mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4">
-            <div className="font-semibold text-green-700">Title</div>
-            <div className="text-gray-600 truncate">{formData.title}</div>
+        <div className="max-w-lg mx-auto bg-white border border-gray-200 rounded-lg shadow-sm p-6 sm:p-8 space-y-4">
+          <div className="grid grid-cols-2 gap-y-4 gap-x-4">
+            <div className="font-semibold text-green-700 text-xs sm:text-sm">Title</div>
+            <div className="text-gray-600 truncate text-xs sm:text-sm">{formData.title}</div>
 
-            <div className="font-semibold text-green-700">Category</div>
-            <div className="text-gray-600 truncate">{CATEGORY_DISPLAY[formData.category]}</div>
+            <div className="font-semibold text-green-700 text-xs sm:text-sm">Category</div>
+            <div className="text-gray-600 truncate text-xs sm:text-sm">{CATEGORY_DISPLAY[formData.category]}</div>
 
-            <div className="font-semibold text-green-700">Location</div>
-            <div className="text-gray-600 truncate">{formData.location}</div>
+            <div className="font-semibold text-green-700 text-xs sm:text-sm">Location</div>
+            <div className="text-gray-600 truncate text-xs sm:text-sm">{formData.location}</div>
 
-            <div className="font-semibold text-green-700">Images</div>
-            <div className="text-gray-600">{formData.images.length} uploaded</div>
+            <div className="font-semibold text-green-700 text-xs sm:text-sm">Images</div>
+            <div className="text-gray-600 text-xs sm:text-sm">{formData.images.length} uploaded</div>
 
-            <div className="font-semibold text-green-700">Pricing</div>
+            <div className="font-semibold text-green-700 text-xs sm:text-sm">Pricing</div>
             <div className="space-y-2">
               {formData.pricingTiers.map((tier, index) => (
-                <div key={index} className="text-gray-600 whitespace-nowrap">
+                <div key={index} className="text-gray-600 whitespace-nowrap text-xs sm:text-sm">
                   {tier.price} Taka 
                   {tier.durationUnit === 'day' ? ' daily' :
                     tier.durationUnit === 'week' ? ' weekly' :
                       tier.durationUnit === 'month' ? ' monthly' :
-                        (tier.durationUnit as string).charAt(0).toUpperCase() + (tier.durationUnit as string).slice(1) + 'ly'}
+                        (tier.durationUnit as string).charAt(0).toUpperCase() + (tier.durationUnit as string).slice(1) + 'ly'} <br />
                   {tier.maxPeriod && ` (Max: ${tier.maxPeriod} ${tier.durationUnit}${tier.maxPeriod > 1 ? 's' : ''})`}
                 </div>
               ))}
@@ -119,32 +119,33 @@ const ConfirmationStep = ({ formData, onEdit, isEditing = false, productId }: Pr
 
             {formData.securityDeposit > 0 && (
               <>
-                <div className="font-semibold text-green-700">Security Deposit</div>
-                <div className="text-gray-600 whitespace-nowrap">{formData.securityDeposit} Taka</div>
+                <div className="font-semibold text-green-700 text-xs sm:text-sm">Security Deposit</div>
+                <div className="text-gray-600 text-xs sm:text-sm">{formData.securityDeposit} Taka</div>
               </>
             )}
 
-            {unavailableRanges.length > 0 && (
-              <>
-                <div className="font-semibold text-green-700">Unavailable Dates</div>
-                <div className="overflow-x-auto">
-                  <div className="flex flex-wrap gap-2">
-                    {unavailableRanges.map((range, index) => (
-                      <div key={index} className="text-sm bg-red-50 text-red-800 px-3 py-1 rounded-md whitespace-nowrap">
-                        {format(range.start, "MMM d")} - {format(range.end, "MMM d, yyyy")}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
+            <div className="font-semibold text-green-700 text-xs sm:text-sm">Unavailable Dates</div>
+            <div className="text-gray-600 text-xs sm:text-sm">
+              {unavailableRanges.length === 0 ? (
+                <span>None</span>
+              ) : (
+                <ul className="list-disc pl-4 space-y-1">
+                  {unavailableRanges.map((range, idx) => (
+                    <li key={idx}>
+                      {format(range.start, 'LLL dd, yyyy')}
+                      {range.end > range.start ? ` - ${format(range.end, 'LLL dd, yyyy')}` : ''}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
       <div className="text-left max-w-xl mx-auto space-y-4">
         <h4 className="font-semibold text-gray-600">What happens next?</h4>
-        <ul className="list-disc list-inside space-y-1 text-green-700">
+        <ul className="text-sm sm:text-md list-disc list-inside space-y-1 text-green-700">
           <li>Your listing is now live and available for rent</li>
           <li>You'll receive notifications when someone requests to rent</li>
           <li>You can edit your listing anytime from your dashboard</li>

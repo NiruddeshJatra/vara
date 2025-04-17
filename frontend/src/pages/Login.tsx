@@ -74,7 +74,7 @@ const Login = () => {
     <div className="flex flex-col min-h-screen">
       <NavBar />
 
-      <main className="flex-grow pt-16">
+      <main className="flex-grow pt-16 sm:pt-20 md:pt-24">
         <div className="bg-gradient-to-b from-green-300 to-lime-100/20">
           <div className="container max-w-md mx-auto px-4 py-12">
             <div className="bg-gradient-to-b from-white to-lime-50 backdrop-blur-sm shadow-lg rounded-xl p-8 relative animate-fade-up">

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { CalendarDays, Info, Calendar as CalendarIcon, X, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
+import './UnavailabilityCalendar.responsive.css';
 
 interface CustomDateRange {
   start: Date;
@@ -168,8 +169,8 @@ const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
   };
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
-      <h4 className="font-medium flex items-center gap-2 mb-4 text-green-700">
+    <div className="unavailability-calendar-root border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
+      <h4 className="unavailability-calendar-title font-medium flex items-center gap-2 mb-4 text-green-700">
         <CalendarDays size={18} className="text-green-600 mr-1" />
         Unavailability Calendar
       </h4>
@@ -199,7 +200,7 @@ const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
             
             <div className="grid grid-cols-7 gap-0">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="text-center text-xs py-1 bg-green-50 text-green-800 font-medium border-r last:border-r-0">
+                <div key={day} className="unavailability-calendar-weekdays text-center text-xs py-1 bg-green-50 text-green-800 font-medium border-r last:border-r-0">
                   {day}
                 </div>
               ))}
@@ -207,8 +208,7 @@ const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
               {calendarDays.map((day, index) => (
                 <div 
                   key={index} 
-                  className={`
-                    text-center p-2 text-sm border-r last:border-r-0
+                  className={`unavailability-calendar-day text-center p-2 text-sm border-r last:border-r-0
                     ${day === null ? 'bg-white text-gray-300' : 'bg-white text-gray-700'}
                     ${day !== null && isDateUnavailable(currentYear, currentMonth, day) 
                       ? 'bg-red-400/50 text-red-800 font-medium' 
@@ -224,13 +224,13 @@ const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
           </div>
 
           <div className="space-y-2">
-            <h4 className="font-medium text-sm text-green-700 flex items-center gap-1">
+            <h4 className="unavailability-calendar-range font-medium text-sm text-green-700 flex items-center gap-1">
               <CalendarIcon size={14} className="text-green-600" />
               Unavailable Date Ranges:
             </h4>
             <div className="flex flex-wrap gap-2">
               {dateRanges.map((range, index) => (
-                <div key={index} className="text-sm bg-red-50 text-red-800 px-2 py-1 rounded-md flex items-center gap-2">
+                <div key={index} className="unavailability-calendar-range text-sm bg-red-50 text-red-800 px-2 py-1 rounded-md flex items-center gap-2">
                   <span>{formatDateRange(range.startDate, range.endDate)}</span>
                   {onRemoveRange && (
                     <button 

@@ -17,14 +17,14 @@ const Footer = () => {
             <a href="/" className="flex items-center text-lg md:text-xl font-bold mb-2 md:mb-3">
               <span className="text-lime-600 mr-1">V</span>ara
             </a>
-            <p className="text-gray-400 text-xs/5 md:text-sm/6 mb-3 md:mb-4">
+            <p className="text-gray-500 text-xs/5 md:text-sm/6 mb-3 md:mb-4">
               The trusted community marketplace for lending and borrowing everyday items. Save money, earn income, and live more sustainably.
             </p>
             <div className="flex gap-2 md:gap-3">
-              <a href="#" className="rounded-full bg-white p-2 hover:bg-lime-50 border-2 border-gray-200 transition"><Facebook size={18} className="text-gray-400" /></a>
-              <a href="#" className="rounded-full bg-white p-2 hover:bg-lime-50 border-2 border-gray-200 transition"><Twitter size={18} className="text-gray-400" /></a>
-              <a href="#" className="rounded-full bg-white p-2 hover:bg-lime-50 border-2 border-gray-200 transition"><Instagram size={18} className="text-gray-400" /></a>
-              <a href="#" className="rounded-full bg-white p-2 hover:bg-lime-50 border-2 border-gray-200 transition"><Linkedin size={18} className="text-gray-400" /></a>
+              <a href="#" className="rounded-full bg-white p-2 hover:bg-lime-50 border-2 border-gray-200 transition"><Facebook size={18} className="text-gray-500" /></a>
+              <a href="#" className="rounded-full bg-white p-2 hover:bg-lime-50 border-2 border-gray-200 transition"><Twitter size={18} className="text-gray-500" /></a>
+              <a href="#" className="rounded-full bg-white p-2 hover:bg-lime-50 border-2 border-gray-200 transition"><Instagram size={18} className="text-gray-500" /></a>
+              <a href="#" className="rounded-full bg-white p-2 hover:bg-lime-50 border-2 border-gray-200 transition"><Linkedin size={18} className="text-gray-500" /></a>
             </div>
           </div>
           {/* Company Links */}

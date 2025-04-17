@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import AvailabilityCalendar from '@/components/listings/UnavailabilityCalendar';
 import { DateRange } from 'react-day-picker';
+import './calendar-popover.responsive.css';
 
 type Props = {
   formData: ListingFormData;
@@ -94,7 +95,7 @@ const UnavailabilityStep = ({ formData, errors, onChange, onNext, onBack }: Prop
           Select Unavailable Dates
         </h4>
         
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-xs/5 md:text-sm/6 text-gray-600 mb-4">
           Select dates when the item will not be available for rent (e.g., when you need it for personal use).
         </p>
         
@@ -185,7 +186,7 @@ const UnavailabilityStep = ({ formData, errors, onChange, onNext, onBack }: Prop
 
       {/* Display selected unavailable dates in a calendar view */}
       {unavailableDatesAsDates.length > 0 && (
-        <div className="border border-gray-200 rounded-lg p-4 mt-4 bg-white shadow-sm">
+        <div className="p-0 mt-4">
           <AvailabilityCalendar 
             unavailableDates={unavailableDatesAsDates} 
             onRemoveRange={handleRemoveRange}
@@ -193,16 +194,15 @@ const UnavailabilityStep = ({ formData, errors, onChange, onNext, onBack }: Prop
         </div>
       )}
 
-      <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-4 rounded-lg border border-amber-200 mt-4">
-        <h3 className="text-sm font-medium text-amber-800 mb-2 flex items-center gap-2">
-          <Info size={16} className="text-amber-600" />
+      <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-3 sm:p-4 rounded-lg border border-amber-200 mt-3 sm:mt-4">
+        <h3 className="text-xs sm:text-sm font-medium text-amber-800 mb-1 sm:mb-2 flex items-center gap-1 sm:gap-2">
+          <Info size={14} className="text-amber-600 sm:w-4 sm:h-4" />
           Availability Tips
         </h3>
-        <ul className="text-sm text-amber-700 space-y-1 list-disc pl-5">
-          <li>Select dates when you need the item for personal use</li>
-          <li>You can select <strong>individual dates</strong> or <strong>date ranges</strong> by dragging</li>
-          <li>All other dates will be available for rent</li>
-          <li>You can update unavailable dates anytime from your dashboard</li>
+        <ul className="text-xs/5 sm:text-sm/6 text-amber-700 space-y-0.5 sm:space-y-1 list-disc pl-4 sm:pl-5">
+          <li>Consider blocking out dates when you need the item for personal use.</li>
+          <li>Keep your calendar updated to avoid double bookings.</li>
+          <li>Unavailable dates help renters plan better and reduce cancellations.</li>
         </ul>
       </div>
     </div>

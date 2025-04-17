@@ -82,8 +82,8 @@ const ProductDetailsStep = ({ product, formData, errors, onChange, onNext, loadi
   };
 
   return (
-    <div className="space-y-6 md:space-y-8 px-2">
-      <h2 className="text-2xl font-semibold text-green-800 mb-4">Item Details</h2>
+    <div className="space-y-6 md:space-y-8 px-4 sm:px-6">
+      <h2 className="text-xl sm:text-2xl font-semibold text-green-800 mb-4">Item Details</h2>
       
       {/* Product Information Card */}
       <div className="bg-gradient-to-br from-white to-lime-100 rounded-lg border border-gray-200 p-4 md:p-6">
@@ -278,16 +278,12 @@ const ProductDetailsStep = ({ product, formData, errors, onChange, onNext, loadi
         </div>
       </div>
 
-      <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-4 rounded-lg border border-amber-200 mt-4">
-        <h4 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
-          <Info size={16} className="text-amber-600" />
+      <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-3 sm:p-4 rounded-lg border border-amber-200 mt-4">
+        <h3 className="text-xs sm:text-sm font-medium text-amber-800 mb-1 sm:mb-2 flex items-center gap-1 sm:gap-2">
           Rental Tips
-        </h4>
-        <ul className="text-sm text-amber-700 space-y-1 list-disc pl-5">
-          <li>Choose dates when you'll be available to pick up and return the item</li>
-          <li>Consider any setup or learning time you might need</li>
-          <li>Check the item's availability calendar for open slots</li>
-          <li>Book for the full duration you need to avoid extensions</li>
+        </h3>
+        <ul className="text-xs/5 sm:text-sm/6 text-amber-700 space-y-0.5 sm:space-y-1 list-disc pl-4 sm:pl-5">
+          {/* Add rental tips here as needed */}
         </ul>
       </div>
 

@@ -93,7 +93,13 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
 
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
+      <div className="space-y-1 mt-5">
+        <h4 className="text-md md:text-xl font-semibold text-green-800">Pricing</h4>
+        <p className="text-xs/5 md:text-sm/6 text-gray-600">
+          Set your pricing tiers and security deposit for this item.
+        </p>
+      </div>
+      <div className="space-y-3">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold text-green-900">Pricing Tiers</h3>
           <Button 
@@ -106,15 +112,13 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
             <Plus size={16} /> Add Tier
           </Button>
         </div>
-        
-        <p className="text-sm text-gray-500">
+        <p className="text-xs/5 md:text-sm/6 text-gray-600">
           Set different prices for different rental durations by adding multiple tiers (daily, weekly, monthly rates).
         </p>
-
         {formData.pricingTiers?.map((tier, index) => (
-          <div key={index} className="p-4 border rounded-lg bg-green-50 space-y-4">
+          <div key={index} className="p-4 border rounded-lg bg-green-50 space-y-2 sm:space-y-4">
             <div className="flex justify-between items-center">
-              <h4 className="font-medium text-green-800">Tier {index + 1}</h4>
+              <h4 className="text-md md:text-lg font-medium text-green-800">Tier {index + 1}</h4>
               {formData.pricingTiers && formData.pricingTiers.length > 1 && (
                 <Button 
                   type="button" 
@@ -127,10 +131,9 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
                 </Button>
               )}
             </div>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-700">
+                <label className="block text-xs md:text-sm font-medium mb-1 text-gray-700">
                   Duration Unit <span className="text-red-500">*</span>
                 </label>
                 <Select 
@@ -140,7 +143,7 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
                   <SelectTrigger className={errors[`pricingTiers.${index}.durationUnit`] ? 'border-red-500' : ''}>
                     {DURATION_UNIT_LABELS[tier.durationUnit as DurationUnit] || "Select Duration Unit"}
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="text-xs md:text-sm">
                     {durationOptions.map(option => (
                       <SelectItem key={option.value} value={option.value}>
                         {DURATION_UNIT_LABELS[option.value]}
@@ -149,14 +152,13 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
                   </SelectContent>
                 </Select>
                 {errors[`pricingTiers.${index}.durationUnit`] && (
-                  <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
                     <AlertCircle size={14} /> {errors[`pricingTiers.${index}.durationUnit`][0]}
                   </p>
                 )}
               </div>
-
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-700">
+                <label className="block text-xs md:text-sm font-medium mb-1 text-gray-700">
                   Base Price <span className="text-red-500">*</span>
                 </label>
                 <Input
@@ -164,18 +166,17 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
                   min="0"
                   value={tier.price || ''}
                   onChange={(e) => handlePricingTierChange(index, 'price', e.target.value ? Number(e.target.value) : undefined)}
-                  className={`text-sm md:text-base h-10 md:h-12 placeholder:text-sm ${errors[`pricingTiers.${index}.price`] ? 'border-red-500' : ''}`}
+                  className={`h-10 text-sm placeholder:text-sm ${errors[`pricingTiers.${index}.price`] ? 'border-red-500' : ''}`}
                   placeholder={getPricePlaceholder(tier.durationUnit as DurationUnit)}
                 />
                 {errors[`pricingTiers.${index}.price`] && (
-                  <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
                     <AlertCircle size={14} /> {errors[`pricingTiers.${index}.price`][0]}
                   </p>
                 )}
               </div>
-
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">
+                <label className="block text-xs md:text-sm font-medium mb-1 text-gray-700">
                   Maximum Rental Period
                 </label>
                 <Input
@@ -183,15 +184,15 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
                   min="1"
                   value={tier.maxPeriod || ''}
                   onChange={(e) => handlePricingTierChange(index, 'maxPeriod', e.target.value ? Number(e.target.value) : undefined)}
-                  className={`text-sm md:text-base h-10 md:h-12 placeholder:text-sm ${errors[`pricingTiers.${index}.maxPeriod`] ? 'border-red-500' : ''}`}
+                  className={`h-10 text-sm placeholder:text-sm ${errors[`pricingTiers.${index}.maxPeriod`] ? 'border-red-500' : ''}`}
                   placeholder={getMaxPeriodPlaceholder(tier.durationUnit as DurationUnit)}
                 />
                 {errors[`pricingTiers.${index}.maxPeriod`] && (
-                  <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
                     <AlertCircle size={14} /> {errors[`pricingTiers.${index}.maxPeriod`][0]}
                   </p>
                 )}
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-xs/5 text-gray-500 mt-1">
                   Set for maximum how many days/weeks/months you want to rent out. Leave empty for no limit.
                 </p>
               </div>
@@ -199,10 +200,9 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
           </div>
         ))}
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1 text-gray-700">
+          <label className="block text-xs md:text-sm font-medium mb-1 text-gray-700">
             Security Deposit (Taka)
           </label>
           <div className="flex items-center gap-2">
@@ -212,10 +212,10 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
               min="0"
               value={formData.securityDeposit || ''}
               onChange={handleChange}
-              className="text-sm md:text-base h-10 md:h-12 placeholder:text-sm"
+              className="h-10 text-sm placeholder:text-sm"
               placeholder="Recommended for valuable items"
             />
-            <div className="h-10 md:h-12 flex items-center text-green-700">
+            <div className="h-10 flex items-center text-green-700">
               <Shield size={18} />
             </div>
           </div>
@@ -224,17 +224,16 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
           </p>
         </div>
       </div>
-      
       <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-4 rounded-lg border border-amber-200 mt-4">
-        <h3 className="text-sm font-medium text-amber-800 mb-2 flex items-center gap-2">
+        <h3 className="text-xs font-medium text-amber-800 mb-2 flex items-center gap-2">
           <Info size={16} className="text-amber-600" />
           Pricing Tips
         </h3>
-        <ul className="text-sm text-amber-700 space-y-1 list-disc pl-5">
+        <ul className="text-xs text-amber-700 space-y-1 list-disc pl-5">
           <li>Set competitive prices by checking similar items in your area</li>
           <li>Consider offering discounts for longer rental periods</li>
           <li>For example: Higher daily rate, lower weekly rate, lowest monthly rate</li>
-          <li><strong>Security Deposit:</strong> Add a deposit for valuable items to protect against damage</li>
+          <li>Add a deposit for valuable items to protect against damage</li>
         </ul>
       </div>
     </div>

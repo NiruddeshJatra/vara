@@ -33,8 +33,8 @@ const AdditionalDetailsStep = ({ formData, errors, onChange, onNext, onPrev, loa
   };
 
   return (
-    <div className="space-y-6 md:space-y-8 px-2">
-      <h2 className="text-2xl font-semibold text-green-800 mb-4">Additional Information</h2>
+    <div className="space-y-6 md:space-y-8 px-4 sm:px-6">
+      <h2 className="text-xl sm:text-2xl font-semibold text-green-800 mb-4">Additional Information</h2>
       
       <div className="space-y-6">
         <div>

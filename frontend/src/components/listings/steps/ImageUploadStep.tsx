@@ -55,8 +55,8 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-700">Upload Item Images</h2>
-        <div className="flex items-center text-sm text-gray-500">
+        <p className="text-md sm:text-xl font-semibold text-gray-700">Upload Item Images</p>
+        <div className="flex items-center text-xs sm:text-sm text-gray-500">
           <span className="font-medium">{images.length}</span>
           <span className="mx-1">images added</span>
           {images.length > 0 && images.length < 3 && (
@@ -68,7 +68,7 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
         </div>
       </div>
 
-      <div className="border-2 border-dashed rounded-xl p-6 text-center bg-white">
+      <div className="border-2 border-dashed rounded-xl p-6 sm:p-8 text-center bg-white shadow-sm">
         <div
           className={`${dragActive ? 'border-green-500 bg-green-50' : 'border-gray-200'} 
             relative border-2 rounded-xl min-h-[220px] flex flex-col items-center justify-center transition-colors`}
@@ -86,24 +86,24 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
           ) : (
             <div className="space-y-3 p-4">
               <UploadCloud size={48} className="mx-auto text-green-500" />
-              <p className="font-medium text-gray-700">Drag and drop images here</p>
-              <p className="text-sm text-gray-500">or</p>
+              <p className="font-medium text-gray-700 text-xs sm:text-sm">Drag and drop images here</p>
+              <p className="text-xs sm:text-sm text-gray-500">or</p>
               <input
                 type="file"
                 multiple
                 accept="image/jpeg, image/png, image/jpg"
                 onChange={(e) => e.target.files && handleFileChange(e.target.files)}
-                className="hidden text-sm md:text-base h-10 md:h-12"
+                className="hidden text-xs sm:text-sm md:text-base h-10 md:h-12"
                 id="file-upload"
               />
               <label
                 htmlFor="file-upload"
-                className="inline-block px-6 py-2.5 bg-green-600 text-white rounded-md hover:bg-green-700 cursor-pointer font-medium transition-colors"
+                className="inline-block px-6 py-2.5 bg-green-600 text-white rounded-md hover:bg-green-700 cursor-pointer font-medium text-xs sm:text-sm transition-colors"
               >
                 Browse Files
               </label>
               <div className="mt-6 border-t border-gray-100 pt-4">
-                <p className="text-xs text-gray-500 mt-4 flex items-center justify-center">
+                <p className="text-xs text-gray-500 flex items-center justify-center">
                   <Info size={12} className="mr-1 text-gray-400" />
                   Maximum 5MB per image (JPG, JPEG, PNG only)
                 </p>
@@ -114,7 +114,7 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
       </div>
 
       {error && error.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-3 text-red-700 text-sm flex items-start gap-2">
+        <div className="bg-red-50 border border-red-200 rounded-md p-3 text-red-700 text-xs sm:text-sm flex items-start gap-2">
           <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
           <p>{error[0]}</p>
         </div>
@@ -122,7 +122,7 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
 
       {images.length > 0 && (
         <>
-          <h4 className="text-md font-medium text-gray-700 flex items-center gap-2 mt-6">
+          <h4 className="text-sm md:text-md font-medium text-gray-700 flex items-center gap-2 mt-6">
             <Image className="h-5 w-5 text-gray-500" />
             Uploaded Images ({images.length})
           </h4>
@@ -173,24 +173,20 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
         </>
       )}
 
-      <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-4 rounded-lg border border-amber-200 mt-4">
-        <h6 className="text-md font-medium text-amber-800 mb-3 flex items-center gap-2">
-          <Info size={18} className="text-amber-600" />
+      <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-3 sm:p-4 rounded-lg border border-amber-200 mt-4">
+        <h6 className="text-xs sm:text-sm font-medium text-amber-800 mb-1 sm:mb-2 flex items-center gap-1 sm:gap-2">
+          <Info size={18} className="text-amber-600 sm:w-4 sm:h-4" />
           Tips for Great Listing Photos
         </h6>
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="space-y-2 sm:space-y-3">
           <div>
-            <ul className="text-sm text-amber-700 space-y-2 list-disc pl-5">
-              <li><span className="font-medium">Multiple angles:</span> Show your item from different perspectives</li>
-              <li><span className="font-medium">Good lighting:</span> Natural daylight works best for clear, detailed photos</li>
-              <li><span className="font-medium">Show condition:</span> Highlight any wear, damages, or imperfections honestly</li>
-            </ul>
-          </div>
-          <div>
-            <ul className="text-sm text-amber-700 space-y-2 list-disc pl-5">
-              <li><span className="font-medium">Clean background:</span> Use a neutral background without distractions</li>
-              <li><span className="font-medium">Size reference:</span> Include objects for scale when helpful</li>
-              <li><span className="font-medium">Specifications:</span> Take photos of labels, model numbers, or brands</li>
+            <ul className="text-xs/5 sm:text-sm/6 text-amber-700 space-y-0.5 sm:space-y-1 list-disc pl-4 sm:pl-5">
+              <li><span className="font-semibold">Multiple angles:</span> Show your item from different perspectives</li>
+              <li><span className="font-semibold">Good lighting:</span> Natural daylight works best for clear, detailed photos</li>
+              <li><span className="font-semibold">Show condition:</span> Highlight any wear, damages, or imperfections honestly</li>
+              <li><span className="font-semibold">Clean background:</span> Use a neutral background without distractions</li>
+              <li><span className="font-semibold">Size reference:</span> Include objects for scale when helpful</li>
+              <li><span className="font-semibold">Specifications:</span> Take photos of labels, model numbers, or brands</li>
             </ul>
           </div>
         </div>

@@ -74,7 +74,7 @@ const NavBar = () => {
         </div>
         
         {showSearchInNav && (
-          <div className="hidden md:flex flex-1 mx-6 lg:mx-4 max-w-sm lg:max-w-xl items-center justify-center ml-12">
+          <div className="hidden md:flex flex-1 mx-6 lg:mx-auto max-w-sm lg:max-w-xl items-center justify-center ml-12">
             <CompactSearchBar 
               inNav={true}
               searchTerm={searchTerm}
@@ -190,7 +190,7 @@ const NavBar = () => {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-transparent backdrop-blur-sm animate-fade-in">
+        <div className="md:hidden bg-green-50 backdrop-blur-sm animate-fade-in">
           <div className="container mx-auto px-4 py-4 flex flex-col items-center space-y-4">
             {isAuthenticated && (
               <>
@@ -202,14 +202,14 @@ const NavBar = () => {
                 </Link>
                 <Button
                   onClick={handleUploadProduct}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-full mt-2 flex items-center justify-center gap-2"
+                  className="w-full bg-green-600 hover:bg-green-700 hover:scale-105 text-white font-semibold py-2 rounded-full mt-2 flex items-center justify-center gap-2"
                 >
                   <Plus size={18} /> Upload Product
                 </Button>
                 <Button
                   onClick={handleLogout}
                   variant="outline"
-                  className="w-full border-green-600 text-green-600 hover:bg-green-50 font-semibold py-2 rounded-full mt-2 flex items-center justify-center gap-2"
+                  className="w-full border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700 hover:scale-105 font-semibold py-2 rounded-full mt-2 flex items-center justify-center gap-2"
                 >
                   <LogOut size={18} /> Log Out
                 </Button>

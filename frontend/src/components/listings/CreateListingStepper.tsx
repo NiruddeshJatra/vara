@@ -203,31 +203,29 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
   };
 
   return (
-    <main className="flex-grow pt-4 pb-4 md:pt-8 md:pb-8 lg:pt-16 lg:pb-16">
-      <div className="bg-gradient-to-b from-green-300 to-lime-100/20 pt-4 md:pt-8 px-4">
-        <div className="max-w-3xl mx-auto bg-gradient-to-b from-white to-lime-50 rounded-lg shadow-subtle p-4 md:p-6 lg:p-8 overflow-hidden">
-          <div className="text-center mb-6 md:mb-8">
-            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-700 mb-2">
-              {isEditing ? 'Edit Your Product' : 'Upload Your Product'}
-            </h1>
-            <p className="text-sm md:text-base text-gray-500">
-              {isEditing ? 'Update your product details' : 'Join the Vara community to rent and lend items'}
-            </p>
+    <main className="flex-grow pt-12 sm:pt-12 md:pt-16 pb-4 sm:pb-8 md:pb-12">
+      <div className="bg-gradient-to-b from-green-300 to-lime-100/20 pt-6 sm:pt-8 md:pt-10 px-3 sm:px-5 md:px-6">
+        <div className="max-w-4xl mx-auto bg-gradient-to-b from-white to-lime-50 rounded-lg shadow-subtle p-6 sm:p-8 md:p-10 overflow-hidden">
+          <div className="text-center mb-6">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-700 mb-1">{isEditing ? "Edit Listing" : "Create New Listing"}</h1>
+            <p className="text-xs sm:text-sm text-gray-500">Complete the following steps to {isEditing ? "update" : "create"} your listing</p>
           </div>
 
           {/* Stepper navigation */}
-          <div className="mb-6 md:mb-8 lg:mb-12">
+          <div className="mb-3 sm:mb-6 md:mb-8">
             <div className="flex justify-between items-center relative">
-              {[1, 2, 3, 4, 5].map((step, index) => (
+              {[1, 2, 3, 4, 5].map((step) => (
                 <div key={step} className="flex flex-col items-center relative z-10">
-                  <div className={`
-                    w-6 h-6 sm:w-7 sm:h-7 md:w-9 md:h-9 rounded-full flex items-center justify-center text-xs md:text-sm font-bold 
-                    ${currentStep >= step ? 'bg-green-600 text-white ring-2 sm:ring-4 ring-green-100' : 'bg-gray-200 text-gray-600'}
-                  `}>
+                  <div
+                    className={`
+                      w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full flex items-center justify-center text-[8px] sm:text-[10px] md:text-xs font-bold 
+                      ${currentStep >= step ? 'bg-green-600 text-white ring-1 sm:ring-2 ring-green-100' : 'bg-gray-200 text-gray-600'}
+                    `}
+                  >
                     {step}
                   </div>
-                  <div className="mt-1 text-center">
-                    <span className={`text-[10px] sm:text-xs ${currentStep === step ? 'text-green-700 font-medium' : 'text-gray-500'}`}>
+                  <div className="mt-0 sm:mt-1 text-center">
+                    <span className={`text-[7px] sm:text-[8px] md:text-xs ${currentStep === step ? 'text-green-700 font-medium' : 'text-gray-500'}`}>
                       {getStepLabel(step)}
                     </span>
                   </div>
@@ -235,7 +233,7 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
               ))}
 
               {/* Connecting lines between steps */}
-              <div className="absolute top-3 sm:top-3.5 md:top-4.5 left-0 right-0 h-1 bg-gray-200 -z-0">
+              <div className="absolute top-2 sm:top-2.5 md:top-3.5 left-0 right-0 h-0.5 sm:h-1 bg-gray-200 -z-0">
                 <div
                   className="h-full bg-green-500 transition-all duration-300 ease-in-out"
                   style={{
@@ -252,19 +250,19 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
             </div>
           </div>
 
-          <form onSubmit={(e) => { e.preventDefault(); }} className="mt-4 md:mt-8">
+          <form onSubmit={(e) => { e.preventDefault(); }} className="mt-3 md:mt-6">
             {/* Display validation errors from backend */}
             {Object.keys(errors).length > 0 && (
-              <div className="mb-6 space-y-2">
+              <div className="mb-4 space-y-2">
                 {Object.entries(errors).map(([key, value]) => (
-                  <div key={key} className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div key={key} className="bg-red-50 border border-red-200 rounded-lg p-2 sm:p-3">
                     <div className="flex items-start">
-                      <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 mr-2" />
+                      <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 mt-0.5 mr-2" />
                       <div>
-                        <h3 className="text-sm font-medium text-red-800 capitalize">
+                        <h3 className="text-xs sm:text-sm font-medium text-red-800 capitalize">
                           {key.split('_').join(' ')}
                         </h3>
-                        <p className="text-sm text-red-700 mt-1">
+                        <p className="text-xs text-red-700 mt-0.5 sm:mt-1">
                           {Array.isArray(value) ? value[0] : value}
                         </p>
                       </div>
@@ -335,36 +333,46 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
             )}
           </form>
 
-          <div className="mt-6 md:mt-8 lg:mt-10 flex flex-col-reverse md:flex-row justify-between gap-3 md:gap-4">
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-between mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-200 gap-2 sm:gap-0">
             {currentStep > 1 && currentStep < 6 && (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={handlePrevStep}
-                  className="w-full md:w-auto border-green-300 text-green-700 hover:bg-green-50 hover:border-green-300"
-                >
-                  <ChevronLeft size={16} className="mr-1" /> Previous
-                </Button>
-
-                {currentStep < 5 && (
-                  <Button
-                    className="bg-green-600 hover:bg-green-700 text-white w-full md:w-auto shadow-sm"
-                    onClick={handleNextStep}
-                  >
-                    Next Step <ChevronRight size={16} className="ml-1" />
-                  </Button>
+              <Button
+                variant="outline"
+                onClick={handlePrevStep}
+                className="border-green-600 text-green-700 hover:bg-green-50 w-full sm:w-auto order-2 sm:order-1 h-9 sm:h-10 text-xs sm:text-sm"
+              >
+                <ChevronLeft className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                Previous
+              </Button>
+            )}
+            
+            {currentStep < 5 && (
+              <Button 
+                onClick={handleNextStep}
+                className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto sm:ml-auto order-1 sm:order-2 h-9 sm:h-10 text-xs sm:text-sm"
+              >
+                Next
+                <ChevronRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
+              </Button>
+            )}
+            
+            {currentStep === 5 && (
+              <Button 
+                onClick={handleSubmit}
+                className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto sm:ml-auto order-1 sm:order-2 h-9 sm:h-10 text-xs sm:text-sm"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-t-2 border-b-2 border-white mr-1 sm:mr-2"></div>
+                    {isEditing ? 'Updating...' : 'Submitting...'}
+                  </>
+                ) : (
+                  <>
+                    {isEditing ? 'Update Listing' : 'Submit Listing'}
+                    <ChevronRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
+                  </>
                 )}
-
-                {currentStep === 5 && (
-                  <Button
-                    className="bg-green-600 hover:bg-green-700 text-white w-full md:w-auto shadow-sm"
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? 'Submitting...' : 'Submit Listing'}
-                  </Button>
-                )}
-              </>
+              </Button>
             )}
           </div>
         </div>

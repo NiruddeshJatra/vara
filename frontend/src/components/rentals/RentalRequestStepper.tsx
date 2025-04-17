@@ -171,27 +171,27 @@ const RentalRequestStepper = ({ product }: Props) => {
   };
 
   return (
-    <main className="flex-grow pt-4 pb-4 md:pt-8 md:pb-8 lg:pt-16 lg:pb-16">
-      <div className="bg-gradient-to-b from-green-300 to-lime-100/20 pt-4 md:pt-8 px-4">
-        <div className="max-w-3xl mx-auto bg-gradient-to-b from-white to-lime-50 rounded-lg shadow-subtle p-4 md:p-6 lg:p-8 overflow-hidden">
-          <div className="text-center mb-6 md:mb-8">
-            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-700 mb-2">Request Rental</h1>
-            <p className="text-sm md:text-base text-gray-500">Complete the following steps to request your rental</p>
+    <main className="flex-grow pt-4 sm:pt-8 md:pt-12 pb-4 sm:pb-8 md:pb-12">
+      <div className="bg-gradient-to-b from-green-300 to-lime-100/20 pt-4 md:pt-8 px-6 sm:px-8">
+        <div className="max-w-3xl mx-auto bg-gradient-to-b from-white to-lime-50 rounded-lg shadow-subtle p-4 sm:p-6 md:p-6 overflow-hidden">
+          <div className="text-center mb-4 sm:mb-6 md:mb-8">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-700 mb-1 sm:mb-2">Request Rental</h1>
+            <p className="text-xs sm:text-sm md:text-base text-gray-500">Complete the following steps to request your rental</p>
           </div>
 
           {/* Stepper navigation */}
-          <div className="mb-6 md:mb-8 lg:mb-12">
+          <div className="mb-4 sm:mb-6 md:mb-8 lg:mb-12">
             <div className="flex justify-between items-center relative">
               {[1, 2, 3, 4].map((step, index) => (
                 <div key={step} className="flex flex-col items-center relative z-10">
                   <div className={`
-                    w-6 h-6 sm:w-7 sm:h-7 md:w-9 md:h-9 rounded-full flex items-center justify-center text-xs md:text-sm font-bold 
-                    ${currentStep >= step ? 'bg-green-600 text-white ring-2 sm:ring-4 ring-green-100' : 'bg-gray-200 text-gray-600'}
+                    w-5 h-5 sm:w-7 sm:h-7 md:w-9 md:h-9 rounded-full flex items-center justify-center text-[10px] sm:text-xs md:text-sm font-bold 
+                    ${currentStep >= step ? 'bg-green-600 text-white ring-1 sm:ring-2 md:ring-4 ring-green-100' : 'bg-gray-200 text-gray-600'}
                   `}>
                     {step}
                   </div>
                   <div className="mt-1 text-center">
-                    <span className={`text-[10px] sm:text-xs ${currentStep === step ? 'text-green-700 font-medium' : 'text-gray-500'}`}>
+                    <span className={`text-[8px] sm:text-[10px] md:text-xs ${currentStep === step ? 'text-green-700 font-medium' : 'text-gray-500'}`}>
                       {getStepLabel(step)}
                     </span>
                   </div>

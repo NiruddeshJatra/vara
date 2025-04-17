@@ -14,12 +14,12 @@ interface Props {
 
 const ContactDetailsStep = ({ profileFormData, errors, onChange, onNext, loading = false }: Props) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <h2 className="text-2xl font-semibold text-green-800">Contact Details</h2>
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div>
-          <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="firstName" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
             First Name <span className="text-red-500">*</span>
           </label>
           <div className="relative">
@@ -29,19 +29,19 @@ const ContactDetailsStep = ({ profileFormData, errors, onChange, onNext, loading
               value={profileFormData.firstName}
               onChange={(e) => onChange({ firstName: e.target.value })}
               error={!!errors.firstName}
-              className="pl-9"
+              className="pl-9 h-9 sm:h-10 text-sm"
             />
             <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           </div>
           {errors.firstName && (
-            <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+            <p className="mt-1 text-xs sm:text-sm text-red-500 flex items-center gap-1">
               <AlertCircle size={14} /> {errors.firstName}
             </p>
           )}
         </div>
 
         <div>
-          <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="lastName" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
             Last Name <span className="text-red-500">*</span>
           </label>
           <div className="relative">
@@ -51,19 +51,19 @@ const ContactDetailsStep = ({ profileFormData, errors, onChange, onNext, loading
               value={profileFormData.lastName}
               onChange={(e) => onChange({ lastName: e.target.value })}
               error={!!errors.lastName}
-              className="pl-9"
+              className="pl-9 h-9 sm:h-10 text-sm"
             />
             <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           </div>
           {errors.lastName && (
-            <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+            <p className="mt-1 text-xs sm:text-sm text-red-500 flex items-center gap-1">
               <AlertCircle size={14} /> {errors.lastName}
             </p>
           )}
         </div>
 
         <div>
-          <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="phoneNumber" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
             Phone Number <span className="text-red-500">*</span>
           </label>
           <div className="relative">
@@ -75,12 +75,12 @@ const ContactDetailsStep = ({ profileFormData, errors, onChange, onNext, loading
               value={profileFormData.phoneNumber}
               onChange={(e) => onChange({ phoneNumber: e.target.value })}
               error={!!errors.phoneNumber}
-              className="pl-9"
+              className="pl-9 h-9 sm:h-10 text-sm"
             />
             <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           </div>
           {errors.phoneNumber ? (
-            <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+            <p className="mt-1 text-xs sm:text-sm text-red-500 flex items-center gap-1">
               <AlertCircle size={14} /> {errors.phoneNumber}
             </p>
           ) : (
@@ -89,7 +89,7 @@ const ContactDetailsStep = ({ profileFormData, errors, onChange, onNext, loading
         </div>
 
         <div>
-          <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="location" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
             Location <span className="text-red-500">*</span>
           </label>
           <div className="relative">
@@ -100,12 +100,12 @@ const ContactDetailsStep = ({ profileFormData, errors, onChange, onNext, loading
               value={profileFormData.location}
               onChange={(e) => onChange({ location: e.target.value })}
               error={!!errors.location}
-              className="pl-9"
+              className="pl-9 h-9 sm:h-10 text-sm"
             />
             <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           </div>
           {errors.location ? (
-            <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+            <p className="mt-1 text-xs sm:text-sm text-red-500 flex items-center gap-1">
               <AlertCircle size={14} /> {errors.location}
             </p>
           ) : (
@@ -122,7 +122,7 @@ const ContactDetailsStep = ({ profileFormData, errors, onChange, onNext, loading
             required={true}
           />
           {errors.dateOfBirth && (
-            <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+            <p className="mt-1 text-xs sm:text-sm text-red-500 flex items-center gap-1">
               <AlertCircle size={14} /> {errors.dateOfBirth}
             </p>
           )}
@@ -134,7 +134,7 @@ const ContactDetailsStep = ({ profileFormData, errors, onChange, onNext, loading
         <div className="flex justify-end pt-4">
           <Button
             type="submit"
-            className="bg-green-600 hover:bg-green-700 text-white"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 w-full sm:w-auto"
             disabled={loading}
           >
             {loading ? 'Saving...' : 'Next'} <ChevronRight size={16} className="ml-2" />
@@ -145,4 +145,4 @@ const ContactDetailsStep = ({ profileFormData, errors, onChange, onNext, loading
   );
 };
 
-export default ContactDetailsStep; 
+export default ContactDetailsStep;
