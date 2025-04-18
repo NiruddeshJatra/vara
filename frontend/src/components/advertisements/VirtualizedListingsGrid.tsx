@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import ItemCard from './ItemCard';
-import ProductCardSkeleton from './ProductCardSkeleton';
+import SkeletonItemCard from './SkeletonItemCard';
 import { Product } from '@/types/listings';
 
 interface VirtualizedListingsGridProps {
@@ -24,17 +24,21 @@ const VirtualizedListingsGrid = ({
     setIsLoaded(true);
   }, []);
 
-  if (loading || displayedListings.length === 0) {
+  if (loading) {
     // Show skeletons while loading
     return (
       <div className="flex-1">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {Array.from({ length: skeletonCount }).map((_, i) => (
-            <ProductCardSkeleton key={i} />
+            <SkeletonItemCard key={i} />
           ))}
         </div>
       </div>
     );
+  }
+
+  if (displayedListings.length === 0) {
+    return null;
   }
 
   return (
@@ -43,7 +47,7 @@ const VirtualizedListingsGrid = ({
         {displayedListings.map((item, index) => (
           <div 
             key={item.id}
-            className={`${isLoaded ? 'animate-fade-up' : 'opacity-0'}`} 
+            className={"animate-fade-up"}
             style={{ animationDelay: `${index * 0.05}s` }}
           >
             <ItemCard 

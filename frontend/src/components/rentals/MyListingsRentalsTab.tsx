@@ -1,5 +1,5 @@
-
-import { Rental } from "@/pages/Rentals";
+import { Rental } from "@/types/rentals";
+import { RentalStatus } from "@/constants/rental";
 import RentalSection from "./RentalSection";
 
 interface MyListingsRentalsTabProps {
@@ -10,15 +10,14 @@ interface MyListingsRentalsTabProps {
 
 const MyListingsRentalsTab = ({ rentals, onViewDetails, onStatusAction }: MyListingsRentalsTabProps) => {
   // Filter rentals by status
-  const activeRentals = rentals.filter(rental => rental.status === 'in_progress');
-  const upcomingRentals = rentals.filter(rental => rental.status === 'accepted');
-  const pendingRentals = rentals.filter(rental => rental.status === 'pending');
+  const activeRentals = rentals.filter(rental => rental.status === RentalStatus.APPROVED);
+  const pendingRentals = rentals.filter(rental => rental.status === RentalStatus.PENDING);
   const historyRentals = rentals.filter(rental => 
-    ['completed', 'rejected', 'cancelled'].includes(rental.status)
+    [RentalStatus.COMPLETED, RentalStatus.REJECTED, RentalStatus.CANCELLED].includes(rental.status)
   );
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-2 sm:p-4 md:p-6">
       {/* Active Rentals */}
       <RentalSection
         title="Active Rentals"
@@ -28,17 +27,6 @@ const MyListingsRentalsTab = ({ rentals, onViewDetails, onStatusAction }: MyList
         onViewDetails={onViewDetails}
         onStatusAction={onStatusAction}
         emptyMessage="You don't have any items currently being rented."
-      />
-      
-      {/* Upcoming Rentals */}
-      <RentalSection
-        title="Upcoming Rentals"
-        description="Your items that will be rented soon"
-        rentals={upcomingRentals}
-        userRole="owner"
-        onViewDetails={onViewDetails}
-        onStatusAction={onStatusAction}
-        emptyMessage="You don't have any upcoming rentals for your items."
       />
       
       {/* Pending Requests */}

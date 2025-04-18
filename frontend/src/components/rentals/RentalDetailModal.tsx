@@ -131,9 +131,9 @@ const RentalDetailModal = ({
         </div>
         
         {/* Main content wrapper - flex-grow to take available space */}
-        <div className="flex flex-col md:flex-row flex-grow overflow-hidden">
+        <div className="flex flex-col lg:flex-row flex-grow overflow-hidden">
           {/* Left column - Images and price - Scrollable independently */}
-          <div className="md:w-2/5 bg-gradient-to-b from-green-50 to-white p-5 overflow-y-auto border-r border-green-100">
+          <div className="w-full lg:w-2/5 bg-gradient-to-b from-green-50 to-white p-2 sm:p-4 md:p-6 overflow-y-auto border-b lg:border-b-0 lg:border-r border-green-100">
             <div className="space-y-5">
               {/* Main image view */}
               <div className="relative rounded-lg overflow-hidden bg-white border border-green-200 shadow-md aspect-square">
@@ -237,8 +237,8 @@ const RentalDetailModal = ({
           </div>
           
           {/* Right column - Details tabs - Scrollable independently */}
-          <div className="flex-1 overflow-y-auto bg-gradient-to-b from-white to-green-50/30">
-            <div className="p-5 pb-24">
+          <div className="flex-1 flex flex-col p-2 sm:p-4 md:p-6 overflow-y-auto">
+            <div className="p-0">
               <Tabs defaultValue="details" className="w-full" onValueChange={setActiveTab}>
                 <TabsList className="w-full mb-5 bg-green-50 p-1 border border-green-200 rounded-full">
                   <TabsTrigger 
@@ -570,7 +570,7 @@ const RentalDetailModal = ({
         </div>
 
         {/* Action buttons - Fixed position at bottom of modal */}
-        <div className="border-t border-green-200 bg-gradient-to-r from-green-50 to-white px-5 py-3 flex flex-wrap gap-2 justify-end flex-shrink-0 sticky bottom-0 z-10">
+        <div className="border-t border-green-200 bg-gradient-to-r from-green-50 to-white px-2 sm:px-5 py-3 flex flex-wrap gap-2 justify-end flex-shrink-0 sticky bottom-0 z-10">
           {/* Contextual buttons based on status and user role */}
           {isPending && userRole === 'renter' && (
             <Button 

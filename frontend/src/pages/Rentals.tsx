@@ -30,22 +30,49 @@ const Rentals = () => {
   function mapRentalRequestToRental(req: any): Rental {
     return {
       id: req.id,
-      product: req.product,
-      reviews: req.reviews,
-      startDate: req.start_date,
-      endDate: req.end_date,
+      product: {
+        id: req.product?.id,
+        owner: typeof req.product?.owner === 'object' ? req.product.owner.username : req.product.owner,
+        title: req.product?.title || '',
+        category: req.product?.category || '',
+        productType: req.product?.productType || '',
+        description: req.product?.description || '',
+        location: req.product?.location || '',
+        securityDeposit: req.product?.securityDeposit ?? null,
+        purchaseYear: req.product?.purchaseYear || '',
+        originalPrice: req.product?.originalPrice ? Number(req.product.originalPrice) : 0,
+        ownershipHistory: req.product?.ownershipHistory || '',
+        status: req.product?.status || '',
+        statusMessage: req.product?.statusMessage || null,
+        statusChangedAt: req.product?.statusChangedAt || null,
+        images: (req.product?.images || req.product?.productImages || []).map((img: any) => ({
+          id: img.id,
+          image: img.image,
+          createdAt: img.createdAt,
+        })),
+        unavailableDates: req.product?.unavailableDates || [],
+        pricingTiers: req.product?.pricingTiers || [],
+        viewsCount: req.product?.viewsCount || 0,
+        rentalCount: req.product?.rentalCount || 0,
+        averageRating: req.product?.averageRating ? Number(req.product.averageRating) : 0,
+        createdAt: req.product?.createdAt || '',
+        updatedAt: req.product?.updatedAt || '',
+      },
+      reviews: req.reviews || [],
+      startDate: req.startTime,
+      endDate: req.endTime,
       duration: req.duration,
-      durationUnit: req.duration_unit,
-      totalCost: req.total_cost,
-      serviceFee: req.service_fee,
-      securityDeposit: req.security_deposit,
+      durationUnit: req.durationUnit,
+      totalCost: req.totalCost !== undefined && req.totalCost !== null && !isNaN(Number(req.totalCost)) ? Number(req.totalCost) : (req.product?.pricingTiers?.[0]?.price || 0),
+      serviceFee: req.serviceFee !== undefined && req.serviceFee !== null && !isNaN(Number(req.serviceFee)) ? Number(req.serviceFee) : 0,
+      securityDeposit: req.securityDeposit !== undefined && req.securityDeposit !== null && !isNaN(Number(req.securityDeposit)) ? Number(req.securityDeposit) : 0,
       status: req.status,
-      statusHistory: req.status_history,
-      createdAt: req.created_at,
-      updatedAt: req.updated_at,
+      statusHistory: req.statusHistory || [],
+      createdAt: req.createdAt,
+      updatedAt: req.updatedAt,
       notes: req.notes,
-      renter: req.renter,
-      owner: req.owner,
+      renter: typeof req.renter === 'object' ? req.renter.username : req.renter,
+      owner: typeof req.owner === 'object' ? req.owner.username : req.owner,
     };
   }
 
@@ -56,10 +83,12 @@ const Rentals = () => {
       try {
         if (activeTab === 'myRentals') {
           const rentals = await rentalService.getUserRentals();
-          setMyRentals(rentals.map(mapRentalRequestToRental));
+          const mapped = rentals.map(mapRentalRequestToRental).filter(Boolean);
+          setMyRentals(mapped);
         } else {
           const rentals = await rentalService.getUserListingsRentals();
-          setMyListingsRentals(rentals.map(mapRentalRequestToRental));
+          const mapped = rentals.map(mapRentalRequestToRental).filter(Boolean);
+          setMyListingsRentals(mapped);
         }
       } catch (err: any) {
         setError(err.message || 'Failed to fetch rentals');
@@ -121,47 +150,45 @@ const Rentals = () => {
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 to-white">
       <NavBar />
 
-      <div className="py-8 mt-8 mb-16">
-        <div className="py-6 px-20">
-          {/* Tab navigation */}
-          <RentalsTabs
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-          />
+      <div className="py-6 px-2 sm:px-6 md:px-12 lg:px-20 mt-4 mb-16">
+        {/* Tab navigation */}
+        <RentalsTabs
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
 
-          {/* Status filter & search */}
-          <RentalsStatusFilter
-            statusFilter={statusFilter}
-            onStatusFilterChange={setStatusFilter}
-            searchTerm={searchTerm}
-            onSearchTermChange={setSearchTerm}
-            sortOption={sortOption}
-            onSortOptionChange={setSortOption}
-            dateRange={dateRange}
-            onDateRangeChange={setDateRange}
-          />
+        {/* Status filter & search */}
+        <RentalsStatusFilter
+          statusFilter={statusFilter}
+          onStatusFilterChange={(status) => setStatusFilter(status)}
+          searchTerm={searchTerm}
+          onSearchTermChange={setSearchTerm}
+          sortOption={sortOption}
+          onSortOptionChange={setSortOption}
+          dateRange={dateRange}
+          onDateRangeChange={setDateRange}
+        />
 
-          {/* Loading and error states */}
-          {loading && <div className="text-center py-8">Loading rentals...</div>}
-          {error && <div className="text-center py-8 text-red-600">{error}</div>}
+        {/* Loading and error states */}
+        {loading && <div className="text-center py-8">Loading rentals...</div>}
+        {error && <div className="text-center py-8 text-red-600">{error}</div>}
 
-          {/* Tab content */}
-          {!loading && !error && (
-            activeTab === 'myRentals' ? (
-              <MyRentalsTab
-                rentals={getFilteredSortedRentals(myRentals)}
-                onViewDetails={handleViewRentalDetails}
-                onStatusAction={handleStatusAction}
-              />
-            ) : (
-              <MyListingsRentalsTab
-                rentals={getFilteredSortedRentals(myListingsRentals)}
-                onViewDetails={handleViewRentalDetails}
-                onStatusAction={handleStatusAction}
-              />
-            )
-          )}
-        </div>
+        {/* Tab content */}
+        {!loading && !error && (
+          activeTab === 'myRentals' ? (
+            <MyRentalsTab
+              rentals={getFilteredSortedRentals(myRentals)}
+              onViewDetails={handleViewRentalDetails}
+              onStatusAction={handleStatusAction}
+            />
+          ) : (
+            <MyListingsRentalsTab
+              rentals={getFilteredSortedRentals(myListingsRentals)}
+              onViewDetails={handleViewRentalDetails}
+              onStatusAction={handleStatusAction}
+            />
+          )
+        )}
       </div>
 
       {/* Rental Detail Modal */}

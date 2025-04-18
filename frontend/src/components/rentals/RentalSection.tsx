@@ -1,4 +1,4 @@
-import { Rental } from "@/pages/Rentals";
+import { Rental } from "@/types/rentals";
 import RentalCard from "./RentalCard";
 import { PackageOpen } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -37,10 +37,10 @@ const RentalSection = ({
   }, [rentals]);
 
   return (
-    <div className="w-full p-4 bg-white/50 backdrop-blur-lg rounded-xl shadow-sm border">
+    <div className="w-full p-4 sm:p-6 bg-white/50 backdrop-blur-lg rounded-xl shadow-sm border">
       <div className="mb-4">
-        <h2 className="text-2xl font-bold text-green-800">{title}</h2>
-        <p className="text-sm text-gray-500 mt-1">{description}</p>
+        <h2 className="text-lg sm:text-2xl font-bold text-green-800 mb-1">{title}</h2>
+        <p className="text-xs sm:text-sm text-gray-500 mt-1">{description}</p>
       </div>
       
       {rentals.length > 0 ? (

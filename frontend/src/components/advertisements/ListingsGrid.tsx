@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import ItemCard from './ItemCard';
+import SkeletonItemCard from './SkeletonItemCard';
 import { Product } from '@/types/listings';
 import EmptyState from './EmptyState';
 
@@ -21,6 +22,16 @@ const ListingsGrid = ({
   useEffect(() => {
     setIsLoaded(true);
   }, []);
+
+  if (!isLoaded) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <SkeletonItemCard key={i} />
+        ))}
+      </div>
+    );
+  }
 
   if (displayedListings.length === 0) {
     return <EmptyState />;
