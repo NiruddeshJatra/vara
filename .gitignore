@@ -1,23 +1,56 @@
 # Virtual Environment
-backend/vhara_venv/
+/backend/vhara_venv/
 
 # Environment Variables
-backend/.env
+/backend/.env
 
 # Python
-__pycache__/
-*.py[cod]
-*$py.class
+/backend/__pycache__/
+/backend/*.py[cod]
+/backend/*$py.class
 
 # Django
-*.log
-local_settings.py
-backend/db.sqlite3
+/backend/*.log
+/backend/local_settings.py
+/backend/db.sqlite3
 
-# React
-frontend/node_modules/
-frontend/.env
-frontend/build/
+# Frontend
+/frontend/node_modules/
+/frontend/.env
+/frontend/build/
+/frontend/dist/
+/frontend/dist-ssr/
+/frontend/.next/
+/frontend/.vercel/
+/frontend/.DS_Store
+/frontend/.cache/
+/frontend/.turbo/
+/frontend/.output/
+/frontend/coverage/
+
+# Backend
+/backend/.pytest_cache/
+/backend/.mypy_cache/
+/backend/.pyre/
+/backend/media/
+/backend/staticfiles/
+/backend/.DS_Store
 
 # Global
 .windsurfrules
+
+# Node/Yarn root-level
+/node_modules/
+/package-lock.json
+/yarn.lock
+
+# Ignore IDE/editor settings
+.vscode/
+.cursor/
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

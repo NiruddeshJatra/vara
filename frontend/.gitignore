@@ -7,15 +7,23 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Build output
+node_modules/
+dist/
+dist-ssr/
+.next/
+.vercel/
+.cache/
+.turbo/
+.output/
+coverage/
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# Local env
+.env
+
+# Editor/IDE
+.vscode/
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
