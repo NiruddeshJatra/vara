@@ -1,10 +1,8 @@
 // Application configuration
 const config = {
   // API endpoint (for regular API calls)
-  apiUrl: 'http://localhost:8000',
-  
-  // Base URL for the application
-  baseUrl: 'http://localhost:8000',
+  apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+  baseUrl: import.meta.env.VITE_BASE_URL || 'http://localhost:8000',
   
   // Development mode (set to false in production)
   isDevelopment: true,
