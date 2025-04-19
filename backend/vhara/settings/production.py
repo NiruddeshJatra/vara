@@ -10,11 +10,21 @@ DEBUG = False
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
 # Security settings
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
+
+CORS_ALLOWED_ORIGINS = [
+    "https://vara-rose.vercel.app",
+]
+CSRF_TRUSTED_ORIGINS = [
+    "https://vara-rose.vercel.app",
+    "http://bhara-env.eba-xpgiauyp.eu-north-1.elasticbeanstalk.com",
+    "https://bhara-env.eba-xpgiauyp.eu-north-1.elasticbeanstalk.com",
+]
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Database configuration
 DATABASES = {
@@ -37,8 +47,8 @@ AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
 
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
-MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+STATIC_URL = f'https://dld5lwn2j3ocn.cloudfront.net/static/'
+MEDIA_URL = f'https://dld5lwn2j3ocn.cloudfront.net/media/'
 
 # Email settings for production
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -56,7 +66,7 @@ LOGGING = {
         'file': {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs/production.log',
+            'filename': '/tmp/production.log',  # Changed from /var/log/production.log to /tmp/production.log for AWS compatibility
         },
     },
     'loggers': {
