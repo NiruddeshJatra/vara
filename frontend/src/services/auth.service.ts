@@ -5,7 +5,7 @@ import { RegistrationData, ProfileUpdateData, LoginData, UserData } from '../typ
 
 // Create a separate axios instance for auth endpoints (which don't use the /api prefix)
 const authApi = axios.create({
-  baseURL: config.baseUrl,
+  baseURL: config.apiUrl,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',

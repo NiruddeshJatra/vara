@@ -14,7 +14,7 @@ const config = {
     refreshTokenStorageKey: 'refresh_token',
     userStorageKey: 'user',
     
-    // Authentication endpoints (note: these don't use the /api prefix)
+    // Authentication endpoints
     loginEndpoint: '/auth/login/',
     registerEndpoint: '/auth/register/',
     logoutEndpoint: '/auth/logout/',
