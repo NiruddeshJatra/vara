@@ -1,5 +1,5 @@
 """
-ASGI config for vhara project.
+ASGI config for bhara project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -13,7 +13,7 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 from messaging.routing import websocket_urlpatterns
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vhara.settings.production')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bhara.settings.production')
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),

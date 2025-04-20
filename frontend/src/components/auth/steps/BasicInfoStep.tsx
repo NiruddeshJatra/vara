@@ -286,7 +286,7 @@ const BasicInfoStep = ({
               </div>
               <div className="ml-3 grid gap-1 sm:gap-1.5 leading-none">
                 <label htmlFor="marketingConsent" className="text-xs sm:text-sm text-gray-700 font-medium leading-tight sm:leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  I agree to receive marketing communications from Vara
+                  I agree to receive marketing communications from Bhara
                 </label>
               </div>
             </div>

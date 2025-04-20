@@ -74,7 +74,7 @@ const Login = () => {
     <div className="flex flex-col min-h-screen">
       <NavBar />
 
-      <main className="flex-grow pt-16 sm:pt-20 md:pt-24">
+      <main className="flex-grow pt-16 sm:pt-20">
         <div className="bg-gradient-to-b from-green-300 to-lime-100/20">
           <div className="container max-w-md mx-auto px-4 py-12">
             <div className="bg-gradient-to-b from-white to-lime-50 backdrop-blur-sm shadow-lg rounded-xl p-8 relative animate-fade-up">
@@ -85,7 +85,7 @@ const Login = () => {
               <div className="relative z-10">
                 <div className="text-center mb-8 animate-fade-up">
                   <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
-                  <p className="text-gray-600">Sign in to your Vara account</p>
+                  <p className="text-gray-600">Sign in to your Bhara account</p>
 
                   {verified && (
                     <div className="mt-3 p-3 bg-green-50 text-green-800 rounded-lg border border-green-200 animate-fade-in">

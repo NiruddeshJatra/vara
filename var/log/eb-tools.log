@@ -1,0 +1,5 @@
+2025/04/20 11:57:18.872186 [INFO] Cleaning log publish record...
+2025/04/20 11:57:18.872210 [INFO] Start log publish job.
+2025/04/20 11:57:18.872213 [INFO] Start publish file /tmp/TailLogs-1745150238863.txt
+2025/04/20 11:57:18.997724 [INFO] Successful upload file /tmp/TailLogs-1745150238863.txt to s3 resources/environments/logs/tail/e-xq2swmh6hn/i-082614c5b6f0872f1/TailLogs-1745150238863.txt
+2025/04/20 11:57:18.997849 [INFO] Finished log publish job.

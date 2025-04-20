@@ -218,7 +218,7 @@ const CompleteProfile = () => {
     <div className="flex flex-col min-h-screen">
       <NavBar />
 
-      <main className="flex-grow pt-16 sm:pt-20 md:pt-24 pb-16">
+      <main className="flex-grow pt-16 sm:pt-20 pb-16">
         <div className="bg-gradient-to-b from-green-300 to-lime-100/20 pt-4 sm:pt-6 md:pt-8 px-4 sm:px-6">
           <div className="max-w-3xl mx-auto bg-gradient-to-b from-white to-lime-50 rounded-lg shadow-subtle p-4 sm:p-6 md:p-8 animate-fade-up">
             <div className="text-center mb-4 sm:mb-6 md:mb-8 animate-fade-up">

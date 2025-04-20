@@ -21,7 +21,7 @@ const Hero = () => {
         {/* Text content */}
         <div className="flex flex-col items-center animate-fade-up w-full max-w-xs sm:max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto">
           <span className="text-xs sm:text-sm font-medium bg-white/10 text-white px-3 sm:px-4 py-1 sm:py-1.5 rounded-full mb-4 sm:mb-6">
-            Welcome to Vara
+            Welcome to Bhara
           </span>
           <h1 className="font-bold text-4xl sm:text-5xl md:text-5xl lg:text-6xl mb-4 sm:mb-6 leading-tight text-white">
             Rent Anything, <span className="text-lime-300">Anywhere</span>

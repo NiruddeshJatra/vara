@@ -56,7 +56,7 @@ const ConfirmationStep = () => {
                   Product Verification
                 </p>
                 <p className="text-gray-600">
-                  After approval, Vara will contact the owner to inspect and
+                  After approval, Bhara will contact the owner to inspect and
                   collect the product for safekeeping.
                 </p>
               </div>
@@ -68,7 +68,7 @@ const ConfirmationStep = () => {
               <div>
                 <p className="font-medium text-gray-700">Product Collection</p>
                 <p className="text-gray-600">
-                  Vara will contact you to arrange product pickup or delivery
+                  Bhara will contact you to arrange product pickup or delivery
                   based on your preference.
                 </p>
               </div>

@@ -36,7 +36,7 @@ const ValueProposition = () => {
             Our Benefits
           </span>
           <h2 className="text-2xl md:text-4xl font-bold text-green-800 mb-3">
-            Why Choose Vara?
+            Why Choose Bhara?
           </h2>
           <p className="text-green-700/80 mb-3 text-sm md:text-base">
             Join thousands of people saving money and living more sustainably.

@@ -128,7 +128,7 @@ const AdminDashboard = () => {
         <div className="p-4 border-b border-green-700">
           <div className="flex items-center gap-2">
             <Shield className="h-8 w-8 text-white" />
-            <h1 className="text-xl font-bold text-white">Vara Admin</h1>
+            <h1 className="text-xl font-bold text-white">Bhara Admin</h1>
           </div>
         </div>
         <nav className="flex-1 p-4 overflow-y-auto">
@@ -209,7 +209,7 @@ const AdminDashboard = () => {
             </Avatar>
             <div>
               <p className="font-medium text-leaf-100">Admin User</p>
-              <p className="text-xs text-green-200">admin@vara.com</p>
+              <p className="text-xs text-green-200">admin@bhara.com</p>
             </div>
           </div>
           <Button

@@ -75,7 +75,7 @@ MIDDLEWARE = [
 #     }
 # }
 
-ROOT_URLCONF = "vhara.urls"
+ROOT_URLCONF = "bhara.urls"
 
 TEMPLATES = [
     {
@@ -93,10 +93,10 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "vhara.wsgi.application"
+WSGI_APPLICATION = "bhara.wsgi.application"
 
 # WebSocket settings
-ASGI_APPLICATION = "vhara.asgi.application"
+ASGI_APPLICATION = "bhara.asgi.application"
 CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 # CHANNEL_LAYERS = {
 #     "default": {
@@ -220,7 +220,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = "noreply@varabd.com"
+DEFAULT_FROM_EMAIL = "noreply@bhara.com"
 # EMAIL_HOST = 'smtp.gmail.com'
 # EMAIL_USE_TLS = True
 # EMAIL_PORT = 587

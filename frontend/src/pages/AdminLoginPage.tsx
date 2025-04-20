@@ -21,7 +21,7 @@ export default function AdminLoginPage() {
     if (success) {
       navigate("/admin/dashboard");
     } else {
-      setError("Invalid credentials. Try admin@vara.com / adminpassword");
+      setError("Invalid credentials. Try admin@bhara.com / adminpassword");
     }
   };
 

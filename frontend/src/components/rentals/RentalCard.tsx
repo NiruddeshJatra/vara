@@ -157,8 +157,8 @@ const RentalCard = ({
 
           <div className="bg-green-50 px-3 py-2 rounded-md border border-green-200 text-xs">
             {userRole === 'renter'
-              ? "Vara handles all communications with the item owner"
-              : "Vara handles all communications with the renter"}
+              ? "Bhara handles all communications with the item owner"
+              : "Bhara handles all communications with the renter"}
           </div>
         </div>
 

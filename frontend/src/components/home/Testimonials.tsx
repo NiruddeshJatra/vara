@@ -14,7 +14,7 @@ const testimonials = [
     id: 2,
     name: "Messi",
     location: "San Francisco",
-    quote: "Vara helped me earn $2,000 last year by renting out my camera gear when I wasn't using it. It's passive income for stuff I already own!",
+    quote: "Bhara helped me earn $2,000 last year by renting out my camera gear when I wasn't using it. It's passive income for stuff I already own!",
     avatar: "/placeholder.svg",
     rating: 5
   },

@@ -26,7 +26,7 @@ def send_verification_email(user, request=None):
     plain_message = strip_tags(html_message)
     
     send_mail(
-        subject="Verify Your Email - Vara",
+        subject="Verify Your Email - bhara",
         message=plain_message,
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],
@@ -61,7 +61,7 @@ def send_password_reset_email(user, reset_url, request=None):
     plain_message = strip_tags(html_message)
     
     send_mail(
-        subject="Reset Your Password - Vara",
+        subject="Reset Your Password - bhara",
         message=plain_message,
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],

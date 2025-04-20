@@ -223,13 +223,13 @@ const RentalDetailModal = ({
                 </div>
               </div>
               
-              {/* Vara protection notice */}
+              {/* Bhara protection notice */}
               <div className="bg-gradient-to-r from-green-50 to-lime-50 rounded-lg p-3 border border-green-200 flex items-start gap-2.5">
                 <Shield className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium text-green-800 text-sm">Vara-Protected Transaction</p>
+                  <p className="font-medium text-green-800 text-sm">Bhara-Protected Transaction</p>
                   <p className="text-xs text-gray-600 mt-0.5">
-                    Vara handles all communications and transactions for security.
+                    Bhara handles all communications and transactions for security.
                   </p>
                 </div>
               </div>

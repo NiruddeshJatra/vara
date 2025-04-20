@@ -90,12 +90,12 @@ const Register = () => {
     <div className="flex flex-col min-h-screen">
       <NavBar />
       
-      <main className="flex-grow pt-16 sm:pt-20 md:pt-24 pb-16">
+      <main className="flex-grow pt-16 sm:pt-20 pb-16">
         <div className="bg-gradient-to-b from-green-300 to-lime-100/20 pt-4 sm:pt-6 md:pt-8 px-4 sm:px-6">
             <div className="max-w-3xl mx-auto bg-gradient-to-b from-white to-lime-50 rounded-lg shadow-subtle p-4 sm:p-6 md:p-8 animate-fade-up">
               <div className="text-center mb-4 sm:mb-6 md:mb-8 animate-fade-up">
                 <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2">Create Your Account</h1>
-                <p className="text-sm sm:text-base text-gray-600">Join the Vara community to rent and lend items</p>
+                <p className="text-sm sm:text-base text-gray-600">Join the Bhara community to rent and lend items</p>
                 <p className="text-xs sm:text-sm text-amber-600 mt-2">Quick sign-up! Complete your profile after verification.</p>
               </div>
 

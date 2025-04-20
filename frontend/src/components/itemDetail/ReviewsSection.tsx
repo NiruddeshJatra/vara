@@ -21,8 +21,8 @@ export default function ReviewsSection({
   averageRating = 4.9,
   totalRentals = 12,
   reviews = [
-    { name: 'Rahim Ahmed', rating: 5, review: 'Excellent product, just as described. Very happy with my rental experience. Vara made the delivery and pickup process so smooth.', date: '2023-05-15' },
-    { name: 'Sarah Khan', rating: 4, review: 'Good item, the quality was great. Vara staff was very helpful with setup. Would definitely rent again from this platform.', date: '2023-03-22' }
+    { name: 'Rahim Ahmed', rating: 5, review: 'Excellent product, just as described. Very happy with my rental experience. Bhara made the delivery and pickup process so smooth.', date: '2023-05-15' },
+    { name: 'Sarah Khan', rating: 4, review: 'Good item, the quality was great. Bhara staff was very helpful with setup. Would definitely rent again from this platform.', date: '2023-03-22' }
   ]
 }: ReviewsSectionProps) {
   

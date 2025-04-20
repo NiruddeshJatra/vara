@@ -4,7 +4,7 @@ import { RefreshCw, Check } from 'lucide-react';
 export default function VharaService() {
   return (
     <div className="mb-10 pb-10 border-b border-gray-200">
-      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-6">Vhara Service</h3>
+      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-6">Bhara Service</h3>
       <div className="bg-white shadow-md rounded-xl border border-gray-100 overflow-hidden">
         <div className="px-4 sm:px-6 py-5 bg-green-50 border-b border-gray-100">
           <div className="flex items-center gap-4">

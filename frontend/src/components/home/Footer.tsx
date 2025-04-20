@@ -71,7 +71,7 @@ const Footer = () => {
         </div>
         {/* Copyright */}
         <div className="border-t border-gray-300 pt-6 text-center text-gray-400 text-xs">
-          &copy; 2025 Vara, Inc. All rights reserved.
+          &copy; 2025 Bhara, Inc. All rights reserved.
         </div>
       </div>
     </footer>

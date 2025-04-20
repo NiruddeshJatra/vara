@@ -17,12 +17,12 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
 CORS_ALLOWED_ORIGINS = [
-    "https://vara-rose.vercel.app",
+    "https://bhara.xyz",
+    "https://www.bhara.xyz",
 ]
 CSRF_TRUSTED_ORIGINS = [
-    "https://vara-rose.vercel.app",
-    "http://bhara-env.eba-xpgiauyp.eu-north-1.elasticbeanstalk.com",
-    "https://bhara-env.eba-xpgiauyp.eu-north-1.elasticbeanstalk.com",
+    "https://bhara.xyz",
+    "https://www.bhara.xyz",
 ]
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
@@ -55,9 +55,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.your_email_provider.com')
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'no-reply@vhara.com')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'no-reply@bhara.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@vhara.com')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@bhara.com')
 
 LOGGING = {
     'version': 1,

@@ -17,7 +17,12 @@ from django.core.files.storage import default_storage
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
 import json
+from django.http import HttpResponse
 
+# --- Health check endpoint for AWS Load Balancer ---
+def health_check(request):
+    """Simple health check endpoint for AWS Target Group. Always returns 200 OK."""
+    return HttpResponse("OK", status=200)
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 20

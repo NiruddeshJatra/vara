@@ -1,8 +1,8 @@
-# Vara - P2P Rental Marketplace Frontend
+# Bhara - P2P Rental Marketplace Frontend
 
 ## Overview
 
-Vara is a peer-to-peer rental marketplace that allows users to list their items for rent and rent items from others. The platform serves as a trusted intermediary, handling communications, payments, and security deposits to ensure safe and reliable transactions between parties.
+Bhara is a peer-to-peer rental marketplace that allows users to list their items for rent and rent items from others. The platform serves as a trusted intermediary, handling communications, payments, and security deposits to ensure safe and reliable transactions between parties.
 
 ## Tech Stack
 
@@ -164,11 +164,11 @@ App
 
 ## Protected Features
 
-Vara implements a middleman model to protect both parties:
+Bhara implements a middleman model to protect both parties:
 
-- **Secure Payments**: Vara holds payments until rental completion
-- **Security Deposits**: Deposits are managed by Vara and returned after successful completion
-- **Vara-Protected Communication**: All communications happen through the platform
+- **Secure Payments**: Bhara holds payments until rental completion
+- **Security Deposits**: Deposits are managed by Bhara and returned after successful completion
+- **Bhara-Protected Communication**: All communications happen through the platform
 - **Documentation Photos**: Required photos before and after rental to prevent disputes
 
 ## Color System
