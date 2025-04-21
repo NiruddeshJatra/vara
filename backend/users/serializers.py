@@ -81,35 +81,38 @@ class CustomRegisterSerializer(serializers.ModelSerializer):
         return validate_registration_data(data)
 
     def create(self, validated_data):
-        """
-        Create a new user with the validated data.
-        
-        Args:
-            validated_data: The validated registration data
-            
-        Returns:
-            The created user instance
-        """
-        # Remove password fields from validated_data
+        import time
+        import logging
+        logger = logging.getLogger('registration_timing')
+        start_time = time.time()
         password = validated_data.pop("password1")
         validated_data.pop("password2")
-        
-        # Create user instance but don't save to database yet
+        user_creation_start = time.time()
         user = CustomUser(
             username=validated_data.get("username"),
             email=validated_data.get("email"),
             marketing_consent=validated_data.get("marketing_consent", False),
             profile_completed=validated_data.get("profile_completed", False),
         )
-        
-        # Set password properly
         user.set_password(password)
         user.save()
-        
-        # Generate verification token and send email
+        logger.info(f"User creation took {time.time() - user_creation_start:.2f}s")
+        token_start = time.time()
         user.generate_verification_token()
-        send_verification_email(user, self.context.get('request'))
-        
+        logger.info(f"Token generation took {time.time() - token_start:.2f}s")
+        # Queue email sending task
+        from users.tasks import send_verification_email_task
+        request_meta = None
+        if self.context.get('request'):
+            request_meta = {
+                'HTTP_HOST': self.context['request'].META.get('HTTP_HOST'),
+                'HTTP_ORIGIN': self.context['request'].META.get('HTTP_ORIGIN'),
+                'SCHEME': self.context['request'].scheme
+            }
+        email_start = time.time()
+        send_verification_email_task.delay(user.id, request_meta)
+        logger.info(f"Email queuing took {time.time() - email_start:.2f}s")
+        logger.info(f"Total registration took {time.time() - start_time:.2f}s")
         return user
 
 
