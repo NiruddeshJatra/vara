@@ -1,6 +1,6 @@
 from celery import shared_task
 from django.contrib.auth import get_user_model
-from bhara.utils import send_verification_email
+from users.email_service import send_verification_email
 
 @shared_task
 def send_verification_email_task(user_id, request_meta=None):
