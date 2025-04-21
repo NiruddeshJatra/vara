@@ -19,10 +19,12 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 CORS_ALLOWED_ORIGINS = [
     "https://bhara.xyz",
     "https://www.bhara.xyz",
+    "https://api.bhara.xyz",
 ]
 CSRF_TRUSTED_ORIGINS = [
     "https://bhara.xyz",
     "https://www.bhara.xyz",
+    "https://api.bhara.xyz",
 ]
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
@@ -62,17 +64,29 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@bhara.com')
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'file': {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
-            'filename': '/tmp/production.log',  # Changed from /var/log/production.log to /tmp/production.log for AWS compatibility
+            'filename': '/var/log/production.log',
+            'formatter': 'verbose',
         },
     },
     'loggers': {
         'django': {
             'handlers': ['file'],
             'level': 'ERROR',
+            'propagate': True,
+        },
+        'bhara': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
             'propagate': True,
         },
     },
