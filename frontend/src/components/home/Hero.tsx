@@ -2,10 +2,13 @@ import { useState } from 'react';
 import { Search, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useNavigate } from 'react-router-dom';
+import { toast } from '@/components/ui/use-toast';
 
 const Hero = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [location, setLocation] = useState('');
+  const navigate = useNavigate();
 
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-12 lg:pt-24 pb-16 overflow-hidden">
@@ -53,7 +56,19 @@ const Hero = () => {
                   onChange={(e) => setLocation(e.target.value)}
                 />
               </div>
-              <Button className="h-10 sm:h-12 px-4 sm:px-8 bg-green-700 hover:bg-green-800 text-sm sm:text-base font-medium font-['Helvetica_Neue_Light']">Find Items</Button>
+              <Button
+                className="h-10 sm:h-12 px-4 sm:px-8 bg-green-700 hover:bg-green-800 text-sm sm:text-base font-medium font-['Helvetica_Neue_Light']"
+                onClick={() => {
+                  toast({
+                    title: "Validation Error",
+                    description: "Please login first",
+                    variant: "destructive"
+                  });
+                  navigate('/auth/login/');
+                }}
+              >
+                Find Items
+              </Button>
             </div>
           </div>
         </div>

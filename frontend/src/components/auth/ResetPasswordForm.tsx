@@ -4,7 +4,7 @@ import { Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 import { Label } from "@/components/ui/label";
 
 const ResetPasswordForm = () => {
@@ -35,10 +35,18 @@ const ResetPasswordForm = () => {
 
     try {
       await confirmPasswordReset(uid!, token!, passwords.password1, passwords.password2);
-      toast.success("Password reset successful. Please log in with your new password.");
+      toast({
+        title: 'Password Reset Successful',
+        description: 'Password reset successful. Please log in with your new password.',
+        variant: 'success',
+      });
       navigate("/auth/login/");
     } catch (error) {
-      toast.error("Failed to reset password. Please try again.");
+      toast({
+        title: 'Validation Error',
+        description: 'Failed to reset password. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 

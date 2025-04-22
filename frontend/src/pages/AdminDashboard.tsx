@@ -29,6 +29,7 @@ import ReportsAndAnalytics from "../components/admin/ReportsAndAnalytics";
 import { useAdminAuth } from "../contexts/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
+import axios from 'axios';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -38,15 +39,41 @@ const AdminDashboard = () => {
   const { adminLogout } = useAdminAuth();
   const navigate = useNavigate();
 
-  // Mock dashboard statistics
-  const dashboardStats = {
-    totalUsers: 568,
-    activeRentals: 124,
-    pendingApprovals: 18,
-    pendingRequests: 32,
-    returnsToday: 5,
-    revenue: 24650,
-  };
+  // --- FETCH REAL DASHBOARD DATA ---
+  const [dashboardStats, setDashboardStats] = useState({
+    totalUsers: 0,
+    activeRentals: 0,
+    pendingApprovals: 0,
+    pendingRequests: 0,
+    returnsToday: 0,
+    revenue: 0,
+  });
+  const [loadingStats, setLoadingStats] = useState(false);
+  const [statsError, setStatsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      setLoadingStats(true);
+      setStatsError(null);
+      try {
+        // Replace with your actual API endpoint
+        const token = localStorage.getItem('admin_token');
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL || ''}/api/admin/dashboard-stats/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setDashboardStats(response.data);
+      } catch (error: any) {
+        setStatsError(
+          error?.response?.data?.detail || error.message || 'Failed to fetch dashboard stats.'
+        );
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+    fetchStats();
+  }, []);
 
   const handleLogout = () => {
     adminLogout();

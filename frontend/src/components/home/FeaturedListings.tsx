@@ -3,12 +3,15 @@ import ListingsGrid from '../advertisements/ListingsGrid';
 import { useState } from 'react';
 import { generateListings } from '@/utils/mockDataGenerator';
 import ItemModal from '@/components/advertisements/ItemModal';
+import { useNavigate } from 'react-router-dom';
+import { toast } from '@/components/ui/use-toast';
 
 const FeaturedListings = () => {
   // Generate mock listings for display
   const mockListings = generateListings(4);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleQuickView = (itemId: string) => {
     setSelectedItem(itemId);
@@ -53,6 +56,14 @@ const FeaturedListings = () => {
             variant="outline"
             className="py-6 px-8 text-sm md:text-md rounded-full font-semibold shadow-lg cursor-pointer transition-transform duration-300 ease-in-out hover:translate-y-[-2px] hover:shadow-xl text-black/70 hover:text-white border border-green-600 text-green-700 bg-white hover:bg-lime-600 hover:border-none"
             style={{ animationDelay: '0.5s' }}
+            onClick={() => {
+              toast({
+                title: "Validation Error",
+                description: "Please login first",
+                variant: "destructive"
+              });
+              navigate('/auth/login/');
+            }}
           >
             See All Available Items
           </Button>

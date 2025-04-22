@@ -7,6 +7,7 @@ from datetime import timedelta
 import calendar
 from django.core.validators import FileExtensionValidator
 from django.utils.translation import gettext_lazy as _
+import uuid
 
 # Rental status choices
 STATUS_CHOICES = [
@@ -34,6 +35,7 @@ RENTAL_PURPOSE_CHOICES = [
 ]
 
 class Rental(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, help_text="Primary key for Rental (UUID)")
     renter = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

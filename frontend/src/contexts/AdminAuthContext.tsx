@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import axios from "axios";
 import config from "../config";
-import { toast } from "sonner";
+import { toast } from '@/components/ui/use-toast';
 
 interface AdminAuthContextType {
   isAdmin: boolean;
@@ -34,8 +34,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
           'Authorization': `Bearer ${token}`
         }
       });
-      
-      if (response.data.is_admin) {
+      const data = response.data as { is_admin: boolean };
+      if (data.is_admin) {
         setIsAdmin(true);
       } else {
         localStorage.removeItem('admin_token');
@@ -55,17 +55,25 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         email,
         password
       });
-      
-      if (response.data.token) {
-        localStorage.setItem('admin_token', response.data.token);
+      const data = response.data as { token?: string };
+      if (data.token) {
+        localStorage.setItem('admin_token', data.token);
         setIsAdmin(true);
-        toast.success('Admin login successful');
+        toast({
+          title: 'Success',
+          description: 'Admin logged in successfully.',
+          variant: 'success',
+        });
         return true;
       }
       return false;
     } catch (error: any) {
       console.error("Admin login error:", error);
-      toast.error(error.response?.data?.detail || 'Admin login failed');
+      toast({
+        title: 'Validation Error',
+        description: 'Admin login failed. Please try again.',
+        variant: 'destructive',
+      });
       return false;
     } finally {
       setLoading(false);
@@ -75,7 +83,11 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const adminLogout = () => {
     setIsAdmin(false);
     localStorage.removeItem('admin_token');
-    toast.success('Admin logged out successfully');
+    toast({
+      title: 'Success',
+      description: 'Admin logged out successfully.',
+      variant: 'success',
+    });
   };
 
   return (

@@ -9,9 +9,9 @@ import LoadMoreTrigger from '@/components/advertisements/LoadMoreTrigger';
 import { CATEGORY_DISPLAY, CATEGORY_VALUES } from '@/constants/productTypes';
 import '../styles/main.css';
 import { Product } from '@/types/listings';
-import { addDays, addMonths, isWithinInterval, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
+import { addDays, addMonths, parseISO, endOfWeek, endOfMonth } from 'date-fns';
 import productService from '@/services/product.service';
-import { toast } from 'react-hot-toast';
+import { toast } from '@/components/ui/use-toast';
 import { useQuery } from '@tanstack/react-query';
 import debounce from 'lodash/debounce';
 
@@ -76,6 +76,16 @@ const Advertisements = () => {
       setVisibleItems((productData.products?.length || 0) + allListings.length);
     }
   }, [productData]);
+
+  useEffect(() => {
+    if (productsError) {
+      toast({
+        title: 'Validation Error',
+        description: 'Failed to load advertisements. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  }, [productsError]);
 
   // Generate categories from constants
   useEffect(() => {

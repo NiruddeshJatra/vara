@@ -29,110 +29,48 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from 'axios';
 
 interface UserManagementTableProps {
   searchTerm: string;
 }
 
-// Mock data for users
-const MOCK_USERS = [
-  {
-    id: 1001,
-    name: "Ahmed Rahman",
-    email: "ahmed.rahman@example.com",
-    phone: "+880 1712 345678",
-    image: "https://randomuser.me/api/portraits/men/32.jpg",
-    rating: 4.9,
-    joined: "2023-01-15T10:30:00Z",
-    verified: true,
-    type: "both", // can be 'renter', 'owner', or 'both'
-    listingsCount: 5,
-    rentalsCount: 7,
-    status: "active"
-  },
-  {
-    id: 1002,
-    name: "Fatima Khan",
-    email: "fatima.khan@example.com",
-    phone: "+880 1612 876543",
-    image: "https://randomuser.me/api/portraits/women/44.jpg",
-    rating: 4.8,
-    joined: "2023-02-20T14:15:00Z",
-    verified: true,
-    type: "owner",
-    listingsCount: 3,
-    rentalsCount: 0,
-    status: "active"
-  },
-  {
-    id: 1003,
-    name: "Mohammed Ali",
-    email: "mohammed.ali@example.com",
-    phone: "+880 1812 234567",
-    image: "https://randomuser.me/api/portraits/men/76.jpg",
-    rating: 4.2,
-    joined: "2023-02-25T09:45:00Z",
-    verified: true,
-    type: "both",
-    listingsCount: 2,
-    rentalsCount: 4,
-    status: "active"
-  },
-  {
-    id: 1004,
-    name: "Noor Ahmed",
-    email: "noor.ahmed@example.com",
-    phone: "+880 1912 765432",
-    image: "https://randomuser.me/api/portraits/women/63.jpg",
-    rating: 3.5,
-    joined: "2023-03-05T16:20:00Z",
-    verified: false,
-    type: "renter",
-    listingsCount: 0,
-    rentalsCount: 2,
-    status: "pending_verification"
-  },
-  {
-    id: 1005,
-    name: "Imran Hossain",
-    email: "imran.hossain@example.com",
-    phone: "+880 1512 345678",
-    image: "https://randomuser.me/api/portraits/men/52.jpg",
-    rating: 4.6,
-    joined: "2023-03-15T11:10:00Z",
-    verified: true,
-    type: "owner",
-    listingsCount: 8,
-    rentalsCount: 0,
-    status: "active"
-  },
-  {
-    id: 1006,
-    name: "Saad Rahman",
-    email: "saad.rahman@example.com",
-    phone: "+880 1612 987654",
-    image: "https://randomuser.me/api/portraits/men/22.jpg",
-    rating: 5.0,
-    joined: "2023-04-10T08:30:00Z",
-    verified: false,
-    type: "renter",
-    listingsCount: 0,
-    rentalsCount: 3,
-    status: "suspended"
-  }
-];
-
 const UserManagementTable = ({ searchTerm }: UserManagementTableProps) => {
-  const [users, setUsers] = useState(MOCK_USERS);
-  
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const token = localStorage.getItem('admin_token');
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL || ''}/api/admin/users/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setUsers(response.data);
+      } catch (err: any) {
+        setError(
+          err?.response?.data?.detail || err.message || 'Failed to fetch users.'
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+  }, []);
+
   // Filter users based on search term
   const filteredUsers = users.filter(
     user =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.phone.includes(searchTerm) ||
-      user.id.toString().includes(searchTerm)
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.phone?.includes(searchTerm) ||
+      user.id?.toString().includes(searchTerm)
   );
 
   const formatDate = (dateString: string) => {
@@ -246,6 +184,74 @@ const UserManagementTable = ({ searchTerm }: UserManagementTableProps) => {
       variant: "default",
     });
   };
+
+  if (loading) {
+    return (
+      <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-b from-white to-green-50">
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader className="bg-green-50">
+              <TableRow>
+                <TableHead className="w-[60px] text-green-800 font-semibold">ID</TableHead>
+                <TableHead className="text-green-800 font-semibold">User</TableHead>
+                <TableHead className="text-green-800 font-semibold">Contact</TableHead>
+                <TableHead className="text-green-800 font-semibold">
+                  <div className="flex items-center">
+                    Activity <ChevronDown className="ml-1 h-4 w-4" />
+                  </div>
+                </TableHead>
+                <TableHead className="text-green-800 font-semibold">Status</TableHead>
+                <TableHead className="text-green-800 font-semibold">Type</TableHead>
+                <TableHead className="text-green-800 font-semibold">Joined</TableHead>
+                <TableHead className="text-right text-green-800 font-semibold">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow>
+                <TableCell colSpan={8} className="text-center py-6 text-green-600">
+                  Loading...
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-b from-white to-green-50">
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader className="bg-green-50">
+              <TableRow>
+                <TableHead className="w-[60px] text-green-800 font-semibold">ID</TableHead>
+                <TableHead className="text-green-800 font-semibold">User</TableHead>
+                <TableHead className="text-green-800 font-semibold">Contact</TableHead>
+                <TableHead className="text-green-800 font-semibold">
+                  <div className="flex items-center">
+                    Activity <ChevronDown className="ml-1 h-4 w-4" />
+                  </div>
+                </TableHead>
+                <TableHead className="text-green-800 font-semibold">Status</TableHead>
+                <TableHead className="text-green-800 font-semibold">Type</TableHead>
+                <TableHead className="text-green-800 font-semibold">Joined</TableHead>
+                <TableHead className="text-right text-green-800 font-semibold">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow>
+                <TableCell colSpan={8} className="text-center py-6 text-green-600">
+                  {error}
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-b from-white to-green-50">

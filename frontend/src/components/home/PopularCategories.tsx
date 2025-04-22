@@ -1,5 +1,7 @@
 import React from 'react';
 import { MonitorSmartphone, Hammer, Tent, Camera, PartyPopper, Car } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from '@/components/ui/use-toast';
 
 const categories = [
   {
@@ -41,6 +43,7 @@ const categories = [
 ];
 
 const PopularCategories = () => {
+  const navigate = useNavigate();
   return (
     <section id="browse-items" className="section relative bg-gradient-to-b from-green-50 to-white nature-pattern animate-fade-up">
       <div className="container mx-auto">
@@ -78,7 +81,19 @@ const PopularCategories = () => {
         </div>
 
         <div className="flex justify-center mt-10 animate-fade-up" style={{ animationDelay: '600ms' }}>
-          <a href="#" className="text-green-600 font-medium hover:text-green-700 inline-flex items-center transition-all">
+          <a
+            href="#"
+            className="text-green-600 font-medium hover:text-green-700 inline-flex items-center transition-all"
+            onClick={e => {
+              e.preventDefault();
+              toast({
+                title: "Validation Error",
+                description: "Please login first",
+                variant: "destructive"
+              });
+              navigate('/auth/login/');
+            }}
+          >
             Explore All Categories
             <svg className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />

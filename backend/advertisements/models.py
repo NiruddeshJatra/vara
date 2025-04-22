@@ -159,77 +159,57 @@ class Product(models.Model):
     product_type = models.CharField(
         max_length=50,
         choices=PRODUCT_TYPE_CHOICES,
-        help_text=_("Product type"),
+        help_text=_("Type of product (e.g., camera, lens)"),
     )
-    description = models.TextField(help_text=_("Product description"))
-    location = models.CharField(
-        max_length=255,
-        help_text=_("Product location"),
-    )
+    description = models.TextField(blank=True, help_text=_("Product description"))
+    location = models.CharField(max_length=255, help_text=_("Product location"))
     security_deposit = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        null=True,
-        blank=True,
-        help_text=_("Security deposit amount (optional)"),
+        default=0.00,
+        help_text=_("Security deposit required for rental"),
     )
     purchase_year = models.CharField(
         max_length=4,
-        default=str(datetime.now().year),
-        help_text=_("Year of purchase (defaults to current year)")
+        validators=[FileExtensionValidator(["jpg", "jpeg", "png"])],
+        help_text=_("Year product was purchased (YYYY)"),
     )
     original_price = models.DecimalField(
-        max_digits=10, decimal_places=2, help_text=_("Original purchase price")
+        max_digits=10,
+        decimal_places=2,
+        help_text=_("Original price of the product"),
     )
     ownership_history = models.CharField(
-        max_length=20,
+        max_length=50,
         choices=OWNERSHIP_HISTORY_CHOICES,
-        help_text=_("Ownership history"),
+        help_text=_("Ownership history of the product"),
     )
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
         default="draft",
-        help_text=_("Product status (managed by admins)"),
+        help_text=_("Current status of the product"),
     )
-    status_message = models.TextField(
-        null=True,
+    status_message = models.CharField(
+        max_length=255,
         blank=True,
-        help_text=_(
-            "Admin message for status changes (e.g., maintenance or suspension reason)"
-        ),
+        help_text=_("Status message for the product"),
     )
     status_changed_at = models.DateTimeField(
-        null=True, blank=True, help_text=_("When status was last changed by admin")
+        null=True,
+        blank=True,
+        help_text=_("Timestamp when status last changed"),
     )
-    # Internal tracking fields
-    views_count = models.PositiveIntegerField(
-        default=0, help_text=_("Internal: Number of views")
-    )
-    rental_count = models.PositiveIntegerField(
-        default=0, help_text=_("Internal: Number of rentals")
-    )
+    views_count = models.PositiveIntegerField(default=0, help_text=_("Number of views"))
+    rental_count = models.PositiveIntegerField(default=0, help_text=_("Number of rentals"))
     average_rating = models.DecimalField(
         max_digits=3,
         decimal_places=2,
-        default=0,
-        validators=[MinValueValidator(0), MaxValueValidator(5)],
-        help_text=_("Average rating from all reviews"),
+        default=0.0,
+        help_text=_("Average rating of the product"),
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ["-created_at"]
-        verbose_name = _("Product")
-        verbose_name_plural = _("Products")
-        indexes = [
-            models.Index(fields=["status"]),
-            models.Index(fields=["category"]),
-            models.Index(fields=["location"]),
-            models.Index(fields=["created_at"]),
-            models.Index(fields=["average_rating"]),
-        ]
 
     def __str__(self):
         return self.title

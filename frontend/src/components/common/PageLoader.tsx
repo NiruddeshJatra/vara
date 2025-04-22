@@ -13,8 +13,8 @@ const PageLoader: React.FC<PageLoaderProps> = ({ variant = 'default' }) => {
           <div className="relative">
             <div className="h-16 w-16 rounded-full border-4 border-green-200 animate-spin border-t-green-600"></div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-green-800 text-lg font-bold">V</span>
-              <span className="text-green-600 text-sm font-medium">ara</span>
+              <span className="text-green-800 text-lg font-bold">B</span>
+              <span className="text-green-600 text-sm font-medium">hara</span>
             </div>
           </div>
           <p className="text-green-700 mt-4 font-medium">Loading...</p>
@@ -40,8 +40,8 @@ const PageLoader: React.FC<PageLoaderProps> = ({ variant = 'default' }) => {
       {variant === 'ripple' && (
         <div className="relative">
           <div className="w-16 h-16 rounded-full border-4 border-green-600 flex items-center justify-center">
-            <span className="text-green-800 text-lg font-bold">V</span>
-            <span className="text-green-600 text-sm font-medium">ara</span>
+            <span className="text-green-800 text-lg font-bold">B</span>
+            <span className="text-green-600 text-sm font-medium">hara</span>
           </div>
           <div className="absolute inset-0 rounded-full border-4 border-green-400 animate-pulse-ripple"></div>
           <div
@@ -56,8 +56,8 @@ const PageLoader: React.FC<PageLoaderProps> = ({ variant = 'default' }) => {
         <div className="flex flex-col items-center">
           {/* You can swap out animate-bounce for animate-ping or animate-pulse */}
           <RadioTower className="w-16 h-16 text-green-600 animate-bounce" />
-          <span className="text-green-800 text-lg font-bold">V</span>
-          <span className="text-green-600 text-sm font-medium">ara</span>
+          <span className="text-green-800 text-lg font-bold">B</span>
+          <span className="text-green-600 text-sm font-medium">hara</span>
           <p className="text-green-700 mt-4 font-medium">Streaming Live...</p>
         </div>
       )}

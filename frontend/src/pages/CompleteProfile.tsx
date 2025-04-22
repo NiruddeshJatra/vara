@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import Footer from "@/components/home/Footer";
 import NavBar from "@/components/home/NavBar";
 import ContactDetailsStep from "@/components/auth/steps/ContactDetailsStep";
@@ -37,7 +37,11 @@ const CompleteProfile = () => {
   // Redirect if profile is already complete
   useEffect(() => {
     if (user?.profileCompleted === true) {
-      toast.info("Your profile is already complete.");
+      toast({
+        title: "Validation Error",
+        description: "Your profile is already complete.",
+        variant: "destructive",
+      });
       navigate("/profile");
     }
   }, [user, navigate]);
@@ -171,7 +175,11 @@ const CompleteProfile = () => {
       // Check token before submission
       const token = localStorage.getItem(config.auth.tokenStorageKey);
       if (!token) {
-        toast.error("No authentication token found. Please log in again.");
+        toast({
+          title: "Validation Error",
+          description: "No authentication token found. Please log in again.",
+          variant: "destructive",
+        });
         navigate("/auth/login");
         return;
       }
@@ -184,7 +192,11 @@ const CompleteProfile = () => {
 
       // Call the dedicated completeProfile service method
       await authService.completeProfile(updatedFormData);
-      toast.success("Profile completed successfully!");
+      toast({
+        title: "Success",
+        description: "Profile completed successfully!",
+        variant: "success",
+      });
       navigate("/advertisements");
     } catch (error: any) {
       // Handle specific error for duplicate national ID
@@ -199,13 +211,20 @@ const CompleteProfile = () => {
         }));
         setCurrentStep(2); // Go back to the national ID step
         window.scrollTo(0, 0);
-        toast.error(
-          "This National ID is already registered with another account"
-        );
+        toast({
+          title: "Validation Error",
+          description:
+            "This National ID is already registered with another account",
+          variant: "destructive",
+        });
         return;
       }
       // Handle other errors
-      toast.error(error.message || "Failed to complete profile");
+      toast({
+        title: "Validation Error",
+        description: error.message || "Failed to complete profile",
+        variant: "destructive",
+      });
     }
   };
 
@@ -218,7 +237,7 @@ const CompleteProfile = () => {
     <div className="flex flex-col min-h-screen">
       <NavBar />
 
-      <main className="flex-grow pt-16 sm:pt-20 pb-16">
+      <main className="flex-grow pt-14">
         <div className="bg-gradient-to-b from-green-300 to-lime-100/20 pt-4 sm:pt-6 md:pt-8 px-4 sm:px-6">
           <div className="max-w-3xl mx-auto bg-gradient-to-b from-white to-lime-50 rounded-lg shadow-subtle p-4 sm:p-6 md:p-8 animate-fade-up">
             <div className="text-center mb-4 sm:mb-6 md:mb-8 animate-fade-up">

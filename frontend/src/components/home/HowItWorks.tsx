@@ -1,6 +1,7 @@
 import React from 'react';
 import { UserPlus, Search, MessageSquare, CreditCard, RotateCw } from 'lucide-react';
 import '../../styles/main.css';
+import { useNavigate } from 'react-router-dom';
 
 const steps = [
   {
@@ -31,6 +32,7 @@ const steps = [
 ];
 
 const HowItWorks = () => {
+  const navigate = useNavigate();
   return (
     <section id="how-it-works" className="py-12 md:py-20 bg-gradient-to-b from-green-50 to-white">
       <div className="container mx-auto px-4">
@@ -56,7 +58,11 @@ const HowItWorks = () => {
         </div>
 
         <div className="flex justify-center mt-10">
-          <button className="px-8 py-3 rounded-full bg-green-600 text-white font-semibold text-base md:text-lg hover:bg-green-700 transition-colors animate-fade-up shadow-md" style={{ animationDelay: '0.5s' }}>
+          <button
+            className="px-8 py-3 rounded-full bg-green-600 text-white font-semibold text-base md:text-lg hover:bg-green-700 transition-colors animate-fade-up shadow-md"
+            style={{ animationDelay: '0.5s' }}
+            onClick={() => navigate('/auth/login/')}
+          >
             Get Started Now
           </button>
         </div>

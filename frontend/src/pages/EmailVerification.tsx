@@ -1,10 +1,8 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { MailCheck, AlertCircle, Loader2 } from 'lucide-react';
-import NavBar from '@/components/home/NavBar';
-import Footer from '@/components/home/Footer';
 
 const EmailVerification = () => {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');

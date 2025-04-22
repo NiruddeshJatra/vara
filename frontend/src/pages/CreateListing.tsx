@@ -5,7 +5,7 @@ import CreateListingStepper from "@/components/listings/CreateListingStepper";
 import Footer from '@/components/home/Footer';
 import NavBar from '@/components/home/NavBar';
 import { ListingFormData } from '@/types/listings';
-import { toast } from 'react-hot-toast';
+import { toast } from '@/components/ui/use-toast';
 import productService from '@/services/product.service';
 
 export default function CreateListingPage() {
@@ -30,10 +30,18 @@ export default function CreateListingPage() {
     setIsSubmitting(true);
     try {
       const response = await productService.createProduct(formData);
-      toast.success('Product created successfully!');
+      toast({
+        title: 'Success',
+        description: 'Product created successfully!',
+        variant: 'success',
+      });
       return response;
     } catch (error) {
-      toast.error('Failed to create product. Please try again.');
+      toast({
+        title: 'Error',
+        description: 'Failed to create product. Please try again.',
+        variant: 'destructive',
+      });
       console.error('Error creating product:', error);
       throw error;
     } finally {

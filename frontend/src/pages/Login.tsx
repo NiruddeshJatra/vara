@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Eye, EyeOff, Lock, Mail, ShieldCheck, LifeBuoy } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import NavBar from "@/components/home/NavBar";
 import Footer from "@/components/home/Footer";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
+import { toast } from '@/components/ui/use-toast';
 import AuthService from "@/services/auth.service";
 import { LoginData } from '@/types/auth';
 import { validateLoginForm } from '@/utils/validations/auth.validations';
@@ -35,10 +35,18 @@ const Login = () => {
     try {
       setIsResending(true);
       await AuthService.resendVerificationEmail(email);
-      toast.success('Verification email sent successfully. Please check your inbox.');
+      toast({
+        title: 'Verification Email Sent',
+        description: 'Verification email sent successfully. Please check your inbox.',
+        variant: 'success',
+      });
       navigate(`/verify-email?email=${encodeURIComponent(email)}`);
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to send verification email');
+      toast({
+        title: 'Error',
+        description: error.response?.data?.message || 'Failed to send verification email',
+        variant: 'destructive',
+      });
     } finally {
       setIsResending(false);
     }
@@ -61,6 +69,11 @@ const Login = () => {
           });
           return;
         }
+        toast({
+          title: 'Login Error',
+          description: 'Login failed. Please check your credentials.',
+          variant: 'destructive',
+        });
         setErrors({
           general: error.response?.data?.detail || 'Invalid email or password'
         });
@@ -74,7 +87,7 @@ const Login = () => {
     <div className="flex flex-col min-h-screen">
       <NavBar />
 
-      <main className="flex-grow pt-16 sm:pt-20">
+      <main className="flex-grow pt-14">
         <div className="bg-gradient-to-b from-green-300 to-lime-100/20">
           <div className="container max-w-md mx-auto px-4 py-12">
             <div className="bg-gradient-to-b from-white to-lime-50 backdrop-blur-sm shadow-lg rounded-xl p-8 relative animate-fade-up">

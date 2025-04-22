@@ -4,7 +4,7 @@ import { Mail, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 import { Label } from "@/components/ui/label";
 
 const ForgotPasswordForm = () => {
@@ -17,9 +17,17 @@ const ForgotPasswordForm = () => {
     try {
       await requestPasswordReset(email);
       setIsSubmitted(true);
-      toast.success("Password reset email sent. Please check your inbox.");
+      toast({
+        title: 'Password Reset Email Sent',
+        description: 'Please check your inbox for further instructions.',
+        variant: 'success',
+      });
     } catch (error) {
-      toast.error("Failed to send password reset email. Please try again.");
+      toast({
+        title: 'Validation Error',
+        description: 'Failed to send reset email. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
