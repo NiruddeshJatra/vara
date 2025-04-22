@@ -4,6 +4,7 @@ Production-specific settings.
 
 from .base import *
 import os
+from datetime import timedelta
 
 DEBUG = False
 
@@ -67,6 +68,14 @@ CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localho
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
+
+# Celery Beat Schedule: Delete unverified users every hour
+CELERY_BEAT_SCHEDULE = {
+    "delete_unverified_users": {
+        "task": "users.tasks.delete_unverified_users",
+        "schedule": timedelta(hours=1),  # runs every hour
+    },
+}
 
 LOGGING = {
     'version': 1,
