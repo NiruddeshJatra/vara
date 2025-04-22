@@ -51,10 +51,7 @@ const App = () => {
                 )
               } />
               <Route path="/advertisements" element={
-                <>
-                  <ProfileCompletionButton />
-                  <Advertisements />
-                </>
+                <Advertisements />
               } />
               <Route path="/items/:productId" element={<ItemDetail />} />
               <Route path="/verify-email" element={<VerifyEmailNotice />} />

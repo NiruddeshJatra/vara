@@ -15,7 +15,7 @@ const Footer = () => {
           {/* Logo & Description */}
           <div className="md:col-span-2 lg:col-span-2 xl:col-span-2 max-w-lg pr-4 lg:pr-8">
             <a href="/" className="flex items-center text-lg md:text-xl font-bold mb-2 md:mb-3">
-              <span className="text-lime-600 mr-1">V</span>ara
+              <span className="text-lime-600">Bh</span>ara
             </a>
             <p className="text-gray-500 text-xs/5 md:text-sm/6 mb-3 md:mb-4">
               The trusted community marketplace for lending and borrowing everyday items. Save money, earn income, and live more sustainably.

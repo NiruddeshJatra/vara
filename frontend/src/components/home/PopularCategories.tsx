@@ -86,12 +86,7 @@ const PopularCategories = () => {
             className="text-green-600 font-medium hover:text-green-700 inline-flex items-center transition-all"
             onClick={e => {
               e.preventDefault();
-              toast({
-                title: "Validation Error",
-                description: "Please login first",
-                variant: "destructive"
-              });
-              navigate('/auth/login/');
+              navigate('/advertisements');
             }}
           >
             Explore All Categories

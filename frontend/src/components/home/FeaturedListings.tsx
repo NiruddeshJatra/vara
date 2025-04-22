@@ -57,12 +57,7 @@ const FeaturedListings = () => {
             className="py-6 px-8 text-sm md:text-md rounded-full font-semibold shadow-lg cursor-pointer transition-transform duration-300 ease-in-out hover:translate-y-[-2px] hover:shadow-xl text-black/70 hover:text-white border border-green-600 text-green-700 bg-white hover:bg-lime-600 hover:border-none"
             style={{ animationDelay: '0.5s' }}
             onClick={() => {
-              toast({
-                title: "Validation Error",
-                description: "Please login first",
-                variant: "destructive"
-              });
-              navigate('/auth/login/');
+              navigate('/advertisements');
             }}
           >
             See All Available Items

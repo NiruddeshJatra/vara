@@ -59,12 +59,11 @@ const Hero = () => {
               <Button
                 className="h-10 sm:h-12 px-4 sm:px-8 bg-green-700 hover:bg-green-800 text-sm sm:text-base font-medium font-['Helvetica_Neue_Light']"
                 onClick={() => {
-                  toast({
-                    title: "Validation Error",
-                    description: "Please login first",
-                    variant: "destructive"
-                  });
-                  navigate('/auth/login/');
+                  // Navigate to Advertisements with searchTerm and location as query params
+                  const params = new URLSearchParams();
+                  if (searchTerm) params.append('search', searchTerm);
+                  if (location) params.append('location', location);
+                  navigate(`/advertisements${params.toString() ? `?${params}` : ''}`);
                 }}
               >
                 Find Items

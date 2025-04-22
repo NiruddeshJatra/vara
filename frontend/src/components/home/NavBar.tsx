@@ -63,7 +63,7 @@ const NavBar = () => {
         {/* Logo */}
         <div className="flex items-center gap-4 ml-4 md:ml-4 lg:ml-0">
           <Link to="/" className={`text-[1.3rem] md:text-[1.4rem] lg:text-2xl tracking-wide font-bold flex items-center ${(!isHomePage || isScrolled) ? "text-green-900" : "text-green-300"}`}>
-            <span className="text-lime-500">B</span>hara
+            <span className="text-lime-500">Bh</span>ara
           </Link>
           {/* Conditional Slogan */}
           {!showSearchInNav && (

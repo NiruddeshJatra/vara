@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Product } from '@/types/listings';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileCompletionModal } from '@/components/common/ProfileCompletionModal';
+import { toast } from '@/components/ui/use-toast';
 
 interface PricingCardProps {
   product: Product;
@@ -13,9 +14,18 @@ interface PricingCardProps {
 const PricingCard: React.FC<PricingCardProps> = ({ product }) => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   const handleRequestRental = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please login to request a rental.',
+        variant: 'destructive',
+      });
+      navigate('/auth/login/');
+      return;
+    }
     if (!user?.profileCompleted) {
       setShowProfileModal(true);
       return;
