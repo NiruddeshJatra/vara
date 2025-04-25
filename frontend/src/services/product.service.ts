@@ -196,7 +196,14 @@ class ProductService {
       // Append images
       if (data.images?.length > 0) {
         data.images.forEach((image) => {
-          formData.append('images', image);
+          if (image instanceof File) {
+            formData.append('images', image);
+          } else if (typeof image === 'string') {
+            console.error('Image is a string, not a File object:', image);
+            // Handle this case differently, or skip it
+          } else {
+            console.error('Unknown image type:', typeof image, image);
+          }
         });
       }
 

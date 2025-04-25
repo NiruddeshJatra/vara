@@ -17,17 +17,32 @@ CSRF_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
-CORS_ALLOWED_ORIGINS = [
-    "https://bhara.xyz",
-    "https://www.bhara.xyz",
-    "https://api.bhara.xyz",
-]
 CSRF_TRUSTED_ORIGINS = [
     "https://bhara.xyz",
     "https://www.bhara.xyz",
     "https://api.bhara.xyz",
 ]
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# CORS settings for production
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "https://bhara.xyz",
+    "https://www.bhara.xyz",
+    "https://api.bhara.xyz",
+]
+CORS_ALLOW_METHODS = ["DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT"]
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
 
 # Database configuration
 DATABASES = {
@@ -76,6 +91,9 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": timedelta(hours=1),  # runs every hour
     },
 }
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
 
 LOGGING = {
     'version': 1,

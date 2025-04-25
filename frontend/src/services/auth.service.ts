@@ -116,20 +116,18 @@ api.interceptors.response.use(
           refresh: refreshToken
         });
 
-        if (response.data.access) {
+        if ((response.data as any).access) {
           // Update the access token
-          storage.setToken(response.data.access);
+          storage.setToken((response.data as any).access);
 
           // Retry the original request with the new token
-          originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
+          originalRequest.headers.Authorization = `Bearer ${(response.data as any).access}`;
           return api(originalRequest);
         }
       } catch (refreshError) {
-        // Only clear auth data and redirect if it's not a profile completion request
-        if (!originalRequest.url || !originalRequest.url.includes('complete_profile')) {
-          storage.clearAll();
-          window.location.href = config.auth.loginEndpoint;
-        }
+        // Always clear auth data and redirect to login on refresh failure
+        storage.clearAll();
+        window.location.href = config.auth.loginEndpoint;
       }
     }
 
@@ -151,31 +149,26 @@ class AuthService {
       });
 
       // Make sure we properly store tokens
-      if (response.data.tokens) {
-        storage.setToken(response.data.tokens.access);
-        storage.setRefreshToken(response.data.tokens.refresh);
+      if ((response.data as any).tokens) {
+        storage.setToken((response.data as any).tokens.access);
+        storage.setRefreshToken((response.data as any).tokens.refresh);
       }
 
       // Store user data with profileCompleted field
-      if (response.data.user) {
+      if ((response.data as any).user) {
         const userData = {
-          ...response.data.user,
-          profileCompleted: response.data.user.profile_completed === true
+          ...(response.data as any).user,
+          profileCompleted: (response.data as any).user.profile_completed === true
         };
         storage.setUser(userData);
         return userData;
       }
 
-      return response.data.user;
+      return (response.data as any).user;
     } catch (error: any) {
       console.error('Login error:', error);
       const errorMessage = getErrorMessage(error);
-      toast({
-        title: "Login Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      throw error;
+      throw new Error(errorMessage);
     }
   }
 
@@ -197,12 +190,7 @@ class AuthService {
     } catch (error: any) {
       console.error('Registration error:', error);
       const errorMessage = getErrorMessage(error);
-      toast({
-        title: "Registration Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      throw error;
+      throw new Error(errorMessage);
     }
   }
 
@@ -225,26 +213,21 @@ class AuthService {
       const response = await authApi.post(`${config.auth.verifyEmailEndpoint}${token}/`);
 
       // If verification is successful and returns tokens, store them
-      if (response.data.tokens) {
-        storage.setToken(response.data.tokens.access);
-        storage.setRefreshToken(response.data.tokens.refresh);
+      if ((response.data as any).tokens) {
+        storage.setToken((response.data as any).tokens.access);
+        storage.setRefreshToken((response.data as any).tokens.refresh);
       }
 
       // If user data is returned, store it
-      if (response.data.user) {
-        storage.setUser(response.data.user);
+      if ((response.data as any).user) {
+        storage.setUser((response.data as any).user);
       }
 
       return response.data;
     } catch (error) {
       console.error('Email verification error:', error);
       const errorMessage = getErrorMessage(error);
-      toast({
-        title: "Verification Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      throw error;
+      throw new Error(errorMessage);
     }
   }
 
@@ -256,12 +239,7 @@ class AuthService {
     } catch (error) {
       console.error('Resend verification email error:', error);
       const errorMessage = getErrorMessage(error);
-      toast({
-        title: "Resend Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      throw error;
+      throw new Error(errorMessage);
     }
   }
 
@@ -323,12 +301,7 @@ class AuthService {
       
       console.error('Error getting current user:', error);
       const errorMessage = getErrorMessage(error);
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      throw error;
+      throw new Error(errorMessage);
     }
   }
 
@@ -380,12 +353,7 @@ class AuthService {
     } catch (error: any) {
       console.error('AuthService - Profile update API error:', error);
       const errorMessage = getErrorMessage(error);
-      toast({
-        title: "Update Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      throw error;
+      throw new Error(errorMessage);
     }
   }
 
@@ -445,12 +413,7 @@ class AuthService {
     } catch (error: any) {
       console.error('AuthService - Profile completion API error:', error);
       const errorMessage = getErrorMessage(error);
-      toast({
-        title: "Profile Completion Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      throw error;
+      throw new Error(errorMessage);
     }
   }
 
@@ -470,16 +433,11 @@ class AuthService {
       });
       
       // The backend returns {exists: true/false}
-      return response.data.exists === true;
+      return (response.data as any).exists === true;
     } catch (error) {
       console.error('Error checking national ID:', error);
       const errorMessage = getErrorMessage(error);
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      throw error;
+      throw new Error(errorMessage);
     }
   }
 
@@ -503,12 +461,7 @@ class AuthService {
     } catch (error: any) {
       console.error('Error requesting password reset:', error);
       const errorMessage = getErrorMessage(error);
-      toast({
-        title: "Reset Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      throw error;
+      throw new Error(errorMessage);
     }
   }
 
@@ -518,34 +471,47 @@ class AuthService {
       const response = await authApi.post(
         `${config.auth.passwordResetConfirmEndpoint}${uid}/${token}/`,
         {
-          newPassword1,
-          newPassword2
+          new_password1: newPassword1,
+          new_password2: newPassword2
         }
       );
       return response.data;
     } catch (error: any) {
       console.error('Error confirming password reset:', error);
       const errorMessage = getErrorMessage(error);
-      toast({
-        title: "Reset Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      throw error;
+      throw new Error(errorMessage);
     }
   }
 }
 
 function getErrorMessage(error: any): string {
+  // Debug log to inspect error structure
+  console.log("getErrorMessage error:", error, error.response?.data);
+
   if (error.response?.data?.detail) {
     return error.response.data.detail;
-  } else if (error.response?.data?.error) {
-    return error.response.data.error;
-  } else if (error.message) {
-    return error.message;
-  } else {
-    return 'An unknown error occurred.';
   }
+  if (error.response?.data?.error) {
+    return error.response.data.error;
+  }
+  if (error.response?.data && typeof error.response.data === 'object') {
+    // Show all error messages, one per line (user-friendly)
+    const messages: string[] = [];
+    Object.values(error.response.data).forEach((value) => {
+      if (Array.isArray(value)) {
+        value.forEach((msg) => messages.push(msg));
+      } else if (typeof value === 'string') {
+        messages.push(value);
+      }
+    });
+    if (messages.length > 0) {
+      return messages.join('\n');
+    }
+  }
+  if (error.message) {
+    return error.message;
+  }
+  return 'An unknown error occurred.';
 }
 
 export default new AuthService();

@@ -15,6 +15,8 @@ export const ProfileCompletionButton = () => {
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
 
+  // TEMP DEBUG LOGGING
+  console.log('ProfileCompletionButton user:', user, 'profileCompleted:', user?.profileCompleted, typeof user?.profileCompleted);
   // Don't render if user is not logged in or if profile is complete
   if (!user || user.profileCompleted === true) return null;
 

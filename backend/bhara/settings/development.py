@@ -6,6 +6,12 @@ from .base import *
 import os
 from datetime import timedelta
 
+
+
+# Disable environment variable reading for email settings
+if hasattr(environ.Env, 'EMAIL_HOST'):
+    del environ.Env.EMAIL_HOST
+
 DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
@@ -45,9 +51,6 @@ else:
             'PORT': os.environ.get('DB_PORT', '5432'),
         }
     }
-
-# Email settings for development
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Allow all hosts in development
 ALLOWED_HOSTS = ['*']

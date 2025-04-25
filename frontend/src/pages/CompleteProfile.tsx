@@ -19,7 +19,7 @@ import authService from "@/services/auth.service";
 
 const CompleteProfile = () => {
   const navigate = useNavigate();
-  const { updateProfile, loading: authLoading, user } = useAuth();
+  const { updateProfile, loading: authLoading, user, refreshUserData } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<ProfileFormData>({
     firstName: "",
@@ -192,6 +192,10 @@ const CompleteProfile = () => {
 
       // Call the dedicated completeProfile service method
       await authService.completeProfile(updatedFormData);
+      // Refresh user data in context after profile completion
+      if (typeof refreshUserData === 'function') {
+        await refreshUserData();
+      }
       toast({
         title: "Success",
         description: "Profile completed successfully!",

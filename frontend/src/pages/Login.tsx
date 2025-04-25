@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -186,9 +186,51 @@ const Login = () => {
                         Remember me
                       </label>
                     </div>
-                    <Link to="/auth/forgot-password/" className="text-sm text-green-600 hover:text-green-800">
-                      Forgot Password?
-                    </Link>
+                    {/* Use a button instead of Link for proper disabled state and accessibility */}
+                    <button
+                      type="button"
+                      className="text-sm text-green-600 hover:text-green-800 bg-transparent border-none p-0 cursor-pointer ml-2"
+                      style={{ textDecoration: 'underline', color: '#16a34a' }}
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        if (!email) {
+                          toast({
+                            title: 'Email Required',
+                            description: 'Please enter your email address above first.',
+                            variant: 'destructive',
+                          });
+                          return;
+                        }
+                        if (!validateEmail(email)) {
+                          toast({
+                            title: 'Invalid Email',
+                            description: 'Please enter a valid email address.',
+                            variant: 'destructive',
+                          });
+                          return;
+                        }
+                        setIsResending(true);
+                        try {
+                          await AuthService.requestPasswordReset(email);
+                          toast({
+                            title: 'Password Reset Email Sent',
+                            description: 'Please check your inbox for further instructions.',
+                            variant: 'success',
+                          });
+                        } catch (error: any) {
+                          toast({
+                            title: 'Error',
+                            description: error.message || 'Failed to send reset email. Please try again.',
+                            variant: 'destructive',
+                          });
+                        } finally {
+                          setIsResending(false);
+                        }
+                      }}
+                      disabled={isResending}
+                    >
+                      {isResending ? 'Sending...' : 'Forgot Password?'}
+                    </button>
                   </div>
 
                   <div className="animate-fade-up delay-400">
@@ -204,9 +246,9 @@ const Login = () => {
                   <div className="text-center mt-6 animate-fade-up delay-500">
                     <p className="text-sm text-gray-600">
                       Don't have an account?{" "}
-                      <Link to="/auth/registration/" className="font-medium text-green-600 hover:text-green-500">
+                      <a href="/auth/registration/" className="font-medium text-green-600 hover:text-green-500">
                         Sign up
-                      </Link>
+                      </a>
                     </p>
                   </div>
                 </form>

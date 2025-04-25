@@ -20,7 +20,7 @@ const config = {
     logoutEndpoint: '/auth/logout/',
     verifyEmailEndpoint: '/auth/verify-email/',
     resendVerificationEndpoint: '/auth/resend-verification/',
-    passwordResetEndpoint: '/auth/password-reset/',
+    passwordResetEndpoint: '/auth/password/reset/',
     passwordResetConfirmEndpoint: '/auth/password-reset-confirm/',
     refreshTokenEndpoint: '/auth/token/refresh/',
     profileEndpoint: "/users/profiles/me/",

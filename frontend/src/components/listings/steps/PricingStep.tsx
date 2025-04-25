@@ -1,10 +1,10 @@
 import { Input } from '@/components/ui/input';
-import { AlertCircle, Shield, Info, Plus, Trash2 } from 'lucide-react';
+import { AlertCircle, Shield, Info, Plus, Trash2, Calculator } from 'lucide-react';
 import { ListingFormData, FormError, PricingTier } from '@/types/listings';
 import '@/styles/input-fixes.css';
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 import { Button } from '@/components/ui/button';
-import { DurationUnit, DURATION_UNIT_DISPLAY } from '@/constants/rental';
+import { DurationUnit } from '@/constants/rental';
 
 type Props = {
   formData: ListingFormData;
@@ -98,6 +98,12 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
         <p className="text-xs/5 md:text-sm/6 text-gray-600">
           Set your pricing tiers and security deposit for this item.
         </p>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-2">
+          <span className="text-xs text-amber-700 flex items-center gap-2">
+            <Info size={16} className="text-amber-600" />
+            <b>Note:</b> A service fee will be deducted from your set price for each rental. The amount you receive after fees will be shown below for each tier.
+          </span>
+        </div>
       </div>
       <div className="space-y-3">
         <div className="flex justify-between items-center">
@@ -173,6 +179,13 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
                   <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
                     <AlertCircle size={14} /> {errors[`pricingTiers.${index}.price`][0]}
                   </p>
+                )}
+                {/* Dynamic service fee and owner earnings display */}
+                {typeof tier.price === 'number' && tier.price > 0 && (
+                  <div className="mt-1 text-xs text-green-700 flex items-center gap-2">
+                    <Calculator className="h-3.5 w-3.5 text-green-600" />
+                    After 20% service fee, you will receive <b>{Math.round(tier.price * 0.8)}</b> Taka {DURATION_UNIT_LABELS[tier.durationUnit as DurationUnit]}
+                  </div>
                 )}
               </div>
               <div className="md:col-span-2">

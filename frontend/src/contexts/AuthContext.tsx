@@ -106,6 +106,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userData = await AuthService.login({ email, password, rememberMe });
       setUser(userData);
       setIsAuthenticated(true);
+      // Always refresh user data after login to ensure latest backend state
+      await refreshUserData();
       toast({
         title: "Success",
         description: "Login successful!",
@@ -130,6 +132,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       await AuthService.register(data);
+      // Always refresh user data after registration to ensure latest backend state
+      await refreshUserData();
       toast({
         title: "Registration Success",
         description: "Registration successful! Please check your email to verify your account.",

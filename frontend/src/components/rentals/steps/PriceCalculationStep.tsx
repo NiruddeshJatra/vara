@@ -40,9 +40,11 @@ const PriceCalculationStep = ({
   const basePrice = selectedTier.price || 0;
   const duration = formData.duration || 0;
   const baseCost = basePrice * duration;
+  // Service fee is now deducted from owner's earnings, not added to renter's price
   const serviceFee = Math.round(baseCost * 0.08); // 8% service fee
   const securityDeposit = product.securityDeposit || 0;
-  const totalCost = baseCost + serviceFee; // Total doesn't include deposit as it's refundable
+  // Total cost for renter does NOT include service fee
+  const totalCost = baseCost; // Only base cost for renter
   const durationUnit = formData.durationUnit || "day";
 
   const formatDate = (date: Date | null) => {
@@ -126,15 +128,6 @@ const PriceCalculationStep = ({
               <span className="text-gray-600">Rental Cost:</span>
               <span className="font-medium text-gray-900">
                 {formatCurrency(baseCost)}
-              </span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600 flex items-center">
-                <BadgePercent className="h-3.5 w-3.5 mr-1 text-amber-600" />
-                Service Fee (8%):
-              </span>
-              <span className="font-medium text-gray-900">
-                {formatCurrency(serviceFee)}
               </span>
             </div>
             {securityDeposit > 0 && (

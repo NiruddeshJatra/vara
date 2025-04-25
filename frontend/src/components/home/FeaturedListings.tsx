@@ -1,14 +1,129 @@
 import { Button } from '../ui/button';
 import ListingsGrid from '../advertisements/ListingsGrid';
 import { useState } from 'react';
-import { generateListings } from '@/utils/mockDataGenerator';
 import ItemModal from '@/components/advertisements/ItemModal';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
+import { Product } from '@/types/listings';
+import { DurationUnit } from '@/constants/rental';
+import { Category, ProductType } from '@/constants/productTypes';
 
 const FeaturedListings = () => {
   // Generate mock listings for display
-  const mockListings = generateListings(4);
+  const mockListings: Product[] = [
+    {
+      id: '1',
+      owner: 'user1',
+      title: 'Canon EOS 80D DSLR Camera',
+      category: Category.PHOTOGRAPHY_VIDEOGRAPHY,
+      productType: ProductType.CAMERA,
+      description: 'Perfect for events, travel, and content creation. Comes with 18-135mm lens.',
+      location: 'Dhaka',
+      securityDeposit: 5000,
+      purchaseYear: '2022',
+      originalPrice: 80000,
+      ownershipHistory: 'First owner',
+      status: 'AVAILABLE',
+      statusMessage: null,
+      statusChangedAt: null,
+      images: [
+        { id: 'img1', image: 'https://images.unsplash.com/photo-1549800026-02dd1c2bca6c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', createdAt: '2024-01-01' } // Canon DSLR
+      ],
+      unavailableDates: [],
+      pricingTiers: [
+        { id: 'pt1', durationUnit: 'day' as DurationUnit, price: 800, maxPeriod: 7 }
+      ],
+      viewsCount: 10,
+      rentalCount: 2,
+      averageRating: 4.5,
+      createdAt: '2024-01-01',
+      updatedAt: '2024-04-01',
+    },
+    {
+      id: '2',
+      owner: 'user2',
+      title: 'Quechua Waterproof Tent (4 Person)',
+      category: Category.PARTY_EVENTS,
+      productType: ProductType.TENT,
+      description: 'Spacious, easy to set up, and ideal for camping in Bangladesh.',
+      location: 'Sylhet',
+      securityDeposit: 2000,
+      purchaseYear: '2021',
+      originalPrice: 18000,
+      ownershipHistory: 'Second owner',
+      status: 'AVAILABLE',
+      statusMessage: null,
+      statusChangedAt: null,
+      images: [
+        { id: 'img2', image: 'https://images.unsplash.com/photo-1534950947221-dcaca2836ce8?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', createdAt: '2024-01-02' } // 4 person tent
+      ],
+      unavailableDates: [],
+      pricingTiers: [
+        { id: 'pt2', durationUnit: 'day' as DurationUnit, price: 300, maxPeriod: 10 }
+      ],
+      viewsCount: 5,
+      rentalCount: 1,
+      averageRating: 4.3,
+      createdAt: '2024-01-02',
+      updatedAt: '2024-04-02',
+    },
+    {
+      id: '3',
+      owner: 'user3',
+      title: 'Phoenix Mountain Bicycle',
+      category: Category.SPORTS_FITNESS,
+      productType: ProductType.BICYCLE,
+      description: 'Durable, lightweight, and great for city or trail rides.',
+      location: 'Chattogram',
+      securityDeposit: 1500,
+      purchaseYear: '2023',
+      originalPrice: 25000,
+      ownershipHistory: 'First owner',
+      status: 'AVAILABLE',
+      statusMessage: null,
+      statusChangedAt: null,
+      images: [
+        { id: 'img3', image: 'https://images.unsplash.com/photo-1534150034764-046bf225d3fa?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', createdAt: '2024-01-03' } // Mountain bike
+      ],
+      unavailableDates: [],
+      pricingTiers: [
+        { id: 'pt3', durationUnit: 'day' as DurationUnit, price: 200, maxPeriod: 5 }
+      ],
+      viewsCount: 7,
+      rentalCount: 0,
+      averageRating: 4.7,
+      createdAt: '2024-01-03',
+      updatedAt: '2024-04-03',
+    },
+    {
+      id: '4',
+      owner: 'user4',
+      title: 'Sony Bluetooth Speaker',
+      category: Category.ELECTRONICS,
+      productType: ProductType.SPEAKER,
+      description: 'High-quality sound, portable, and perfect for parties or picnics.',
+      location: 'Khulna',
+      securityDeposit: 800,
+      purchaseYear: '2020',
+      originalPrice: 8000,
+      ownershipHistory: 'First owner',
+      status: 'AVAILABLE',
+      statusMessage: null,
+      statusChangedAt: null,
+      images: [
+        { id: 'img4', image: 'https://images.unsplash.com/photo-1617766376513-148515e5d3b8?q=80&w=1931&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', createdAt: '2024-01-04' } // Sony Bluetooth speaker
+      ],
+      unavailableDates: [],
+      pricingTiers: [
+        { id: 'pt4', durationUnit: 'day' as DurationUnit, price: 100, maxPeriod: 3 }
+      ],
+      viewsCount: 4,
+      rentalCount: 1,
+      averageRating: 4.6,
+      createdAt: '2024-01-04',
+      updatedAt: '2024-04-04',
+    },
+  ];
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const navigate = useNavigate();

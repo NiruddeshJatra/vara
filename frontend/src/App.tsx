@@ -41,6 +41,7 @@ const App = () => {
         <Sonner />
         <AdminAuthProvider>
           <PageTransition>
+            <ProfileCompletionButton />
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={

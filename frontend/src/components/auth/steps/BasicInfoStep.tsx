@@ -256,7 +256,7 @@ const BasicInfoStep = ({
                   onCheckedChange={(checked) =>
                     onChange({ termsAgreed: checked === true })
                   }
-                  className="h-4 w-4 border-2 border-green-400 data-[state=checked]:bg-green-600 data-[state=checked]:text-white rounded mt-1"
+                  className="h-4 w-4 border-2 border-green-400 data-[state=checked]:bg-green-600 data-[state=checked]:text-white rounded mt-1 md:mt-0"
                   disabled={loading}
                 />
               </div>
@@ -280,7 +280,7 @@ const BasicInfoStep = ({
                   onCheckedChange={(checked) =>
                     onChange({ marketingConsent: checked === true })
                   }
-                  className="h-4 w-4 border-2 border-green-400 data-[state=checked]:bg-green-600 data-[state=checked]:text-white rounded mt-1"
+                  className="h-4 w-4 border-2 border-green-400 data-[state=checked]:bg-green-600 data-[state=checked]:text-white rounded mt-1 md:mt-0"
                   disabled={loading}
                 />
               </div>

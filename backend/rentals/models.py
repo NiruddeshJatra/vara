@@ -183,7 +183,7 @@ class Rental(models.Model):
 
             if pricing_tier:
                 self.total_cost = pricing_tier.price * self.duration
-                self.service_fee = self.total_cost * Decimal('0.08')  # 8% service fee
+                self.service_fee = self.total_cost * Decimal('0.20')  # 20% service fee
 
         super().save(*args, **kwargs)
 

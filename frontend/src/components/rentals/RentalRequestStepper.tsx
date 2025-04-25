@@ -46,7 +46,7 @@ const RentalRequestStepper = ({ product }: Props) => {
         (tier) => tier.durationUnit === formData.durationUnit
       ) || pricingTier;
     const baseCost = selectedTier.price * formData.duration;
-    const serviceFee = Math.round(baseCost * 0.08); // 8% service fee
+    const serviceFee = Math.round(baseCost * 0.20); // 20% service fee
     const securityDeposit = product.securityDeposit || 0;
     const totalCost = baseCost + serviceFee; // Total doesn't include deposit as it's refundable
 

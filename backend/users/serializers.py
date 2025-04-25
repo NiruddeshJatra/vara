@@ -92,7 +92,7 @@ class CustomRegisterSerializer(serializers.ModelSerializer):
             username=validated_data.get("username"),
             email=validated_data.get("email"),
             marketing_consent=validated_data.get("marketing_consent", False),
-            profile_completed=validated_data.get("profile_completed", False),
+            profile_completed=False,
         )
         user.set_password(password)
         user.save()

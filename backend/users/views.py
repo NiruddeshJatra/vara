@@ -23,8 +23,9 @@ from .serializers import (
 )
 from .filters import UserFilter
 from .throttles import AuthenticationThrottle, UserProfileThrottle
-from .email_service import send_verification_email, send_password_reset_email
+from .email_service import send_password_reset_email
 from django.conf import settings
+from users.tasks import send_verification_email_task, send_password_reset_email_task
 
 User = get_user_model()
 
@@ -376,9 +377,16 @@ class ResendVerificationEmailView(APIView):
                     status=status.HTTP_200_OK,
                 )
             
-            # Generate a new token and send the email
+            # Generate a new token and send the email asynchronously via Celery
             user.generate_verification_token()
-            send_verification_email(user, request)
+            request_meta = None
+            if request:
+                request_meta = {
+                    'HTTP_HOST': request.META.get('HTTP_HOST'),
+                    'HTTP_ORIGIN': request.META.get('HTTP_ORIGIN'),
+                    'SCHEME': request.scheme
+                }
+            send_verification_email_task.delay(user.id, request_meta)
             
             return Response(
                 {"message": _("Verification email sent successfully.")},
@@ -425,22 +433,23 @@ class PasswordResetRequestView(APIView):
 
         try:
             user = CustomUser.objects.get(email=email)
-            
             # Generate password reset token
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            
-            # Create reset URL - use a default if FRONTEND_URL is not set
             frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
             reset_url = f"{frontend_url}/auth/reset-password/{uid}/{token}/"
-            
-            # Send password reset email
-            send_password_reset_email(user, reset_url, request)
-            
+            request_meta = None
+            if request:
+                request_meta = {
+                    'HTTP_HOST': request.META.get('HTTP_HOST'),
+                    'HTTP_ORIGIN': request.META.get('HTTP_ORIGIN'),
+                    'SCHEME': request.scheme
+                }
+            # Send password reset email asynchronously via Celery
+            send_password_reset_email_task.delay(user.id, reset_url, request_meta)
             return Response({
                 "message": _("If your email is registered, you will receive password reset instructions.")
             })
-            
         except CustomUser.DoesNotExist:
             # For security reasons, don't reveal if the email exists
             return Response({
@@ -506,62 +515,21 @@ class PasswordResetConfirmView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-@method_decorator(csrf_exempt, name="dispatch")
 class CheckNationalIdView(APIView):
-    permission_classes = [IsAuthenticated]
-    throttle_classes = [UserProfileThrottle]
+    """
+    API endpoint to check if a national ID is already registered.
+    Accepts GET requests with 'national_id_number' as a query parameter.
+    Returns 400 if missing, 200 with exists status otherwise.
+    """
+    permission_classes = [AllowAny]
 
     def get(self, request):
-        """
-        Check if a national ID is already registered with another account.
-        """
         national_id = request.query_params.get('national_id_number')
-        
         if not national_id:
-            return Response(
-                {"error": _("National ID number is required")}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-    
-        # Check if the national ID is already registered with another user
-        # Exclude the current user to allow them to keep their own national ID
-        exists = CustomUser.objects.filter(
-            national_id_number=national_id
-        ).exclude(id=request.user.id).exists()
-        
-        return Response({
-            "exists": exists,
-            "message": _("National ID is already registered") if exists else _("National ID is available")
-        })
+            return Response({"error": _("National ID number is required")}, status=status.HTTP_400_BAD_REQUEST)
 
-    def post(self, request):
-        """
-        Check if a national ID is already registered with another account.
-        
-        Args:
-            request: The HTTP request
-            
-        Returns:
-            Response: The result of the check
-        """
-        national_id = request.data.get('national_id_number')
-        
-        if not national_id:
-            return Response(
-                {"error": _("National ID number is required")}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Check if the national ID is already registered with another user
-        # Exclude the current user to allow them to keep their own national ID
-        exists = CustomUser.objects.filter(
-            national_id_number=national_id
-        ).exclude(id=request.user.id).exists()
-        
-        return Response({
-            "exists": exists,
-            "message": _("National ID is already registered") if exists else _("National ID is available")
-        })
+        exists = CustomUser.objects.filter(national_id_number=national_id).exists()
+        return Response({"exists": exists}, status=status.HTTP_200_OK)
 
 @method_decorator(csrf_exempt, name="dispatch")
 class LogoutView(APIView):

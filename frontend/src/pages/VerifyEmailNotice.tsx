@@ -1,9 +1,35 @@
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { MailCheck } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import React, { useState } from 'react';
 
 const VerifyEmailNotice = () => {
   const location = useLocation();
   const email = new URLSearchParams(location.search).get('email') || 'your email';
+  const { resendVerificationEmail } = useAuth();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+
+  const handleResend = async () => {
+    setLoading(true);
+    try {
+      await resendVerificationEmail(email);
+      toast({
+        title: 'Verification Email Sent',
+        description: 'Verification email sent successfully. Please check your inbox.',
+        variant: 'success',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to resend verification email.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -17,9 +43,15 @@ const VerifyEmailNotice = () => {
           </p>
           <div className="text-sm text-gray-500">
             Didn't receive the email?
-            <Link to="/resend-verification" className="text-green-600 hover:underline ml-1">
-              Resend verification email
-            </Link>
+            <button
+              type="button"
+              className="text-green-600 hover:underline ml-1 bg-transparent border-none p-0 cursor-pointer"
+              style={{ textDecoration: 'underline', color: '#16a34a', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+              onClick={handleResend}
+              disabled={loading}
+            >
+              {loading ? 'Sending...' : 'Resend verification email'}
+            </button>
           </div>
         </div>
       </div>
