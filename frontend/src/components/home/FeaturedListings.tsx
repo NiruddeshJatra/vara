@@ -3,7 +3,6 @@ import ListingsGrid from '../advertisements/ListingsGrid';
 import { useState } from 'react';
 import ItemModal from '@/components/advertisements/ItemModal';
 import { useNavigate } from 'react-router-dom';
-import { toast } from '@/components/ui/use-toast';
 import { Product } from '@/types/listings';
 import { DurationUnit } from '@/constants/rental';
 import { Category, ProductType } from '@/constants/productTypes';
@@ -43,7 +42,7 @@ const FeaturedListings = () => {
       id: '2',
       owner: 'user2',
       title: 'Quechua Waterproof Tent (4 Person)',
-      category: Category.PARTY_EVENTS,
+      category: Category.CAMPING_HIKING,
       productType: ProductType.TENT,
       description: 'Spacious, easy to set up, and ideal for camping in Bangladesh.',
       location: 'Sylhet',
@@ -71,7 +70,7 @@ const FeaturedListings = () => {
       id: '3',
       owner: 'user3',
       title: 'Phoenix Mountain Bicycle',
-      category: Category.SPORTS_FITNESS,
+      category: Category.SPORTS_OUTDOOR,
       productType: ProductType.BICYCLE,
       description: 'Durable, lightweight, and great for city or trail rides.',
       location: 'Chattogram',
