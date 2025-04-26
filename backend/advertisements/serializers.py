@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.contrib.auth.models import User
 from .models import Product, ProductImage, UnavailableDate, PricingTier
 from django.db import transaction
 from .validators import (
@@ -203,6 +204,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
+        print(f"Update method called for product {instance.id}")
         images = validated_data.pop("images", None)
         
         # Process JSON fields directly from request data
@@ -219,6 +221,7 @@ class ProductSerializer(serializers.ModelSerializer):
                 if isinstance(unavailable_dates_str, list):
                     unavailable_dates_str = unavailable_dates_str[0]  # Handle QueryDict lists
                 unavailable_dates = json.loads(unavailable_dates_str)
+                print(f"Parsed {len(unavailable_dates)} unavailable dates")
             except Exception as e:
                 print(f"Error parsing unavailable dates: {str(e)}")
         
@@ -229,6 +232,7 @@ class ProductSerializer(serializers.ModelSerializer):
                 if isinstance(pricing_tiers_str, list):
                     pricing_tiers_str = pricing_tiers_str[0]  # Handle QueryDict lists
                 pricing_tiers = json.loads(pricing_tiers_str)
+                print(f"Parsed {len(pricing_tiers)} pricing tiers")
             except Exception as e:
                 print(f"Error parsing pricing tiers: {str(e)}")
 
@@ -237,6 +241,7 @@ class ProductSerializer(serializers.ModelSerializer):
         instance.save()
 
         if images:
+            ProductImage.objects.filter(product=instance).delete()
             for image in images:
                 ProductImage.objects.create(product=instance, image=image)
 

@@ -46,6 +46,17 @@ class ProductViewSet(viewsets.ModelViewSet):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
     logger = logging.getLogger("product_viewset")
 
+    def get_serializer(self, *args, **kwargs):
+        # Ensure all uploaded images are passed as a list to the serializer
+        if self.request.method in ["POST", "PUT", "PATCH"]:
+            data = kwargs.get('data', None) or self.request.data.copy()
+            if hasattr(self.request, 'FILES'):
+                images = self.request.FILES.getlist('images')
+                if images:
+                    data.setlist('images', images)
+            kwargs['data'] = data
+        return super().get_serializer(*args, **kwargs)
+
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['request'] = self.request
@@ -68,29 +79,23 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        self.logger.info(f"[START] Product create by user {request.user.id}")
-        start = time.monotonic()
         try:
             serializer = self.get_serializer(data=request.data)
+            
             serializer.is_valid(raise_exception=True)
+            
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
-            duration = time.monotonic() - start
-            self.logger.info(f"[END] Product create by user {request.user.id} in {duration:.4f}s")
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         except Exception as e:
-            duration = time.monotonic() - start
-            self.logger.error(f"[EXCEPTION] Product create by user {request.user.id} after {duration:.4f}s: {e}", exc_info=True)
+            print("Error in create:", str(e))
             return Response(
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-        # TODO: Consider offloading heavy post-create tasks to Celery
-
+            
     @transaction.atomic
     def update(self, request, *args, **kwargs):
-        self.logger.info(f"[START] Product update by user {request.user.id}")
-        start = time.monotonic()
         instance = self.get_object()
         partial = kwargs.pop('partial', False)
         serializer = self.get_serializer(
@@ -99,24 +104,24 @@ class ProductViewSet(viewsets.ModelViewSet):
             partial=partial,
             context={'request': request, 'is_update': True}
         )
+        
         try:
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
-            duration = time.monotonic() - start
-            self.logger.info(f"[END] Product update by user {request.user.id} in {duration:.4f}s")
             return Response(serializer.data)
         except ValidationError as e:
-            duration = time.monotonic() - start
-            self.logger.warning(f"[VALIDATION ERROR] Product update by user {request.user.id} after {duration:.4f}s: {e}")
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            duration = time.monotonic() - start
-            self.logger.error(f"[EXCEPTION] Product update by user {request.user.id} after {duration:.4f}s: {e}", exc_info=True)
             return Response(
                 {"error": _("An unexpected error occurred while updating the product")},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-        # TODO: Consider offloading heavy post-update tasks to Celery
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user, status="draft")
+        
+    def perform_update(self, serializer):
+        serializer.save()
 
     @action(detail=True, methods=["patch"])
     def update_status(self, request, pk=None):

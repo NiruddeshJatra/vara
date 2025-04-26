@@ -92,7 +92,7 @@ const Advertisements = () => {
     const initialCategories: AppCategory[] = CATEGORY_VALUES.map((categoryId) => ({
       id: categoryId,
       name: CATEGORY_DISPLAY[categoryId],
-      icon: getCategoryIcon(categoryId),
+      icon: categoryId, // FIX: Use categoryId so CategoryScroll gets correct key
       image: '',
       count: 0 // This will be updated when we get the actual data
     }));

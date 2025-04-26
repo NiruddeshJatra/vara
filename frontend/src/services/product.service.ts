@@ -195,14 +195,11 @@ class ProductService {
 
       // Append images
       if (data.images?.length > 0) {
-        data.images.forEach((image) => {
+        data.images.forEach((image, idx) => {
           if (image instanceof File) {
             formData.append('images', image);
-          } else if (typeof image === 'string') {
-            console.error('Image is a string, not a File object:', image);
-            // Handle this case differently, or skip it
           } else {
-            console.error('Unknown image type:', typeof image, image);
+            console.error(`Image at index ${idx} is not a File:`, image, typeof image);
           }
         });
       }
@@ -228,11 +225,7 @@ class ProductService {
         formData.append('pricing_tiers', JSON.stringify(formattedTiers));
       }
 
-      const response = await api.post<Product>(config.products.createEndpoint, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await api.post<Product>(config.products.createEndpoint, formData);
       
       toast({ 
         title: "Success", 
@@ -274,8 +267,12 @@ class ProductService {
       if (data.ownershipHistory) formData.append('ownership_history', data.ownershipHistory);
 
       if (data.images && data.images.length > 0) {
-        data.images.forEach((image) => {
-          formData.append('images', image);
+        data.images.forEach((image, idx) => {
+          if (image instanceof File) {
+            formData.append('images', image);
+          } else {
+            console.error(`Image at index ${idx} is not a File:`, image, typeof image);
+          }
         });
       }
 
@@ -298,11 +295,7 @@ class ProductService {
         formData.append('pricing_tiers', JSON.stringify(pricingTiers));
       }
 
-      const response = await api.patch(config.products.updateEndpoint(productId), formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },
-      });
+      const response = await api.patch(config.products.updateEndpoint(productId), formData);
       
       toast({ 
         title: "Success", 

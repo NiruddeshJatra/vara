@@ -16,9 +16,6 @@ class ApiService {
     this.api = axios.create({
       baseURL: config.apiUrl,
       withCredentials: true,
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
 
     // Request interceptor for adding authentication token and transforming data
@@ -33,16 +30,24 @@ class ApiService {
           }
         }
 
-        // Transform request data from camelCase to snake_case
-        if (reqConfig.data) {
-          if (reqConfig.data instanceof FormData) {
-            const formData = new FormData();
-            for (const [key, value] of reqConfig.data.entries()) {
-              formData.append(this.transformToSnakeCase(key), value);
+        // Remove Content-Type header if sending FormData
+        if (reqConfig.data instanceof FormData && reqConfig.headers) {
+          delete reqConfig.headers['Content-Type'];
+        }
+
+        // Skip transformation for FormData requests
+        if (!(reqConfig.data instanceof FormData)) {
+          // Transform request data from camelCase to snake_case
+          if (reqConfig.data) {
+            if (reqConfig.data instanceof FormData) {
+              const formData = new FormData();
+              for (const [key, value] of reqConfig.data.entries()) {
+                formData.append(this.transformToSnakeCase(key), value);
+              }
+              reqConfig.data = formData;
+            } else {
+              reqConfig.data = this.transformToSnakeCase(reqConfig.data);
             }
-            reqConfig.data = formData;
-          } else {
-            reqConfig.data = this.transformToSnakeCase(reqConfig.data);
           }
         }
         return reqConfig;

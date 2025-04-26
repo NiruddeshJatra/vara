@@ -28,7 +28,6 @@ class ProductImage(models.Model):
     image = models.ImageField(
         upload_to="product_images/",
         help_text=_("Product image file"),
-        validators=[FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png"])],
         max_length=255,
     )
     created_at = models.DateTimeField(auto_now_add=True)
@@ -171,7 +170,6 @@ class Product(models.Model):
     )
     purchase_year = models.CharField(
         max_length=4,
-        validators=[FileExtensionValidator(["jpg", "jpeg", "png"])],
         help_text=_("Year product was purchased (YYYY)"),
     )
     original_price = models.DecimalField(

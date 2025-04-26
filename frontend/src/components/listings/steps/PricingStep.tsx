@@ -184,7 +184,9 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
                 {typeof tier.price === 'number' && tier.price > 0 && (
                   <div className="mt-1 text-xs text-green-700 flex items-center gap-2">
                     <Calculator className="h-3.5 w-3.5 text-green-600" />
-                    After 20% service fee, you will receive <b>{Math.round(tier.price * 0.8)}</b> Taka {DURATION_UNIT_LABELS[tier.durationUnit as DurationUnit]}
+                    {`After 20% service fee, you will receive`}
+                    <span className="font-bold">{Math.round(tier.price * 0.8)}</span>
+                    {`Taka ${DURATION_UNIT_LABELS[tier.durationUnit as DurationUnit]}`}
                   </div>
                 )}
               </div>

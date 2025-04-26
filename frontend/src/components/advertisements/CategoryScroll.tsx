@@ -1,7 +1,20 @@
 import { useRef, useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Camera, Dumbbell, Tent, Headphones, Smartphone, PartyPopper, Wrench, Car, Bed, Gamepad2, Music, Shirt, Home, Book, MoreHorizontal } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Camera,
+  Dumbbell,
+  Tent,
+  Smartphone,
+  PartyPopper,
+  Wrench,
+  Music,
+  Shirt,
+  MoreHorizontal,
+  Luggage,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { CATEGORY_DISPLAY } from '@/constants/productTypes';
+import { Category } from '@/constants/productTypes';
 
 type Category = {
   id: string;
@@ -17,26 +30,31 @@ type CategoryScrollProps = {
   setSelectedCategory: (id: string | null) => void;
 };
 
-// Map of icon names to Lucide icons
+// Map of icon names to Lucide icons (updated for new categories)
 const getIconComponent = (iconName: string) => {
   const iconMap: Record<string, JSX.Element> = {
-    'camera': <Camera className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'dumbbell': <Dumbbell className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'tent': <Tent className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'headphones': <Headphones className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'smartphone': <Smartphone className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'party-popper': <PartyPopper className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'wrench': <Wrench className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'car': <Car className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'bed': <Bed className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'gamepad-2': <Gamepad2 className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'music': <Music className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'shirt': <Shirt className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'home': <Home className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'book': <Book className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
-    'more-horizontal': <MoreHorizontal className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />
+    // Photography & Videography
+    'photography_videography': <Camera className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    // Sports & Outdoor
+    'sports_outdoor': <Dumbbell className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    // Camping & Hiking
+    'camping_hiking': <Tent className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    // Travel & Luggage
+    'travel_luggage': <Luggage className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    // Event & Party
+    'event_party': <PartyPopper className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    // Fashion & Accessories
+    'fashion_accessories': <Shirt className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    // Electronics
+    'electronics': <Smartphone className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    // Tools & Equipment
+    'tools_equipment': <Wrench className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    // Musical Instruments
+    'musical_instruments': <Music className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
+    // Other
+    'other': <MoreHorizontal className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />,
   };
-  return iconMap[iconName] || <Wrench className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-600" />;
+  return iconMap[iconName] || <MoreHorizontal className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />;
 };
 
 const CategoryScroll = ({
