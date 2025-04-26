@@ -18,11 +18,19 @@ from django.db import transaction
 from rest_framework.exceptions import ValidationError
 import json
 from django.http import HttpResponse
+import logging
+import time
 
 # --- Health check endpoint for AWS Load Balancer ---
 def health_check(request):
     """Simple health check endpoint for AWS Target Group. Always returns 200 OK."""
-    return HttpResponse("OK", status=200)
+    logger = logging.getLogger("health_check")
+    start = time.monotonic()
+    logger.info(f"/health/ endpoint hit from {request.META.get('REMOTE_ADDR')}")
+    resp = HttpResponse("OK", status=200)
+    duration = time.monotonic() - start
+    logger.info(f"/health/ endpoint completed in {duration:.4f}s")
+    return resp
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 20
@@ -36,6 +44,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
     pagination_class = StandardResultsSetPagination
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+    logger = logging.getLogger("product_viewset")
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -59,23 +68,29 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
+        self.logger.info(f"[START] Product create by user {request.user.id}")
+        start = time.monotonic()
         try:
             serializer = self.get_serializer(data=request.data)
-            
             serializer.is_valid(raise_exception=True)
-            
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
+            duration = time.monotonic() - start
+            self.logger.info(f"[END] Product create by user {request.user.id} in {duration:.4f}s")
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         except Exception as e:
-            print("Error in create:", str(e))
+            duration = time.monotonic() - start
+            self.logger.error(f"[EXCEPTION] Product create by user {request.user.id} after {duration:.4f}s: {e}", exc_info=True)
             return Response(
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-            
+        # TODO: Consider offloading heavy post-create tasks to Celery
+
     @transaction.atomic
     def update(self, request, *args, **kwargs):
+        self.logger.info(f"[START] Product update by user {request.user.id}")
+        start = time.monotonic()
         instance = self.get_object()
         partial = kwargs.pop('partial', False)
         serializer = self.get_serializer(
@@ -84,24 +99,24 @@ class ProductViewSet(viewsets.ModelViewSet):
             partial=partial,
             context={'request': request, 'is_update': True}
         )
-        
         try:
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
+            duration = time.monotonic() - start
+            self.logger.info(f"[END] Product update by user {request.user.id} in {duration:.4f}s")
             return Response(serializer.data)
         except ValidationError as e:
+            duration = time.monotonic() - start
+            self.logger.warning(f"[VALIDATION ERROR] Product update by user {request.user.id} after {duration:.4f}s: {e}")
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
+            duration = time.monotonic() - start
+            self.logger.error(f"[EXCEPTION] Product update by user {request.user.id} after {duration:.4f}s: {e}", exc_info=True)
             return Response(
                 {"error": _("An unexpected error occurred while updating the product")},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
-    def perform_create(self, serializer):
-        serializer.save(owner=self.request.user, status="draft")
-        
-    def perform_update(self, serializer):
-        serializer.save()
+        # TODO: Consider offloading heavy post-update tasks to Celery
 
     @action(detail=True, methods=["patch"])
     def update_status(self, request, pk=None):
@@ -123,47 +138,63 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"])
     def upload_image(self, request, pk=None):
+        self.logger.info(f"[START] upload_image for product {pk} by user {request.user.id}")
+        start = time.monotonic()
         product = self.get_object()
         if not request.FILES.get("image"):
+            self.logger.warning(f"No image provided for upload_image by user {request.user.id}")
             return Response(
                 {"error": _("No image provided")}, status=status.HTTP_400_BAD_REQUEST
             )
-
-        # Create image serializer with proper context for absolute URLs
         serializer = ProductImageSerializer(
             data=request.data, 
             context={'request': request}
         )
-        
         if serializer.is_valid():
-            # Explicitly save to product_images related name
             image = serializer.save(product=product)
             product = Product.objects.get(id=product.id)
-            
+            duration = time.monotonic() - start
+            self.logger.info(f"[END] upload_image for product {pk} by user {request.user.id} in {duration:.4f}s")
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        duration = time.monotonic() - start
+        self.logger.warning(f"[VALIDATION ERROR] upload_image for product {pk} by user {request.user.id} after {duration:.4f}s: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # TODO: Consider offloading image processing to Celery
 
     @action(detail=True, methods=["delete"])
     def delete_image(self, request, pk=None):
+        self.logger.info(f"[START] delete_image for product {pk} by user {request.user.id}")
+        start = time.monotonic()
         product = self.get_object()
         image_id = request.data.get("image_id")
-
         if not image_id:
+            self.logger.warning(f"No image_id provided for delete_image by user {request.user.id}")
             return Response(
                 {"error": _("Image ID is required")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
         try:
             image = product.images.get(id=image_id)
             if image.image:
                 default_storage.delete(image.image.path)
             image.delete()
+            duration = time.monotonic() - start
+            self.logger.info(f"[END] delete_image for product {pk} by user {request.user.id} in {duration:.4f}s")
             return Response(status=status.HTTP_204_NO_CONTENT)
         except ProductImage.DoesNotExist:
+            duration = time.monotonic() - start
+            self.logger.warning(f"[NOT FOUND] delete_image for product {pk} by user {request.user.id} after {duration:.4f}s: Image not found")
             return Response(
                 {"error": _("Image not found")}, status=status.HTTP_404_NOT_FOUND
             )
+        except Exception as e:
+            duration = time.monotonic() - start
+            self.logger.error(f"[EXCEPTION] delete_image for product {pk} by user {request.user.id} after {duration:.4f}s: {e}", exc_info=True)
+            return Response(
+                {"error": _("An error occurred while deleting the image")},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        # TODO: Consider offloading file deletion to Celery if storage is slow
 
     @action(detail=True, methods=["get"])
     def availability(self, request, pk=None):

@@ -14,9 +14,8 @@ export const ProfileCompletionButton = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
-
-  // TEMP DEBUG LOGGING
-  console.log('ProfileCompletionButton user:', user, 'profileCompleted:', user?.profileCompleted, typeof user?.profileCompleted);
+  const [isClicked, setIsClicked] = useState(false); // Track click for mobile
+  
   // Don't render if user is not logged in or if profile is complete
   if (!user || user.profileCompleted === true) return null;
 
@@ -26,12 +25,14 @@ export const ProfileCompletionButton = () => {
   return (
     <div className="fixed bottom-8 right-8 z-50">
       <TooltipProvider>
-        <Tooltip open={isHovered} onOpenChange={setIsHovered}>
+        <Tooltip open={isHovered || isClicked} onOpenChange={setIsHovered}>
           <TooltipTrigger asChild>
             <Button
               variant="default"
               size="icon"
               className="h-14 w-14 rounded-full bg-amber-500 hover:bg-amber-600 text-white shadow-lg animate-pulse cursor-pointer"
+              onClick={() => setIsClicked((prev) => !prev)} // Toggle tooltip on click
+              onBlur={() => setIsClicked(false)} // Hide on blur (for accessibility)
             >
               <AlertTriangle className="h-6 w-6" />
             </Button>

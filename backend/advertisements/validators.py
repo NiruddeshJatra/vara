@@ -55,30 +55,44 @@ def validate_original_price(value):
     return value
 
 def validate_pricing_tier(data):
+    # Handle JSON string or list input recursively
     if isinstance(data, str):
         try:
             tiers = json.loads(data)
             if not isinstance(tiers, list):
-                raise ValidationError(_("Expected a JSON array of pricing tiers"))
+                raise serializers.ValidationError(_("Expected a JSON array of pricing tiers"))
             return [validate_pricing_tier(tier) for tier in tiers]
         except json.JSONDecodeError:
-            raise ValidationError(_("Invalid JSON format for pricing tiers"))
-            
+            raise serializers.ValidationError(_("Invalid JSON format for pricing tiers"))
     if isinstance(data, list):
         return [validate_pricing_tier(tier) for tier in data]
-        
-    # Single tier validation
-    if data.get("price", 0) <= 0:
-        raise ValidationError(_("Price must be greater than 0"))
-    if data.get("max_period") is not None and data["max_period"] <= 0:
-        raise ValidationError(_("Max period must be greater than 0"))
-    
-    # Validate duration unit
-    if "duration_unit" not in data:
-        raise ValidationError(_("Duration unit is required"))
-    if data["duration_unit"] not in ["day", "week", "month"]:
-        raise ValidationError(_("Invalid duration unit. Must be day, week, or month"))
-    
+
+    # --- Robust field presence/type checks ---
+    # Validate price
+    price = data.get("price")
+    if price is None:
+        raise serializers.ValidationError(_("Price is required for each pricing tier."))
+    if not isinstance(price, (int, float)):
+        raise serializers.ValidationError(_("Price must be a number."))
+    if price <= 0:
+        raise serializers.ValidationError(_("Price must be greater than 0."))
+
+    # Validate max_period
+    max_period = data.get("max_period")
+    if max_period is None:
+        raise serializers.ValidationError(_("Max period is required for each pricing tier."))
+    if not isinstance(max_period, int):
+        raise serializers.ValidationError(_("Max period must be an integer."))
+    if max_period <= 0:
+        raise serializers.ValidationError(_("Max period must be greater than 0."))
+
+    # Validate duration_unit
+    duration_unit = data.get("duration_unit")
+    if not duration_unit:
+        raise serializers.ValidationError(_("Duration unit is required."))
+    if duration_unit not in ["day", "week", "month"]:
+        raise serializers.ValidationError(_("Invalid duration unit. Must be day, week, or month."))
+
     return data
 
 def validate_unavailable_date(data):
@@ -86,10 +100,10 @@ def validate_unavailable_date(data):
         try:
             dates = json.loads(data)
             if not isinstance(dates, list):
-                raise ValidationError(_("Expected a JSON array of dates"))
+                raise serializers.ValidationError(_("Expected a JSON array of dates"))
             return [validate_unavailable_date(date) for date in dates]
         except json.JSONDecodeError:
-            raise ValidationError(_("Invalid JSON format for unavailable dates"))
+            raise serializers.ValidationError(_("Invalid JSON format for unavailable dates"))
             
     if isinstance(data, list):
         return [validate_unavailable_date(date) for date in data]
@@ -97,14 +111,14 @@ def validate_unavailable_date(data):
     # Single date validation
     if data.get("is_range"):
         if not data.get("range_start") or not data.get("range_end"):
-            raise ValidationError(
+            raise serializers.ValidationError(
                 _("Range start and end dates are required for date ranges")
             )
         if data["range_end"] < data["range_start"]:
-            raise ValidationError(
+            raise serializers.ValidationError(
                 _("End date must be after start date")
             )
     elif not data.get("date"):
-        raise ValidationError(_("Date is required for single dates"))
+        raise serializers.ValidationError(_("Date is required for single dates"))
     
     return data

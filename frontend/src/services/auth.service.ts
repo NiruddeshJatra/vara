@@ -380,12 +380,6 @@ class AuthService {
         }
       });
       
-      // Debug: Print FormData keys and values
-      for (const pair of formData.entries()) {
-        // eslint-disable-next-line no-console
-        console.log(`[completeProfile] FormData: ${pair[0]} =`, pair[1]);
-      }
-      
       const response = await api.post(config.auth.completeProfileEndpoint, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',

@@ -66,6 +66,7 @@ MIDDLEWARE = [
     "users.middleware.SessionManagementMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.cache.FetchFromCacheMiddleware",
+    "bhara.middleware.RequestTimingLoggingMiddleware",
 ]
 
 # CACHES = {
@@ -186,7 +187,6 @@ REST_USE_JWT = True
 CSRF_COOKIE_NAME = "csrftoken"
 CSRF_COOKIE_HTTPONLY = False
 X_FRAME_OPTIONS = "DENY"
-
 
 DATABASES = {
     "default": {

@@ -110,6 +110,7 @@ class CustomRegisterSerializer(serializers.ModelSerializer):
                 'SCHEME': self.context['request'].scheme
             }
         email_start = time.time()
+        print(f"Queuing verification email for user: {user.email} (id={user.id})")
         send_verification_email_task.delay(user.id, request_meta)
         logger.info(f"Email queuing took {time.time() - email_start:.2f}s")
         logger.info(f"Total registration took {time.time() - start_time:.2f}s")

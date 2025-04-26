@@ -92,9 +92,6 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -108,7 +105,7 @@ LOGGING = {
         'file': {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
-            'filename': '/var/log/production.log',
+            'filename': '/tmp/production.log',
             'formatter': 'verbose',
         },
     },

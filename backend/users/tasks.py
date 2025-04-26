@@ -8,6 +8,7 @@ logger = logging.getLogger("celery.unverified_cleanup")
 
 @shared_task
 def send_verification_email_task(user_id, request_meta=None):
+    print(f"Celery: Preparing to send verification email for user_id={user_id}")
     User = get_user_model()
     user = User.objects.get(id=user_id)
     send_verification_email(user, request_meta)
