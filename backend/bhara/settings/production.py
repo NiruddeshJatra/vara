@@ -56,19 +56,46 @@ DATABASES = {
     }
 }
 
-# S3 Storage for static and media files
-AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
-AWS_S3_REGION_NAME = os.environ.get('AWS_REGION', 'us-east-1')
-AWS_S3_CUSTOM_DOMAIN = os.environ.get('CLOUDFRONT_DOMAIN')
+# --- STATIC & MEDIA (RENDER COMPATIBILITY) ---
+# Use S3 for static and media files if AWS env vars are set, else fallback to local (for easier local/CI testing)
+USE_S3 = all([
+    os.environ.get('AWS_ACCESS_KEY_ID'),
+    os.environ.get('AWS_SECRET_ACCESS_KEY'),
+    os.environ.get('AWS_STORAGE_BUCKET_NAME'),
+    os.environ.get('CLOUDFRONT_DOMAIN'),
+])
 
-# Serve static files from /static/ and media files from /media/ on S3
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-DEFAULT_FILE_STORAGE = 'bhara.storage_backends.MediaStorage'
-AWS_LOCATION = 'static'
-STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
-MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+if USE_S3:
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
+    AWS_S3_REGION_NAME = os.environ.get('AWS_REGION', 'us-east-1')
+    AWS_S3_CUSTOM_DOMAIN = os.environ.get('CLOUDFRONT_DOMAIN')
+    AWS_LOCATION = 'static'
+    STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+else:
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+    STATIC_URL = '/static/'
+    MEDIA_URL = '/media/'
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# --- Environment Variable Checks (diagnostic) ---
+for var in [
+    "AWS_ACCESS_KEY_ID",
+    "AWS_SECRET_ACCESS_KEY",
+    "AWS_STORAGE_BUCKET_NAME",
+    "AWS_REGION",
+    "CLOUDFRONT_DOMAIN"
+]:
+    if not os.environ.get(var):
+        print(f"WARNING: Environment variable {var} is NOT SET!", flush=True)
+    else:
+        print(f"{var} is set to: {os.environ.get(var)}", flush=True)
 
 # Email settings for production
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -124,3 +151,21 @@ LOGGING = {
         },
     },
 }
+
+import sys
+LOGGING['handlers']['console'] = {
+    'level': 'DEBUG',
+    'class': 'logging.StreamHandler',
+    'stream': sys.stdout,
+}
+LOGGING['loggers']['django']['handlers'].append('console')
+print("PRODUCTION SETTINGS LOADED: DEFAULT_FILE_STORAGE =", DEFAULT_FILE_STORAGE)
+
+# --- Force Django to use the correct storage backend at runtime (workaround for early import issues) ---
+from django.core.files.storage import default_storage
+from django.utils.module_loading import import_string
+try:
+    default_storage._wrapped = import_string(DEFAULT_FILE_STORAGE)()
+    print("FORCED DEFAULT_FILE_STORAGE:", default_storage.__class__, flush=True)
+except Exception as e:
+    print(f"ERROR forcing DEFAULT_FILE_STORAGE: {e}", flush=True)

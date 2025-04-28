@@ -498,11 +498,19 @@ class PasswordResetConfirmView(APIView):
             
             # Set new password
             user.set_password(new_password1)
+            # Ensure user is active after reset
+            if hasattr(user, "is_active"):
+                user.is_active = True
             user.save()
-            
+
+            # (Optional) Log out all sessions for this user
+            # from django.contrib.auth import logout
+            # logout(request)
+
             return Response({
-                "message": _("Password has been reset successfully")
-            })
+                "message": _("Password has been reset successfully"),
+                "status": "success"
+            }, status=status.HTTP_200_OK)
             
         except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
             return Response(
