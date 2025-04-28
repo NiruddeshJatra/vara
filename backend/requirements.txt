@@ -9,8 +9,6 @@ django-redis==5.4.0
 django-storages==1.14.6
 python-dotenv==1.0.1
 setuptools==75.8.0
-gunicorn==21.2.0
-dj-database-url==2.1.0
 
 # Health Check
 health_check==3.4.1
@@ -44,15 +42,3 @@ drf-yasg==1.21.8
 
 # sqlparse (Django dependency)
 sqlparse==0.5.3
-
-# Celery and related dependencies
-celery==5.5.1
-billiard==4.2.1
-kombu==5.5.3
-vine==5.1.0
-click==8.1.8
-click-didyoumean==0.3.1
-click-plugins==1.1.1
-click-repl==0.3.0
-tzdata==2025.2
-amqp==5.3.1
