@@ -9,6 +9,14 @@ interface ItemDetailsProps {
   securityDeposit?: string;
 }
 
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'BDT',
+    maximumFractionDigits: 0
+  }).format(price);
+};
+
 export default function ItemDetails({
   category,
   productType,
@@ -40,7 +48,7 @@ export default function ItemDetails({
             Security Deposit
           </h4>
           <p className="pl-3 text-green-700 font-medium flex items-center text-sm sm:text-base">
-            ${securityDeposit} <span className="text-xs text-green-600 ml-1">(Refundable)</span>
+            ৳ {formatPrice(Number(securityDeposit))} <span className="text-xs text-green-600 ml-1">(Refundable)</span>
           </p>
         </div>
       </div>

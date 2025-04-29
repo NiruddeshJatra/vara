@@ -123,6 +123,14 @@ class ProductViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save()
 
+    def destroy(self, request, *args, **kwargs):
+        product = self.get_object()
+        if product.owner != request.user:
+            self.logger.warning(f"User {request.user.id} attempted to delete product {product.id} not owned by them.")
+            return Response({"error": "You do not have permission to delete this product."}, status=status.HTTP_403_FORBIDDEN)
+        self.logger.info(f"User {request.user.id} deleting product {product.id}")
+        return super().destroy(request, *args, **kwargs)
+
     @action(detail=True, methods=["patch"])
     def update_status(self, request, pk=None):
         product = self.get_object()

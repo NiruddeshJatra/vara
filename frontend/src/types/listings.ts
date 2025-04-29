@@ -62,6 +62,7 @@ export type ListingFormData = {
     originalPrice: number;
     ownershipHistory: string;
     images: File[];
+    existingImages?: ProductImage[];
     unavailableDates: {
         date: string | null;
         isRange: boolean;

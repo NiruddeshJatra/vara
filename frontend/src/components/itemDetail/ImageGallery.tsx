@@ -145,7 +145,7 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
           <img
             src={images[0]}
             alt={`${title} main`}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain bg-gray-100"
             data-product-image
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -186,7 +186,7 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
           <img
             src={images[0]}
             alt={`${title} main`}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain bg-gray-100"
             data-product-image
             onError={(e) => {
               const target = e.target as HTMLImageElement;

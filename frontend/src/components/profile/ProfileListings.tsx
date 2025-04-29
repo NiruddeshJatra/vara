@@ -9,6 +9,7 @@ import { Product } from '@/types/listings';
 import { Category, CATEGORY_DISPLAY } from '@/constants/productTypes';
 import productService from '@/services/product.service';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { normalizeProductToFormData } from '@/utils/normalizeProductToFormData';
 
 const ProfileListings = () => {
   const navigate = useNavigate();
@@ -71,9 +72,11 @@ const ProfileListings = () => {
 
   // Handle listing edit
   const handleEditListing = (listingId: string) => {
+    const product = listings.find(listing => listing.id === listingId);
+    if (!product) return;
     navigate(`/upload-product/`, {
-      state: { 
-        initialData: listings.find(listing => listing.id === listingId),
+      state: {
+        initialData: normalizeProductToFormData(product),
         isEditing: true,
         productId: listingId
       }

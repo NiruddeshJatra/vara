@@ -35,7 +35,13 @@ const ProfileHeader = ({ userData, isEditing, onEdit }: ProfileHeaderProps) => {
         <div className="relative">
           <Avatar className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full border-4 border-green-100">
             <AvatarImage 
-              src={userData?.profilePicture ? `${process.env.NEXT_PUBLIC_API_URL}${userData.profilePicture}` : '/default-avatar.png'} 
+              src={
+                userData?.profilePicture
+                  ? userData.profilePicture.startsWith('http')
+                    ? userData.profilePicture
+                    : `${process.env.NEXT_PUBLIC_API_URL}${userData.profilePicture}`
+                  : '/default-avatar.png'
+              }
               alt={`${userData?.firstName || ''} ${userData?.lastName || ''}`}
               className="object-cover"
             />

@@ -24,7 +24,7 @@ export default function ProductHistory({
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'BDT',
       maximumFractionDigits: 0
     }).format(price);
   };
@@ -60,7 +60,7 @@ export default function ProductHistory({
               <Banknote className="h-4 w-4 mr-3 text-green-600" />
               Original Price
             </h4>
-            <p className="pl-6 text-green-700 font-medium text-sm sm:text-base">{formatPrice(originalPrice)}</p>
+            <p className="pl-6 text-green-700 font-medium text-sm sm:text-base">৳ {formatPrice(originalPrice)}</p>
           </div>
         )}
         

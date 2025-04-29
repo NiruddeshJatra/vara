@@ -98,7 +98,7 @@ const ItemCard = React.memo(({
         <img
           src={images[currentImageIndex].image}
           alt={product.title || 'Product image'}
-          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+          className="w-full h-full object-contain bg-gray-100 transition-transform duration-300 hover:scale-105"
           onError={handleImageError}
           loading="lazy"
         />
@@ -107,7 +107,7 @@ const ItemCard = React.memo(({
             <img 
               src="https://placehold.co/600x400?text=Image+Not+Available" 
               alt="Error loading image"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
               loading="lazy"
             />
           </div>
@@ -173,7 +173,7 @@ const ItemCard = React.memo(({
 
         <div className="flex justify-between items-center">
           <div className="flex items-center">
-            <Banknote size={14} className="text-green-700 mr-1 sm:h-4 sm:w-4" />
+            <span className="text-green-700 mr-1 font-bold">৳</span>
             <span className="text-sm sm:text-base md:text-lg font-bold text-green-700">
               {product.pricingTiers?.[0]?.price || 0}
             </span>

@@ -106,11 +106,12 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
         <div className="item-modal-flex flex flex-col md:flex-row gap-4 sm:gap-8 md:gap-10">
           <div className="item-modal-image md:w-1/2" ref={leftPanelRef}>
             <div className="relative rounded-lg overflow-hidden">
-              <img 
-                src={selectedItem.images?.[currentImageIndex]?.image || 'https://placehold.co/600x400?text=No+Image'} 
-                alt={selectedItem.title || 'Product image'} 
-                className="w-full h-[160px] sm:h-[200px] md:h-auto object-cover" 
+              <img
+                src={selectedItem.images?.[currentImageIndex]?.image}
+                alt={selectedItem.title || 'Product image'}
+                className="w-full h-72 md:h-96 object-contain bg-gray-100"
                 onError={handleImageError}
+                loading="lazy"
               />
               
               {/* Image navigation controls */}
@@ -157,16 +158,9 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
               <span className="text-xs text-gray-500">({selectedItem.rentalCount || 0} rentals)</span>
               <Badge
                 variant="outline"
-                className="bg-green-50 text-xs sm:text-sm font-medium text-green-700 hover:bg-green-100"
+                className="bg-green-50 text-xs font-medium text-green-700 hover:bg-green-100"
               >
                 {CATEGORY_DISPLAY[selectedItem.category] || selectedItem.category}
-              </Badge>
-              <Badge
-                variant="outline"
-                className="bg-green-50 text-xs sm:text-sm font-medium text-green-700 hover:bg-green-100"
-              >
-                {PRODUCT_TYPE_DISPLAY[selectedItem.productType] ||
-                  selectedItem.productType}
               </Badge>
             </div>
 
@@ -177,7 +171,7 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
                 selectedItem.pricingTiers.map((tier, index) => (
                   <div key={tier.id || index} className="flex justify-between items-center rounded">
                     <div className="flex items-center gap-1">
-                      <Banknote size={16} className="text-green-700" />
+                      <span className="text-green-700 font-bold">৳</span>
                       <div>
                         <span className="text-sm sm:text-lg font-bold text-green-800">{tier.price}</span>
                         <span className="text-xs sm:text-sm text-gray-600 ml-1">per {tier.durationUnit}</span>

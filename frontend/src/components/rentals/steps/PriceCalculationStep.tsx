@@ -4,7 +4,6 @@ import {
   Calculator,
   Clock,
   Shield,
-  BadgePercent,
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
