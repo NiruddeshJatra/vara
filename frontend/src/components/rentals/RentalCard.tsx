@@ -147,7 +147,6 @@ const RentalCard = ({
 
           <div className="flex flex-wrap gap-3 text-sm text-gray-700">
             <span className="bg-green-50 border border-green-100 px-2 py-0.5 rounded text-green-800"><b>Category:</b> {productCategory}</span>
-            <span className="bg-green-50 border border-green-100 px-2 py-0.5 rounded text-green-800"><b>Type:</b> {productType}</span>
           </div>
 
           <div className="flex items-center gap-2 ml-2 text-sm text-gray-600">

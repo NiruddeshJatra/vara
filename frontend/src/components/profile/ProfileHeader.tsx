@@ -39,7 +39,7 @@ const ProfileHeader = ({ userData, isEditing, onEdit }: ProfileHeaderProps) => {
                 userData?.profilePicture
                   ? userData.profilePicture.startsWith('http')
                     ? userData.profilePicture
-                    : `${process.env.NEXT_PUBLIC_API_URL}${userData.profilePicture}`
+                    : `${process.env.NEXT_PUBLIC_MEDIA_BASE_URL}${userData.profilePicture}`
                   : '/default-avatar.png'
               }
               alt={`${userData?.firstName || ''} ${userData?.lastName || ''}`}

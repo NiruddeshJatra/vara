@@ -52,7 +52,6 @@ const ProfileListings = () => {
       await productService.deleteProduct(productToDelete);
       // Fetch fresh listings after deletion
       await fetchListings();
-      setListings(listings.filter(listing => listing.id !== productToDelete));
       toast({
         title: "Success",
         description: "Product deleted successfully.",

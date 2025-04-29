@@ -286,14 +286,17 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """
         Customize the representation of the serialized data.
-        
-        Args:
-            instance: The user instance
-            
-        Returns:
-            The serialized data with additional computed fields
         """
         data = super().to_representation(instance)
+        # Always return profile_picture_url as a relative path if possible
+        if data.get('profile_picture_url'):
+            # Remove domain if present (S3/CloudFront returns absolute URLs)
+            from urllib.parse import urlparse
+            url = data['profile_picture_url']
+            parsed = urlparse(url)
+            if parsed.netloc:
+                # Only keep the path
+                data['profile_picture_url'] = parsed.path
         return data
     
     def update(self, instance, validated_data):
