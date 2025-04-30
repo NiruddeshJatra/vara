@@ -278,30 +278,27 @@ class AuthService {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       // Transform snake_case to camelCase
       const camelCaseData = this.transformToCamelCase(response.data);
-      
-      // Ensure profileCompleted is a boolean
-      const userData = {
+
+      // Ensure profileCompleted is a boolean and proper field names
+      const userData: UserData = {
         ...camelCaseData,
+        phoneNumber: camelCaseData.phoneNumber || camelCaseData.phone,
         profileCompleted: !!camelCaseData.profileCompleted
       };
-      
+
       // Update local storage with new user data
       storage.setUser(userData);
-      
+
       return userData;
     } catch (error: any) {
-      // If there's an auth error, clear everything
       if (error.response?.status === 401) {
         storage.clearAll();
         return null;
       }
-      
-      console.error('Error getting current user:', error);
-      const errorMessage = getErrorMessage(error);
-      throw new Error(errorMessage);
+      throw error;
     }
   }
 
@@ -316,15 +313,11 @@ class AuthService {
       const formData = new FormData();
       Object.entries(data).forEach(([key, value]) => {
         if (value !== null && value !== undefined) {
-          formData.append(key, value); // Use camelCase keys only
+          // Handle the special case for phone number field name
+          const fieldName = key === 'phone' ? 'phoneNumber' : key;
+          formData.append(this.toSnakeCase(fieldName), value);
         }
       });
-
-      // Debug: Print FormData keys and values
-      for (const pair of formData.entries()) {
-        // eslint-disable-next-line no-console
-        console.log(`[updateProfile] FormData: ${pair[0]} =`, pair[1]);
-      }
 
       const response = await api.patch(config.auth.updateEndpoint, formData, {
         headers: {
@@ -339,13 +332,13 @@ class AuthService {
 
       // Transform snake_case to camelCase
       const camelCaseData = this.transformToCamelCase(response.data);
-      
+
       // Ensure profileCompleted is a boolean
-      const userData = {
+      const userData: UserData = {
         ...camelCaseData,
         profileCompleted: !!camelCaseData.profileCompleted
       };
-      
+
       // Update local storage with new user data
       storage.setUser(userData);
 

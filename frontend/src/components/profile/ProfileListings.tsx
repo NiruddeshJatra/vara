@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,34 +10,29 @@ import { Category, CATEGORY_DISPLAY } from '@/constants/productTypes';
 import productService from '@/services/product.service';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { normalizeProductToFormData } from '@/utils/normalizeProductToFormData';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 const ProfileListings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [listings, setListings] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
 
-  const fetchListings = async () => {
-    try {
-      setIsLoading(true);
+  // Use React Query for fetching listings
+  const { 
+    data: listings = [], 
+    isLoading,
+    refetch 
+  } = useQuery({
+    queryKey: ['userProducts'],
+    queryFn: async () => {
       const { products } = await productService.getUserProducts();
-      setListings(products);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch your products. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchListings();
-  }, []);
+      return products;
+    },
+    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+    refetchOnWindowFocus: true
+  });
 
   // Handle listing deletion
   const handleDeleteListing = async (listingId: string) => {
@@ -50,8 +45,10 @@ const ProfileListings = () => {
 
     try {
       await productService.deleteProduct(productToDelete);
-      // Fetch fresh listings after deletion
-      await fetchListings();
+      // Invalidate and refetch queries
+      await queryClient.invalidateQueries({ queryKey: ['userProducts'] });
+      await queryClient.invalidateQueries({ queryKey: ['products'] });
+      
       toast({
         title: "Success",
         description: "Product deleted successfully.",
@@ -73,11 +70,17 @@ const ProfileListings = () => {
   const handleEditListing = (listingId: string) => {
     const product = listings.find(listing => listing.id === listingId);
     if (!product) return;
+    
     navigate(`/upload-product/`, {
       state: {
         initialData: normalizeProductToFormData(product),
         isEditing: true,
-        productId: listingId
+        productId: listingId,
+        onEditComplete: () => {
+          // Invalidate and refetch relevant queries
+          queryClient.invalidateQueries({ queryKey: ['userProducts'] });
+          queryClient.invalidateQueries({ queryKey: ['products'] });
+        }
       }
     });
   };

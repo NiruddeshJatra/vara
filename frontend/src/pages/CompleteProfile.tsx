@@ -16,9 +16,11 @@ import {
   validateNationalId,
 } from "@/utils/validations/auth.validations";
 import authService from "@/services/auth.service";
+import { useQueryClient } from '@tanstack/react-query';
 
 const CompleteProfile = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { updateProfile, loading: authLoading, user, refreshUserData } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<ProfileFormData>({
@@ -167,10 +169,6 @@ const CompleteProfile = () => {
     e.preventDefault();
     if (authLoading) return;
 
-    // Debug: Print formData before sending
-    // eslint-disable-next-line no-console
-    console.log("[CompleteProfile] Submitting formData:", formData);
-
     try {
       // Check token before submission
       const token = localStorage.getItem(config.auth.tokenStorageKey);
@@ -192,10 +190,15 @@ const CompleteProfile = () => {
 
       // Call the dedicated completeProfile service method
       await authService.completeProfile(updatedFormData);
-      // Refresh user data in context after profile completion
+      
+      // Refresh user data in context and invalidate queries
       if (typeof refreshUserData === 'function') {
         await refreshUserData();
+        // Invalidate any queries that might depend on the user's profile status
+        queryClient.invalidateQueries({ queryKey: ['userProducts'] });
+        queryClient.invalidateQueries({ queryKey: ['products'] });
       }
+
       toast({
         title: "Success",
         description: "Profile completed successfully!",

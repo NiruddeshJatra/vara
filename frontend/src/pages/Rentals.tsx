@@ -147,7 +147,7 @@ const Rentals = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 to-white">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 to-white pt-12">
       <NavBar />
 
       <div className="py-6 px-2 sm:px-6 md:px-12 lg:px-20 mt-4 mb-16">

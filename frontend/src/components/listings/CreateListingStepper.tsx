@@ -149,6 +149,12 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
         setProductId(response.id);
         setCurrentStep(6);
       }
+
+      // Call the completion callback if provided
+      if (isEditing && onEditComplete) {
+        onEditComplete();
+      }
+
       toast({
         title: "Success",
         description: isEditing ? "Listing updated successfully!" : "Listing created successfully!",

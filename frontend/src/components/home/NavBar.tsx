@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, User, LogOut, Home, Package, Plus, SlidersHorizontal } from 'lucide-react';
+import { Menu, X, User, LogOut, Home, Package, Plus, SlidersHorizontal, PackageOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -142,6 +142,12 @@ const NavBar = () => {
                     <span>My Rentals</span>
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild className="focus:bg-green-50 focus:text-green-700">
+                  <Link to="/my-listings" className="flex items-center">
+                    <PackageOpen className="mr-2 h-4 w-4 text-green-600" />
+                    <span>My Listings</span>
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-green-100" />
                 <DropdownMenuItem 
                   onClick={handleLogout} 
@@ -196,6 +202,9 @@ const NavBar = () => {
               <>
                 <Link to="/rentals" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2">
                   <Package size={18} /> My Rentals
+                </Link>
+                <Link to="/my-listings" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2">
+                  <PackageOpen size={18} /> My Listings
                 </Link>
                 <Link to="/profile" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2">
                   <User size={18} /> Profile

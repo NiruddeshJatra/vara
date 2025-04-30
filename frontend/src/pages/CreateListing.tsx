@@ -7,12 +7,13 @@ import NavBar from '@/components/home/NavBar';
 import { ListingFormData } from '@/types/listings';
 import { toast } from '@/components/ui/use-toast';
 import productService from '@/services/product.service';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function CreateListingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [showProfileModal, setShowProfileModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!user) {
@@ -30,6 +31,10 @@ export default function CreateListingPage() {
     setIsSubmitting(true);
     try {
       const response = await productService.createProduct(formData);
+      // Invalidate and refetch relevant queries
+      await queryClient.invalidateQueries({ queryKey: ['userProducts'] });
+      await queryClient.invalidateQueries({ queryKey: ['products'] });
+      
       toast({
         title: 'Success',
         description: 'Product created successfully!',

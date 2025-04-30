@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AuthService from '../services/auth.service';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { ProfileUpdateData, UserData } from '../types/auth';
 import config from '../config';
@@ -18,7 +18,7 @@ interface AuthContextType {
   requestPasswordReset: (email: string) => Promise<void>;
   confirmPasswordReset: (uid: string, token: string, newPassword1: string, newPassword2: string) => Promise<void>;
   setUser: React.Dispatch<React.SetStateAction<UserData | null>>;
-  refreshUserData: () => Promise<void>; // New method to force refresh user data
+  refreshUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,7 +48,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
-  const location = useLocation();
 
   // This function forces a refresh of user data from the server
   const refreshUserData = async () => {
@@ -61,10 +60,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         setUser(null);
         setIsAuthenticated(false);
+        clearAuthStorage();
       }
     } catch (error) {
       console.error("Error refreshing user data:", error);
-      // If we can't get fresh data, clear everything to be safe
       setUser(null);
       setIsAuthenticated(false);
       clearAuthStorage();
@@ -76,26 +75,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Initial load of user data
   useEffect(() => {
     refreshUserData();
-  }, []);
+  }, []); // Run once on mount
 
   // Update authentication status when user changes
   useEffect(() => {
-    if (user) {
-      setIsAuthenticated(true);
-    } else {
-      setIsAuthenticated(false);
-    }
+    setIsAuthenticated(!!user);
   }, [user]);
-
-  // Listen for location changes to refresh user data when needed
-  // This helps when navigating between pages or after actions
-  useEffect(() => {
-    // Only refresh if we're already authenticated
-    // This prevents unnecessary API calls when browsing public pages
-    if (isAuthenticated) {
-      refreshUserData();
-    }
-  }, [location.pathname]);
 
   const login = async (email: string, password: string, rememberMe: boolean) => {
     try {
@@ -106,8 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userData = await AuthService.login({ email, password, rememberMe });
       setUser(userData);
       setIsAuthenticated(true);
-      // Always refresh user data after login to ensure latest backend state
-      await refreshUserData();
+      
       toast({
         title: "Success",
         description: "Login successful!",
@@ -132,8 +116,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       await AuthService.register(data);
-      // Always refresh user data after registration to ensure latest backend state
-      await refreshUserData();
       toast({
         title: "Registration Success",
         description: "Registration successful! Please check your email to verify your account.",
@@ -163,20 +145,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     try {
       await AuthService.logout();
-      // Clear React state
       setUser(null);
       setIsAuthenticated(false);
-      
-      // Clear all storage
       clearAuthStorage();
-      
       toast({
         title: "Success",
         description: "Logged out successfully",
         variant: "default"
       });
-      
-      // Navigate to login page
       navigate('/auth/login/', { replace: true });
     } catch (error) {
       console.error('Logout error:', error);
@@ -185,13 +161,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: "Failed to log out. Please try again.",
         variant: "destructive"
       });
-      
-      // Clear local state and storage even if logout fails
       setUser(null);
       setIsAuthenticated(false);
       clearAuthStorage();
-      
-      // Navigate to login page with error state
       navigate('/auth/login/', { replace: true, state: { error: true } });
     }
   };
@@ -226,14 +198,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('No response received from profile update');
       }
       
-      // Update local storage with fresh data
-      localStorage.setItem(config.auth.userStorageKey, JSON.stringify(response));
-      
-      // Always update user state with fresh data
+      // Update user state with fresh data
       setUser(response);
-      
-      // Force refresh of data
-      await refreshUserData();
       
       return response;
     } catch (error) {
@@ -302,7 +268,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     requestPasswordReset,
     confirmPasswordReset,
     setUser,
-    refreshUserData // Expose the refresh function
+    refreshUserData
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

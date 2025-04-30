@@ -28,6 +28,7 @@ import VerifyEmailNotice from "./pages/VerifyEmailNotice";
 import EmailVerification from "./pages/EmailVerification";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import MyListings from "./pages/MyListings";
 
 const queryClient = new QueryClient();
 
@@ -114,6 +115,14 @@ const App = () => {
                 element={
                   <ProtectedRoute>
                     <CompleteProfile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/my-listings"
+                element={
+                  <ProtectedRoute requireCompleteProfile>
+                    <MyListings />
                   </ProtectedRoute>
                 }
               />

@@ -63,9 +63,12 @@ const Advertisements = () => {
   } = useQuery<{ products: Product[]; count: number }, Error>({
     queryKey: ['products', page, selectedCategory, debouncedSearchTerm, priceRange, availability],
     queryFn: async () => {
-      // You can add filters here as needed
       return await productService.getActiveProducts(page, PAGE_SIZE);
-    }
+    },
+    // Add staleTime and refetch on window focus
+    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+    refetchOnWindowFocus: true,
+    refetchOnMount: true
   });
 
   useEffect(() => {

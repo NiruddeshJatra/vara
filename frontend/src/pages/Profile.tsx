@@ -1,49 +1,23 @@
 import { useState, useEffect } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileInformation from "@/components/profile/ProfileInformation";
 import NavBar from "@/components/home/NavBar";
 import Footer from "@/components/home/Footer";
-import ProfileListings from "@/components/profile/ProfileListings";
 import { useAuth } from "@/contexts/AuthContext";
-import AuthService from "@/services/auth.service";
 import { ProfileUpdateData } from "@/types/auth";
 
 const Profile = () => {
   const { toast } = useToast();
-  const { user, isAuthenticated, setUser } = useAuth();
+  const { user, isAuthenticated, setUser, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [profilePictureFile, setProfilePictureFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
 
-  const refreshUserData = async () => {
-    try {
-      const currentUser = await AuthService.getCurrentUser();
-      if (currentUser) {
-        setUser(currentUser);
-      }
-    } catch (error) {
-      console.error('Error refreshing user data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to refresh profile data",
-        variant: "destructive"
-      });
-    }
-  };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      await refreshUserData();
-      setIsLoading(false);
-    };
-
-    fetchData();
-  }, []); // Empty dependency array to run only once on mount
+  // No need for separate refreshProfile function since we're using context
 
   if (!isAuthenticated) {
     return (
@@ -54,7 +28,7 @@ const Profile = () => {
           </h2>
           <button
             onClick={() => window.location.href = "/auth/login/"}
-            className="bg-green-600 hover:bg-green-700 text-white"
+            className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded"
           >
             Login
           </button>
@@ -63,7 +37,7 @@ const Profile = () => {
     );
   }
 
-  if (isLoading) {
+  if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse">
@@ -76,8 +50,8 @@ const Profile = () => {
 
   const handleEditProfile = () => {
     setIsEditing(true);
-    // Reset the profile picture state
     setProfilePictureFile(null);
+    setPreviewUrl(null);
     toast({
       title: "Edit mode activated",
       description: "You can now edit your profile information",
@@ -88,7 +62,8 @@ const Profile = () => {
 
   const handleSaveChanges = async () => {
     try {
-      // Create a ProfileUpdateData object with all fields
+      setIsLoading(true);
+      
       const updateData: ProfileUpdateData = {
         firstName: user.firstName,
         lastName: user.lastName,
@@ -100,18 +75,13 @@ const Profile = () => {
         profilePicture: profilePictureFile
       };
 
-      const response = await AuthService.updateProfile(updateData);
+      // Use the context's updateProfile which handles the update and state management
+      const updatedUser = await updateProfile(updateData);
       
-      // Update the user state with the new data
-      setUser(response);
+      // Update the local user state with the response
+      setUser(updatedUser);
       
-      // Force a refresh of the data
-      const freshUser = await AuthService.getCurrentUser();
-      if (freshUser) {
-        setUser(freshUser);
-      }
-      
-      // Reset edit mode
+      // Reset edit mode and files
       setIsEditing(false);
       setProfilePictureFile(null);
       setPreviewUrl(null);
@@ -119,6 +89,7 @@ const Profile = () => {
       toast({
         title: "Success",
         description: "Profile updated successfully",
+        variant: "default"
       });
     } catch (error) {
       console.error('Error saving profile:', error);
@@ -127,24 +98,22 @@ const Profile = () => {
         description: error instanceof Error ? error.message : "Failed to update profile",
         variant: "destructive"
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleInputChange = (field: keyof typeof user, value: string) => {
-    if (isEditing && user[field] !== value) {
-      // Create a copy of the user object and update the field
-      const updatedUser = { ...user, [field]: value };
-      setUser(updatedUser);
+    if (isEditing && user && user[field] !== value) {
+      setUser(prev => prev ? { ...prev, [field]: value } : null);
     }
   };
 
   const handleCancelEdit = () => {
-    // Reset the user state to the original values
-    const originalUser = { ...user };
-    setUser(originalUser);
     setIsEditing(false);
     setProfilePictureFile(null);
     setPreviewUrl(null);
+    // No need to refresh, just use the original user data from context
     toast({
       title: "Changes discarded",
       description: "Your profile was not updated",
@@ -159,7 +128,7 @@ const Profile = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         if (typeof reader.result === "string") {
-          setPreviewUrl(reader.result as string);
+          setPreviewUrl(reader.result);
         }
       };
       reader.readAsDataURL(file);
@@ -179,23 +148,6 @@ const Profile = () => {
         </div>
         <div className="max-w-7xl mx-auto px-6 sm:px-8 md:px-12 lg:px-16 pb-16">
           <Tabs defaultValue="profile" value={activeTab} onValueChange={setActiveTab} className="mt-8">
-            <div className="border-b border-green-100">
-              <TabsList className="bg-green-100 p-1 rounded-t-lg">
-                <TabsTrigger
-                  value="profile"
-                  className="data-[state=active]:bg-white data-[state=active]:text-green-800 data-[state=active]:shadow-sm text-green-700"
-                >
-                  Profile
-                </TabsTrigger>
-                <TabsTrigger
-                  value="listings"
-                  className="data-[state=active]:bg-white data-[state=active]:text-green-800 data-[state=active]:shadow-sm text-green-700"
-                >
-                  My Listings
-                </TabsTrigger>
-              </TabsList>
-            </div>
-
             <TabsContent value="profile" className="pt-6">
               <ProfileInformation
                 userData={user}
@@ -205,10 +157,6 @@ const Profile = () => {
                 onInputChange={handleInputChange}
                 onProfilePictureUpload={handleProfilePictureUpload}
               />
-            </TabsContent>
-            
-            <TabsContent value="listings">
-              <ProfileListings />
             </TabsContent>
           </Tabs>
         </div>

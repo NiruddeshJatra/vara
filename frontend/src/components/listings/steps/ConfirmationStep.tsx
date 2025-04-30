@@ -161,7 +161,7 @@ const ConfirmationStep = ({ formData, onEdit, isEditing = false, productId }: Pr
           Edit Again
         </Button>
         <Button
-          onClick={() => navigate('/profile')}
+          onClick={() => navigate('/my-listings')}
           className="w-full bg-green-600 hover:bg-green-700"
         >
           View My Listings
