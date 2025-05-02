@@ -71,16 +71,11 @@ const ProfileListings = () => {
     const product = listings.find(listing => listing.id === listingId);
     if (!product) return;
     
-    navigate(`/upload-product/`, {
+    navigate('/upload-product', {
       state: {
         initialData: normalizeProductToFormData(product),
         isEditing: true,
-        productId: listingId,
-        onEditComplete: () => {
-          // Invalidate and refetch relevant queries
-          queryClient.invalidateQueries({ queryKey: ['userProducts'] });
-          queryClient.invalidateQueries({ queryKey: ['products'] });
-        }
+        productId: listingId
       }
     });
   };

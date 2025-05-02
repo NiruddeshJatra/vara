@@ -38,14 +38,10 @@ interface Props {
 const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false, productId: initialProductId, onSubmit, onEditComplete }: Props) => {
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
-  const [isEditing, setIsEditing] = useState(initialIsEditing);
-  const [productId, setProductId] = useState(initialProductId);
+  const [isEditing, setIsEditing] = useState(initialIsEditing || location.state?.isEditing || false);
+  const [productId, setProductId] = useState(initialProductId || location.state?.productId || null);
   const [formData, setFormData] = useState<ListingFormData>(() => {
-    if (location.state?.initialData) {
-      return location.state.initialData;
-    }
-    
-    return initialData || {
+    return location.state?.initialData || initialData || {
       title: '',
       category: Category.PHOTOGRAPHY_VIDEOGRAPHY,
       productType: ProductType.CAMERA,
