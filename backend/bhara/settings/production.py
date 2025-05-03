@@ -11,7 +11,7 @@ DEBUG = False
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
 # Security settings
-SECURE_SSL_REDIRECT = False
+SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
@@ -19,6 +19,7 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 
 CSRF_TRUSTED_ORIGINS = [
     "https://bhara.xyz",
+    "https://*.bhara.xyz",
     "https://www.bhara.xyz",
     "https://api.bhara.xyz",
 ]
@@ -29,9 +30,16 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "https://bhara.xyz",
     "https://www.bhara.xyz",
-    "https://api.bhara.xyz",
+    "https://api.bhara.xyz"
 ]
-CORS_ALLOW_METHODS = ["DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT"]
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT"
+]
 CORS_ALLOW_HEADERS = [
     "accept",
     "accept-encoding",
@@ -42,7 +50,16 @@ CORS_ALLOW_HEADERS = [
     "user-agent",
     "x-csrftoken",
     "x-requested-with",
+    "x-http-method-override",
+    "pragma",
+    "cache-control",
+    "expires"
 ]
+
+# Additional security headers
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
 
 # Database configuration
 DATABASES = {

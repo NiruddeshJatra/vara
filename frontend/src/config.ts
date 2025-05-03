@@ -1,11 +1,11 @@
 // Application configuration
 const config = {
   // API endpoint (for regular API calls)
-  apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8000',
-  baseUrl: import.meta.env.VITE_BASE_URL || 'http://localhost:8000',
+  apiUrl: import.meta.env.VITE_API_URL || 'https://api.bhara.xyz',
+  baseUrl: import.meta.env.VITE_BASE_URL || 'https://api.bhara.xyz',
   
   // Development mode (set to false in production)
-  isDevelopment: true,
+  isDevelopment: false,
   
   // Authentication settings
   auth: {

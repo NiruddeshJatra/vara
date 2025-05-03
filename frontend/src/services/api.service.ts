@@ -16,6 +16,12 @@ class ApiService {
     this.api = axios.create({
       baseURL: config.apiUrl,
       withCredentials: true,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
     });
 
     // Request interceptor for adding authentication token and transforming data
@@ -30,6 +36,14 @@ class ApiService {
           }
         }
 
+        // Add timestamp to GET requests to prevent caching
+        if (reqConfig.method?.toLowerCase() === 'get') {
+          reqConfig.params = {
+            ...reqConfig.params,
+            _t: new Date().getTime()
+          };
+        }
+
         // Remove Content-Type header if sending FormData
         if (reqConfig.data instanceof FormData && reqConfig.headers) {
           delete reqConfig.headers['Content-Type'];
@@ -39,15 +53,7 @@ class ApiService {
         if (!(reqConfig.data instanceof FormData)) {
           // Transform request data from camelCase to snake_case
           if (reqConfig.data) {
-            if (reqConfig.data instanceof FormData) {
-              const formData = new FormData();
-              for (const [key, value] of reqConfig.data.entries()) {
-                formData.append(this.transformToSnakeCase(key), value);
-              }
-              reqConfig.data = formData;
-            } else {
-              reqConfig.data = this.transformToSnakeCase(reqConfig.data);
-            }
+            reqConfig.data = this.transformToSnakeCase(reqConfig.data);
           }
         }
         return reqConfig;

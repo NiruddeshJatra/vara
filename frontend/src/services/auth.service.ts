@@ -3,22 +3,42 @@ import config from '../config';
 import { toast } from '@/components/ui/use-toast';
 import { RegistrationData, ProfileUpdateData, LoginData, UserData } from '../types/auth';
 
-// Create a separate axios instance for auth endpoints (which don't use the /api prefix)
+// Create a separate axios instance for auth endpoints
 const authApi = axios.create({
   baseURL: config.apiUrl,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache',
+    'Expires': '0',
   },
 });
 
-// Create a separate axios instance for API endpoints (which use the /api prefix)
+// Create a separate axios instance for API endpoints
 const api = axios.create({
   baseURL: config.apiUrl,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache',
+    'Expires': '0',
   },
+});
+
+// Add request interceptor to both instances to handle auth token
+[authApi, api].forEach(instance => {
+  instance.interceptors.request.use(
+    config => {
+      const token = storage.getToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    error => Promise.reject(error)
+  );
 });
 
 // Helper function to consistently manage storage
@@ -62,12 +82,6 @@ authApi.interceptors.request.use(request => {
     request.headers['X-CSRFToken'] = csrfToken;
   }
 
-  // Add authentication token if available - using our storage helper
-  const token = storage.getToken();
-  if (token && request.headers) {
-    request.headers['Authorization'] = `Bearer ${token}`;
-  }
-
   return request;
 });
 
@@ -80,17 +94,6 @@ authApi.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-// Add request interceptor to include authentication token
-api.interceptors.request.use(request => {
-  // Add authentication token if available - using our storage helper
-  const token = storage.getToken();
-  if (token && request.headers) {
-    request.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return request;
-});
 
 // Add response interceptor for token refresh
 api.interceptors.response.use(
