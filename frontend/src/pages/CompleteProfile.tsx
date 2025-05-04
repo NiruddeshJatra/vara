@@ -35,6 +35,7 @@ const CompleteProfile = () => {
   });
   const [errors, setErrors] = useState<ProfileFormErrors>({});
   const [isCheckingId, setIsCheckingId] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Redirect if profile is already complete
   useEffect(() => {
@@ -170,6 +171,7 @@ const CompleteProfile = () => {
     if (authLoading) return;
 
     try {
+      setIsSubmitting(true);
       // Check token before submission
       const token = localStorage.getItem(config.auth.tokenStorageKey);
       if (!token) {
@@ -228,10 +230,12 @@ const CompleteProfile = () => {
       }
       // Handle other errors
       toast({
-        title: "Validation Error",
+        title: "Error",
         description: error.message || "Failed to complete profile",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -322,7 +326,7 @@ const CompleteProfile = () => {
                   onFileUpload={handleFileUpload}
                   onNext={handleNextStep}
                   onPrev={handlePrevStep}
-                  loading={authLoading || isCheckingId}
+                  loading={authLoading || isCheckingId || isSubmitting}
                 />
               )}
             </form>

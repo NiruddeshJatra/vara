@@ -3,6 +3,8 @@ import { RentalStatus } from '../constants/rental';
 import { RentalRequest, RentalRequestFormData } from '../types/rentals';
 import config from '../config';
 import { toast } from '@/components/ui/use-toast';
+import { queryClient } from '../lib/react-query';
+import { invalidateRentals } from '../lib/query-invalidation';
 
 /**
  * Service for handling rental-related operations
@@ -29,6 +31,12 @@ class RentalService {
       };
 
       const response = await api.post(config.rentals.createEndpoint, rentalData);
+      
+      // Invalidate relevant rental queries
+      invalidateRentals();
+      // Invalidate product queries since rental affects availability
+      queryClient.invalidateQueries({ queryKey: ['product', productId] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
       
       toast({ 
         title: "Rental Request Created", 
@@ -132,6 +140,13 @@ class RentalService {
       const response = await api.post(endpoint, {
         reason: status === RentalStatus.REJECTED ? 'No reason provided' : undefined
       });
+      
+      // Invalidate rental queries
+      invalidateRentals();
+      queryClient.invalidateQueries({ queryKey: ['rental', requestId] });
+      
+      // Update the cache with the new rental data
+      queryClient.setQueryData(['rental', requestId], response.data);
       
       const statusMessages = {
         [RentalStatus.APPROVED]: "Rental request approved",
@@ -267,6 +282,9 @@ class RentalService {
         }
       });
       
+      // Invalidate rental photos query
+      queryClient.invalidateQueries({ queryKey: ['rental', rentalId, 'photos'] });
+      
       toast({ 
         title: "Photo Uploaded", 
         description: "Rental photo uploaded successfully" 
@@ -280,20 +298,6 @@ class RentalService {
         variant: "destructive" 
       });
       throw new Error('Failed to upload rental photo');
-    }
-  }
-
-  private async getProduct(productId: string): Promise<any> {
-    try {
-      const response = await api.get(config.products.detailEndpoint(productId));
-      return response.data;
-    } catch (error) {
-      toast({ 
-        title: "Fetch Failed", 
-        description: "Failed to fetch product details", 
-        variant: "destructive" 
-      });
-      throw new Error('Failed to fetch product');
     }
   }
 }

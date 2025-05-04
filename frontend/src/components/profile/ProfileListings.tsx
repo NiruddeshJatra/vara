@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, Eye, Banknote, Star } from 'lucide-react';
+import { Edit, Trash2, Eye, Banknote, Star, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Product } from '@/types/listings';
 import { Category, CATEGORY_DISPLAY } from '@/constants/productTypes';
 import productService from '@/services/product.service';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { normalizeProductToFormData } from '@/utils/normalizeProductToFormData';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const ProfileListings = () => {
   const navigate = useNavigate();
@@ -19,55 +19,51 @@ const ProfileListings = () => {
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
 
-  // Use React Query for fetching listings
-  const { 
-    data: listings = [], 
-    isLoading,
-    refetch 
-  } = useQuery({
+  // Fetch user's listings using React Query
+  const { data: listings = [], isLoading, error } = useQuery({
     queryKey: ['userProducts'],
     queryFn: async () => {
-      const { products } = await productService.getUserProducts();
-      return products;
-    },
-    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
-    refetchOnWindowFocus: true
+      const result = await productService.getUserProducts();
+      return result.products;
+    }
   });
 
-  // Handle listing deletion
-  const handleDeleteListing = async (listingId: string) => {
-    setProductToDelete(listingId);
-    setDeleteConfirmationOpen(true);
-  };
+  // Delete product mutation
+  const deleteMutation = useMutation({
+    mutationFn: (productId: string) => productService.deleteProduct(productId),
+    onSuccess: (_, productId) => {
+// Optimistically remove the product from the cache
+      queryClient.setQueryData(['userProducts'], (old: any) => ({
+        ...old,
+        products: old.products.filter((product: Product) => product.id !== productId)
+      }));
 
-  const confirmDelete = async () => {
-    if (!productToDelete) return;
+      // Invalidate related queries
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.removeQueries({ queryKey: ['product', productId] });
 
-    try {
-      await productService.deleteProduct(productToDelete);
-      // Invalidate and refetch queries
-      await queryClient.invalidateQueries({ queryKey: ['userProducts'] });
-      await queryClient.invalidateQueries({ queryKey: ['products'] });
+      setDeleteConfirmationOpen(false);
+      setProductToDelete(null);
       
       toast({
         title: "Success",
         description: "Product deleted successfully.",
-        variant: "default"
-      });
-    } catch (error) {
+   variant: "default"
+});
+      // Close the confirmation dialog
+      setDeleteConfirmationOpen(false);
+      setProductToDelete(null);
+},
+    onError: (error) => {
       toast({
         title: "Error",
         description: "Failed to delete product. Please try again.",
         variant: "destructive"
       });
-    } finally {
-      setDeleteConfirmationOpen(false);
-      setProductToDelete(null);
     }
-  };
+  });
 
-  // Handle listing edit
-  const handleEditListing = (listingId: string) => {
+    const handleEditListing = (listingId: string) => {
     const product = listings.find(listing => listing.id === listingId);
     if (!product) return;
     
@@ -85,8 +81,37 @@ const ProfileListings = () => {
     navigate(`/items/${listingId}`);
   };
 
+  const handleDeleteListing = (productId: string) => {
+    setProductToDelete(productId);
+    setDeleteConfirmationOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (productToDelete) {
+      deleteMutation.mutate(productToDelete);
+    }
+  };
+
   if (isLoading) {
-    return <div>Loading products...</div>;
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-green-600" />
+          <p className="text-gray-600">Loading products...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <h3 className="text-lg font-medium text-red-600">Error Loading Products</h3>
+        <p className="mt-2 text-sm text-gray-500">
+          Failed to load your products. Please try again later.
+        </p>
+      </div>
+    );
   }
 
   if (listings.length === 0) {
@@ -99,8 +124,16 @@ const ProfileListings = () => {
         <Button
           className="mt-4 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full shadow-md font-semibold text-sm sm:text-base transition-all duration-200"
           onClick={() => navigate('/upload-product/')}
+          disabled={isLoading}
         >
-          Upload Your First Product
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              Processing...
+            </>
+          ) : (
+            'Upload Your First Product'
+          )}
         </Button>
       </div>
     );
@@ -113,20 +146,16 @@ const ProfileListings = () => {
           <Card key={listing.id} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
             <div className="relative h-60 overflow-hidden">
               <img
-                src={listing.images[0]?.image || '/images/placeholder-image.jpg'}
+                src={listing.images?.[0]?.image || '/images/placeholder-image.jpg'}
                 alt={listing.title}
-                className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/images/placeholder-image.jpg';
-                }}
+                className="w-full h-full object-cover"
               />
               <Badge variant="secondary" className="absolute top-2 left-2 bg-white/90 text-green-800">
                 {CATEGORY_DISPLAY[listing.category as keyof typeof CATEGORY_DISPLAY]}
               </Badge>
             </div>
-            
-            <CardHeader className="p-4">
+
+<CardHeader className="p-4">
               <CardTitle className="text-lg font-semibold text-gray-800 line-clamp-1">{listing.title}</CardTitle>
               <div className="flex items-center gap-2 mt-2">
                 <div className="flex items-center text-yellow-500">
@@ -163,9 +192,10 @@ const ProfileListings = () => {
                 size="sm"
                 className="text-green-700 border-green-200 hover:bg-green-100 hover:text-green-700"
                 onClick={() => handleViewListing(listing.id)}
+                disabled={deleteMutation.isPending}
               >
                 <Eye className="w-4 h-4 mr-2" />
-                View
+                {deleteMutation.isPending ? 'Please wait...' : 'View'}
               </Button>
               <div className="flex gap-2">
                 <Button
@@ -173,18 +203,28 @@ const ProfileListings = () => {
                   size="sm"
                   className="text-green-700 border-green-200 hover:bg-green-100 hover:text-green-700"
                   onClick={() => handleEditListing(listing.id)}
+                  disabled={deleteMutation.isPending}
                 >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit
+                  {deleteMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Edit className="w-4 h-4 mr-2" />
+                  )}
+                  {deleteMutation.isPending ? 'Processing...' : 'Edit'}
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   className="text-red-500 border-red-200 hover:bg-red-100 hover:text-red-600"
                   onClick={() => handleDeleteListing(listing.id)}
+                  disabled={deleteMutation.isPending && productToDelete === listing.id}
                 >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
+                  {deleteMutation.isPending && productToDelete === listing.id ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-4 w-4 mr-1" />
+                  )}
+                  {deleteMutation.isPending && productToDelete === listing.id ? 'Deleting...' : 'Delete'}
                 </Button>
               </div>
             </CardFooter>
@@ -201,11 +241,26 @@ const ProfileListings = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-4 mt-4">
-            <Button variant="outline" onClick={() => setDeleteConfirmationOpen(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => setDeleteConfirmationOpen(false)}
+              disabled={deleteMutation.isPending}
+            >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={confirmDelete}>
-              Delete
+            <Button 
+              variant="destructive" 
+              onClick={confirmDelete}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete'
+              )}
             </Button>
           </div>
         </DialogContent>

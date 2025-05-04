@@ -1,37 +1,38 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import NavBar from '@/components/home/NavBar';
 import Footer from '@/components/home/Footer';
 import ProfileListings from '@/components/profile/ProfileListings';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
 import { ProfileCompletionModal } from '@/components/common/ProfileCompletionModal';
 
 export default function MyListingsPage() {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/auth/login');
-      return;
-    }
+  // Handle authentication
+  if (!isAuthenticated) {
+    navigate('/auth/login');
+    return null;
+  }
 
-    if (!user?.profileCompleted) {
-      navigate('/auth/complete-profile');
-      return;
-    }
-  }, [isAuthenticated, user, navigate]);
+  if (!user?.profileCompleted) {
+    navigate('/auth/complete-profile');
+    return null;
+  }
 
   const handleUploadProduct = () => {
     if (!user?.profileCompleted) {
       setShowProfileModal(true);
       return;
     }
-    navigate('/upload-product');
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      navigate('/upload-product');
+    }, 2000); // Simulate loading
   };
 
   return (
@@ -40,18 +41,26 @@ export default function MyListingsPage() {
       <div className="pt-20 pb-16">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 md:px-12 lg:px-16">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-green-800">My Listings</h1>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-green-800">My Listings</h1>
+              <p className="text-gray-600 text-sm sm:text-base mt-1">
+                Manage your listed products
+              </p>
+            </div>
           </div>
+
           <ProfileListings />
         </div>
       </div>
-      <Footer />
+
       <ProfileCompletionModal 
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
         title="Complete Your Profile"
-        description="You need to complete your profile before you can upload products."
+        description="Please complete your profile before uploading products."
       />
+
+      <Footer />
     </div>
   );
 }

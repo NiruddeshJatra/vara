@@ -18,9 +18,6 @@ class ApiService {
       withCredentials: true,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
-        'Expires': '0',
       },
     });
 
@@ -34,14 +31,6 @@ class ApiService {
           } else {
             reqConfig.headers["Authorization"] = `Bearer ${token}`;
           }
-        }
-
-        // Add timestamp to GET requests to prevent caching
-        if (reqConfig.method?.toLowerCase() === 'get') {
-          reqConfig.params = {
-            ...reqConfig.params,
-            _t: new Date().getTime()
-          };
         }
 
         // Remove Content-Type header if sending FormData

@@ -2,6 +2,8 @@ import axios from 'axios';
 import config from '../config';
 import { toast } from '@/components/ui/use-toast';
 import { RegistrationData, ProfileUpdateData, LoginData, UserData } from '../types/auth';
+import { queryClient } from '../lib/react-query';
+import { invalidateAfterProfileUpdate } from '../lib/query-invalidation';
 
 // Create a separate axios instance for auth endpoints
 const authApi = axios.create({
@@ -9,9 +11,6 @@ const authApi = axios.create({
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-    'Cache-Control': 'no-cache',
-    'Pragma': 'no-cache',
-    'Expires': '0',
   },
 });
 
@@ -21,9 +20,6 @@ const api = axios.create({
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-    'Cache-Control': 'no-cache',
-    'Pragma': 'no-cache',
-    'Expires': '0',
   },
 });
 
@@ -62,6 +58,9 @@ const storage = {
     sessionStorage.removeItem(config.auth.tokenStorageKey);
     sessionStorage.removeItem(config.auth.refreshTokenStorageKey);
     sessionStorage.removeItem(config.auth.userStorageKey);
+    
+    // Also clear React Query cache
+    queryClient.clear();
   }
 };
 
@@ -344,6 +343,9 @@ class AuthService {
 
       // Update local storage with new user data
       storage.setUser(userData);
+      
+      // Invalidate all related data after profile update
+      invalidateAfterProfileUpdate();
 
       return userData;
     } catch (error: any) {
@@ -398,6 +400,9 @@ class AuthService {
       
       // Update local storage with new user data
       storage.setUser(userData);
+      
+      // Invalidate all related data after profile completion
+      invalidateAfterProfileUpdate();
       
       return userData;
     } catch (error: any) {

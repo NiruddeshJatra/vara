@@ -209,7 +209,7 @@ const NationalIdStep = ({ profileFormData, errors, onChange, onFileUpload, onNex
               </div>
             ) : (
               <div className="flex items-center justify-center">
-                Next <ChevronRight className="ml-2 h-4 w-4" />
+                Submit <ChevronRight className="ml-2 h-4 w-4" />
               </div>
             )}
           </Button>

@@ -3,6 +3,7 @@ import { ProductStatus } from '../constants/productStatus';
 import { Product, ListingFormData } from '../types/listings';
 import config from '../config';
 import { toast } from '@/components/ui/use-toast';
+import { queryClient } from '../lib/react-query';
 
 interface ProductResponse {
   data: any;
@@ -227,6 +228,10 @@ class ProductService {
 
       const response = await api.post<Product>(config.products.createEndpoint, formData);
       
+      // Invalidate related queries
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['userProducts'] });
+      
       toast({ 
         title: "Success", 
         description: "Product created successfully", 
@@ -297,6 +302,11 @@ class ProductService {
 
       const response = await api.patch(config.products.updateEndpoint(productId), formData);
       
+      // Invalidate specific product and related queries
+      queryClient.invalidateQueries({ queryKey: ['product', productId] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['userProducts'] });
+      
       toast({ 
         title: "Success", 
         description: "Product updated successfully", 
@@ -329,11 +339,14 @@ class ProductService {
    */
   async deleteProduct(productId: string): Promise<void> {
     try {
-      // First, fetch the product to get its related data
-      const product = await this.getProduct(productId);
-      
       // Delete the product
       await api.delete(config.products.deleteEndpoint(productId));
+      
+      // Invalidate related queries
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['userProducts'] });
+      // Remove specific product from cache
+      queryClient.removeQueries({ queryKey: ['product', productId] });
       
       toast({ 
         title: "Success", 
@@ -365,6 +378,9 @@ class ProductService {
         },
       });
       
+      // Invalidate the specific product to reflect the new image
+      queryClient.invalidateQueries({ queryKey: ['product', productId] });
+      
       toast({ 
         title: "Success", 
         description: "Image uploaded successfully", 
@@ -391,6 +407,9 @@ class ProductService {
       await api.delete(`${config.products.detailEndpoint(productId)}/delete_image/`, {
         data: { image_id: imageId }
       });
+      
+      // Invalidate the specific product to reflect the deleted image
+      queryClient.invalidateQueries({ queryKey: ['product', productId] });
       
       toast({ 
         title: "Success", 
@@ -476,6 +495,11 @@ class ProductService {
     try {
       const response = await api.post(config.products.submitForReviewEndpoint(productId));
       
+      // Invalidate related queries
+      queryClient.invalidateQueries({ queryKey: ['product', productId] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['userProducts'] });
+      
       toast({ 
         title: "Success", 
         description: "Product submitted for review", 
@@ -506,6 +530,11 @@ class ProductService {
         message,
       });
       
+      // Invalidate related queries
+      queryClient.invalidateQueries({ queryKey: ['product', productId] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['userProducts'] });
+      
       toast({ 
         title: "Status Updated", 
         description: `Product status changed to ${status}`, 
@@ -530,6 +559,16 @@ class ProductService {
   async incrementViews(productId: string): Promise<number> {
     try {
       const response = await api.post(config.products.incrementViewsEndpoint(productId));
+      
+      // Optionally update the product in the cache with the new view count
+      const existingProduct = queryClient.getQueryData<Product>(['product', productId]);
+      if (existingProduct) {
+        queryClient.setQueryData(['product', productId], {
+          ...existingProduct,
+          viewsCount: response.data.views_count
+        });
+      }
+      
       return response.data.views_count;
     } catch (error) {
       // Silent failure for view counts
@@ -548,6 +587,9 @@ class ProductService {
       const response = await api.post(config.products.updateRatingEndpoint(productId), {
         rating,
       });
+      
+      // Invalidate the specific product to reflect the new rating
+      queryClient.invalidateQueries({ queryKey: ['product', productId] });
       
       toast({ 
         title: "Rating Updated", 

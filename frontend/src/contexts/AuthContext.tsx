@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { ProfileUpdateData, UserData } from '../types/auth';
 import config from '../config';
+import { invalidateAfterProfileUpdate } from '../lib/query-invalidation';
+import { queryClient } from '../lib/react-query';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -57,16 +59,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (currentUser) {
         setUser(currentUser);
         setIsAuthenticated(true);
+        // Set the user data in React Query cache as well
+        queryClient.setQueryData(['user', 'current'], currentUser);
       } else {
         setUser(null);
         setIsAuthenticated(false);
         clearAuthStorage();
+        // Remove user data from React Query cache
+        queryClient.removeQueries({ queryKey: ['user', 'current'] });
       }
     } catch (error) {
       console.error("Error refreshing user data:", error);
       setUser(null);
       setIsAuthenticated(false);
       clearAuthStorage();
+      // Remove user data from React Query cache
+      queryClient.removeQueries({ queryKey: ['user', 'current'] });
     } finally {
       setLoading(false);
     }
@@ -91,6 +99,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userData = await AuthService.login({ email, password, rememberMe });
       setUser(userData);
       setIsAuthenticated(true);
+      
+      // Set user data in React Query cache
+      queryClient.setQueryData(['user', 'current'], userData);
       
       toast({
         title: "Success",
@@ -148,6 +159,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setIsAuthenticated(false);
       clearAuthStorage();
+      
+      // Clear all relevant React Query caches
+      queryClient.removeQueries({ queryKey: ['user'] });
+      queryClient.removeQueries({ queryKey: ['profile'] });
+      queryClient.removeQueries({ queryKey: ['products'] });
+      queryClient.removeQueries({ queryKey: ['userProducts'] });
+      queryClient.removeQueries({ queryKey: ['rentals'] });
+      
       toast({
         title: "Success",
         description: "Logged out successfully",
@@ -164,6 +183,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setIsAuthenticated(false);
       clearAuthStorage();
+      
+      // Clear all relevant React Query caches
+      queryClient.removeQueries({ queryKey: ['user'] });
+      queryClient.removeQueries({ queryKey: ['profile'] });
+      queryClient.removeQueries({ queryKey: ['products'] });
+      queryClient.removeQueries({ queryKey: ['userProducts'] });
+      queryClient.removeQueries({ queryKey: ['rentals'] });
+      
       navigate('/auth/login/', { replace: true, state: { error: true } });
     }
   };
@@ -174,6 +201,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (response.user) {
         setUser(response.user);
         setIsAuthenticated(true);
+        
+        // Set user data in React Query cache
+        queryClient.setQueryData(['user', 'current'], response.user);
       }
       toast({
         title: "Success",
@@ -200,6 +230,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Update user state with fresh data
       setUser(response);
+      
+      // Update React Query cache with fresh user data
+      queryClient.setQueryData(['user', 'current'], response);
+      
+      // Invalidate all dependent queries using helper function
+      invalidateAfterProfileUpdate();
       
       return response;
     } catch (error) {
