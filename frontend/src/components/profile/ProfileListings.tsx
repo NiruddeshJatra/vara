@@ -11,6 +11,7 @@ import productService from '@/services/product.service';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { normalizeProductToFormData } from '@/utils/normalizeProductToFormData';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { invalidateProducts, removeProductFromCache } from '@/lib/query-invalidation';
 
 const ProfileListings = () => {
   const navigate = useNavigate();
@@ -25,36 +26,53 @@ const ProfileListings = () => {
     queryFn: async () => {
       const result = await productService.getUserProducts();
       return result.products;
-    }
+    },
+    staleTime: 1000 * 30, // Data considered fresh for 30 seconds
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnReconnect: true
   });
 
-  // Delete product mutation
+  // Delete product mutation with optimistic updates
   const deleteMutation = useMutation({
     mutationFn: (productId: string) => productService.deleteProduct(productId),
-    onSuccess: (_, productId) => {
-// Optimistically remove the product from the cache
+    onMutate: async (productId) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['userProducts'] });
+      await queryClient.cancelQueries({ queryKey: ['products'] });
+
+      // Snapshot the previous value
+      const previousUserProducts = queryClient.getQueryData(['userProducts']);
+
+      // Optimistically update the cache
       queryClient.setQueryData(['userProducts'], (old: any) => ({
         ...old,
-        products: old.products.filter((product: Product) => product.id !== productId)
+        products: old.products.filter((p: Product) => p.id !== productId)
       }));
 
-      // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.removeQueries({ queryKey: ['product', productId] });
-
+      return { previousUserProducts };
+    },
+    onSuccess: (_, productId) => {
+      // Remove the product from cache completely
+      removeProductFromCache(productId);
+      // Invalidate related queries to refetch fresh data
+      invalidateProducts();
+      
       setDeleteConfirmationOpen(false);
       setProductToDelete(null);
       
       toast({
         title: "Success",
         description: "Product deleted successfully.",
-   variant: "default"
-});
-      // Close the confirmation dialog
-      setDeleteConfirmationOpen(false);
-      setProductToDelete(null);
-},
-    onError: (error) => {
+        variant: "default"
+      });
+    },
+    onError: (error, _, context) => {
+      // Rollback to the previous value if mutation fails
+      if (context?.previousUserProducts) {
+        queryClient.setQueryData(['userProducts'], context.previousUserProducts);
+      }
+      
       toast({
         title: "Error",
         description: "Failed to delete product. Please try again.",
@@ -63,7 +81,7 @@ const ProfileListings = () => {
     }
   });
 
-    const handleEditListing = (listingId: string) => {
+  const handleEditListing = (listingId: string) => {
     const product = listings.find(listing => listing.id === listingId);
     if (!product) return;
     

@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import throttle_classes, action
 from rest_framework.response import Response
@@ -203,52 +204,40 @@ class CustomLoginView(APIView):
     throttle_classes = [AuthenticationThrottle]
 
     def post(self, request, *args, **kwargs):
-        email = request.data.get("email")
-        password = request.data.get("password")
-
-        if not email or not password:
-            return Response(
-                {"error": _("Email and password are required")},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
         try:
-            user = CustomUser.objects.get(email=email)
-
-            # Check if user exists and is active
-            if not user.is_active:
-                return Response(
-                    {"error": _("This account has been deactivated")},
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
-
-            # Check if user's email is verified
-            if not user.is_email_verified:
-                return Response(
-                    {
-                        "error": _("Email is not verified. Please check your inbox for verification link.")
-                    },
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
-
-            # Check password
-            if not user.check_password(password):
-                return Response(
-                    {"error": _("Invalid credentials")},
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
-
-            # Generate tokens
-            tokens = TokenSerializer.get_token(user)
-
-            # Handle remember me
+            # Extract email and password from request
+            email = request.data.get("email", "").lower().strip()
+            password = request.data.get("password", "")
             remember = request.data.get("remember", False)
+
+            # Validate credentials
+            user = CustomUser.objects.get(email=email)
+            if not user.check_password(password):
+                raise CustomUser.DoesNotExist
+
+            # Check if email is verified
+            if not user.is_verified:
+                return Response(
+                    {"error": _("UNVERIFIED_EMAIL")},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+
+            # Generate tokens with appropriate expiry
+            tokens = TokenSerializer.get_token(user)
             if remember:
-                # Set session expiry to 30 days
-                request.session.set_expiry(30 * 24 * 60 * 60)
+                # Set refresh token expiry to 30 days
+                tokens['refresh']['exp'] = datetime.utcnow() + timedelta(days=30)
+                tokens['access']['exp'] = datetime.utcnow() + timedelta(days=1)
             else:
-                # Set session expiry to browser close
-                request.session.set_expiry(0)
+                # Set refresh token expiry to 1 day
+                tokens['refresh']['exp'] = datetime.utcnow() + timedelta(days=1)
+                tokens['access']['exp'] = datetime.utcnow() + timedelta(hours=1)
+
+            # Set session expiry
+            if remember:
+                request.session.set_expiry(30 * 24 * 60 * 60)  # 30 days in seconds
+            else:
+                request.session.set_expiry(0)  # Expire when browser closes
 
             # Return user data and tokens
             return Response(

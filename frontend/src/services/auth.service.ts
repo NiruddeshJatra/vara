@@ -39,27 +39,51 @@ const api = axios.create({
 
 // Helper function to consistently manage storage
 const storage = {
-  getToken: () => localStorage.getItem(config.auth.tokenStorageKey),
-  setToken: (token: string) => localStorage.setItem(config.auth.tokenStorageKey, token),
-  getRefreshToken: () => localStorage.getItem(config.auth.refreshTokenStorageKey),
-  setRefreshToken: (token: string) => localStorage.setItem(config.auth.refreshTokenStorageKey, token),
+  getToken: () => localStorage.getItem(config.auth.tokenStorageKey) || sessionStorage.getItem(config.auth.tokenStorageKey),
+  setToken: (token: string, remember: boolean = false) => {
+    if (remember) {
+      localStorage.setItem(config.auth.tokenStorageKey, token);
+      sessionStorage.removeItem(config.auth.tokenStorageKey);
+    } else {
+      sessionStorage.setItem(config.auth.tokenStorageKey, token);
+      localStorage.removeItem(config.auth.tokenStorageKey);
+    }
+  },
+  getRefreshToken: () => localStorage.getItem(config.auth.refreshTokenStorageKey) || sessionStorage.getItem(config.auth.refreshTokenStorageKey),
+  setRefreshToken: (token: string, remember: boolean = false) => {
+    if (remember) {
+      localStorage.setItem(config.auth.refreshTokenStorageKey, token);
+      sessionStorage.removeItem(config.auth.refreshTokenStorageKey);
+    } else {
+      sessionStorage.setItem(config.auth.refreshTokenStorageKey, token);
+      localStorage.removeItem(config.auth.refreshTokenStorageKey);
+    }
+  },
   getUser: () => {
-    const userData = localStorage.getItem(config.auth.userStorageKey);
+    const userData = localStorage.getItem(config.auth.userStorageKey) || sessionStorage.getItem(config.auth.userStorageKey);
     return userData ? JSON.parse(userData) : null;
   },
-  setUser: (user: UserData) => localStorage.setItem(config.auth.userStorageKey, JSON.stringify(user)),
+  setUser: (user: UserData, remember: boolean = false) => {
+    if (remember) {
+      localStorage.setItem(config.auth.userStorageKey, JSON.stringify(user));
+      sessionStorage.removeItem(config.auth.userStorageKey);
+    } else {
+      sessionStorage.setItem(config.auth.userStorageKey, JSON.stringify(user));
+      localStorage.removeItem(config.auth.userStorageKey);
+    }
+  },
   clearAll: () => {
     // Clear from localStorage
     localStorage.removeItem(config.auth.tokenStorageKey);
     localStorage.removeItem(config.auth.refreshTokenStorageKey);
     localStorage.removeItem(config.auth.userStorageKey);
     
-    // Clear from sessionStorage as well to ensure complete cleanup
+    // Clear from sessionStorage
     sessionStorage.removeItem(config.auth.tokenStorageKey);
     sessionStorage.removeItem(config.auth.refreshTokenStorageKey);
     sessionStorage.removeItem(config.auth.userStorageKey);
     
-    // Also clear React Query cache
+    // Clear React Query cache
     queryClient.clear();
   }
 };
@@ -152,8 +176,8 @@ class AuthService {
 
       // Make sure we properly store tokens
       if ((response.data as any).tokens) {
-        storage.setToken((response.data as any).tokens.access);
-        storage.setRefreshToken((response.data as any).tokens.refresh);
+        storage.setToken((response.data as any).tokens.access, data.rememberMe);
+        storage.setRefreshToken((response.data as any).tokens.refresh, data.rememberMe);
       }
 
       // Store user data with profileCompleted field
@@ -162,7 +186,7 @@ class AuthService {
           ...(response.data as any).user,
           profileCompleted: (response.data as any).user.profile_completed === true
         };
-        storage.setUser(userData);
+        storage.setUser(userData, data.rememberMe);
         return userData;
       }
 

@@ -41,7 +41,6 @@ class StandardResultsSetPagination(PageNumberPagination):
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
     pagination_class = StandardResultsSetPagination
     parser_classes = [MultiPartParser, FormParser, JSONParser]
     logger = logging.getLogger("product_viewset")
@@ -64,7 +63,6 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        # Optimize DB queries for product list
         queryset = queryset.select_related('owner').prefetch_related('product_images')
         if self.action == "list":
             if self.request.user.is_staff:
@@ -73,9 +71,13 @@ class ProductViewSet(viewsets.ModelViewSet):
         return queryset
 
     def get_permissions(self):
-        if self.action in ["update_status"]:
-            return [permissions.IsAdminUser()]
-        return super().get_permissions()
+        if self.action in ['list', 'retrieve']:
+            permission_classes = []
+        elif self.action in ["update_status"]:
+            permission_classes = [permissions.IsAdminUser()]
+        else:
+            permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+        return [permission() for permission in permission_classes]
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -123,11 +125,13 @@ class ProductViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save()
 
+    @transaction.atomic
     def destroy(self, request, *args, **kwargs):
         product = self.get_object()
         if product.owner != request.user:
             self.logger.warning(f"User {request.user.id} attempted to delete product {product.id} not owned by them.")
             return Response({"error": "You do not have permission to delete this product."}, status=status.HTTP_403_FORBIDDEN)
+            
         self.logger.info(f"User {request.user.id} deleting product {product.id}")
         return super().destroy(request, *args, **kwargs)
 
