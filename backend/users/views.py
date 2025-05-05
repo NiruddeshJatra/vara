@@ -14,6 +14,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.utils.translation import gettext_lazy as _
+from rest_framework_simplejwt.tokens import RefreshToken
 from .models import CustomUser
 from .serializers import (
     UserProfileSerializer,
@@ -222,16 +223,23 @@ class CustomLoginView(APIView):
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
 
-            # Generate tokens with appropriate expiry
-            tokens = TokenSerializer.get_token(user)
+            # Generate token with appropriate expiry
+            refresh = RefreshToken.for_user(user)
+
+            # Set token expiry based on remember me
             if remember:
-                # Set refresh token expiry to 30 days
-                tokens['refresh']['exp'] = datetime.utcnow() + timedelta(days=30)
-                tokens['access']['exp'] = datetime.utcnow() + timedelta(days=1)
+                # 30 days for refresh, 1 day for access
+                refresh.set_exp(lifetime=timedelta(days=30))
+                refresh.access_token.set_exp(lifetime=timedelta(days=1))
             else:
-                # Set refresh token expiry to 1 day
-                tokens['refresh']['exp'] = datetime.utcnow() + timedelta(days=1)
-                tokens['access']['exp'] = datetime.utcnow() + timedelta(hours=1)
+                # 1 day for refresh, 1 hour for access
+                refresh.set_exp(lifetime=timedelta(days=1))
+                refresh.access_token.set_exp(lifetime=timedelta(hours=1))
+
+            tokens = {
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            }
 
             # Set session expiry
             if remember:
