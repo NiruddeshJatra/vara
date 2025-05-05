@@ -14,6 +14,8 @@ import productService from '@/services/product.service';
 import { toast } from '@/components/ui/use-toast';
 import { useQuery } from '@tanstack/react-query';
 import debounce from 'lodash/debounce';
+import { queryClient } from '@/lib/react-query';
+import { invalidateProducts } from '@/lib/query-invalidation';
 
 type AppCategory = {
   id: string;
@@ -60,15 +62,15 @@ const Advertisements = () => {
     isError: productsError,
     refetch: refetchProducts,
     isFetching: productsFetching
-  } = useQuery<{ products: Product[]; count: number }, Error>({
+  } = useQuery({
     queryKey: ['products', page, selectedCategory, debouncedSearchTerm, priceRange, availability],
     queryFn: async () => {
       return await productService.getActiveProducts(page, PAGE_SIZE);
     },
-    // Add staleTime and refetch on window focus
-    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+    staleTime: 1000 * 60, // Consider data fresh for 1 minute
     refetchOnWindowFocus: true,
-    refetchOnMount: true
+    refetchOnMount: true,
+    refetchOnReconnect: true
   });
 
   useEffect(() => {
@@ -311,6 +313,12 @@ const Advertisements = () => {
     }
     return 'All Available Items';
   };
+
+  useEffect(() => {
+    if (!isItemModalOpen) {
+      invalidateProducts();
+    }
+  }, [isItemModalOpen]);
 
   return (
     <div className="flex flex-col min-h-screen">
