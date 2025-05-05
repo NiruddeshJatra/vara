@@ -216,7 +216,7 @@ class CustomLoginView(APIView):
                 raise CustomUser.DoesNotExist
 
             # Check if email is verified
-            if not user.is_verified:
+            if not user.is_email_verified:
                 return Response(
                     {"error": _("UNVERIFIED_EMAIL")},
                     status=status.HTTP_401_UNAUTHORIZED,
