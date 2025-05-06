@@ -30,8 +30,10 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "https://bhara.xyz",
     "https://www.bhara.xyz",
-    "https://api.bhara.xyz"
+    "https://api.bhara.xyz",
+    "http://localhost:5173"  # For local development testing
 ]
+
 CORS_ALLOW_METHODS = [
     "DELETE",
     "GET",
@@ -40,6 +42,7 @@ CORS_ALLOW_METHODS = [
     "POST",
     "PUT"
 ]
+
 CORS_ALLOW_HEADERS = [
     "accept",
     "accept-encoding",
@@ -55,6 +58,12 @@ CORS_ALLOW_HEADERS = [
     "cache-control",
     "expires"
 ]
+
+# Ensure cookies and credentials work properly
+SESSION_COOKIE_DOMAIN = ".bhara.xyz"  # Allow sharing between subdomains
+CSRF_COOKIE_DOMAIN = ".bhara.xyz"
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
 
 # Additional security headers
 SECURE_HSTS_SECONDS = 31536000  # 1 year
