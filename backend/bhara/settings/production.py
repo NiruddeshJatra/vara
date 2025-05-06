@@ -25,13 +25,12 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# CORS settings for production
+# CORS settings for production with proper file handling
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "https://bhara.xyz",
     "https://www.bhara.xyz",
-    "https://api.bhara.xyz",
-    "http://localhost:5173"  # For local development testing
+    "https://api.bhara.xyz"
 ]
 
 CORS_ALLOW_METHODS = [
@@ -54,16 +53,26 @@ CORS_ALLOW_HEADERS = [
     "x-csrftoken",
     "x-requested-with",
     "x-http-method-override",
-    "pragma",
+    "content-disposition",  # For file uploads
+    "content-length",      # For large file uploads
     "cache-control",
+    "pragma",
     "expires"
 ]
 
 # Ensure cookies and credentials work properly
-SESSION_COOKIE_DOMAIN = ".bhara.xyz"  # Allow sharing between subdomains
+SESSION_COOKIE_DOMAIN = ".bhara.xyz"
 CSRF_COOKIE_DOMAIN = ".bhara.xyz"
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
+# Cloudflare Specific Headers
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+X_FRAME_OPTIONS = 'SAMEORIGIN'  # Allow Cloudflare iframe integration
 
 # Additional security headers
 SECURE_HSTS_SECONDS = 31536000  # 1 year

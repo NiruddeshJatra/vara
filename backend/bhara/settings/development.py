@@ -148,6 +148,9 @@ CORS_ALLOW_HEADERS = [
     "user-agent",
     "x-csrftoken",
     "x-requested-with",
+    "x-http-method-override",
+    "content-disposition",  # For file uploads
+    "content-length",      # For large file uploads
     "cache-control",
     "pragma",
     "expires",
@@ -157,6 +160,11 @@ CORS_ALLOW_HEADERS = [
 SESSION_COOKIE_SAMESITE = 'Lax'  
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_TRUSTED_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173']
+
+# File Upload Settings (match production)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
+MEDIA_FILE_UPLOAD_MAX_SIZE = 10485760  # 10MB
 
 # Rest Framework settings
 REST_FRAMEWORK = {

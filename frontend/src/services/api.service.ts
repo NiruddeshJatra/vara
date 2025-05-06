@@ -16,7 +16,7 @@ class ApiService {
     this.api = axios.create({
       baseURL: config.apiUrl,
       withCredentials: true,
-      headers: {
+            headers: {
         'Content-Type': 'application/json',
       },
     });
@@ -26,24 +26,14 @@ class ApiService {
       (reqConfig: InternalAxiosRequestConfig) => {
         const token = localStorage.getItem(config.auth.tokenStorageKey);
         if (token && reqConfig.headers) {
-          if (typeof reqConfig.headers.set === "function") {
-            reqConfig.headers.set("Authorization", `Bearer ${token}`);
-          } else {
-            reqConfig.headers["Authorization"] = `Bearer ${token}`;
-          }
+          reqConfig.headers.Authorization = `Bearer ${token}`;
         }
 
-        // Remove Content-Type header if sending FormData
-        if (reqConfig.data instanceof FormData && reqConfig.headers) {
+        // Handle FormData properly
+        if (reqConfig.data instanceof FormData) {
           delete reqConfig.headers['Content-Type'];
-        }
-
-        // Skip transformation for FormData requests
-        if (!(reqConfig.data instanceof FormData)) {
-          // Transform request data from camelCase to snake_case
-          if (reqConfig.data) {
-            reqConfig.data = this.transformToSnakeCase(reqConfig.data);
-          }
+        } else if (reqConfig.data) {
+          reqConfig.data = this.transformToSnakeCase(reqConfig.data);
         }
         return reqConfig;
       },
