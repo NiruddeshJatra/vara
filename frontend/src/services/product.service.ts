@@ -187,21 +187,22 @@ class ProductService {
       formData.append('product_type', data.productType);
       formData.append('description', data.description || '');
       formData.append('location', data.location);
-      formData.append('security_deposit', String(data.securityDeposit || 0));
+      if (data.securityDeposit !== null) {
+        formData.append('security_deposit', String(data.securityDeposit));
+      }
       formData.append('purchase_year', data.purchaseYear);
       formData.append('original_price', String(data.originalPrice));
       formData.append('ownership_history', data.ownershipHistory);
 
-      // Handle image uploads with size validation
+      // Append images
       if (data.images?.length > 0) {
-        for (const image of data.images) {
+        data.images.forEach((image, idx) => {
           if (image instanceof File) {
-            if (image.size > 10 * 1024 * 1024) { // 10MB limit
-              throw new Error(`Image ${image.name} exceeds 10MB size limit`);
-            }
             formData.append('images', image);
+          } else {
+            console.error(`Image at index ${idx} is not a File:`, image, typeof image);
           }
-        }
+        });
       }
 
       // Format and append unavailable dates
@@ -225,18 +226,7 @@ class ProductService {
         formData.append('pricing_tiers', JSON.stringify(formattedTiers));
       }
 
-      const response = await api.post<Product>(
-        config.products.createEndpoint, 
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-          maxBodyLength: Infinity,
-          maxContentLength: Infinity,
-          timeout: 60000, // 1 minute timeout
-        }
-      );
+      const response = await api.post<Product>(config.products.createEndpoint, formData);
       
       // Invalidate related queries
       queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -249,15 +239,6 @@ class ProductService {
       
       return response.data;
     } catch (error: any) {
-      if (error.response?.data?.images) {
-        toast({ 
-          title: "Image Upload Failed", 
-          description: error.response.data.images.join(', '), 
-          variant: "destructive" 
-        });
-        throw new Error(`Image upload failed: ${error.response.data.images.join(', ')}`);
-      }
-      
       toast({ 
         title: "Product Creation Failed", 
         description: error.response?.data?.detail || "Failed to create product", 
