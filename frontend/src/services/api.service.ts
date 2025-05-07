@@ -25,17 +25,33 @@ class ApiService {
     this.api.interceptors.request.use(
       (reqConfig: InternalAxiosRequestConfig) => {
         const token = localStorage.getItem(config.auth.tokenStorageKey);
+        
+        // Debug log to verify token
+        console.log('Token available:', !!token);
+        
         if (token && reqConfig.headers) {
+          // Ensure Authorization header is set correctly
           if (typeof reqConfig.headers.set === "function") {
             reqConfig.headers.set("Authorization", `Bearer ${token}`);
           } else {
             reqConfig.headers["Authorization"] = `Bearer ${token}`;
           }
+          
+          // Debug log for Authorization header
+          console.log('Authorization header set:', `Bearer ${token.substring(0, 10)}...`);
+        } else {
+          console.warn('No auth token found in localStorage');
         }
 
-        // Remove Content-Type header if sending FormData
-        if (reqConfig.data instanceof FormData && reqConfig.headers) {
-          delete reqConfig.headers['Content-Type'];
+        // Handle FormData specifically
+        if (reqConfig.data instanceof FormData) {
+          if (reqConfig.headers) {
+            // Remove Content-Type header for FormData to let the browser set boundary
+            delete reqConfig.headers['Content-Type'];
+            
+            // Make sure we're not transforming FormData
+            return reqConfig;
+          }
         }
 
         // Skip transformation for FormData requests
@@ -72,6 +88,17 @@ class ApiService {
           _retry?: boolean;
         };
 
+        // Enhanced error logging for debugging
+        if (error.response) {
+          console.error('API Error Response:', {
+            status: error.response.status,
+            url: originalRequest.url,
+            data: error.response.data
+          });
+        } else {
+          console.error('API Error (No response):', error.message);
+        }
+
         // Handle 401 errors (unauthorized)
         if (
           error.response?.status === 401 &&
@@ -83,6 +110,7 @@ class ApiService {
           )
         ) {
           originalRequest._retry = true;
+          console.log('Attempting token refresh due to 401 error');
 
           try {
             const refreshToken = localStorage.getItem(
@@ -111,6 +139,8 @@ class ApiService {
                 config.auth.tokenStorageKey,
                 access
               );
+              console.log('Token refreshed successfully');
+              
               if (typeof originalRequest.headers.set === "function") {
                 originalRequest.headers.set("Authorization", `Bearer ${access}`);
               } else {
@@ -119,6 +149,7 @@ class ApiService {
               return this.api(originalRequest);
             }
           } catch (refreshError) {
+            console.error('Token refresh failed:', refreshError);
             if (
               !(
                 originalRequest.url &&
@@ -202,6 +233,26 @@ class ApiService {
                 new Error(formattedErrors.join("\n"))
               );
             }
+          }
+
+          // Handle 401 errors with specific messaging
+          if (error.response.status === 401) {
+            toast({
+              title: "Authentication Error",
+              description: "Please log in to perform this action",
+              variant: "destructive"
+            });
+            
+            // Check if user data exists but token might be invalid
+            if (localStorage.getItem(config.auth.userStorageKey)) {
+              console.warn('User data exists but request failed with 401');
+            } else {
+              console.warn('No user data found in localStorage');
+            }
+            
+            return Promise.reject(
+              new Error("Authentication required")
+            );
           }
 
           // Product status errors
@@ -362,7 +413,38 @@ class ApiService {
   public getApi(): AxiosInstance {
     return this.api;
   }
+
+  /**
+   * Check if user is authenticated
+   */
+  public isAuthenticated(): boolean {
+    const token = localStorage.getItem(config.auth.tokenStorageKey);
+    const user = localStorage.getItem(config.auth.userStorageKey);
+    return !!(token && user);
+  }
+
+  /**
+   * Verify authentication before sensitive operations
+   */
+  public verifyAuth(): void {
+    if (!this.isAuthenticated()) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to perform this action",
+        variant: "destructive"
+      });
+      window.location.href = config.auth.loginEndpoint;
+      throw new Error("Authentication required");
+    }
+  }
 }
 
 // Export a singleton instance of the API service
-export default ApiService.getInstance().getApi();
+const apiInstance = ApiService.getInstance();
+const api = apiInstance.getApi();
+
+// Export a few helper methods directly
+export const isAuthenticated = () => apiInstance.isAuthenticated();
+export const verifyAuth = () => apiInstance.verifyAuth();
+
+export default api;

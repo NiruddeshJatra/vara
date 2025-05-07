@@ -1,4 +1,4 @@
-import api from './api.service';
+import api, { verifyAuth } from './api.service';
 import { ProductStatus } from '../constants/productStatus';
 import { Product, ListingFormData } from '../types/listings';
 import config from '../config';
@@ -179,6 +179,10 @@ class ProductService {
    */
   async createProduct(data: ListingFormData): Promise<Product> {
     try {
+      verifyAuth();
+      
+      console.log('Creating product, user is authenticated');
+
       const formData = new FormData();
       
       // Append basic fields
@@ -226,7 +230,29 @@ class ProductService {
         formData.append('pricing_tiers', JSON.stringify(formattedTiers));
       }
 
-      const response = await api.post<Product>(config.products.createEndpoint, formData);
+      // Get token and explicitly add it to request
+      const token = localStorage.getItem(config.auth.tokenStorageKey);
+      
+      // Log request details for debugging
+      console.log('Sending product creation request', {
+        url: config.products.createEndpoint,
+        authenticated: !!token,
+        formDataEntries: Array.from(formData.entries()).map(([key]) => key)
+      });
+
+      // Add explicit authorization header for this specific request
+      const response = await api.post<Product>(
+        config.products.createEndpoint, 
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            // Content-Type will be set automatically by axios for FormData
+          }
+        }
+      );
+      
+      console.log('Product created successfully');
       
       // Invalidate related queries
       queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -239,11 +265,23 @@ class ProductService {
       
       return response.data;
     } catch (error: any) {
-      toast({ 
-        title: "Product Creation Failed", 
-        description: error.response?.data?.detail || "Failed to create product", 
-        variant: "destructive" 
-      });
+      console.error('Product creation error:', error);
+      
+      // Enhanced error handling
+      if (error.response?.status === 401) {
+        toast({ 
+          title: "Authentication Error", 
+          description: "Please log in again to create a product.", 
+          variant: "destructive" 
+        });
+        window.location.href = config.auth.loginEndpoint;
+      } else {
+        toast({ 
+          title: "Product Creation Failed", 
+          description: error.response?.data?.detail || error.message || "Failed to create product", 
+          variant: "destructive" 
+        });
+      }
       throw error;
     }
   }
