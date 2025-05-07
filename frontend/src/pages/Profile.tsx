@@ -10,12 +10,32 @@ import { ProfileUpdateData } from "@/types/auth";
 
 const Profile = () => {
   const { toast } = useToast();
-  const { user, isAuthenticated, setUser, updateProfile } = useAuth();
+  const { user, isAuthenticated, setUser, updateProfile, refreshUserData } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [profilePictureFile, setProfilePictureFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+
+  useEffect(() => {
+    // Refresh user data when component mounts
+    const refresh = async () => {
+      try {
+        await refreshUserData();
+      } catch (error) {
+        console.error('Error refreshing profile data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load profile data",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    refresh();
+  }, [refreshUserData, toast]);
 
   // No need for separate refreshProfile function since we're using context
 

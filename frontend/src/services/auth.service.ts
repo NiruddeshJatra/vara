@@ -116,8 +116,19 @@ api.interceptors.response.use(
           return api(originalRequest);
         }
       } catch (refreshError) {
-        storage.clearAll();
-        window.location.href = config.auth.loginEndpoint;
+        // Only clear storage if we're sure the token is invalid
+        if (refreshError.response?.status === 401) {
+          storage.clearAll();
+          window.location.href = config.auth.loginEndpoint;
+        } else {
+          // For other errors, just show an error message
+          toast({
+            title: "Error",
+            description: "Failed to refresh authentication token. Please try again.",
+            variant: "destructive"
+          });
+          return Promise.reject(refreshError);
+        }
       }
     }
 

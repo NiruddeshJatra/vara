@@ -15,6 +15,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.utils.translation import gettext_lazy as _
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenRefreshView
 from .models import CustomUser
 from .serializers import (
     UserProfileSerializer,
@@ -198,6 +199,11 @@ class UserViewSet(viewsets.ModelViewSet):
             {"detail": _("Account deleted successfully")},
             status=status.HTTP_204_NO_CONTENT,
         )
+
+
+class TokenRefreshView(TokenRefreshView):
+    permission_classes = [AllowAny]
+    throttle_classes = [AuthenticationThrottle]
 
 
 class CustomLoginView(APIView):
