@@ -2,6 +2,7 @@ import axios from "axios";
 import type { AxiosInstance, AxiosRequestConfig, AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import { toast } from "@/components/ui/use-toast";
 import config from "../config";
+import { storage } from './auth.service';
 
 /**
  * Creates a configured Axios instance for API calls
@@ -16,6 +17,9 @@ class ApiService {
     this.api = axios.create({
       baseURL: config.apiUrl,
       withCredentials: true,
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+      timeout: 60000,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -24,23 +28,10 @@ class ApiService {
     // Request interceptor for adding authentication token and transforming data
     this.api.interceptors.request.use(
       (reqConfig: InternalAxiosRequestConfig) => {
-        const token = localStorage.getItem(config.auth.tokenStorageKey);
-        
-        // Debug log to verify token
-        console.log('Token available:', !!token);
+        const token = storage.getToken();
         
         if (token && reqConfig.headers) {
-          // Ensure Authorization header is set correctly
-          if (typeof reqConfig.headers.set === "function") {
-            reqConfig.headers.set("Authorization", `Bearer ${token}`);
-          } else {
-            reqConfig.headers["Authorization"] = `Bearer ${token}`;
-          }
-          
-          // Debug log for Authorization header
-          console.log('Authorization header set:', `Bearer ${token.substring(0, 10)}...`);
-        } else {
-          console.warn('No auth token found in localStorage');
+          reqConfig.headers.Authorization = `Bearer ${token}`;
         }
 
         // Handle FormData specifically
@@ -103,7 +94,7 @@ class ApiService {
         if (
           error.response?.status === 401 &&
           !originalRequest._retry &&
-          localStorage.getItem(config.auth.userStorageKey) &&
+          storage.getUser() &&
           !(
             originalRequest.url &&
             originalRequest.url.includes("complete_profile")
@@ -113,10 +104,9 @@ class ApiService {
           console.log('Attempting token refresh due to 401 error');
 
           try {
-            const refreshToken = localStorage.getItem(
-              config.auth.refreshTokenStorageKey
-            );
+            const refreshToken = storage.getRefreshToken();
             if (!refreshToken) {
+              storage.clearAll();
               throw new Error("No refresh token available");
             }
 
@@ -135,11 +125,7 @@ class ApiService {
             const { access } = refreshResponse.data as RefreshTokenResponse;
 
             if (access && originalRequest.headers) {
-              localStorage.setItem(
-                config.auth.tokenStorageKey,
-                access
-              );
-              console.log('Token refreshed successfully');
+              storage.setToken(access);
               
               if (typeof originalRequest.headers.set === "function") {
                 originalRequest.headers.set("Authorization", `Bearer ${access}`);
@@ -156,9 +142,7 @@ class ApiService {
                 originalRequest.url.includes("complete_profile")
               )
             ) {
-              localStorage.removeItem(config.auth.userStorageKey);
-              localStorage.removeItem(config.auth.tokenStorageKey);
-              localStorage.removeItem(config.auth.refreshTokenStorageKey);
+              storage.clearAll();
               toast({
                 title: "Session Expired",
                 description: "Your session has expired. Please log in again.",
@@ -244,10 +228,10 @@ class ApiService {
             });
             
             // Check if user data exists but token might be invalid
-            if (localStorage.getItem(config.auth.userStorageKey)) {
+            if (storage.getUser()) {
               console.warn('User data exists but request failed with 401');
             } else {
-              console.warn('No user data found in localStorage');
+              console.warn('No user data found in storage');
             }
             
             return Promise.reject(
@@ -418,8 +402,8 @@ class ApiService {
    * Check if user is authenticated
    */
   public isAuthenticated(): boolean {
-    const token = localStorage.getItem(config.auth.tokenStorageKey);
-    const user = localStorage.getItem(config.auth.userStorageKey);
+    const token = storage.getToken();
+    const user = storage.getUser();
     return !!(token && user);
   }
 

@@ -23,22 +23,8 @@ const api = axios.create({
   },
 });
 
-// Add request interceptor to both instances to handle auth token
-[authApi, api].forEach(instance => {
-  instance.interceptors.request.use(
-    config => {
-      const token = storage.getToken();
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    error => Promise.reject(error)
-  );
-});
-
 // Helper function to consistently manage storage
-const storage = {
+export const storage = {
   getToken: () => localStorage.getItem(config.auth.tokenStorageKey) || sessionStorage.getItem(config.auth.tokenStorageKey),
   setToken: (token: string, remember: boolean = false) => {
     if (remember) {
@@ -88,6 +74,55 @@ const storage = {
   }
 };
 
+// Add request interceptor to both instances to handle auth token
+[authApi, api].forEach(instance => {
+  instance.interceptors.request.use(
+    config => {
+      const token = storage.getToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    error => Promise.reject(error)
+  );
+});
+
+// Add response interceptor for token refresh
+api.interceptors.response.use(
+  response => response,
+  async error => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const refreshToken = storage.getRefreshToken();
+        if (!refreshToken) {
+          storage.clearAll();
+          return Promise.reject(error);
+        }
+
+        const response = await authApi.post(config.auth.refreshTokenEndpoint, {
+          refresh: refreshToken
+        });
+
+        if ((response.data as any).access) {
+          storage.setToken((response.data as any).access);
+          originalRequest.headers.Authorization = `Bearer ${(response.data as any).access}`;
+          return api(originalRequest);
+        }
+      } catch (refreshError) {
+        storage.clearAll();
+        window.location.href = config.auth.loginEndpoint;
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 // Get CSRF token from cookies
 function getCsrfToken() {
   const cookieValue = document.cookie
@@ -114,49 +149,6 @@ authApi.interceptors.response.use(
     return response;
   },
   error => {
-    return Promise.reject(error);
-  }
-);
-
-// Add response interceptor for token refresh
-api.interceptors.response.use(
-  response => {
-    return response;
-  },
-  async error => {
-    const originalRequest = error.config;
-
-    // If the error is 401 and we haven't tried to refresh the token yet
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        // Try to refresh the token
-        const refreshToken = storage.getRefreshToken();
-        if (!refreshToken) {
-          storage.clearAll(); // Clean up any partial state
-          return Promise.reject(error);
-        }
-
-        const response = await authApi.post(config.auth.refreshTokenEndpoint, {
-          refresh: refreshToken
-        });
-
-        if ((response.data as any).access) {
-          // Update the access token
-          storage.setToken((response.data as any).access);
-
-          // Retry the original request with the new token
-          originalRequest.headers.Authorization = `Bearer ${(response.data as any).access}`;
-          return api(originalRequest);
-        }
-      } catch (refreshError) {
-        // Always clear auth data and redirect to login on refresh failure
-        storage.clearAll();
-        window.location.href = config.auth.loginEndpoint;
-      }
-    }
-
     return Promise.reject(error);
   }
 );
