@@ -1,4 +1,4 @@
-import api, { verifyAuth } from './api.service';
+import api from './api.service';
 import { ProductStatus } from '../constants/productStatus';
 import { Product, ListingFormData } from '../types/listings';
 import config from '../config';
@@ -183,10 +183,6 @@ class ProductService {
    */
   async createProduct(data: ListingFormData): Promise<Product> {
     try {
-      verifyAuth();
-      
-      console.log('Creating product, user is authenticated');
-
       const formData = new FormData();
       
       // Append basic fields

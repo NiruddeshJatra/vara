@@ -2,10 +2,8 @@ import axios from 'axios';
 import config from '../config';
 import { toast } from '@/components/ui/use-toast';
 import { RegistrationData, ProfileUpdateData, LoginData, UserData } from '../types/auth';
-import { queryClient } from '../lib/react-query';
-import { invalidateAfterProfileUpdate } from '../lib/query-invalidation';
 
-// Create a separate axios instance for auth endpoints
+// Create a separate axios instance for auth endpoints (which don't use the /api prefix)
 const authApi = axios.create({
   baseURL: config.apiUrl,
   withCredentials: true,
@@ -14,7 +12,7 @@ const authApi = axios.create({
   },
 });
 
-// Create a separate axios instance for API endpoints
+// Create a separate axios instance for API endpoints (which use the /api prefix)
 const api = axios.create({
   baseURL: config.apiUrl,
   withCredentials: true,
@@ -24,117 +22,28 @@ const api = axios.create({
 });
 
 // Helper function to consistently manage storage
-export const storage = {
-  getToken: () => localStorage.getItem(config.auth.tokenStorageKey) || sessionStorage.getItem(config.auth.tokenStorageKey),
-  setToken: (token: string, remember: boolean = false) => {
-    if (remember) {
-      localStorage.setItem(config.auth.tokenStorageKey, token);
-      sessionStorage.removeItem(config.auth.tokenStorageKey);
-    } else {
-      sessionStorage.setItem(config.auth.tokenStorageKey, token);
-      localStorage.removeItem(config.auth.tokenStorageKey);
-    }
-  },
-  getRefreshToken: () => localStorage.getItem(config.auth.refreshTokenStorageKey) || sessionStorage.getItem(config.auth.refreshTokenStorageKey),
-  setRefreshToken: (token: string, remember: boolean = false) => {
-    if (remember) {
-      localStorage.setItem(config.auth.refreshTokenStorageKey, token);
-      sessionStorage.removeItem(config.auth.refreshTokenStorageKey);
-    } else {
-      sessionStorage.setItem(config.auth.refreshTokenStorageKey, token);
-      localStorage.removeItem(config.auth.refreshTokenStorageKey);
-    }
-  },
+const storage = {
+  getToken: () => localStorage.getItem(config.auth.tokenStorageKey),
+  setToken: (token: string) => localStorage.setItem(config.auth.tokenStorageKey, token),
+  getRefreshToken: () => localStorage.getItem(config.auth.refreshTokenStorageKey),
+  setRefreshToken: (token: string) => localStorage.setItem(config.auth.refreshTokenStorageKey, token),
   getUser: () => {
-    const userData = localStorage.getItem(config.auth.userStorageKey) || sessionStorage.getItem(config.auth.userStorageKey);
+    const userData = localStorage.getItem(config.auth.userStorageKey);
     return userData ? JSON.parse(userData) : null;
   },
-  setUser: (user: UserData, remember: boolean = false) => {
-    if (remember) {
-      localStorage.setItem(config.auth.userStorageKey, JSON.stringify(user));
-      sessionStorage.removeItem(config.auth.userStorageKey);
-    } else {
-      sessionStorage.setItem(config.auth.userStorageKey, JSON.stringify(user));
-      localStorage.removeItem(config.auth.userStorageKey);
-    }
-  },
+  setUser: (user: UserData) => localStorage.setItem(config.auth.userStorageKey, JSON.stringify(user)),
   clearAll: () => {
     // Clear from localStorage
     localStorage.removeItem(config.auth.tokenStorageKey);
     localStorage.removeItem(config.auth.refreshTokenStorageKey);
     localStorage.removeItem(config.auth.userStorageKey);
     
-    // Clear from sessionStorage
+    // Clear from sessionStorage as well to ensure complete cleanup
     sessionStorage.removeItem(config.auth.tokenStorageKey);
     sessionStorage.removeItem(config.auth.refreshTokenStorageKey);
     sessionStorage.removeItem(config.auth.userStorageKey);
-    
-    // Clear React Query cache
-    queryClient.clear();
   }
 };
-
-// Add request interceptor to both instances to handle auth token
-[authApi, api].forEach(instance => {
-  instance.interceptors.request.use(
-    config => {
-      const token = storage.getToken();
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    error => Promise.reject(error)
-  );
-});
-
-// Add response interceptor for token refresh
-api.interceptors.response.use(
-  response => response,
-  async error => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const refreshToken = storage.getRefreshToken();
-        if (!refreshToken) {
-          storage.clearAll();
-          return Promise.reject(error);
-        }
-
-        const response = await api.post(config.auth.refreshTokenEndpoint, {
-          refresh: refreshToken
-        }, {
-          baseURL: config.apiUrl // Ensure we use the API domain
-        });
-
-        if ((response.data as any).access) {
-          storage.setToken((response.data as any).access);
-          originalRequest.headers.Authorization = `Bearer ${(response.data as any).access}`;
-          return api(originalRequest);
-        }
-      } catch (refreshError) {
-        // Only clear storage if we're sure the token is invalid
-        if (refreshError.response?.status === 401) {
-          storage.clearAll();
-          window.location.href = config.auth.loginEndpoint;
-        } else {
-          // For other errors, just show an error message
-          toast({
-            title: "Error",
-            description: "Failed to refresh authentication token. Please try again.",
-            variant: "destructive"
-          });
-          return Promise.reject(refreshError);
-        }
-      }
-    }
-
-    return Promise.reject(error);
-  }
-);
 
 // Get CSRF token from cookies
 function getCsrfToken() {
@@ -153,6 +62,12 @@ authApi.interceptors.request.use(request => {
     request.headers['X-CSRFToken'] = csrfToken;
   }
 
+  // Add authentication token if available - using our storage helper
+  const token = storage.getToken();
+  if (token && request.headers) {
+    request.headers['Authorization'] = `Bearer ${token}`;
+  }
+
   return request;
 });
 
@@ -162,6 +77,60 @@ authApi.interceptors.response.use(
     return response;
   },
   error => {
+    return Promise.reject(error);
+  }
+);
+
+// Add request interceptor to include authentication token
+api.interceptors.request.use(request => {
+  // Add authentication token if available - using our storage helper
+  const token = storage.getToken();
+  if (token && request.headers) {
+    request.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return request;
+});
+
+// Add response interceptor for token refresh
+api.interceptors.response.use(
+  response => {
+    return response;
+  },
+  async error => {
+    const originalRequest = error.config;
+
+    // If the error is 401 and we haven't tried to refresh the token yet
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        // Try to refresh the token
+        const refreshToken = storage.getRefreshToken();
+        if (!refreshToken) {
+          storage.clearAll(); // Clean up any partial state
+          return Promise.reject(error);
+        }
+
+        const response = await authApi.post(config.auth.refreshTokenEndpoint, {
+          refresh: refreshToken
+        });
+
+        if ((response.data as any).access) {
+          // Update the access token
+          storage.setToken((response.data as any).access);
+
+          // Retry the original request with the new token
+          originalRequest.headers.Authorization = `Bearer ${(response.data as any).access}`;
+          return api(originalRequest);
+        }
+      } catch (refreshError) {
+        // Always clear auth data and redirect to login on refresh failure
+        storage.clearAll();
+        window.location.href = config.auth.loginEndpoint;
+      }
+    }
+
     return Promise.reject(error);
   }
 );
@@ -181,8 +150,8 @@ class AuthService {
 
       // Make sure we properly store tokens
       if ((response.data as any).tokens) {
-        storage.setToken((response.data as any).tokens.access, data.rememberMe);
-        storage.setRefreshToken((response.data as any).tokens.refresh, data.rememberMe);
+        storage.setToken((response.data as any).tokens.access);
+        storage.setRefreshToken((response.data as any).tokens.refresh);
       }
 
       // Store user data with profileCompleted field
@@ -191,7 +160,7 @@ class AuthService {
           ...(response.data as any).user,
           profileCompleted: (response.data as any).user.profile_completed === true
         };
-        storage.setUser(userData, data.rememberMe);
+        storage.setUser(userData);
         return userData;
       }
 
@@ -372,9 +341,6 @@ class AuthService {
 
       // Update local storage with new user data
       storage.setUser(userData);
-      
-      // Invalidate all related data after profile update
-      invalidateAfterProfileUpdate();
 
       return userData;
     } catch (error: any) {
@@ -429,9 +395,6 @@ class AuthService {
       
       // Update local storage with new user data
       storage.setUser(userData);
-      
-      // Invalidate all related data after profile completion
-      invalidateAfterProfileUpdate();
       
       return userData;
     } catch (error: any) {

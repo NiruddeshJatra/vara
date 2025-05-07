@@ -57,12 +57,30 @@ const Profile = () => {
     );
   }
 
-  if (!user) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse">
           <div className="h-4 bg-green-200 rounded w-32 mb-4"></div>
           <div className="h-3 bg-green-200 rounded w-48"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-green-800 mb-4">
+            Loading profile data failed
+          </h2>
+          <button
+            onClick={() => window.location.href = "/auth/login/"}
+            className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded"
+          >
+            Try Again
+          </button>
         </div>
       </div>
     );
