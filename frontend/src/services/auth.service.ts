@@ -104,8 +104,10 @@ api.interceptors.response.use(
           return Promise.reject(error);
         }
 
-        const response = await authApi.post(config.auth.refreshTokenEndpoint, {
+        const response = await api.post(config.auth.refreshTokenEndpoint, {
           refresh: refreshToken
+        }, {
+          baseURL: config.apiUrl // Ensure we use the API domain
         });
 
         if ((response.data as any).access) {
