@@ -35,10 +35,6 @@ const AdditionalDetailsStep = ({
     { value: "other", label: "Other" },
   ];
 
-  useEffect(() => {
-    console.log("AdditionalDetailsStep - Form data:", formData);
-  }, [formData]);
-
   // Add a handler to clear errors when input changes
   const handleInputChange = (data: Partial<RentalRequestFormData>) => {
     onChange(data);

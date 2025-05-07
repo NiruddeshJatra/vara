@@ -43,7 +43,7 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
     }
 
     // Handle rental request...
-    navigate(`/items/${selectedItem?.id}/rent`);
+    navigate(`/request-rental/${selectedItem?.id}`);
   };
 
   const nextImage = () => {
