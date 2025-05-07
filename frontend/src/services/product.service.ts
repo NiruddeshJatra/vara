@@ -83,7 +83,11 @@ class ProductService {
   async getActiveProducts(page = 1, pageSize = 20): Promise<{ products: Product[]; count: number }> {
     try {
       const response = await api.get(config.products.listEndpoint, {
-        params: { page, page_size: pageSize }
+        params: { 
+          page, 
+          page_size: pageSize
+          // Removed status filter to show all products
+        }
       });
       const products = this.extractProducts(response).map(product => this.transformProduct(product));
       return { products, count: response.data.count || products.length };

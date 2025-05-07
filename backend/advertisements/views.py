@@ -64,22 +64,11 @@ class ProductViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         queryset = queryset.select_related('owner').prefetch_related('product_images')
-        
-        if self.action == "list":
-            if self.request.user.is_staff:
-                return queryset
-            elif self.request.user.is_authenticated:
-                # Show active products and user's own drafts
-                return queryset.filter(
-                    Q(status="active") | 
-                    Q(status="draft", owner=self.request.user)
-                )
-            else:
-                # Show only active products to anonymous users
-                return queryset
+        # Return all products without filtering by status
         return queryset
 
     def get_permissions(self):
+        # Allow public access to list and retrieve
         if self.action in ['list', 'retrieve']:
             permission_classes = []
         elif self.action in ["update_status"]:

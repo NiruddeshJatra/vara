@@ -12,6 +12,23 @@ class ApiService {
   private api: AxiosInstance;
   private static instance: ApiService;
 
+  // Add method to check if endpoint requires auth
+  private static requiresAuth(url: string): boolean {
+    // List of endpoints that don't require authentication
+    const publicEndpoints = [
+      config.products.listEndpoint,
+      config.products.detailEndpoint(''),  // Base endpoint
+      config.auth.loginEndpoint,
+      config.auth.registerEndpoint,
+      config.auth.verifyEmailEndpoint,
+      config.auth.resendVerificationEndpoint,
+      config.auth.passwordResetEndpoint,
+      config.auth.passwordResetConfirmEndpoint
+    ];
+    
+    return !publicEndpoints.some(endpoint => url.includes(endpoint));
+  }
+
   private constructor() {
     // Create axios instance with base URL and credentials
     this.api = axios.create({
@@ -28,10 +45,12 @@ class ApiService {
     // Request interceptor for adding authentication token and transforming data
     this.api.interceptors.request.use(
       (reqConfig: InternalAxiosRequestConfig) => {
-        const token = storage.getToken();
-        
-        if (token && reqConfig.headers) {
-          reqConfig.headers.Authorization = `Bearer ${token}`;
+        // Only add auth token if endpoint requires it
+        if (ApiService.requiresAuth(reqConfig.url || '')) {
+          const token = storage.getToken();
+          if (token && reqConfig.headers) {
+            reqConfig.headers.Authorization = `Bearer ${token}`;
+          }
         }
 
         // Handle FormData specifically
