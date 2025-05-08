@@ -83,7 +83,7 @@ export interface ProfileUpdateData {
   firstName?: string;
   lastName?: string;
   email?: string;
-  phone?: string;
+  phoneNumber?: string;
   location?: string;
   dateOfBirth?: string;
   bio?: string;

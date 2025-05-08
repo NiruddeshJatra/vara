@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import ProfileHeader from "@/components/profile/ProfileHeader";
@@ -7,17 +7,57 @@ import NavBar from "@/components/home/NavBar";
 import Footer from "@/components/home/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { ProfileUpdateData } from "@/types/auth";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import AuthService from "@/services/auth.service";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const { toast } = useToast();
-  const { user, isAuthenticated, setUser, updateProfile } = useAuth();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
-  const [isLoading, setIsLoading] = useState(false);
   const [profilePictureFile, setProfilePictureFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
 
-  // No need for separate refreshProfile function since we're using context
+  // Use React Query to fetch user profile data
+  const { data: user, isLoading } = useQuery({
+    queryKey: ['user', 'profile'],
+    queryFn: () => AuthService.getCurrentUser(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+    enabled: isAuthenticated, // Only fetch if authenticated
+    retry: 1
+  });
+  
+  // Use mutation for profile updates - MUST BE DEFINED BEFORE ANY CONDITIONAL RETURNS
+  const updateProfileMutation = useMutation({
+    mutationFn: (data: ProfileUpdateData) => AuthService.updateProfile(data),
+    onSuccess: () => {
+      // Invalidate the user profile query to refetch fresh data
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      
+      // Reset edit mode and files
+      setIsEditing(false);
+      setProfilePictureFile(null);
+      setPreviewUrl(null);
+      
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+        variant: "default"
+      });
+    },
+    onError: (error: any) => {
+      console.error('Error saving profile:', error);
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "Failed to update profile",
+        variant: "destructive"
+      });
+    }
+  });
 
   if (!isAuthenticated) {
     return (
@@ -27,7 +67,7 @@ const Profile = () => {
             Please login to view your profile
           </h2>
           <button
-            onClick={() => window.location.href = "/auth/login/"}
+            onClick={() => navigate("/auth/login/")}
             className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded"
           >
             Login
@@ -61,51 +101,32 @@ const Profile = () => {
   };
 
   const handleSaveChanges = async () => {
-    try {
-      setIsLoading(true);
-      
-      const updateData: ProfileUpdateData = {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        phone: user.phoneNumber,
-        location: user.location,
-        dateOfBirth: user.dateOfBirth,
-        bio: user.bio,
-        profilePicture: profilePictureFile
-      };
+    if (!user) return;
 
-      // Use the context's updateProfile which handles the update and state management
-      const updatedUser = await updateProfile(updateData);
-      
-      // Update the local user state with the response
-      setUser(updatedUser);
-      
-      // Reset edit mode and files
-      setIsEditing(false);
-      setProfilePictureFile(null);
-      setPreviewUrl(null);
-      
-      toast({
-        title: "Success",
-        description: "Profile updated successfully",
-        variant: "default"
-      });
-    } catch (error) {
-      console.error('Error saving profile:', error);
-      toast({
-        title: "Update Failed",
-        description: error instanceof Error ? error.message : "Failed to update profile",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    const updateData: ProfileUpdateData = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      location: user.location,
+      dateOfBirth: user.dateOfBirth,
+      bio: user.bio,
+      profilePicture: profilePictureFile
+    };
+
+    updateProfileMutation.mutate(updateData);
   };
 
-  const handleInputChange = (field: keyof typeof user, value: string) => {
+  const handleInputChange = (field: any, value: string) => {
     if (isEditing && user && user[field] !== value) {
-      setUser(prev => prev ? { ...prev, [field]: value } : null);
+      // Update local state without setUser
+      queryClient.setQueryData(['user', 'profile'], (oldData: any) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          [field]: value
+        };
+      });
     }
   };
 
