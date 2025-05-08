@@ -310,25 +310,74 @@ class AuthService {
         throw new Error('No authentication token found');
       }
 
-      const formData = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-          // Handle the special case for phone number field name
-          const fieldName = key === 'phone' ? 'phoneNumber' : key;
-          formData.append(this.toSnakeCase(fieldName), value);
+      // Print current profile to identify what we're starting with
+      console.log('Current profile before update:', await this.getCurrentUser());
+      
+      // Handle file upload separately
+      let hasFile = false;
+      let profilePictureFile = null;
+      if (data.profilePicture instanceof File) {
+        hasFile = true;
+        profilePictureFile = data.profilePicture;
+      }
+      
+      // IMPORTANT: The backend expects camelCase field names from the frontend
+      // Directly use the original keys without transforming them to snake_case
+      const requestData: Record<string, any> = {};
+      
+      // Add all fields to the request data
+      if (data.firstName) requestData.firstName = data.firstName;
+      if (data.lastName) requestData.lastName = data.lastName;
+      if (data.email) requestData.email = data.email;
+      if (data.phoneNumber) requestData.phone = data.phoneNumber; // Note: Backend expects 'phone'
+      if (data.location) requestData.location = data.location;
+      if (data.dateOfBirth) requestData.dateOfBirth = data.dateOfBirth;
+      if (data.bio) requestData.bio = data.bio;
+      
+      console.log('Sending profile update with data:', requestData);
+      
+      let response;
+      
+      // Use FormData approach only if there's a file, otherwise use JSON
+      if (hasFile) {
+        const formData = new FormData();
+        
+        // Add all fields to FormData with camelCase keys
+        for (const [key, value] of Object.entries(requestData)) {
+          formData.append(key, value);
         }
-      });
-
-      const response = await api.patch(config.auth.updateEndpoint, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${token}`
-        },
-      });
+        
+        // Add the profile picture file
+        if (profilePictureFile) {
+          formData.append('profilePicture', profilePictureFile);
+        }
+        
+        console.log('Using FormData because file is present');
+        console.log('FormData entries:', [...formData.entries()]);
+        
+        response = await api.patch(config.auth.updateEndpoint, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${token}`
+          },
+        });
+      } else {
+        // Use regular JSON request with camelCase keys
+        response = await api.patch(config.auth.updateEndpoint, requestData, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        });
+      }
 
       if (!response.data) {
         throw new Error('Invalid response from profile update');
       }
+
+      console.log('Profile update response:', response.data);
+      console.log('Response headers:', response.headers);
+      console.log('Response status:', response.status);
 
       // Transform snake_case to camelCase
       const camelCaseData = this.transformToCamelCase(response.data);
@@ -342,9 +391,37 @@ class AuthService {
       // Update local storage with new user data
       storage.setUser(userData);
 
+      // Verify the update was successful by fetching fresh data
+      console.log('Verifying profile update with fresh fetch...');
+      setTimeout(async () => {
+        try {
+          const freshData = await this.getCurrentUser();
+          console.log('Fresh data after update:', freshData);
+          // Check if update succeeded
+          if (freshData?.firstName !== requestData.firstName ||
+              freshData?.lastName !== requestData.lastName ||
+              freshData?.dateOfBirth !== requestData.dateOfBirth ||
+              freshData?.phoneNumber !== requestData.phone) {
+            console.warn('⚠️ Profile update verification failed - discrepancy between sent and saved data');
+            console.log('Sent:', requestData);
+            console.log('Saved:', freshData);
+          } else {
+            console.log('✅ Profile update verification succeeded');
+          }
+        } catch (err) {
+          console.error('Error verifying profile update:', err);
+        }
+      }, 1000);
+
       return userData;
     } catch (error: any) {
       console.error('AuthService - Profile update API error:', error);
+      console.error('Full error object:', error);
+      if (error.response) {
+        console.error('Error response data:', error.response.data);
+        console.error('Error response status:', error.response.status);
+        console.error('Error response headers:', error.response.headers);
+      }
       const errorMessage = getErrorMessage(error);
       throw new Error(errorMessage);
     }
