@@ -34,9 +34,15 @@ const Profile = () => {
   // Use mutation for profile updates - MUST BE DEFINED BEFORE ANY CONDITIONAL RETURNS
   const updateProfileMutation = useMutation({
     mutationFn: (data: ProfileUpdateData) => AuthService.updateProfile(data),
-    onSuccess: () => {
-      // Invalidate the user profile query to refetch fresh data
+    onSuccess: (updatedUserData) => {
+      // Explicitly update React Query cache with the new data
+      queryClient.setQueryData(['user', 'profile'], updatedUserData);
+      
+      // Also invalidate to ensure consistency with server
       queryClient.invalidateQueries({ queryKey: ['user'] });
+      
+      // Force a refetch to ensure we have the latest data
+      queryClient.refetchQueries({ queryKey: ['user', 'profile'] });
       
       // Reset edit mode and files
       setIsEditing(false);

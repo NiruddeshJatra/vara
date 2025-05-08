@@ -1,18 +1,19 @@
+import React, { useEffect } from 'react';
 import { Bell, CheckCircle, Edit, Star, AlertCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useEffect } from 'react';
 
 interface ProfileHeaderProps {
   userData: {
     firstName?: string;
     lastName?: string;
     username?: string;
-    profilePicture?: string;
+    profilePicture?: string | null;
+    profilePictureUrl?: string | null;
     memberSince?: string;
     isTrusted?: boolean;
-    averageRating?: number;
+    averageRating?: number | string;
     notificationCount?: number;
     profileCompleted?: boolean;
   };
@@ -23,10 +24,40 @@ interface ProfileHeaderProps {
 const ProfileHeader = ({ userData, isEditing, onEdit }: ProfileHeaderProps) => {
   const isProfileComplete = userData?.profileCompleted ?? false;
 
-  // Simple debug log to track profile completion status
+  // Track when profile data is updated
   useEffect(() => {
-    console.log('ProfileHeader - Profile completion status:', isProfileComplete);
-  }, [isProfileComplete]);
+    // Component will auto-update when userData changes
+  }, [userData]);
+
+  // Function to determine best profile image URL from available data
+  const getProfileImageUrl = () => {
+    // Check if the required data exists
+    if (!userData) {
+      return '/default-avatar.png';
+    }
+    
+    // Try profile picture URL first
+    if (userData.profilePictureUrl) {
+      // Check if it's a relative URL and prefix with base URL if needed
+      if (userData.profilePictureUrl.startsWith('/')) {
+        const absoluteUrl = `http://localhost:8000${userData.profilePictureUrl}`;
+        return absoluteUrl;
+      }
+      return userData.profilePictureUrl;
+    }
+    
+    // Then try profile picture with URL construction
+    if (userData.profilePicture && userData.profilePicture !== 'null') {
+      // Handle both relative and absolute paths
+      if (userData.profilePicture.startsWith('/')) {
+        return `http://localhost:8000${userData.profilePicture}`;
+      }
+      return userData.profilePicture;
+    }
+    
+    // Fallback to default avatar
+    return '/default-avatar.png';
+  };
 
   return (
     <div className="bg-gradient-to-l from-leaf-100 to-green-50 rounded-xl shadow-md px-4 sm:px-8 md:px-16 lg:px-24 py-6 sm:py-8 mb-8 border border-green-200">
@@ -35,15 +66,16 @@ const ProfileHeader = ({ userData, isEditing, onEdit }: ProfileHeaderProps) => {
         <div className="relative">
           <Avatar className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full border-4 border-green-100">
             <AvatarImage 
-              src={
-                userData?.profilePicture
-                  ? userData.profilePicture.startsWith('http')
-                    ? userData.profilePicture
-                    : `${process.env.NEXT_PUBLIC_MEDIA_BASE_URL}${userData.profilePicture}`
-                  : '/default-avatar.png'
-              }
+              src={getProfileImageUrl()}
               alt={`${userData?.firstName || ''} ${userData?.lastName || ''}`}
-              className="object-cover"
+              className="object-cover w-full h-full"
+              style={{ objectFit: 'cover' }}  
+              onError={(e) => {
+                // Fall back to initials if image fails to load
+                e.currentTarget.src = '/default-avatar.png';
+                // Prevent infinite error loops in case default avatar also fails
+                e.currentTarget.onerror = null;
+              }}
             />
             <AvatarFallback className="bg-green-100 text-green-800 text-xl sm:text-2xl">
               {(userData?.firstName?.[0] || '') + (userData?.lastName?.[0] || '')}

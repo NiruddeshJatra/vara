@@ -245,19 +245,32 @@ class AuthService {
 
   // Utility function to transform snake_case to camelCase
   transformToCamelCase(obj: any): any {
+    if (obj === null || typeof obj !== 'object') return obj;
+
+    // Handle arrays
     if (Array.isArray(obj)) {
-      return obj.map((item) => this.transformToCamelCase(item));
+      return obj.map(item => this.transformToCamelCase(item));
     }
-    if (obj !== null && typeof obj === "object") {
-      return Object.keys(obj).reduce((acc: any, key: string) => {
-        const camelKey = key.replace(/_([a-z])/g, (_, letter) =>
-          letter.toUpperCase()
-        );
-        acc[camelKey] = this.transformToCamelCase(obj[key]);
-        return acc;
-      }, {});
-    }
-    return obj;
+
+    // Transform object keys from snake_case to camelCase
+    return Object.keys(obj).reduce((acc: any, key: string) => {
+      // Transform snake_case key to camelCase
+      const camelKey = key.replace(/(_\w)/g, (match) => match[1].toUpperCase());
+
+      // Special handling for profile picture URL
+      if (key === 'profile_picture_url') {
+        // Add both original and camelCase versions
+        acc.profilePictureUrl = obj[key];
+        if (obj[key] && !obj[key].startsWith('http') && obj[key] !== 'null') {
+          acc.profilePictureUrl = `${config.baseUrl}${obj[key]}`;
+        }
+      }
+
+      // Recursively transform nested objects
+      acc[camelKey] = this.transformToCamelCase(obj[key]);
+
+      return acc;
+    }, {});
   }
 
   // Helper: Convert camelCase to snake_case
@@ -266,16 +279,20 @@ class AuthService {
   }
 
   // Get the current user's profile with fresh data from server
-  async getCurrentUser(): Promise<UserData | null> {
+  async getCurrentUser(forceRefresh = false): Promise<UserData | null> {
     try {
       const token = storage.getToken();
       if (!token) {
         return null;
       }
 
-      const response = await api.get(config.auth.profileEndpoint, {
+      // Add cache busting parameter to ensure fresh data
+      const timestamp = new Date().getTime();
+      const response = await api.get(`${config.auth.profileEndpoint}${forceRefresh ? `?_=${timestamp}` : ''}`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
         }
       });
 
@@ -288,6 +305,16 @@ class AuthService {
         phoneNumber: camelCaseData.phoneNumber || camelCaseData.phone,
         profileCompleted: !!camelCaseData.profileCompleted
       };
+      
+      // Add profile picture URL if available in response but not in transformed data
+      if (response.data.profile_picture_url && !userData.profilePictureUrl) {
+        // Check if profile_picture_url is already a full URL
+        if (response.data.profile_picture_url.startsWith('http')) {
+          userData.profilePictureUrl = response.data.profile_picture_url;
+        } else {
+          userData.profilePictureUrl = `${config.baseUrl}${response.data.profile_picture_url}`;
+        }
+      }
 
       // Update local storage with new user data
       storage.setUser(userData);
@@ -310,8 +337,8 @@ class AuthService {
         throw new Error('No authentication token found');
       }
 
-      // Print current profile to identify what we're starting with
-      console.log('Current profile before update:', await this.getCurrentUser());
+      // Get current profile for reference
+      await this.getCurrentUser();
       
       // Handle file upload separately
       let hasFile = false;
@@ -334,7 +361,7 @@ class AuthService {
       if (data.dateOfBirth) requestData.dateOfBirth = data.dateOfBirth;
       if (data.bio) requestData.bio = data.bio;
       
-      console.log('Sending profile update with data:', requestData);
+      // Prepare to send profile update with data
       
       let response;
       
@@ -352,8 +379,7 @@ class AuthService {
           formData.append('profilePicture', profilePictureFile);
         }
         
-        console.log('Using FormData because file is present');
-        console.log('FormData entries:', [...formData.entries()]);
+        // Using FormData approach for file upload
         
         response = await api.patch(config.auth.updateEndpoint, formData, {
           headers: {
@@ -375,43 +401,71 @@ class AuthService {
         throw new Error('Invalid response from profile update');
       }
 
-      console.log('Profile update response:', response.data);
-      console.log('Response headers:', response.headers);
-      console.log('Response status:', response.status);
+      // Process the profile update response
 
+      // Create a merged object that contains both the updated data we sent and the response
+      // This ensures we have a full and complete user object
+      const responseData = response.data;
+      
       // Transform snake_case to camelCase
-      const camelCaseData = this.transformToCamelCase(response.data);
+      const camelCaseData = this.transformToCamelCase(responseData);
 
       // Ensure profileCompleted is a boolean
       const userData: UserData = {
         ...camelCaseData,
+        // Override with our sent values to ensure consistency
+        firstName: data.firstName || camelCaseData.firstName,
+        lastName: data.lastName || camelCaseData.lastName,
+        phoneNumber: data.phoneNumber || camelCaseData.phoneNumber,
+        dateOfBirth: data.dateOfBirth || camelCaseData.dateOfBirth,
+        location: data.location || camelCaseData.location,
+        bio: data.bio || camelCaseData.bio,
         profileCompleted: !!camelCaseData.profileCompleted
       };
 
       // Update local storage with new user data
       storage.setUser(userData);
-
-      // Verify the update was successful by fetching fresh data
-      console.log('Verifying profile update with fresh fetch...');
-      setTimeout(async () => {
-        try {
-          const freshData = await this.getCurrentUser();
-          console.log('Fresh data after update:', freshData);
-          // Check if update succeeded
-          if (freshData?.firstName !== requestData.firstName ||
-              freshData?.lastName !== requestData.lastName ||
-              freshData?.dateOfBirth !== requestData.dateOfBirth ||
-              freshData?.phoneNumber !== requestData.phone) {
-            console.warn('⚠️ Profile update verification failed - discrepancy between sent and saved data');
-            console.log('Sent:', requestData);
-            console.log('Saved:', freshData);
+      
+      // Explicitly get fresh data from the server with cache bypass
+      const freshData = await this.getCurrentUser(true); // true = force refresh
+      if (freshData) {
+        // Handle profile picture URL transformation if needed
+        if (responseData.profile_picture_url && !freshData.profilePictureUrl) {
+          // Check if profile_picture_url is already a full URL
+          if (responseData.profile_picture_url.startsWith('http')) {
+            freshData.profilePictureUrl = responseData.profile_picture_url;
           } else {
-            console.log('✅ Profile update verification succeeded');
+            freshData.profilePictureUrl = `${config.baseUrl}${responseData.profile_picture_url}`;
           }
-        } catch (err) {
-          console.error('Error verifying profile update:', err);
         }
-      }, 1000);
+        
+        // Get profile picture URL from the response if it exists
+        const profilePictureUrl = responseData.profile_picture_url
+          ? responseData.profile_picture_url.startsWith('http')
+            ? responseData.profile_picture_url
+            : `${config.baseUrl}${responseData.profile_picture_url}`
+          : freshData.profilePictureUrl;
+          
+        // Ensure form field values override the received values for consistency
+        const updatedFreshData = {
+          ...freshData,
+          firstName: data.firstName || freshData.firstName,
+          lastName: data.lastName || freshData.lastName,
+          phoneNumber: data.phoneNumber || freshData.phoneNumber,
+          dateOfBirth: data.dateOfBirth || freshData.dateOfBirth,
+          location: data.location || freshData.location,
+          bio: data.bio || freshData.bio,
+          profilePictureUrl: profilePictureUrl
+        };
+        
+        // Update local storage with the definitive data
+        storage.setUser(updatedFreshData);
+        
+        // Successfully updated profile data
+        
+        // Return the updated data to ensure UI is properly refreshed
+        return updatedFreshData;
+      }
 
       return userData;
     } catch (error: any) {

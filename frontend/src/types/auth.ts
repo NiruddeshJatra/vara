@@ -39,6 +39,7 @@ export interface UserData {
   firstName: string;
   lastName: string;
   phoneNumber: string;
+  profilePictureUrl?: string;
   dateOfBirth: string;
   location: string;
   profilePicture: string | null;
