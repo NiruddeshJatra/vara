@@ -29,6 +29,8 @@ import EmailVerification from "./pages/EmailVerification";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import MyListings from "./pages/MyListings";
+import FAQ from "./pages/FAQ";
+import About from "./pages/About";
 
 import { queryClient } from './lib/react-query';
 
@@ -56,6 +58,8 @@ const App = () => {
                 <Advertisements />
               } />
               <Route path="/items/:productId" element={<ItemDetail />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/about" element={<About />} />
               <Route path="/verify-email" element={<VerifyEmailNotice />} />
               <Route path="/auth/verify-email/:token" element={<EmailVerification />} />
 

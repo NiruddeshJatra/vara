@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, User, LogOut, Home, Package, Plus, SlidersHorizontal, PackageOpen } from 'lucide-react';
+import { Menu, X, User, LogOut, Home, Package, Plus, SlidersHorizontal, PackageOpen, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -148,6 +148,12 @@ const NavBar = () => {
                     <span>My Listings</span>
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild className="focus:bg-green-50 focus:text-green-700">
+                  <Link to="/about" className="flex items-center">
+                    <Info className="mr-2 h-4 w-4 text-green-600" />
+                    <span>About Us</span>
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-green-100" />
                 <DropdownMenuItem 
                   onClick={handleLogout} 
@@ -209,6 +215,9 @@ const NavBar = () => {
                 <Link to="/profile" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2">
                   <User size={18} /> Profile
                 </Link>
+                <Link to="/about" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2">
+                  <Info size={18} /> About Us
+                </Link>
                 <Button
                   onClick={handleUploadProduct}
                   className="w-full bg-green-600 hover:bg-green-700 hover:scale-105 text-white font-semibold py-2 rounded-full mt-2 flex items-center justify-center gap-2"
@@ -226,6 +235,9 @@ const NavBar = () => {
             )}
             {!isAuthenticated && (
               <>
+                <Link to="/about" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2">
+                  <Info size={18} /> About Us
+                </Link>
                 <Link to="/auth/login/" className="w-full">
                   <Button variant="outline" className="w-full border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700 font-semibold py-2 rounded-full mt-2">Log In</Button>
                 </Link>

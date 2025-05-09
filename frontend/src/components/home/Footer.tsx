@@ -6,6 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -31,7 +32,7 @@ const Footer = () => {
           <div>
             <h4 className="text-green-900 font-semibold mb-2 md:mb-3 text-sm md:text-base lg:text-lg">Company</h4>
             <ul className="space-y-1 md:space-y-2">
-              <li><a href="#" className="hover:text-lime-600 transition text-gray-500 text-xs md:text-sm">About Us</a></li>
+              <li><Link to="/about" className="hover:text-lime-600 transition text-gray-500 text-xs md:text-sm">About Us</Link></li>
               <li><a href="#" className="hover:text-lime-600 transition text-gray-500 text-xs md:text-sm">Careers</a></li>
               <li><a href="#" className="hover:text-lime-600 transition text-gray-500 text-xs md:text-sm">Press</a></li>
               <li><a href="#" className="hover:text-lime-600 transition text-gray-500 text-xs md:text-sm">Blog</a></li>
@@ -43,7 +44,7 @@ const Footer = () => {
             <ul className="space-y-1 md:space-y-2">
               <li><a href="#" className="hover:text-lime-600 transition text-gray-500 text-xs md:text-sm">Help Center</a></li>
               <li><a href="#" className="hover:text-lime-600 transition text-gray-500 text-xs md:text-sm">Contact Us</a></li>
-              <li><a href="#" className="hover:text-lime-600 transition text-gray-500 text-xs md:text-sm">FAQ</a></li>
+              <li><Link to="/faq" className="hover:text-lime-600 transition text-gray-500 text-xs md:text-sm">FAQ</Link></li>
               <li><a href="#" className="hover:text-lime-600 transition text-gray-500 text-xs md:text-sm">Trust & Safety</a></li>
             </ul>
           </div>

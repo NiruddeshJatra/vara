@@ -235,7 +235,7 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            A refundable amount to protect against damage or loss
+            A refundable amount the renter has to pay before renting to protect against damage or loss
           </p>
         </div>
       </div>
@@ -249,6 +249,7 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
           <li>Consider offering discounts for longer rental periods</li>
           <li>For example: Higher daily rate, lower weekly rate, lowest monthly rate</li>
           <li>Add a deposit for valuable items to protect against damage</li>
+          <li>Keep in mind that renters will have to pay the deposit before renting. So, set a deposit amount that is reasonable for your item and reasonable for the renter to pay</li>
         </ul>
       </div>
     </div>

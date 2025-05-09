@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Bell, CheckCircle, Edit, Star, AlertCircle } from 'lucide-react';
+import { useEffect } from 'react';
+import { CheckCircle, Edit, Star } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

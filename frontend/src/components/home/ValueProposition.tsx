@@ -39,7 +39,7 @@ const ValueProposition = () => {
             Why Choose Bhara?
           </h2>
           <p className="text-green-700/80 mb-3 text-sm md:text-base">
-            Join thousands of people saving money and living more sustainably.
+          Rent anything you need or earn from what you own—Bhara handles everything from security checks to delivery, ensuring a safe and seamless experience for both renters and owners.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
