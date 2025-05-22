@@ -6,8 +6,10 @@ import { useNavigate } from 'react-router-dom';
 import { Product } from '@/types/listings';
 import { DurationUnit } from '@/constants/rental';
 import { Category, ProductType } from '@/constants/productTypes';
+import { useTranslation } from 'react-i18next';
 
 const FeaturedListings = () => {
+  const { t } = useTranslation();
   // Generate mock listings for display
   const mockListings: Product[] = [
     {
@@ -141,13 +143,13 @@ const FeaturedListings = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 animate-fade-up">
           <span className="inline-block px-4 py-1.5 text-xs md:text-sm font-medium rounded-full bg-green-600/10 text-green-600 mb-4">
-            Featured
+            {t('home.featured.badge')}
           </span>
           <h2 className="text-2xl md:text-4xl font-bold text-green-800 mb-4">
-            Popular Items Near You
+            {t('home.featured.title')}
           </h2>
           <p className="text-green-700/80 mb-3 text-center text-[0.85rem]">
-            Discover items available for rent in your area
+            {t('home.featured.subtitle')}
           </p>
         </div>
 
@@ -174,7 +176,7 @@ const FeaturedListings = () => {
               navigate('/advertisements');
             }}
           >
-            See All Available Items
+            {t('home.featured.viewAll')}
           </Button>
         </div>
       </div>

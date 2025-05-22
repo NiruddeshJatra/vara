@@ -9,7 +9,6 @@ import Footer from "@/components/home/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from '@/components/ui/use-toast';
 import AuthService from "@/services/auth.service";
-import { LoginData } from '@/types/auth';
 import { validateLoginForm } from '@/utils/validations/auth.validations';
 
 const Login = () => {

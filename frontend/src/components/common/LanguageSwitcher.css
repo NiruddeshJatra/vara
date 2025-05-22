@@ -1,0 +1,122 @@
+/* Language Switcher Toggle Styles */
+.language-toggle-container {
+  display: inline-block;
+}
+
+.language-toggle-input {
+  display: none;
+}
+
+.language-toggle-label {
+  background-color: #e5fbe6;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 4px;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 8px;
+  box-shadow: none;
+  color: #156935;
+  border: 1px solid #9bd4a7;
+  transition: all 0.2s ease;
+  font-size: 0.75rem;
+}
+
+.language-toggle-label:hover {
+  background-color: #d8ffd4;
+  border-color: #86efac;
+}
+
+.language-toggle-icon {
+  width: 14px;
+  height: 14px;
+  color: #65a30d;
+}
+
+.language-toggle-input:checked + .language-toggle-label .language-toggle-icon {
+  color: #15803d;
+  animation: toggleAnimation 1s;
+}
+
+@keyframes toggleAnimation {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.3);
+  }
+  50% {
+    transform: scale(1);
+  }
+  75% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.language-toggle-action {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  min-width: 30px;
+}
+
+.language-toggle-action span {
+  grid-column-start: 1;
+  grid-column-end: 1;
+  grid-row-start: 1;
+  grid-row-end: 1;
+  transition: all 0.5s;
+  text-align: center;
+}
+
+.language-toggle-action span.language-option-1 {
+  transform: translate(0px, 0%);
+  opacity: 1;
+}
+
+.language-toggle-input:checked + .language-toggle-label .language-toggle-action span.language-option-1 {
+  transform: translate(0px, -100%);
+  opacity: 0;
+}
+
+.language-toggle-action span.language-option-2 {
+  transform: translate(0px, 100%);
+  opacity: 0;
+  font-family: 'Hind Siliguri', sans-serif;
+}
+
+.language-toggle-input:checked + .language-toggle-label .language-toggle-action span.language-option-2 {
+  transform: translate(0px, 0%);
+  opacity: 1;
+}
+
+/* Compact version for mobile */
+.language-toggle-label.compact {
+  padding: 3px 6px;
+  font-size: 0.7rem;
+  border-color: #e2e8f0;
+  background-color: transparent;
+}
+
+.language-toggle-label.compact .language-toggle-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* Mobile menu specific styles */
+.mobile-menu-language-toggle {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+}
+
+.mobile-menu-language-toggle .language-toggle-label {
+  width: 100%;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 20px;
+}

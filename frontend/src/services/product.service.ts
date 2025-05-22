@@ -377,7 +377,6 @@ class ProductService {
    */
   async deleteProduct(productId: string): Promise<void> {
     try {
-      // Delete the product
       await api.delete(config.products.deleteEndpoint(productId));
       
       // Invalidate related queries

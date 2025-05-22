@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, User, LogOut, Home, Package, Plus, SlidersHorizontal, PackageOpen, Info } from 'lucide-react';
+import { Menu, X, User, LogOut, Home, Package, Plus, SlidersHorizontal, PackageOpen, Info, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import CompactSearchBar from '@/components/advertisements/CompactSearchBar';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileCompletionModal } from '@/components/common/ProfileCompletionModal';
+import LanguageSwitcher from '@/components/common/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 const NavBar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -23,6 +25,7 @@ const NavBar = () => {
   const isHomePage = filepath.pathname === '/';
   const isAdvertismentsPage = filepath.pathname === '/advertisements';
   const isUploadProductPage = filepath.pathname === '/upload-product';
+  const { t } = useTranslation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -119,6 +122,7 @@ const NavBar = () => {
 
         {/* Desktop Action Buttons */}
         <div className="hidden md:flex items-center space-x-2 md:space-x-3 lg:space-x-4 mr-4 lg:mr-12">
+          <LanguageSwitcher compact={true} />
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -154,7 +158,14 @@ const NavBar = () => {
                     <span>About Us</span>
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild className="focus:bg-green-50 focus:text-green-700">
+                  <Link to="/faq" className="flex items-center">
+                    <HelpCircle className="mr-2 h-4 w-4 text-green-600" />
+                    <span>{t('navigation.faq')}</span>
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-green-100" />
+                <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   onClick={handleLogout} 
                   className="focus:bg-green-50 focus:text-green-700 cursor-pointer"
@@ -218,6 +229,12 @@ const NavBar = () => {
                 <Link to="/about" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2">
                   <Info size={18} /> About Us
                 </Link>
+                <Link to="/faq" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2">
+                  <HelpCircle size={18} /> {t('navigation.faq')}
+                </Link>
+                <div className="mobile-menu-language-toggle">
+                  <LanguageSwitcher />
+                </div>
                 <Button
                   onClick={handleUploadProduct}
                   className="w-full bg-green-600 hover:bg-green-700 hover:scale-105 text-white font-semibold py-2 rounded-full mt-2 flex items-center justify-center gap-2"
@@ -238,6 +255,12 @@ const NavBar = () => {
                 <Link to="/about" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2">
                   <Info size={18} /> About Us
                 </Link>
+                <Link to="/faq" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2">
+                  <HelpCircle size={18} /> {t('navigation.faq')}
+                </Link>
+                <div className="mobile-menu-language-toggle">
+                  <LanguageSwitcher />
+                </div>
                 <Link to="/auth/login/" className="w-full">
                   <Button variant="outline" className="w-full border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700 font-semibold py-2 rounded-full mt-2">Log In</Button>
                 </Link>

@@ -21,7 +21,7 @@ const ProfileListings = () => {
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
 
   // Fetch user's listings using React Query
-  const { data: listings = [], isLoading, error } = useQuery({
+  const { data: listings = [], isLoading, error, refetch } = useQuery({
     queryKey: ['userProducts'],
     queryFn: async () => {
       const result = await productService.getUserProducts();
@@ -35,7 +35,9 @@ const ProfileListings = () => {
 
   // Delete product mutation with optimistic updates
   const deleteMutation = useMutation({
-    mutationFn: (productId: string) => productService.deleteProduct(productId),
+    mutationFn: async (productId: string) => {
+      return await productService.deleteProduct(productId);
+    },
     onMutate: async (productId) => {
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['userProducts'] });
@@ -44,11 +46,29 @@ const ProfileListings = () => {
       // Snapshot the previous value
       const previousUserProducts = queryClient.getQueryData(['userProducts']);
 
-      // Optimistically update the cache
-      queryClient.setQueryData(['userProducts'], (old: any) => ({
-        ...old,
-        products: old.products.filter((p: Product) => p.id !== productId)
-      }));
+      // Optimistically update the cache - handle both possible data structures
+      queryClient.setQueryData(['userProducts'], (old: any) => {
+        // Handle case where old is undefined
+        if (!old) {
+          return old;
+        }
+        
+        // Handle case where old is an array (direct list of products)
+        if (Array.isArray(old)) {
+          return old.filter((p: Product) => p.id !== productId);
+        }
+        
+        // Handle case where old is an object with products property
+        if (old.products && Array.isArray(old.products)) {
+          return {
+            ...old,
+            products: old.products.filter((p: Product) => p.id !== productId)
+          };
+        }
+        
+        // Fallback for any other unexpected structure
+        return old;
+      });
 
       return { previousUserProducts };
     },
@@ -57,6 +77,8 @@ const ProfileListings = () => {
       removeProductFromCache(productId);
       // Invalidate related queries to refetch fresh data
       invalidateProducts();
+      // Force refetch to ensure UI is updated
+      refetch();
       
       setDeleteConfirmationOpen(false);
       setProductToDelete(null);
@@ -67,7 +89,7 @@ const ProfileListings = () => {
         variant: "default"
       });
     },
-    onError: (error, _, context) => {
+    onError: (error, productId, context) => {
       // Rollback to the previous value if mutation fails
       if (context?.previousUserProducts) {
         queryClient.setQueryData(['userProducts'], context.previousUserProducts);

@@ -29,6 +29,7 @@ from .throttles import AuthenticationThrottle, UserProfileThrottle
 from .email_service import send_password_reset_email
 from django.conf import settings
 from users.tasks import send_verification_email_task, send_password_reset_email_task
+from bhara.redis_utils import cache_data, get_cached_data
 
 User = get_user_model()
 
@@ -87,15 +88,26 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"])
     def me(self, request):
-        """Get the current user's profile."""
+        """Get the current user's profile with Redis caching."""
         user = request.user
+        cache_key = f"user_profile_{user.id}"
+        
+        # Try to get user profile from cache first
+        cached_data = get_cached_data(cache_key)
+        if cached_data:
+            return Response(cached_data)
+            
+        # If not in cache, serialize and cache it
         serializer = self.get_serializer(user)
+        cache_data(cache_key, serializer.data, timeout=3600)  # Cache for 1 hour
+        
         return Response(serializer.data)
 
     @action(detail=False, methods=["put", "patch"])
     def update_profile(self, request):
         """Update the current user's profile."""
         user = request.user
+        cache_key = f"user_profile_{user.id}"
         
         # Map frontend camelCase field names to backend snake_case field names
         mapped_data = {}
@@ -124,11 +136,14 @@ class UserViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             serializer.save()
             user.refresh_from_db()  # Refresh to ensure we get the updated data
+            
+            # Invalidate the cache by updating it with new data
+            updated_serializer = self.get_serializer(user)
+            cache_data(cache_key, updated_serializer.data, timeout=3600)  # Update cache with new data
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        # Return updated profile data
-        updated_serializer = self.get_serializer(user)
+        # Return updated profile data (using the serializer we already created above)
         return Response(updated_serializer.data)
 
     @action(detail=False, methods=["post"])
@@ -143,12 +158,18 @@ class UserViewSet(viewsets.ModelViewSet):
             Response: The updated user profile data
         """
         user = request.user
+        cache_key = f"user_profile_{user.id}"
+        
         serializer = self.get_serializer(user, data=request.data)
         serializer.is_valid(raise_exception=True)
         
         # Set profile_completed to True before saving
         serializer.validated_data['profile_completed'] = True
         serializer.save()
+        
+        # Update the cache with the new profile data
+        updated_serializer = self.get_serializer(user)
+        cache_data(cache_key, updated_serializer.data, timeout=3600)
         
         return Response(
             {
@@ -164,6 +185,8 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def upload_picture(self, request):
         # POST: Upload a new profile picture and delete the old one if exists.
+        cache_key = f"user_profile_{request.user.id}"
+        
         serializer = ProfilePictureSerializer(
             request.user, data=request.data, partial=True
         )
@@ -171,6 +194,11 @@ class UserViewSet(viewsets.ModelViewSet):
             if request.user.profile_picture:
                 request.user.profile_picture.delete()
             serializer.save()
+            
+            # Update cache with new profile picture data
+            profile_serializer = self.get_serializer(request.user)
+            cache_data(cache_key, profile_serializer.data, timeout=3600)
+            
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
 
@@ -563,17 +591,35 @@ class LogoutView(APIView):
             Response: The logout result
         """
         try:
-            # Blacklist the refresh token
             refresh_token = request.data.get("refresh")
-            if refresh_token:
-                token = RefreshToken(refresh_token)
-                token.blacklist()
-            
-            # Invalidate the session
-            Session.objects.filter(session_key=request.session.session_key).delete()
-            
+            if not refresh_token:
+                return Response(
+                    {"error": _("Refresh token is required")},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Blacklist the refresh token
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+            # Clear user profile cache if user is authenticated
+            if request.user.is_authenticated:
+                cache_key = f"user_profile_{request.user.id}"
+                # Use get_redis_client directly for deletion as it's more efficient for this case
+                from bhara.redis_utils import get_redis_client
+                redis_client = get_redis_client()
+                if redis_client:
+                    redis_client.delete(cache_key)
+
+            # Logout from the current session if authenticated
+            if request.auth:
+                request.auth.revoke()
+
+            # Delete the session
+            request.session.flush()
+
             return Response(
-                {"message": _("Logged out successfully.")},
+                {"detail": _("Successfully logged out.")},
                 status=status.HTTP_200_OK,
             )
         except Exception as e:

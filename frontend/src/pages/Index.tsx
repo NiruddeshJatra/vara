@@ -9,7 +9,7 @@ import Testimonials from '@/components/home/Testimonials';
 import TrustSafety from '@/components/home/TrustSafety';
 import FooterCTA from '@/components/home/FooterCTA';
 import Footer from '@/components/home/Footer';
-import MobileNavBar from '@/components/home/MobileNavBar';
+
 import '../styles/main.css';
 
 const Index = () => {
@@ -58,7 +58,7 @@ const Index = () => {
       <TrustSafety />
       <FooterCTA />
       <Footer />
-      <MobileNavBar />
+
     </div>
   );
 };

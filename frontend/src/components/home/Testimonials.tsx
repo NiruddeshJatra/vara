@@ -1,5 +1,6 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useTranslation } from 'react-i18next';
 
 const testimonials = [
   {
@@ -29,6 +30,7 @@ const testimonials = [
 ];
 
 const Testimonials = () => {
+  const { t } = useTranslation();
   return (
     <section id="testimonials" className="section relative bg-gradient-to-b from-green-50 to-white">
       {/* Nature-inspired background elements */}
@@ -36,9 +38,9 @@ const Testimonials = () => {
       
       <div className="container mx-auto">
         <div className="section-title animate-fade-up">
-          <span className="inline-block px-4 py-1.5 text-xs md:text-sm font-medium rounded-full bg-green-600/10 text-green-600 mb-4" style={{fontSize: '0.68rem'}}>User Testimonials</span>
-          <h2 className="text-2xl md:text-4xl font-bold text-green-800 mb-3 text-center">What Our Users Say</h2>
-          <p className="text-green-700/80 mb-3 text-[0.85rem] md:text-base">Join thousands of people already saving money and earning extra income with Bhara.</p>
+          <span className="inline-block px-4 py-1.5 text-xs md:text-sm font-medium rounded-full bg-green-600/10 text-green-600 mb-4" style={{fontSize: '0.68rem'}}>{t('home.reviews.badge')}</span>
+          <h2 className="text-2xl md:text-4xl font-bold text-green-800 mb-4">{t('home.reviews.title')}</h2>
+          <p className="text-green-700/80 mb-3 text-center text-[0.85rem]">{t('home.reviews.subtitle')}</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

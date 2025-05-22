@@ -4,11 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
+import { useTranslation } from 'react-i18next';
 
 const Hero = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [location, setLocation] = useState('');
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-12 lg:pt-24 pb-16 overflow-hidden">
@@ -24,13 +26,13 @@ const Hero = () => {
         {/* Text content */}
         <div className="flex flex-col items-center animate-fade-up w-full max-w-xs sm:max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto">
           <span className="text-xs sm:text-sm font-medium bg-white/10 text-white px-3 sm:px-4 py-1 sm:py-1.5 rounded-full mb-4 sm:mb-6">
-            Welcome to Bhara
+            {t('common.welcome')}
           </span>
           <h1 className="font-bold text-4xl sm:text-5xl md:text-5xl lg:text-6xl mb-4 sm:mb-6 leading-tight text-white">
-            Rent Anything, <span className="text-lime-300">Anywhere</span>
+            {t('home.hero.title')} <span className="text-lime-300">{t('home.hero.title2')}</span>
           </h1>
           <p className="text-xs/5 sm:text-sm/5 md:text-base/6 lg:text-base/7 text-white/80 mb-6 sm:mb-8 max-w-xs sm:max-w-lg md:max-w-xl">
-            The trusted community marketplace for lending and borrowing everyday items. Save money, earn income, and live more sustainably.
+            {t('home.hero.subtitle')}
           </p>
           
           {/* Search UI */}
@@ -40,7 +42,7 @@ const Hero = () => {
                 <Search className="absolute left-3 top-3 sm:top-4 h-4 w-4 text-green-600/60" />
                 <Input
                   type="text"
-                  placeholder="What do you need to borrow today?"
+                  placeholder={t('home.hero.searchPlaceholder')}
                   className="pl-9 h-10 sm:h-12 text-xs border-green-100 focus:border-green-300 focus:ring-green-200"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -50,7 +52,7 @@ const Hero = () => {
                 <MapPin className="absolute left-3 top-3 sm:top-4 h-4 w-4 text-green-600/60" />
                 <Input
                   type="text"
-                  placeholder="Select your location"
+                  placeholder={t('home.hero.locationPlaceholder')}
                   className="pl-9 h-10 sm:h-12 text-xs border-green-100 focus:border-green-300 focus:ring-green-200"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
@@ -66,7 +68,7 @@ const Hero = () => {
                   navigate(`/advertisements${params.toString() ? `?${params}` : ''}`);
                 }}
               >
-                Find Items
+                {t('home.hero.buttonText')}
               </Button>
             </div>
           </div>

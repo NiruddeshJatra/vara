@@ -2,6 +2,7 @@ import React from 'react';
 import { MonitorSmartphone, Hammer, Tent, Camera, PartyPopper, Car } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
+import { useTranslation } from 'react-i18next';
 
 const categories = [
   {
@@ -44,18 +45,19 @@ const categories = [
 
 const PopularCategories = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   return (
     <section id="browse-items" className="section relative bg-gradient-to-b from-green-50 to-white nature-pattern animate-fade-up">
       <div className="container mx-auto">
         <div className="section-title animate-fade-up">
           <span className="inline-block px-4 py-1.5 text-xs md:text-sm font-medium rounded-full bg-green-600/10 text-green-600 mb-4">
-            Categories
+            {t('home.categories.badge')}
           </span>
           <h2 className="text-2xl md:text-4xl font-bold text-green-800 mb-4">
-            Popular Categories
+            {t('home.categories.title')}
           </h2>
           <p className="text-green-700/80 mb-3 text-center text-[0.85rem]">
-            Explore trending item types and discover what's available in your area.
+            {t('home.categories.subtitle')}
           </p>
         </div>
 
@@ -89,7 +91,7 @@ const PopularCategories = () => {
               navigate('/advertisements');
             }}
           >
-            Explore All Categories
+            {t('home.categories.viewAll')}
             <svg className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>

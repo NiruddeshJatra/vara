@@ -67,6 +67,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.cache.FetchFromCacheMiddleware",
     "bhara.middleware.RequestTimingLoggingMiddleware",
+    "bhara.middleware.RedisConnectionManagementMiddleware",  # Redis connection management
 ]
 
 # CACHES = {
@@ -292,6 +293,8 @@ CSRF_COOKIE_SAMESITE = "Lax"
 # }
 
 
+# Configure CACHES based on environment
+# This base setting will be overridden in environment-specific settings
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.dummy.DummyCache",

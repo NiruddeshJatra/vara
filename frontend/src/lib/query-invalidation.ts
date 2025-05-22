@@ -49,8 +49,26 @@ export const invalidateProductById = (productId: string) => {
  * @param productId The ID of the product to remove
  */
 export const removeProductFromCache = (productId: string) => {
+  // Remove specific product query
   queryClient.removeQueries({ queryKey: ['product', productId] });
-  invalidateProducts();
+  
+  // Force refetch active products to ensure they're updated across all components
+  queryClient.invalidateQueries({ 
+    queryKey: ['products'], 
+    refetchType: 'active', // Only refetch active queries
+  });
+  
+  // Force refetch user products
+  queryClient.invalidateQueries({ 
+    queryKey: ['userProducts'],
+    refetchType: 'active',
+  });
+  
+  // Reset all queries that might include this product without parameters (like category pages)
+  queryClient.resetQueries({
+    queryKey: ['products'],
+    exact: false,
+  });
 };
 
 /**

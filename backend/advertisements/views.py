@@ -20,6 +20,7 @@ import json
 from django.http import HttpResponse
 import logging
 import time
+from bhara.redis_utils import cache_data, get_cached_data, get_redis_client
 
 # --- Health check endpoint for AWS Load Balancer ---
 def health_check(request):
@@ -44,6 +45,63 @@ class ProductViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
     parser_classes = [MultiPartParser, FormParser, JSONParser]
     logger = logging.getLogger("product_viewset")
+    
+    def retrieve(self, request, *args, **kwargs):
+        """Get a product with Redis caching for better performance."""
+        pk = kwargs.get('pk')
+        cache_key = f"product_detail_{pk}"
+        
+        # Try to get from cache first
+        cached_data = get_cached_data(cache_key)
+        if cached_data:
+            self.logger.info(f"Cache hit for product {pk}")
+            return Response(cached_data)
+        
+        # If not in cache, get from database
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        
+        # Cache the result (5 minutes for product details)
+        cache_data(cache_key, serializer.data, timeout=300)
+        self.logger.info(f"Cached product {pk}")
+        
+        return Response(serializer.data)
+    
+    def list(self, request, *args, **kwargs):
+        """List products with Redis caching for better performance."""
+        # Create a cache key based on query parameters
+        query_params = request.query_params.copy()
+        # Handle pagination separately to avoid cache misses due to page number
+        page = query_params.pop('page', None)
+        
+        # Sort the parameters for consistent cache keys
+        param_string = '&'.join(sorted([f"{k}={v}" for k, v in query_params.items()]))
+        cache_key = f"product_list_{param_string}_page{page or 1}"
+        
+        # Try to get from cache first
+        cached_data = get_cached_data(cache_key)
+        if cached_data:
+            self.logger.info(f"Cache hit for product listing with params: {param_string}")
+            return Response(cached_data)
+        
+        # If not in cache, proceed with normal listing
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            result = self.get_paginated_response(serializer.data)
+            # Cache the paginated result (2 minutes for product listings)
+            cache_data(cache_key, result.data, timeout=120)
+            self.logger.info(f"Cached product listing with params: {param_string}")
+            return result
+        
+        serializer = self.get_serializer(queryset, many=True)
+        # Cache the result (2 minutes for product listings)
+        cache_data(cache_key, serializer.data, timeout=120)
+        self.logger.info(f"Cached product listing with params: {param_string}")
+        
+        return Response(serializer.data)
 
     def get_serializer(self, *args, **kwargs):
         # Ensure all uploaded images are passed as a list to the serializer
@@ -108,10 +166,16 @@ class ProductViewSet(viewsets.ModelViewSet):
         try:
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
+            
+            # Invalidate product detail cache
+            product_id = instance.id
+            self._invalidate_product_cache(product_id)
+            
             return Response(serializer.data)
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
+            self.logger.error(f"Error updating product: {str(e)}")
             return Response(
                 {"error": _("An unexpected error occurred while updating the product")},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -126,11 +190,17 @@ class ProductViewSet(viewsets.ModelViewSet):
     @transaction.atomic
     def destroy(self, request, *args, **kwargs):
         product = self.get_object()
+        product_id = product.id
+        
         if product.owner != request.user:
             self.logger.warning(f"User {request.user.id} attempted to delete product {product.id} not owned by them.")
             return Response({"error": "You do not have permission to delete this product."}, status=status.HTTP_403_FORBIDDEN)
             
         self.logger.info(f"User {request.user.id} deleting product {product.id}")
+        
+        # Invalidate Redis caches before deletion
+        self._invalidate_product_cache(product_id)
+        
         return super().destroy(request, *args, **kwargs)
 
     @action(detail=True, methods=["patch"])
@@ -147,6 +217,10 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         try:
             product.update_status(new_status, status_message)
+            
+            # Invalidate cache when product status changes since this affects listings
+            self._invalidate_product_cache(pk)
+            
             return Response(self.get_serializer(product).data)
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -156,26 +230,54 @@ class ProductViewSet(viewsets.ModelViewSet):
         self.logger.info(f"[START] upload_image for product {pk} by user {request.user.id}")
         start = time.monotonic()
         product = self.get_object()
+        
         if not request.FILES.get("image"):
             self.logger.warning(f"No image provided for upload_image by user {request.user.id}")
             return Response(
                 {"error": _("No image provided")}, status=status.HTTP_400_BAD_REQUEST
             )
+            
         serializer = ProductImageSerializer(
             data=request.data, 
             context={'request': request}
         )
+        
         if serializer.is_valid():
             image = serializer.save(product=product)
             product = Product.objects.get(id=product.id)
+            
+            # Invalidate caches since product images have changed
+            self._invalidate_product_cache(pk)
+            
             duration = time.monotonic() - start
             self.logger.info(f"[END] upload_image for product {pk} by user {request.user.id} in {duration:.4f}s")
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
         duration = time.monotonic() - start
         self.logger.warning(f"[VALIDATION ERROR] upload_image for product {pk} by user {request.user.id} after {duration:.4f}s: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         # TODO: Consider offloading image processing to Celery
 
+    def _invalidate_product_cache(self, product_id):
+        """Helper method to invalidate all caches related to a product."""
+        redis_client = get_redis_client()
+        if not redis_client:
+            self.logger.warning(f"Redis client not available for cache invalidation")
+            return False
+            
+        # Delete product detail cache
+        detail_key = f"product_detail_{product_id}"
+        redis_client.delete(detail_key)
+        
+        # Delete all product listing caches
+        list_count = 0
+        for key in redis_client.scan_iter("product_list_*"):
+            redis_client.delete(key)
+            list_count += 1
+            
+        self.logger.info(f"Invalidated cache for product {product_id}: 1 detail and {list_count} listings")
+        return True
+    
     @action(detail=True, methods=["delete"])
     def delete_image(self, request, pk=None):
         self.logger.info(f"[START] delete_image for product {pk} by user {request.user.id}")
@@ -193,6 +295,10 @@ class ProductViewSet(viewsets.ModelViewSet):
             if image.image:
                 default_storage.delete(image.image.path)
             image.delete()
+            
+            # Invalidate product caches since images have changed
+            self._invalidate_product_cache(pk)
+            
             duration = time.monotonic() - start
             self.logger.info(f"[END] delete_image for product {pk} by user {request.user.id} in {duration:.4f}s")
             return Response(status=status.HTTP_204_NO_CONTENT)

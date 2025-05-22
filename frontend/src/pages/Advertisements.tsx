@@ -73,14 +73,46 @@ const Advertisements = () => {
     refetchOnReconnect: true
   });
 
+  // Reset listings when any data changes
   useEffect(() => {
     if (productData) {
-      setAllListings(prev => (page === 1 ? productData.products : [...prev, ...productData.products]));
+      // If it's the first page, replace all listings
+      // Otherwise append the new products to existing ones
+      if (page === 1) {
+        setAllListings(productData.products);
+      } else {
+        // Make sure we're not adding duplicates when appending
+        const existingIds = new Set(allListings.map(item => item.id));
+        const newProducts = productData.products.filter(product => !existingIds.has(product.id));
+        setAllListings(prev => [...prev, ...newProducts]);
+      }
+      
       setTotalCount(productData.count);
-      setHasMore(((productData.products?.length || 0) + allListings.length) < (productData.count || 0));
-      setVisibleItems((productData.products?.length || 0) + allListings.length);
+      setHasMore(page * PAGE_SIZE < productData.count);
+      setVisibleItems(Math.min(page * PAGE_SIZE, productData.count));
     }
-  }, [productData]);
+  }, [productData, page]);
+
+  // Listen for query cache updates - this ensures deleted products are removed
+  useEffect(() => {
+    // Function to update allListings if a product is deleted
+    const removeDeletedProducts = () => {
+      const cachedData = queryClient.getQueryData(['products']);
+      if (cachedData && allListings.length > 0) {
+        // Get the latest products list
+        refetchProducts();
+      }
+    };
+    
+    // Subscribe to query cache changes
+    const unsubscribe = queryClient.getQueryCache().subscribe(() => {
+      removeDeletedProducts();
+    });
+    
+    return () => {
+      unsubscribe();
+    };
+  }, [allListings.length, refetchProducts]);
 
   useEffect(() => {
     if (productsError) {

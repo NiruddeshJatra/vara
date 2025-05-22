@@ -143,8 +143,29 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@bhara.com')
 
 # Celery settings
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
-CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+# Redis settings with proper connection pooling
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+
+# Cache settings with connection pooling
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "CONNECTION_POOL_KWARGS": {
+                "max_connections": 30,
+                "retry_on_timeout": True,
+            },
+            "SOCKET_CONNECT_TIMEOUT": 5,  # 5 seconds timeout for connections
+            "SOCKET_TIMEOUT": 5,         # 5 seconds timeout for socket operations
+        }
+    }
+}
+
+# Celery settings using the same Redis URL
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
@@ -154,6 +175,25 @@ CELERY_BEAT_SCHEDULE = {
     "delete_unverified_users": {
         "task": "users.tasks.delete_unverified_users",
         "schedule": timedelta(hours=1),  # runs every hour
+    },
+}
+
+# Configure Channel Layers with Redis and connection pooling
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [REDIS_URL],
+            "capacity": 1500,      # Maximum number of messages in memory
+            "expiry": 10,          # Message expiration in seconds
+            "channel_capacity": {
+                # Default channel capacity (1000)  
+                "http.request": 1000,
+                # Per-channel overrides (different limits for different channels)
+                "notification.*": 1000,
+                "chat.*": 1000,
+            },
+        },
     },
 }
 
