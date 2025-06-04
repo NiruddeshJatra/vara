@@ -26,7 +26,7 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
     <>
       {isLoading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/70">
-          <PageLoader variant="ripple" />
+          <PageLoader variant="progress" />
         </div>
       )}
       <div className={`transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>

@@ -4,6 +4,7 @@ Production-specific settings.
 
 from .base import *
 import os
+from urllib.parse import urlparse
 from datetime import timedelta
 
 DEBUG = False
@@ -80,58 +81,40 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
 # Database configuration
+tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('DB_PORT', '5432'),
+        'NAME': tmpPostgres.path.replace('/', ''),
+        'USER': tmpPostgres.username,
+        'PASSWORD': tmpPostgres.password,
+        'HOST': tmpPostgres.hostname,
+        'PORT': 5432,
     }
 }
 
-# --- STATIC & MEDIA (RENDER COMPATIBILITY) ---
-# Use S3 for static and media files if AWS env vars are set, else fallback to local (for easier local/CI testing)
-USE_S3 = all([
-    os.environ.get('AWS_ACCESS_KEY_ID'),
-    os.environ.get('AWS_SECRET_ACCESS_KEY'),
-    os.environ.get('AWS_STORAGE_BUCKET_NAME'),
-    os.environ.get('CLOUDFRONT_DOMAIN'),
-])
+# --- STATIC & MEDIA (CLOUDINARY FOR MEDIA) ---
 
-if USE_S3:
-    # Use custom MediaStorage for media files (user uploads)
-    DEFAULT_FILE_STORAGE = 'bhara.storage_backends.MediaStorage'
-    # Use S3Boto3Storage for static files only
-    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
-    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
-    AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
-    AWS_S3_REGION_NAME = os.environ.get('AWS_REGION', 'us-east-1')
-    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
-    STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
-    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
-else:
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
-    STATIC_URL = '/static/'
-    MEDIA_URL = '/media/'
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# Cloudinary for media (user-uploaded files)
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# --- Environment Variable Checks (diagnostic) ---
-for var in [
-    "AWS_ACCESS_KEY_ID",
-    "AWS_SECRET_ACCESS_KEY",
-    "AWS_STORAGE_BUCKET_NAME",
-    "AWS_REGION",
-    "CLOUDFRONT_DOMAIN"
-]:
-    if not os.environ.get(var):
-        print(f"WARNING: Environment variable {var} is NOT SET!", flush=True)
-    else:
-        print(f"{var} is set to: {os.environ.get(var)}", flush=True)
+# Static files served via Django or frontend (e.g., Vercel)
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# MEDIA_URL is not strictly needed with Cloudinary but can be defined for clarity
+MEDIA_URL = '/media/'
+
+# Cloudinary credentials
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+}
+
 
 # Email settings for production
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
