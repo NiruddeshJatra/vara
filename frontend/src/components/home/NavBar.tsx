@@ -229,34 +229,34 @@ const NavBar = () => {
           <div className="container mx-auto px-4 py-4 flex flex-col items-center space-y-4">
             {isAuthenticated && (
               <>
-                <Link to="/rentals" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 animate-[menuItemFadeIn_0.3s_ease-out_0.1s] opacity-0 animation-fill-mode-forwards">
+                <Link to="/rentals" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 menu-item-fade-in">
                   <Package size={18} /> My Rentals
                 </Link>
-                <Link to="/my-listings" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 animate-[menuItemFadeIn_0.3s_ease-out_0.2s] opacity-0 animation-fill-mode-forwards">
+                <Link to="/my-listings" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 menu-item-fade-in-delay-1">
                   <PackageOpen size={18} /> My Listings
                 </Link>
-                <Link to="/profile" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 animate-[menuItemFadeIn_0.3s_ease-out_0.3s] opacity-0 animation-fill-mode-forwards">
+                <Link to="/profile" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 menu-item-fade-in-delay-2">
                   <User size={18} /> Profile
                 </Link>
-                <Link to="/about" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 animate-[menuItemFadeIn_0.3s_ease-out_0.4s] opacity-0 animation-fill-mode-forwards">
+                <Link to="/about" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 menu-item-fade-in-delay-3">
                   <Info size={18} /> About Us
                 </Link>
-                <Link to="/faq" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 animate-[menuItemFadeIn_0.3s_ease-out_0.5s] opacity-0 animation-fill-mode-forwards">
+                <Link to="/faq" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 menu-item-fade-in-delay-4">
                   <HelpCircle size={18} /> {t('navigation.faq')}
                 </Link>
-                <div className="mobile-menu-language-toggle animate-[menuItemFadeIn_0.3s_ease-out_0.6s] opacity-0 animation-fill-mode-forwards">
+                <div className="mobile-menu-language-toggle menu-item-fade-in-delay-5">
                   <LanguageSwitcher />
                 </div>
                 <Button
                   onClick={handleUploadProduct}
-                  className="w-full bg-green-600 hover:bg-green-700 hover:scale-105 text-white font-semibold py-2 rounded-full mt-2 flex items-center justify-center gap-2 animate-[menuItemFadeIn_0.3s_ease-out_0.7s] opacity-0 animation-fill-mode-forwards"
+                  className="w-full bg-green-600 hover:bg-green-700 hover:scale-105 text-white font-semibold py-2 rounded-full mt-2 flex items-center justify-center gap-2 menu-item-fade-in-delay-6"
                 >
                   <Plus size={18} /> Upload Product
                 </Button>
                 <Button
                   onClick={handleLogout}
                   variant="outline"
-                  className="w-full border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700 hover:scale-105 font-semibold py-2 rounded-full mt-2 flex items-center justify-center gap-2 animate-[menuItemFadeIn_0.3s_ease-out_0.8s] opacity-0 animation-fill-mode-forwards"
+                  className="w-full border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700 hover:scale-105 font-semibold py-2 rounded-full mt-2 flex items-center justify-center gap-2 menu-item-fade-in-delay-7"
                 >
                   <LogOut size={18} /> Log Out
                 </Button>
@@ -264,19 +264,19 @@ const NavBar = () => {
             )}
             {!isAuthenticated && (
               <>
-                <Link to="/about" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 animate-[menuItemFadeIn_0.3s_ease-out_0.1s] opacity-0 animation-fill-mode-forwards">
+                <Link to="/about" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 menu-item-fade-in">
                   <Info size={18} /> About Us
                 </Link>
-                <Link to="/faq" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 animate-[menuItemFadeIn_0.3s_ease-out_0.2s] opacity-0 animation-fill-mode-forwards">
+                <Link to="/faq" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 menu-item-fade-in-delay-1">
                   <HelpCircle size={18} /> {t('navigation.faq')}
                 </Link>
-                <div className="mobile-menu-language-toggle animate-[menuItemFadeIn_0.3s_ease-out_0.3s] opacity-0 animation-fill-mode-forwards">
+                <div className="mobile-menu-language-toggle menu-item-fade-in-delay-2">
                   <LanguageSwitcher />
                 </div>
-                <Link to="/auth/login/" className="w-full animate-[menuItemFadeIn_0.3s_ease-out_0.4s] opacity-0 animation-fill-mode-forwards">
+                <Link to="/auth/login/" className="w-full menu-item-fade-in-delay-3">
                   <Button variant="outline" className="w-full border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700 font-semibold py-2 rounded-full mt-2">Log In</Button>
                 </Link>
-                <Link to="/auth/registration/" className="w-full animate-[menuItemFadeIn_0.3s_ease-out_0.5s] opacity-0 animation-fill-mode-forwards">
+                <Link to="/auth/registration/" className="w-full menu-item-fade-in-delay-4">
                   <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-full mt-2">Sign Up</Button>
                 </Link>
               </>
