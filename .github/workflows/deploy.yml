@@ -26,6 +26,7 @@ jobs:
     - name: Run Django Migrations
       run: |
         cd backend
+        python manage.py makemigrations
         python manage.py migrate --noinput
       env:
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
