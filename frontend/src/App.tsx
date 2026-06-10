@@ -10,6 +10,7 @@ import { ProtectedAdminRoute } from "./components/admin/ProtectedAdminRoute";
 import PageTransition from "./components/common/PageTransition";
 import { ProfileCompletionButton } from "./components/common/ProfileCompletionButton";
 import CompleteProfile from '@/pages/CompleteProfile';
+import { Analytics } from '@vercel/analytics/react';
 
 // Pages
 import AdminLoginPage from "./pages/AdminLoginPage";
@@ -42,6 +43,7 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <Analytics />
         <AdminAuthProvider>
           <PageTransition>
             <ProfileCompletionButton />
