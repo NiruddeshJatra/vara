@@ -1,248 +1,191 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Calendar, Camera, IdCard, Mail, MapPin, ShieldCheck, Upload } from "lucide-react";
+import { useDropzone } from "react-dropzone";
 import { toast } from "@/components/ui/use-toast";
 import Footer from "@/components/home/Footer";
 import NavBar from "@/components/home/NavBar";
-import ContactDetailsStep from "@/components/auth/steps/ContactDetailsStep";
-import NationalIdStep from "@/components/auth/steps/NationalIdStep";
-import { ProfileFormData, ProfileFormErrors } from "@/types/auth";
 import { useAuth } from "@/contexts/AuthContext";
-import config from "@/config";
-import {
-  validateProfileForm,
-  validatePhoneNumber,
-  validateLocation,
-  validateDateOfBirth,
-  validateNationalId,
-} from "@/utils/validations/auth.validations";
 import authService from "@/services/auth.service";
+import { profileStep1Schema, profileStep2Schema } from "@/utils/validators";
+import { BD_DISTRICTS, getThanas } from "@/utils/bd-districts";
 import { useQueryClient } from '@tanstack/react-query';
+
+type Step1FormData = {
+  date_of_birth: string;
+  district: string;
+  thana: string;
+  full_address: string;
+  email?: string;
+  profile_picture?: File | null;
+};
+
+type Step2FormData = {
+  nid_number: string;
+  nid_image: File | null;
+  institutional_id_image?: File | null;
+};
 
 const CompleteProfile = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { updateProfile, loading: authLoading, user, refreshUserData } = useAuth();
+  const { user, setUser } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<ProfileFormData>({
-    firstName: "",
-    lastName: "",
-    phone_number: "",
-    location: "",
-    date_of_birth: "",
-    nationalIdNumber: "",
-    nationalIdFront: null,
-    nationalIdBack: null,
-  });
-  const [errors, setErrors] = useState<ProfileFormErrors>({});
-  const [isCheckingId, setIsCheckingId] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [profilePreview, setProfilePreview] = useState<string | null>(null);
+  const [nidPreviewName, setNidPreviewName] = useState<string | null>(null);
+  const [instPreviewName, setInstPreviewName] = useState<string | null>(null);
 
-  // Redirect if profile is already complete
+  // Skip step 1 if personal info is already complete
   useEffect(() => {
-    if (user?.profile_completed === true) {
-      toast({
-        title: "Validation Error",
-        description: "Your profile is already complete.",
-        variant: "destructive",
-      });
-      navigate("/profile");
+    if (user?.profile_completed) {
+      setCurrentStep(2);
     }
-  }, [user, navigate]);
+  }, [user]);
 
-  const handleInputChange = (
-    eventOrValue: React.ChangeEvent<HTMLInputElement> | Partial<ProfileFormData>
-  ) => {
-    if ("target" in eventOrValue) {
-      const { name, value } = eventOrValue.target;
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    } else {
-      setFormData((prev) => ({ ...prev, ...eventOrValue }));
+  const step1Form = useForm<Step1FormData>({ resolver: zodResolver(profileStep1Schema) });
+  const step2Form = useForm<Step2FormData>({
+    resolver: zodResolver(profileStep2Schema),
+    defaultValues: { nid_image: null, institutional_id_image: null },
+  });
+
+  const selectedDistrict = step1Form.watch('district', '');
+  const nidFile = step2Form.watch('nid_image');
+  const instFile = step2Form.watch('institutional_id_image');
+
+  useEffect(() => {
+    setNidPreviewName(nidFile?.name ?? null);
+  }, [nidFile]);
+
+  useEffect(() => {
+    setInstPreviewName(instFile?.name ?? null);
+  }, [instFile]);
+
+  const showApiError = (error: any, fallback: string) => {
+    const errorMessage = error.response?.data?.message || fallback;
+    const fieldErrors = error.response?.data?.data;
+    let description = errorMessage;
+    if (fieldErrors && typeof fieldErrors === 'object') {
+      const firstField = Object.values(fieldErrors).find((v) => Array.isArray(v) && v.length);
+      if (firstField) description = (firstField as string[])[0];
     }
+    toast({ title: "Error", description, variant: "destructive" });
   };
 
-  const handleFileUpload = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    field: "nationalIdFront" | "nationalIdBack"
-  ) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFormData((prev) => ({ ...prev, [field]: file }));
+  // Profile picture dropzone
+  const onDropProfile = useCallback((acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Validation Error", description: "Profile picture must be under 5MB", variant: "destructive" });
+      return;
     }
-  };
-
-  const validateForm = () => {
-    return validateProfileForm(formData);
-  };
-
-  const validateCurrentStep = () => {
-    const errors: Record<string, string> = {};
-
-    if (currentStep === 1) {
-      // Only validate contact details fields
-      if (!formData.firstName) errors.firstName = "First name is required";
-      if (!formData.lastName) errors.lastName = "Last name is required";
-
-      const phoneError = validatePhoneNumber(formData.phone_number);
-      if (phoneError) errors.phone_number = phoneError;
-
-      const locationError = validateLocation(formData.location);
-      if (locationError) errors.location = locationError;
-
-      const dateOfBirthError = validateDateOfBirth(formData.date_of_birth);
-      if (dateOfBirthError) errors.date_of_birth = dateOfBirthError;
-    } else if (currentStep === 2) {
-      // Only validate national ID fields
-      const nationalIdError = validateNationalId(formData.nationalIdNumber);
-      if (nationalIdError) errors.nationalIdNumber = nationalIdError;
-
-      if (!formData.nationalIdFront)
-        errors.nationalIdFront = "National ID front photo is required";
-      if (!formData.nationalIdBack)
-        errors.nationalIdBack = "National ID back photo is required";
+    if (!file.type.startsWith('image/')) {
+      toast({ title: "Validation Error", description: "Please upload an image file", variant: "destructive" });
+      return;
     }
+    step1Form.setValue('profile_picture', file);
+    const reader = new FileReader();
+    reader.onload = () => setProfilePreview(reader.result as string);
+    reader.readAsDataURL(file);
+  }, [step1Form]);
 
-    return errors;
-  };
+  const profileDropzone = useDropzone({
+    onDrop: onDropProfile,
+    accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
+    maxFiles: 1,
+    multiple: false,
+  });
 
-  const handleNextStep = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const validationErrors = validateCurrentStep();
-    setErrors(validationErrors);
-
-    if (Object.keys(validationErrors).length === 0) {
-      if (currentStep === 2) {
-        // Check for duplicate national ID before submitting
-        try {
-          setIsCheckingId(true);
-          const isDuplicate = await authService.checkNationalId(
-            formData.nationalIdNumber
-          );
-          console.log("National ID check result:", isDuplicate);
-
-          if (isDuplicate) {
-            setErrors({
-              ...errors,
-              nationalIdNumber:
-                "This National ID is already registered with another account",
-            });
-            setIsCheckingId(false);
-            return;
-          }
-
-          // If not a duplicate, proceed with form submission
-          setIsCheckingId(false);
-          await handleSubmit(e);
-        } catch (error: any) {
-          console.error("Error checking national ID:", error);
-          setIsCheckingId(false);
-
-          // Check if the error is about a duplicate national ID
-          if (
-            error.message &&
-            error.message.includes("National ID is already registered")
-          ) {
-            setErrors({
-              ...errors,
-              nationalIdNumber:
-                "This National ID is already registered with another account",
-            });
-            return;
-          }
-
-          // If there's an error checking the national ID, still try to submit the form
-          await handleSubmit(e);
-        }
-      } else {
-        setCurrentStep((prev) => prev + 1);
-        window.scrollTo(0, 0);
-      }
-    } else {
-      console.log("Validation errors:", validationErrors);
+  const validateImage = (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Validation Error", description: "Please upload an image file", variant: "destructive" });
+      return false;
     }
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: "Validation Error", description: "Image must be under 10MB", variant: "destructive" });
+      return false;
+    }
+    return true;
   };
 
-  const handlePrevStep = () => {
-    setCurrentStep((prev) => prev - 1);
-    window.scrollTo(0, 0);
-  };
+  const onDropNid = useCallback((acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+    if (!file || !validateImage(file)) return;
+    step2Form.setValue("nid_image", file, { shouldValidate: true });
+  }, [step2Form]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (authLoading) return;
+  const onDropInst = useCallback((acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+    if (!file || !validateImage(file)) return;
+    step2Form.setValue("institutional_id_image", file, { shouldValidate: true });
+  }, [step2Form]);
 
+  const nidDropzone = useDropzone({
+    onDrop: onDropNid,
+    accept: { "image/*": [".jpeg", ".jpg", ".png", ".webp", ".gif"] },
+    maxFiles: 1,
+    multiple: false,
+  });
+
+  const instDropzone = useDropzone({
+    onDrop: onDropInst,
+    accept: { "image/*": [".jpeg", ".jpg", ".png", ".webp", ".gif"] },
+    maxFiles: 1,
+    multiple: false,
+  });
+
+  const onSubmitStep1 = async (data: Step1FormData) => {
+    setIsSubmitting(true);
     try {
-      setIsSubmitting(true);
-      // Check token before submission
-      const token = localStorage.getItem(config.auth.tokenStorageKey);
-      if (!token) {
-        toast({
-          title: "Validation Error",
-          description: "No authentication token found. Please log in again.",
-          variant: "destructive",
-        });
-        navigate("/auth/login");
-        return;
-      }
-
-      // Make sure we have the profile_completed field
-      const updatedFormData = {
-        ...formData,
-        profile_completed: true,
-      };
-
-      // Call the dedicated completeProfile service method
-      await authService.completeProfile(updatedFormData);
-      
-      // Refresh user data in context and invalidate queries
-      if (typeof refreshUserData === 'function') {
-        await refreshUserData();
-        // Invalidate any queries that might depend on the user's profile status
-        queryClient.invalidateQueries({ queryKey: ['userProducts'] });
-        queryClient.invalidateQueries({ queryKey: ['products'] });
-      }
-
-      toast({
-        title: "Success",
-        description: "Profile completed successfully!",
-        variant: "success",
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        if (key === 'profile_picture' && value instanceof File) {
+          formData.append(key, value);
+        } else if (value !== undefined && value !== null && value !== '') {
+          formData.append(key, value as string);
+        }
       });
-      navigate("/advertisements");
+
+      const updatedUser = await authService.updateProfile(formData);
+      setUser(updatedUser);
+      queryClient.invalidateQueries({ queryKey: ['userProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast({ title: "Success", description: "Profile updated successfully!" });
+      setCurrentStep(2);
+      window.scrollTo(0, 0);
     } catch (error: any) {
-      // Handle specific error for duplicate national ID
-      if (
-        error.message &&
-        error.message.includes("National ID is already registered")
-      ) {
-        setErrors((prev) => ({
-          ...prev,
-          nationalIdNumber:
-            "This National ID is already registered with another account",
-        }));
-        setCurrentStep(2); // Go back to the national ID step
-        window.scrollTo(0, 0);
-        toast({
-          title: "Validation Error",
-          description:
-            "This National ID is already registered with another account",
-          variant: "destructive",
-        });
-        return;
-      }
-      // Handle other errors
-      toast({
-        title: "Error",
-        description: error.message || "Failed to complete profile",
-        variant: "destructive",
-      });
+      showApiError(error, 'Failed to update profile');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // If user's profile is already complete, don't render the form
-  if (user?.profile_completed === true) {
-    return null;
-  }
+  const onSubmitStep2 = async (data: Step2FormData) => {
+    if (!data.nid_image) return;
+
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('nid_number', data.nid_number);
+      formData.append('nid_image', data.nid_image);
+      if (data.institutional_id_image) {
+        formData.append('institutional_id_image', data.institutional_id_image);
+      }
+
+      await authService.submitIdentity(formData);
+      const refreshedUser = await authService.getProfile();
+      setUser(refreshedUser);
+      toast({ title: "Success", description: "Documents submitted! We'll notify you once reviewed." });
+      navigate("/advertisements", { replace: true });
+    } catch (error: any) {
+      showApiError(error, 'Failed to submit documents');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -265,7 +208,7 @@ const CompleteProfile = () => {
               <div className="flex items-center justify-between max-w-md mx-auto">
                 <div className="flex flex-col items-center">
                   <div
-                    className={`w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-[8px] sm:text-[10px] md:text-xs font-bold 
+                    className={`w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-[8px] sm:text-[10px] md:text-xs font-bold
                       ${
                         currentStep >= 1
                           ? "bg-green-600 text-white ring-1 sm:ring-2 ring-green-100"
@@ -304,32 +247,311 @@ const CompleteProfile = () => {
               </div>
             </div>
 
-            <form
-              onSubmit={handleNextStep}
-              className="animate-fade-up delay-200"
-            >
-              {currentStep === 1 && (
-                <ContactDetailsStep
-                  profileFormData={formData}
-                  errors={errors}
-                  onChange={handleInputChange}
-                  onNext={handleNextStep}
-                  loading={authLoading || isCheckingId}
-                />
-              )}
+            {currentStep === 1 && (
+              <form onSubmit={step1Form.handleSubmit(onSubmitStep1)} className="space-y-6 animate-fade-up delay-200">
+                {/* Profile Picture */}
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                    Profile Picture
+                  </label>
+                  <div
+                    {...profileDropzone.getRootProps()}
+                    className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                      profileDropzone.isDragActive
+                        ? 'border-green-400 bg-green-50'
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    <input {...profileDropzone.getInputProps()} />
+                    {profilePreview ? (
+                      <div className="flex flex-col items-center">
+                        <img
+                          src={profilePreview}
+                          alt="Profile preview"
+                          className="w-24 h-24 rounded-full object-cover mb-2"
+                        />
+                        <p className="text-sm text-gray-600">Click to change photo</p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center">
+                        <Camera className="w-12 h-12 text-gray-400 mb-2" />
+                        <p className="text-sm text-gray-600">
+                          {profileDropzone.isDragActive ? 'Drop photo here' : 'Click to upload photo'}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">Optional but recommended</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-              {currentStep === 2 && (
-                <NationalIdStep
-                  profileFormData={formData}
-                  errors={errors}
-                  onChange={handleInputChange}
-                  onFileUpload={handleFileUpload}
-                  onNext={handleNextStep}
-                  onPrev={handlePrevStep}
-                  loading={authLoading || isCheckingId || isSubmitting}
-                />
-              )}
-            </form>
+                {/* Date of Birth */}
+                <div>
+                  <label htmlFor="date_of_birth" className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                    Date of Birth
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Calendar className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input
+                      {...step1Form.register('date_of_birth')}
+                      type="date"
+                      id="date_of_birth"
+                      className={`w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                        step1Form.formState.errors.date_of_birth ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  {step1Form.formState.errors.date_of_birth && (
+                    <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                      {step1Form.formState.errors.date_of_birth.message}
+                    </p>
+                  )}
+                  <p className="mt-1 text-xs text-gray-500">Must be 18 or older</p>
+                </div>
+
+                {/* District */}
+                <div>
+                  <label htmlFor="district" className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                    District
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <MapPin className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <select
+                      {...step1Form.register('district')}
+                      id="district"
+                      className={`w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 appearance-none ${
+                        step1Form.formState.errors.district ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      disabled={isSubmitting}
+                    >
+                      <option value="">Select district</option>
+                      {BD_DISTRICTS.map((district) => (
+                        <option key={district.name} value={district.name}>
+                          {district.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {step1Form.formState.errors.district && (
+                    <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                      {step1Form.formState.errors.district.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Thana */}
+                <div>
+                  <label htmlFor="thana" className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                    Thana
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <MapPin className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <select
+                      {...step1Form.register('thana')}
+                      id="thana"
+                      className={`w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 appearance-none ${
+                        step1Form.formState.errors.thana ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      disabled={isSubmitting || !selectedDistrict}
+                    >
+                      <option value="">Select thana</option>
+                      {getThanas(selectedDistrict).map((thana) => (
+                        <option key={thana} value={thana}>
+                          {thana}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {step1Form.formState.errors.thana && (
+                    <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                      {step1Form.formState.errors.thana.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Full Address */}
+                <div>
+                  <label htmlFor="full_address" className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                    Full Address
+                  </label>
+                  <textarea
+                    {...step1Form.register('full_address')}
+                    id="full_address"
+                    rows={3}
+                    placeholder="House/Road/Area details"
+                    className={`w-full px-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none ${
+                      step1Form.formState.errors.full_address ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    disabled={isSubmitting}
+                  />
+                  {step1Form.formState.errors.full_address && (
+                    <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                      {step1Form.formState.errors.full_address.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label htmlFor="email" className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                    Email (Optional)
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Mail className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input
+                      {...step1Form.register('email')}
+                      type="email"
+                      id="email"
+                      placeholder="For receipts and notifications"
+                      className={`w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                        step1Form.formState.errors.email ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  {step1Form.formState.errors.email && (
+                    <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                      {step1Form.formState.errors.email.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? 'Saving...' : 'Save & Continue'}
+                </button>
+              </form>
+            )}
+
+            {currentStep === 2 && (
+              <form onSubmit={step2Form.handleSubmit(onSubmitStep2)} className="space-y-6 animate-fade-up delay-200">
+                <div>
+                  <label
+                    htmlFor="nid_number"
+                    className="block text-xs sm:text-sm font-medium text-gray-700 mb-2"
+                  >
+                    NID Number
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <IdCard className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input
+                      {...step2Form.register("nid_number")}
+                      id="nid_number"
+                      type="text"
+                      placeholder="Your NID/Passport/License number"
+                      className={`w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                        step2Form.formState.errors.nid_number ? "border-red-500" : "border-gray-300"
+                      }`}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  {step2Form.formState.errors.nid_number && (
+                    <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                      {step2Form.formState.errors.nid_number.message as string}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                    Govt. ID Image
+                  </label>
+                  <div
+                    {...nidDropzone.getRootProps()}
+                    className={`border-2 border-dashed rounded-lg p-6 cursor-pointer transition-colors ${
+                      nidDropzone.isDragActive
+                        ? "border-green-400 bg-green-50"
+                        : "border-gray-300 hover:border-gray-400"
+                    }`}
+                  >
+                    <input {...nidDropzone.getInputProps()} />
+                    <div className="flex items-start gap-3">
+                      <Upload className="h-5 w-5 text-gray-500 mt-0.5" />
+                      <div>
+                        <p className="text-sm text-gray-700 font-medium">
+                          Upload your Govt. ID (NID front, Passport, or Driving License)
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {nidPreviewName ? `Selected: ${nidPreviewName}` : "PNG/JPG/WebP up to 10MB"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  {step2Form.formState.errors.nid_image && (
+                    <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                      {step2Form.formState.errors.nid_image.message as string}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                    Institutional ID (Optional)
+                  </label>
+                  <div
+                    {...instDropzone.getRootProps()}
+                    className={`border-2 border-dashed rounded-lg p-6 cursor-pointer transition-colors ${
+                      instDropzone.isDragActive
+                        ? "border-green-400 bg-green-50"
+                        : "border-gray-300 hover:border-gray-400"
+                    }`}
+                  >
+                    <input {...instDropzone.getInputProps()} />
+                    <div className="flex items-start gap-3">
+                      <Upload className="h-5 w-5 text-gray-500 mt-0.5" />
+                      <div>
+                        <p className="text-sm text-gray-700 font-medium">
+                          Upload University or Office ID (optional)
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {instPreviewName ? `Selected: ${instPreviewName}` : "PNG/JPG/WebP up to 10MB"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                  <div className="flex items-start gap-3">
+                    <ShieldCheck className="h-5 w-5 text-amber-700 mt-0.5" />
+                    <p className="text-sm text-amber-800">
+                      Your documents are reviewed by Bhara within 24–48 hours.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? "Submitting..." : "Submit for Verification"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => navigate("/advertisements")}
+                  className="w-full text-sm font-medium text-green-700 hover:text-green-800"
+                  disabled={isSubmitting}
+                >
+                  Skip for now
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </main>

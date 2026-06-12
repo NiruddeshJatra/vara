@@ -1,84 +1,66 @@
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Eye, EyeOff, Lock, Mail, ShieldCheck } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff, Lock, Phone, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import NavBar from "@/components/home/NavBar";
 import Footer from "@/components/home/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from '@/components/ui/use-toast';
-import AuthService from "@/services/auth.service";
-import { validateLoginForm } from '@/utils/validations/auth.validations';
+import authService from "@/services/auth.service";
+import { loginSchema } from "@/utils/validators";
+
+type FormData = {
+  phone_number: string;
+  password: string;
+};
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
-  const [isResending, setIsResending] = useState(false);
-  const { login, loading } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
-  // Check if we were redirected from verification
-  const verified = new URLSearchParams(location.search).get('verified') === '1';
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(loginSchema),
+  });
 
-  const validateEmail = (email: string) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-  };
-
-  const handleResendVerification = async () => {
+  const onSubmit = async (data: FormData) => {
+    setIsLoading(true);
     try {
-      setIsResending(true);
-      await AuthService.resendVerificationEmail(email);
+      const response = await authService.login(data.phone_number, data.password);
+
+      login(response.access_token, response.user);
       toast({
-        title: 'Verification Email Sent',
-        description: 'Verification email sent successfully. Please check your inbox.',
-        variant: 'success',
+        title: "Success",
+        description: "Login successful!",
+        variant: "default"
       });
-      navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+
+      if (!response.user.profile_completed) {
+        toast({
+          title: "Complete your profile",
+          description: "Complete your profile to start renting",
+        });
+      }
+
+      navigate('/advertisements', { replace: true });
     } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Login failed. Please check your credentials.';
+      const fieldErrors = error.response?.data?.data;
       toast({
-        title: 'Error',
-        description: error.response?.data?.message || 'Failed to send verification email',
+        title: 'Login Error',
+        description: fieldErrors?.detail || fieldErrors?.phone_number?.[0] || errorMessage,
         variant: 'destructive',
       });
     } finally {
-      setIsResending(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const validationErrors = validateLoginForm({ email, password });
-    
-    if (Object.keys(validationErrors).length === 0) {
-      try {
-        await login(email, password, rememberMe);
-        // The AuthContext will handle redirection to /advertisements
-      } catch (error: any) {
-        if (error.message === 'UNVERIFIED_EMAIL') {
-          setErrors({
-            general: 'Please verify your email before logging in.',
-            email: 'Email not verified'
-          });
-          return;
-        }
-        toast({
-          title: 'Login Error',
-          description: 'Login failed. Please check your credentials.',
-          variant: 'destructive',
-        });
-        setErrors({
-          general: error.response?.data?.detail || 'Invalid email or password'
-        });
-      }
-    } else {
-      setErrors(validationErrors);
+      setIsLoading(false);
     }
   };
 
@@ -98,50 +80,27 @@ const Login = () => {
                 <div className="text-center mb-8 animate-fade-up">
                   <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
                   <p className="text-gray-600">Sign in to your Bhara account</p>
-
-                  {verified && (
-                    <div className="mt-3 p-3 bg-green-50 text-green-800 rounded-lg border border-green-200 animate-fade-in">
-                      <p>Your email has been verified successfully! You can now log in.</p>
-                    </div>
-                  )}
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {errors.general && (
-                    <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 animate-fade-in">
-                      <p className="text-red-700 text-sm">{errors.general}</p>
-                      {errors.email === 'Email not verified' && (
-                        <button
-                          type="button"
-                          onClick={handleResendVerification}
-                          disabled={isResending}
-                          className="mt-2 text-sm text-green-600 hover:text-green-800 underline"
-                        >
-                          {isResending ? 'Sending...' : 'Resend verification email'}
-                        </button>
-                      )}
-                    </div>
-                  )}
-
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                   <div className="space-y-2 animate-fade-up delay-100">
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                      Email Address
+                    <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700">
+                      Phone Number
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Mail className="h-5 w-5 text-gray-400" />
+                        <Phone className="h-5 w-5 text-gray-400" />
                       </div>
                       <Input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="youremail@example.com"
-                        className={`pl-10 ${errors.email ? 'border-red-500' : ''}`}
-                        disabled={loading}
+                        id="phone_number"
+                        type="tel"
+                        placeholder="01XXXXXXXXX"
+                        className={`pl-10 ${errors.phone_number ? 'border-red-500' : ''}`}
+                        disabled={isLoading}
+                        {...register('phone_number')}
                       />
                     </div>
-                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                    {errors.phone_number && <p className="text-red-500 text-xs mt-1">{errors.phone_number.message}</p>}
                   </div>
 
                   <div className="space-y-2 animate-fade-up delay-200">
@@ -155,11 +114,10 @@ const Login = () => {
                       <Input
                         id="password"
                         type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
                         className={`pl-10 ${errors.password ? 'border-red-500' : ''}`}
-                        disabled={loading}
+                        disabled={isLoading}
+                        {...register('password')}
                       />
                       <button
                         type="button"
@@ -169,76 +127,26 @@ const Login = () => {
                         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
                     </div>
-                    {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+                    {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
                   </div>
 
-                  <div className="flex items-center justify-between mb-4 animate-fade-up delay-300">
-                    <div className="flex items-center">
-                      <Checkbox
-                        id="remember-me"
-                        checked={rememberMe}
-                        onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                        className="h-4 w-4 border-2 border-green-400 data-[state=checked]:bg-green-600 data-[state=checked]:text-white rounded"
-                        disabled={loading}
-                      />
-                      <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-                        Remember me
-                      </label>
-                    </div>
-                    {/* Use a button instead of Link for proper disabled state and accessibility */}
-                    <button
-                      type="button"
-                      className="text-sm text-green-600 hover:text-green-800 bg-transparent border-none p-0 cursor-pointer ml-2"
+                  <div className="flex items-center justify-end mb-4 animate-fade-up delay-300">
+                    <Link
+                      to="/auth/forgot-password/"
+                      className="text-sm text-green-600 hover:text-green-800"
                       style={{ textDecoration: 'underline', color: '#16a34a' }}
-                      onClick={async (e) => {
-                        e.preventDefault();
-                        if (!email) {
-                          toast({
-                            title: 'Email Required',
-                            description: 'Please enter your email address above first.',
-                            variant: 'destructive',
-                          });
-                          return;
-                        }
-                        if (!validateEmail(email)) {
-                          toast({
-                            title: 'Invalid Email',
-                            description: 'Please enter a valid email address.',
-                            variant: 'destructive',
-                          });
-                          return;
-                        }
-                        setIsResending(true);
-                        try {
-                          await AuthService.requestPasswordReset(email);
-                          toast({
-                            title: 'Password Reset Email Sent',
-                            description: 'Please check your inbox for further instructions.',
-                            variant: 'success',
-                          });
-                        } catch (error: any) {
-                          toast({
-                            title: 'Error',
-                            description: error.message || 'Failed to send reset email. Please try again.',
-                            variant: 'destructive',
-                          });
-                        } finally {
-                          setIsResending(false);
-                        }
-                      }}
-                      disabled={isResending}
                     >
-                      {isResending ? 'Sending...' : 'Forgot Password?'}
-                    </button>
+                      Forgot Password?
+                    </Link>
                   </div>
 
                   <div className="animate-fade-up delay-400">
                     <Button
                       type="submit"
                       className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition duration-150 ease-in-out hover-lift"
-                      disabled={loading}
+                      disabled={isLoading}
                     >
-                      {loading ? 'Signing In...' : 'Sign In'}
+                      {isLoading ? 'Signing In...' : 'Sign In'}
                     </Button>
                   </div>
 
