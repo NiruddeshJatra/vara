@@ -24,7 +24,9 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const isRefreshCall = originalRequest?.url?.includes('/auth/token/refresh/');
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isRefreshCall) {
       if (isRefreshing) {
         // Queue requests while refresh is in progress
         return new Promise((resolve) => {
