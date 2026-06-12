@@ -5,7 +5,6 @@ import { FiMail, FiPhone, FiMapPin } from 'react-icons/fi';
 
 // Import team images
 import nasifulImage from '../assets/images/team/nasiful.jpg';
-import riadImage from '../assets/images/team/riad.jpg';
 
 const About = () => {
   return (
@@ -120,7 +119,7 @@ const About = () => {
               <div className="flex flex-col items-center">
                 <div className="w-40 h-40 rounded-full overflow-hidden mb-4 border-4 border-green-100">
                   <img 
-                    src={riadImage} 
+                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1374&auto=format&fit=crop" 
                     alt="Riad Ashraf" 
                     className="w-full h-full object-cover"
                     onError={(e) => {
