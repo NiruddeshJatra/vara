@@ -6,7 +6,6 @@ import {
   Settings,
   LogOut,
   Star,
-  Heart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -107,17 +106,6 @@ const ProfileSidebar = ({ userData, activeTab, onTabChange, onLogout }: ProfileS
               >
                 <History className="h-5 w-5" />
                 <span>Rental History</span>
-              </button>
-            </li>
-            <li>
-              <button
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md ${
-                  activeTab === "favorites" ? "bg-white/20 text-white font-medium" : "text-green-100 hover:bg-white/10"
-                }`}
-                onClick={() => handleTabChange("favorites")}
-              >
-                <Heart className="h-5 w-5" />
-                <span>Favorites</span>
               </button>
             </li>
             <li>

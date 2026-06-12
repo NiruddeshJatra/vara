@@ -21,6 +21,9 @@ import ReviewForm from "./ReviewForm";
 import { useEffect, useState } from "react";
 import { RentalStatus, RENTAL_STATUS_DISPLAY } from '@/constants/rental';
 import rentalService from "@/services/rental.service";
+import reviewService from "@/services/review.service";
+import { Review } from "@/types/rentals";
+import { toast } from "@/components/ui/use-toast";
 
 interface RentalDetailModalProps {
   rental: Rental;
@@ -44,6 +47,7 @@ const RentalDetailModal = ({
   const [activeTab, setActiveTab] = useState<string>("details");
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [rentalPhotos, setRentalPhotos] = useState<RentalPhotoItem[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
 
   // --- Rental status logic: statuses match backend strings exactly. ---
   const isPending = rental.status === RentalStatus.PENDING;
@@ -154,6 +158,40 @@ const RentalDetailModal = ({
     }
     return () => { cancelled = true; };
   }, [rental.id, isAccepted, isInProgress, isCompleted]);
+
+  // Public reviews for this rental (renter-to-owner, fetched by product)
+  useEffect(() => {
+    let cancelled = false;
+    const productId = typeof rental.product === 'object' ? rental.product.id : rental.product;
+    if (productId) {
+      reviewService.getProductReviews(productId)
+        .then(({ reviews }) => {
+          if (!cancelled) setReviews(reviews.filter((r) => r.rental === rental.id));
+        })
+        .catch(() => {
+          if (!cancelled) setReviews([]);
+        });
+    }
+    return () => { cancelled = true; };
+  }, [rental.id, rental.product]);
+
+  const handleReviewSubmit = async (rating: number, comment: string) => {
+    try {
+      await reviewService.createReview(rental.id, rating, comment);
+      toast({ title: "Review Submitted", description: "Thank you for your review!" });
+      onClose();
+    } catch (error: any) {
+      const fieldErrors = error.response?.data?.data;
+      const firstError = fieldErrors && typeof fieldErrors === 'object'
+        ? Object.values(fieldErrors).find((v) => Array.isArray(v) && v.length)
+        : null;
+      toast({
+        title: "Review Failed",
+        description: (firstError as string[] | null)?.[0] || error.response?.data?.message || 'Failed to submit review',
+        variant: "destructive",
+      });
+    }
+  };
 
   const preRentalPhotos = rentalPhotos.filter((p) => p.photo_type === 'pre_rental');
   const postRentalPhotos = rentalPhotos.filter((p) => p.photo_type === 'post_rental');
@@ -581,13 +619,56 @@ const RentalDetailModal = ({
                     </div>
 
                     <div className="p-4">
-                      <div className="text-center py-8">
-                        <MessageSquare className="mx-auto h-10 w-10 text-green-200 mb-2" />
-                        <p className="text-green-700 font-medium text-sm">No reviews yet</p>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          Be the first to review this rental experience!
-                        </p>
-                      </div>
+                      {reviews.length > 0 ? (
+                        <div className="space-y-4">
+                          {reviews.map((review) => (
+                            <div key={review.id} className="pb-4 border-b border-green-100 last:border-0 last:pb-0">
+                              <div className="flex items-start gap-3">
+                                <Avatar className="h-8 w-8 border border-gray-200">
+                                  <AvatarFallback className="bg-gray-100 text-gray-800">
+                                    {review.reviewer_name.charAt(0)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                  <div className="flex flex-col gap-1 mb-1.5">
+                                    <div>
+                                      <h4 className="text-sm font-medium text-gray-800">{review.reviewer_name}</h4>
+                                      <div className="flex items-center mt-1">
+                                        <div className="flex">
+                                          {[...Array(5)].map((_, i) => (
+                                            <Star
+                                              key={i}
+                                              className={`h-3.5 w-3.5 ${
+                                                i < review.rating
+                                                  ? 'text-yellow-500 fill-yellow-500'
+                                                  : 'text-gray-300'
+                                              }`}
+                                            />
+                                          ))}
+                                        </div>
+                                        <span className="ml-2 text-xs text-gray-500">
+                                          {formatDate(safeDate(review.created_at))}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <p className="text-sm text-gray-700 bg-green-50/50 p-2 rounded border border-green-100">
+                                    {review.comment}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <MessageSquare className="mx-auto h-10 w-10 text-green-200 mb-2" />
+                          <p className="text-green-700 font-medium text-sm">No reviews yet</p>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            Be the first to review this rental experience!
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -605,10 +686,7 @@ const RentalDetailModal = ({
                         <ReviewForm
                           rentalId={rental.id}
                           userRole={userRole}
-                          onSubmit={() => {
-                            onStatusAction(rental.id, 'submitReview');
-                            onClose();
-                          }}
+                          onSubmit={handleReviewSubmit}
                         />
                       </div>
                     </div>
