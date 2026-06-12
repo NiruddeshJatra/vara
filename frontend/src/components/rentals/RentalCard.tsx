@@ -17,7 +17,7 @@ interface RentalCardProps {
   rental: Rental;
   userRole: "renter" | "owner";
   onViewDetails: (rental: Rental) => void;
-  onStatusAction: (rentalId: number, action: string) => void;
+  onStatusAction: (rentalId: string, action: string) => void;
 }
 
 const RentalCard = ({
@@ -33,8 +33,12 @@ const RentalCard = ({
       color: "bg-amber-100 text-amber-800 border-amber-300",
       icon: <Clock className="h-4 w-4" />,
     },
-    approved: {
+    accepted: {
       color: "bg-blue-100 text-blue-800 border-blue-300",
+      icon: <ThumbsUp className="h-4 w-4" />,
+    },
+    in_progress: {
+      color: "bg-green-100 text-green-800 border-green-300",
       icon: <ThumbsUp className="h-4 w-4" />,
     },
     completed: {
@@ -73,7 +77,10 @@ const RentalCard = ({
       return "N/A";
     }
 
-    if (rental.status === RentalStatus.APPROVED) {
+    if (
+      rental.status === RentalStatus.ACCEPTED ||
+      rental.status === RentalStatus.IN_PROGRESS
+    ) {
       if (now < start) return `Starts in ${differenceInDays(start, now)}d`;
       if (now >= start && now <= end)
         return `${differenceInDays(end, now)}d left`;
@@ -111,20 +118,13 @@ const RentalCard = ({
     return `Updated ${completedTime} ago`;
   };
 
-  const profile =
-    userRole === "renter"
-      ? { name: rental.owner || "Owner", image: "" }
-      : { name: rental.renter || "Renter", image: "" };
+  // Pricing snapshot from the backend (decimal string)
+  const price = Number(rental.base_cost) || 0;
 
-  // Defensive fallback for missing/invalid numbers
-  const price = typeof rental.base_cost === 'number' && !isNaN(rental.base_cost)
-    ? rental.base_cost
-    : rental.product?.pricing_tiers?.[0]?.price || 0;
-
-  const imageUrl = rental.product?.images?.[0]?.image || '/placeholder.png';
-  const productTitle = rental.product?.title || 'Untitled';
-  const productCategory = rental.product?.category || 'N/A';
-  const product_type = rental.product?.product_type || 'N/A';
+  const product = typeof rental.product === 'object' ? rental.product : null;
+  const imageUrl = product?.images?.[0]?.image || '/placeholder.png';
+  const productTitle = product?.title || rental.product_title || 'Untitled';
+  const productCategory = product?.category || 'N/A';
 
   return (
     <div className="flex flex-col sm:flex-row h-auto sm:h-64 bg-gradient-to-r from-white to-leaf-100 rounded-lg border overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">

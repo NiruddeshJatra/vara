@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import NavBar from '@/components/home/NavBar';
 import Footer from '@/components/home/Footer';
 import RentalsTabs from '@/components/rentals/RentalsTabs';
@@ -8,9 +8,10 @@ import MyListingsRentalsTab from '@/components/rentals/MyListingsRentalsTab';
 import RentalDetailModal from '@/components/rentals/RentalDetailModal';
 import { useToast } from '@/hooks/use-toast';
 import rentalService from '@/services/rental.service';
+import productService from '@/services/product.service';
 import { RentalStatus } from '@/constants/rental';
 import { Product } from '@/types/listings';
-import { Rental, Review } from '@/types/rentals';
+import { Rental } from '@/types/rentals';
 import '../styles/main.css';
 
 const Rentals = () => {
@@ -26,90 +27,67 @@ const Rentals = () => {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Map RentalRequest (API) to Rental (UI)
-  function mapRentalRequestToRental(req: any): Rental {
-    return {
-      id: req.id,
-      product: {
-        id: req.product?.id,
-        owner: typeof req.product?.owner === 'object' ? req.product.owner.username : req.product.owner,
-        title: req.product?.title || '',
-        category: req.product?.category || '',
-        product_type: req.product?.product_type || '',
-        description: req.product?.description || '',
-        location: req.product?.location || '',
-        security_deposit: req.product?.security_deposit ?? null,
-        purchase_year: req.product?.purchase_year || '',
-        original_price: req.product?.original_price ? Number(req.product.original_price) : 0,
-        ownership_history: req.product?.ownership_history || '',
-        status: req.product?.status || '',
-        statusMessage: req.product?.statusMessage || null,
-        statusChangedAt: req.product?.statusChangedAt || null,
-        images: (req.product?.images || req.product?.productImages || []).map((img: any) => ({
-          id: img.id,
-          image: img.image,
-          created_at: img.created_at,
-        })),
-        unavailable_periods: req.product?.unavailable_periods || [],
-        pricing_tiers: req.product?.pricing_tiers || [],
-        views_count: req.product?.views_count || 0,
-        rental_count: req.product?.rental_count || 0,
-        average_rating: req.product?.average_rating ? Number(req.product.average_rating) : 0,
-        created_at: req.product?.created_at || '',
-        updated_at: req.product?.updated_at || '',
-      },
-      reviews: req.reviews || [],
-      start_date: req.startTime,
-      end_date: req.endTime,
-      duration: req.duration,
-      duration_unit: req.duration_unit,
-      base_cost: req.base_cost !== undefined && req.base_cost !== null && !isNaN(Number(req.base_cost)) ? Number(req.base_cost) : (req.product?.pricing_tiers?.[0]?.price || 0),
-      service_fee: req.service_fee !== undefined && req.service_fee !== null && !isNaN(Number(req.service_fee)) ? Number(req.service_fee) : 0,
-      security_deposit: req.security_deposit !== undefined && req.security_deposit !== null && !isNaN(Number(req.security_deposit)) ? Number(req.security_deposit) : 0,
-      status: req.status,
-      status_history: req.status_history || [],
-      created_at: req.created_at,
-      updated_at: req.updated_at,
-      notes: req.notes,
-      renter: typeof req.renter === 'object' ? req.renter.username : req.renter,
-      owner: typeof req.owner === 'object' ? req.owner.username : req.owner,
-    };
-  }
+  // The API returns product as a UUID; attach the full product object so
+  // cards/modal can show images and category (plumbing only, same UI)
+  const attachProducts = async (rentals: Rental[]): Promise<Rental[]> => {
+    const ids = [...new Set(
+      rentals
+        .map((r) => (typeof r.product === 'string' ? r.product : null))
+        .filter((id): id is string => !!id)
+    )];
 
-  useEffect(() => {
+    const products = new Map<string, Product>();
+    await Promise.all(ids.map(async (id) => {
+      try {
+        products.set(id, await productService.getProduct(id));
+      } catch {
+        // Product may be suspended/deleted — card falls back to product_title
+      }
+    }));
+
+    return rentals.map((rental) => {
+      const productId = typeof rental.product === 'string' ? rental.product : null;
+      const product = productId ? products.get(productId) : null;
+      return product ? { ...rental, product } : rental;
+    });
+  };
+
+  const fetchRentals = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const fetchRentals = async () => {
-      try {
-        if (activeTab === 'myRentals') {
-          const rentals = await rentalService.getUserRentals();
-          const mapped = rentals.map(mapRentalRequestToRental).filter(Boolean);
-          setMyRentals(mapped);
-        } else {
-          const rentals = await rentalService.getUserListingsRentals();
-          const mapped = rentals.map(mapRentalRequestToRental).filter(Boolean);
-          setMyListingsRentals(mapped);
-        }
-      } catch (err: any) {
-        setError(err.message || 'Failed to fetch rentals');
-        toast({
-          title: 'Error',
-          description: err.message || 'Failed to fetch rentals',
-          variant: 'destructive',
-        });
-      } finally {
-        setLoading(false);
+    try {
+      if (activeTab === 'myRentals') {
+        const rentals = await rentalService.getUserRentals();
+        setMyRentals(await attachProducts(rentals));
+      } else {
+        const rentals = await rentalService.getUserListingsRentals();
+        setMyListingsRentals(await attachProducts(rentals));
       }
-    };
-    fetchRentals();
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch rentals');
+      toast({
+        title: 'Error',
+        description: err.message || 'Failed to fetch rentals',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
+
+  useEffect(() => {
+    fetchRentals();
+  }, [fetchRentals]);
 
   // Filter and sort rentals based on UI state
   const getFilteredSortedRentals = (rentals: Rental[]) => {
     let filtered = rentals.filter(rental => {
       if (statusFilter !== 'all' && rental.status !== statusFilter) return false;
-      if (searchTerm && !rental.product.title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+      const title = typeof rental.product === 'object'
+        ? rental.product.title
+        : rental.product_title || '';
+      if (searchTerm && !title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
       if (dateRange.from && new Date(rental.start_date) < dateRange.from) return false;
       if (dateRange.to && new Date(rental.end_date) > dateRange.to) return false;
       return true;
@@ -119,9 +97,9 @@ const Rentals = () => {
         case 'oldest':
           return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
         case 'priceHighToLow':
-          return b.base_cost - a.base_cost;
+          return Number(b.base_cost) - Number(a.base_cost);
         case 'priceLowToHigh':
-          return a.base_cost - b.base_cost;
+          return Number(a.base_cost) - Number(b.base_cost);
         case 'newest':
         default:
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -130,20 +108,38 @@ const Rentals = () => {
     return filtered;
   };
 
-  const handleViewRentalDetails = (rental: Rental) => {
+  const handleViewRentalDetails = async (rental: Rental) => {
+    // Open immediately with list data, then enrich with detail-only fields
+    // (status_history, settlement, pricing snapshot)
     setSelectedRental(rental);
+    try {
+      const detail = await rentalService.getRentalRequest(rental.id);
+      setSelectedRental({ ...rental, ...detail, product: rental.product });
+    } catch {
+      // Modal still works with list data
+    }
   };
 
   const handleCloseRentalDetails = () => {
     setSelectedRental(null);
   };
 
-  const handleStatusAction = (rentalId: number, action: string) => {
-    toast({
-      title: "Action taken",
-      description: `${action} action for rental #${rentalId} was successful.`,
-      variant: "default"
-    });
+  const handleStatusAction = async (rentalId: string, action: string) => {
+    try {
+      if (action === 'accept') {
+        await rentalService.acceptRental(rentalId);
+      } else if (action === 'reject') {
+        await rentalService.rejectRental(rentalId);
+      } else if (action === 'cancel') {
+        await rentalService.cancelRental(rentalId);
+      } else {
+        return;
+      }
+      setSelectedRental(null);
+      await fetchRentals();
+    } catch {
+      // Service already toasts the error
+    }
   };
 
   return (

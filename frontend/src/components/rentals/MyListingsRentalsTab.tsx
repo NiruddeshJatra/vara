@@ -5,12 +5,14 @@ import RentalSection from "./RentalSection";
 interface MyListingsRentalsTabProps {
   rentals: Rental[];
   onViewDetails: (rental: Rental) => void;
-  onStatusAction: (rentalId: number, action: string) => void;
+  onStatusAction: (rentalId: string, action: string) => void;
 }
 
 const MyListingsRentalsTab = ({ rentals, onViewDetails, onStatusAction }: MyListingsRentalsTabProps) => {
   // Filter rentals by status
-  const activeRentals = rentals.filter(rental => rental.status === RentalStatus.APPROVED);
+  const activeRentals = rentals.filter(rental =>
+    [RentalStatus.ACCEPTED, RentalStatus.IN_PROGRESS].includes(rental.status)
+  );
   const pendingRentals = rentals.filter(rental => rental.status === RentalStatus.PENDING);
   const historyRentals = rentals.filter(rental => 
     [RentalStatus.COMPLETED, RentalStatus.REJECTED, RentalStatus.CANCELLED].includes(rental.status)

@@ -35,10 +35,11 @@ const RentalsStatusFilter = ({
   const statusOptions: { value: RentalStatus | "all"; label: string; color: string; borderColor: string }[] = [
     { value: 'all', label: 'All', color: 'bg-gray-600', borderColor: 'border-gray-300' },
     { value: RentalStatus.PENDING, label: 'Pending', color: 'bg-yellow-600', borderColor: 'border-gray-300' },
-    { value: RentalStatus.APPROVED, label: 'Approved', color: 'bg-green-600', borderColor: 'border-gray-300' },
+    { value: RentalStatus.ACCEPTED, label: 'Accepted', color: 'bg-blue-600', borderColor: 'border-gray-300' },
+    { value: RentalStatus.IN_PROGRESS, label: 'In Progress', color: 'bg-green-600', borderColor: 'border-gray-300' },
     { value: RentalStatus.REJECTED, label: 'Rejected', color: 'bg-red-600/90', borderColor: 'border-gray-300' },
     { value: RentalStatus.CANCELLED, label: 'Cancelled', color: 'bg-orange-600', borderColor: 'border-gray-300' },
-    { value: RentalStatus.COMPLETED, label: 'Completed', color: 'bg-lime-600', borderColor: 'border-gray-300' }
+    { value: RentalStatus.COMPLETED, label: 'Completed', color: 'bg-purple-600', borderColor: 'border-gray-300' }
   ];
 
   const sortOptions = [

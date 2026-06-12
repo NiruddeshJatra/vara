@@ -5,12 +5,14 @@
 export type DurationUnit = 'day' | 'week' | 'month';
 export type RentalPurpose = 'event' | 'personal' | 'professional' | 'other';
 
+// Matches backend status strings exactly (rentals/state_machine.py)
 export enum RentalStatus {
   PENDING = 'pending',
-  APPROVED = 'approved',
+  ACCEPTED = 'accepted',
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed',
   REJECTED = 'rejected',
-  CANCELLED = 'cancelled',
-  COMPLETED = 'completed'
+  CANCELLED = 'cancelled'
 }
 
 export const DURATION_UNIT_VALUES: DurationUnit[] = ['day', 'week', 'month'];
@@ -30,24 +32,27 @@ export const RENTAL_PURPOSE_OPTIONS = [
 
 export const RENTAL_STATUS_DISPLAY: Record<RentalStatus, string> = {
   [RentalStatus.PENDING]: 'Pending',
-  [RentalStatus.APPROVED]: 'Approved',
+  [RentalStatus.ACCEPTED]: 'Accepted',
+  [RentalStatus.IN_PROGRESS]: 'In Progress',
+  [RentalStatus.COMPLETED]: 'Completed',
   [RentalStatus.REJECTED]: 'Rejected',
-  [RentalStatus.CANCELLED]: 'Cancelled',
-  [RentalStatus.COMPLETED]: 'Completed'
+  [RentalStatus.CANCELLED]: 'Cancelled'
 };
 
 export const RENTAL_STATUS_COLORS: Record<RentalStatus, string> = {
   [RentalStatus.PENDING]: 'bg-yellow-100 text-yellow-800',
-  [RentalStatus.APPROVED]: 'bg-green-100 text-green-800',
+  [RentalStatus.ACCEPTED]: 'bg-blue-100 text-blue-800',
+  [RentalStatus.IN_PROGRESS]: 'bg-green-100 text-green-800',
+  [RentalStatus.COMPLETED]: 'bg-purple-100 text-purple-800',
   [RentalStatus.REJECTED]: 'bg-red-100 text-red-800',
-  [RentalStatus.CANCELLED]: 'bg-gray-100 text-gray-800',
-  [RentalStatus.COMPLETED]: 'bg-blue-100 text-blue-800'
+  [RentalStatus.CANCELLED]: 'bg-orange-100 text-orange-800'
 };
 
 export const RENTAL_STATUS_ICONS: Record<RentalStatus, string> = {
   pending: '⏳',
-  approved: '✅',
+  accepted: '✅',
+  in_progress: '🚚',
+  completed: '🏁',
   rejected: '❌',
-  cancelled: '🚫',
-  completed: '🏁'
+  cancelled: '🚫'
 };
