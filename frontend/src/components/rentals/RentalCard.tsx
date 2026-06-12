@@ -61,13 +61,13 @@ const RentalCard = ({
 
   const getTimeInfo = () => {
     const now = new Date();
-    const start = new Date(rental.startDate);
-    const end = new Date(rental.endDate);
+    const start = new Date(rental.start_date);
+    const end = new Date(rental.end_date);
 
     if (
-      !rental.startDate ||
+      !rental.start_date ||
       !isValid(start) ||
-      !rental.endDate ||
+      !rental.end_date ||
       !isValid(end)
     ) {
       return "N/A";
@@ -79,8 +79,8 @@ const RentalCard = ({
         return `${differenceInDays(end, now)}d left`;
     }
     if (rental.status === RentalStatus.PENDING) {
-      const created = new Date(rental.createdAt);
-      if (!rental.createdAt || !isValid(created)) return "N/A";
+      const created = new Date(rental.created_at);
+      if (!rental.created_at || !isValid(created)) return "N/A";
       const timeAgo = formatDistanceToNow(created)
         .replace(/about|over|almost|less than/g, "")
         .replace("months", "mo")
@@ -95,8 +95,8 @@ const RentalCard = ({
       return `Requested ${timeAgo} ago`;
     }
     // For completed/cancelled/etc.
-    const updated = new Date(rental.updatedAt);
-    if (!rental.updatedAt || !isValid(updated)) return "N/A";
+    const updated = new Date(rental.updated_at);
+    if (!rental.updated_at || !isValid(updated)) return "N/A";
     const completedTime = formatDistanceToNow(updated)
       .replace(/about|over|almost|less than/g, "")
       .replace("months", "mo")
@@ -117,14 +117,14 @@ const RentalCard = ({
       : { name: rental.renter || "Renter", image: "" };
 
   // Defensive fallback for missing/invalid numbers
-  const price = typeof rental.totalCost === 'number' && !isNaN(rental.totalCost)
-    ? rental.totalCost
-    : rental.product?.pricingTiers?.[0]?.price || 0;
+  const price = typeof rental.base_cost === 'number' && !isNaN(rental.base_cost)
+    ? rental.base_cost
+    : rental.product?.pricing_tiers?.[0]?.price || 0;
 
   const imageUrl = rental.product?.images?.[0]?.image || '/placeholder.png';
   const productTitle = rental.product?.title || 'Untitled';
   const productCategory = rental.product?.category || 'N/A';
-  const productType = rental.product?.productType || 'N/A';
+  const product_type = rental.product?.product_type || 'N/A';
 
   return (
     <div className="flex flex-col sm:flex-row h-auto sm:h-64 bg-gradient-to-r from-white to-leaf-100 rounded-lg border overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
@@ -151,7 +151,7 @@ const RentalCard = ({
 
           <div className="flex items-center gap-2 ml-2 text-sm text-gray-600">
             <CalendarIcon className="h-4 w-4 text-green-600" />
-            <span>{formatDate(rental.startDate)} - {formatDate(rental.endDate)}</span>
+            <span>{formatDate(rental.start_date)} - {formatDate(rental.end_date)}</span>
           </div>
 
           <div className="bg-green-50 px-3 py-2 rounded-md border border-green-200 text-xs">

@@ -21,7 +21,7 @@ export default function CreateListingPage() {
       return;
     }
 
-    if (!user.profileCompleted) {
+    if (!user.profile_completed) {
       navigate('/auth/complete-profile');
       return;
     }
@@ -55,7 +55,7 @@ export default function CreateListingPage() {
   };
 
   // If user's profile is not complete, don't render the page
-  if (!user?.profileCompleted) {
+  if (!user?.profile_completed) {
     return null;
   }
 

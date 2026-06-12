@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, CalendarDays, Info } from "lucide-react";
-import { ListingFormData, FormError, UnavailableDate } from "@/types/listings";
+import { ListingFormData, FormError, UnavailablePeriod } from "@/types/listings";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -33,24 +33,24 @@ const UnavailabilityStep = ({
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
-  // Convert UnavailableDate[] to Date[] for the calendar component
-  const unavailableDatesAsDates = formData.unavailableDates
+  // Convert UnavailablePeriod[] to Date[] for the calendar component
+  const unavailableDatesAsDates = formData.unavailable_periods
     .filter((date) => date.date !== null)
     .map((date) => new Date(date.date!));
 
   const handleSingleDateSelect = (selectedDate: Date | undefined) => {
     if (!selectedDate) return;
 
-    const newUnavailableDate: UnavailableDate = {
+    const newUnavailableDate: UnavailablePeriod = {
       id: "", // Will be set by the backend
       date: selectedDate.toISOString(),
-      isRange: false,
-      rangeStart: null,
-      rangeEnd: null,
+      is_range: false,
+      range_start: null,
+      range_end: null,
     };
 
     onChange({
-      unavailableDates: [...formData.unavailableDates, newUnavailableDate],
+      unavailable_periods: [...formData.unavailable_periods, newUnavailableDate],
     });
 
     setDate(undefined);
@@ -59,16 +59,16 @@ const UnavailabilityStep = ({
   const handleDateRangeSelect = (range: DateRange | undefined) => {
     if (!range || !range.from || !range.to) return;
 
-    const newDates: UnavailableDate[] = [];
+    const newDates: UnavailablePeriod[] = [];
     const currentDate = new Date(range.from);
 
     while (currentDate <= range.to) {
       newDates.push({
         id: "", // Will be set by the backend
         date: currentDate.toISOString(),
-        isRange: true,
-        rangeStart: range.from.toISOString(),
-        rangeEnd: range.to.toISOString(),
+        is_range: true,
+        range_start: range.from.toISOString(),
+        range_end: range.to.toISOString(),
       });
 
       currentDate.setDate(currentDate.getDate() + 1);
@@ -76,22 +76,22 @@ const UnavailabilityStep = ({
 
     if (newDates.length > 0) {
       onChange({
-        unavailableDates: [...formData.unavailableDates, ...newDates],
+        unavailable_periods: [...formData.unavailable_periods, ...newDates],
       });
     }
 
     setDateRange(undefined);
   };
 
-  const handleRemoveRange = (startDate: Date, endDate: Date) => {
-    const newUnavailableDates = formData.unavailableDates.filter((date) => {
+  const handleRemoveRange = (start_date: Date, end_date: Date) => {
+    const newUnavailableDates = formData.unavailable_periods.filter((date) => {
       if (!date.date) return true;
       const dateTime = new Date(date.date).getTime();
-      return dateTime < startDate.getTime() || dateTime > endDate.getTime();
+      return dateTime < start_date.getTime() || dateTime > end_date.getTime();
     });
 
     onChange({
-      unavailableDates: newUnavailableDates,
+      unavailable_periods: newUnavailableDates,
     });
   };
 
@@ -204,10 +204,10 @@ const UnavailabilityStep = ({
         </div>
 
         {/* Display validation errors from props */}
-        {errors.unavailableDates && (
+        {errors.unavailable_periods && (
           <div className="text-red-500 flex items-center mt-2">
             <AlertCircle size={16} className="mr-1" />{" "}
-            {errors.unavailableDates[0]}
+            {errors.unavailable_periods[0]}
           </div>
         )}
       </div>
@@ -216,7 +216,7 @@ const UnavailabilityStep = ({
       {unavailableDatesAsDates.length > 0 && (
         <div className="p-0 mt-4">
           <AvailabilityCalendar
-            unavailableDates={unavailableDatesAsDates}
+            unavailable_periods={unavailableDatesAsDates}
             onRemoveRange={handleRemoveRange}
           />
         </div>

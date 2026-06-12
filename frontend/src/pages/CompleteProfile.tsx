@@ -26,9 +26,9 @@ const CompleteProfile = () => {
   const [formData, setFormData] = useState<ProfileFormData>({
     firstName: "",
     lastName: "",
-    phoneNumber: "",
+    phone_number: "",
     location: "",
-    dateOfBirth: "",
+    date_of_birth: "",
     nationalIdNumber: "",
     nationalIdFront: null,
     nationalIdBack: null,
@@ -39,7 +39,7 @@ const CompleteProfile = () => {
 
   // Redirect if profile is already complete
   useEffect(() => {
-    if (user?.profileCompleted === true) {
+    if (user?.profile_completed === true) {
       toast({
         title: "Validation Error",
         description: "Your profile is already complete.",
@@ -82,14 +82,14 @@ const CompleteProfile = () => {
       if (!formData.firstName) errors.firstName = "First name is required";
       if (!formData.lastName) errors.lastName = "Last name is required";
 
-      const phoneError = validatePhoneNumber(formData.phoneNumber);
-      if (phoneError) errors.phoneNumber = phoneError;
+      const phoneError = validatePhoneNumber(formData.phone_number);
+      if (phoneError) errors.phone_number = phoneError;
 
       const locationError = validateLocation(formData.location);
       if (locationError) errors.location = locationError;
 
-      const dateOfBirthError = validateDateOfBirth(formData.dateOfBirth);
-      if (dateOfBirthError) errors.dateOfBirth = dateOfBirthError;
+      const dateOfBirthError = validateDateOfBirth(formData.date_of_birth);
+      if (dateOfBirthError) errors.date_of_birth = dateOfBirthError;
     } else if (currentStep === 2) {
       // Only validate national ID fields
       const nationalIdError = validateNationalId(formData.nationalIdNumber);
@@ -184,10 +184,10 @@ const CompleteProfile = () => {
         return;
       }
 
-      // Make sure we have the profileCompleted field
+      // Make sure we have the profile_completed field
       const updatedFormData = {
         ...formData,
-        profileCompleted: true,
+        profile_completed: true,
       };
 
       // Call the dedicated completeProfile service method
@@ -240,7 +240,7 @@ const CompleteProfile = () => {
   };
 
   // If user's profile is already complete, don't render the form
-  if (user?.profileCompleted === true) {
+  if (user?.profile_completed === true) {
     return null;
   }
 

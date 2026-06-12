@@ -26,7 +26,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ product }) => {
       navigate('/auth/login/');
       return;
     }
-    if (!user?.profileCompleted) {
+    if (!user?.profile_completed) {
       setShowProfileModal(true);
       return;
     }
@@ -54,15 +54,15 @@ const PricingCard: React.FC<PricingCardProps> = ({ product }) => {
     <div className="bg-gradient-to-b from-white to-leaf-50 rounded-lg border border-gray-200 shadow-md p-6">
       <h2 className="text-base sm:text-lg md:text-xl font-semibold mb-4 sm:mb-6 pb-2 sm:pb-3 border-b">Pricing Details</h2>
       <div className="space-y-2 sm:space-y-4">
-        {product.pricingTiers?.map((tier, index) => (
+        {product.pricing_tiers?.map((tier, index) => (
           <div key={index} className="flex justify-between items-center">
             <div>
               <span className="font-medium text-xs sm:text-base">
-                {formatDurationUnit(tier.durationUnit)}
+                {formatDurationUnit(tier.duration_unit)}
               </span>
-              {tier.maxPeriod && (
+              {tier.max_period && (
                 <span className="text-xs sm:text-sm text-gray-500 ml-2">
-                  (Max: {tier.maxPeriod} {tier.durationUnit}{tier.maxPeriod > 1 ? 's' : ''})
+                  (Max: {tier.max_period} {tier.duration_unit}{tier.max_period > 1 ? 's' : ''})
                 </span>
               )}
             </div>
@@ -72,13 +72,13 @@ const PricingCard: React.FC<PricingCardProps> = ({ product }) => {
       </div>
       
       <div className="pt-4 sm:pt-6 mt-4 sm:mt-6 border-t">
-        {product.securityDeposit ? (
+        {product.security_deposit ? (
           <div className="mb-4 sm:mb-6">
             <div className="flex items-center justify-between">
               <h3 className="text-xs sm:text-sm font-medium">Security Deposit</h3>
               <div className="flex items-center text-gray-700">
                 <ShieldCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600 mr-2" />
-                <span className="text-green-500 pr-2 sm:pr-4 text-xs sm:text-base">৳{product.securityDeposit}</span>
+                <span className="text-green-500 pr-2 sm:pr-4 text-xs sm:text-base">৳{product.security_deposit}</span>
               </div>
             </div>
           </div>

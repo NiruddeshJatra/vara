@@ -18,13 +18,13 @@ export default function MyListingsPage() {
     return null;
   }
 
-  if (!user?.profileCompleted) {
+  if (!user?.profile_completed) {
     navigate('/auth/complete-profile');
     return null;
   }
 
   const handleUploadProduct = () => {
-    if (!user?.profileCompleted) {
+    if (!user?.profile_completed) {
       setShowProfileModal(true);
       return;
     }

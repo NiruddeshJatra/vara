@@ -16,9 +16,9 @@ interface Props {
   product: Product;
   formData: RentalRequestFormData & {
     baseCost: number;
-    serviceFee: number;
-    securityDeposit: number;
-    totalCost: number;
+    service_fee: number;
+    security_deposit: number;
+    base_cost: number;
   };
   onNext: () => void;
   onPrev: () => void;
@@ -32,19 +32,19 @@ const PriceCalculationStep = ({
   onPrev,
   loading,
 }: Props) => {
-  const selectedTier = product.pricingTiers?.find(
-    (tier) => tier.durationUnit === formData.durationUnit
-  ) || { durationUnit: "day", price: 0, maxPeriod: 30 };
+  const selectedTier = product.pricing_tiers?.find(
+    (tier) => tier.duration_unit === formData.duration_unit
+  ) || { duration_unit: "day", price: 0, max_period: 30 };
 
   const basePrice = selectedTier.price || 0;
   const duration = formData.duration || 0;
   const baseCost = basePrice * duration;
   // Service fee is now deducted from owner's earnings, not added to renter's price
-  const serviceFee = Math.round(baseCost * 0.08); // 8% service fee
-  const securityDeposit = product.securityDeposit || 0;
+  const service_fee = Math.round(baseCost * 0.08); // 8% service fee
+  const security_deposit = product.security_deposit || 0;
   // Total cost for renter does NOT include service fee
-  const totalCost = baseCost; // Only base cost for renter
-  const durationUnit = formData.durationUnit || "day";
+  const base_cost = baseCost; // Only base cost for renter
+  const duration_unit = formData.duration_unit || "day";
 
   const formatDate = (date: Date | null) => {
     if (!date) return "Not set";
@@ -53,13 +53,13 @@ const PriceCalculationStep = ({
 
   // Get end date using the shared function
   const getEndDate = () => {
-    if (!formData.startDate) return "Not set";
-    const endDate = calculateEndDate(
-      formData.startDate,
+    if (!formData.start_date) return "Not set";
+    const end_date = calculateEndDate(
+      formData.start_date,
       duration,
-      durationUnit
+      duration_unit
     );
-    return format(endDate, "MMMM dd, yyyy");
+    return format(end_date, "MMMM dd, yyyy");
   };
 
   // Format currency
@@ -88,7 +88,7 @@ const PriceCalculationStep = ({
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Start Date:</span>
               <span className="font-medium text-gray-900">
-                {formatDate(formData.startDate)}
+                {formatDate(formData.start_date)}
               </span>
             </div>
             <div className="flex justify-between text-sm">
@@ -98,7 +98,7 @@ const PriceCalculationStep = ({
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Duration:</span>
               <span className="font-medium text-gray-900">
-                {duration} {durationUnit}
+                {duration} {duration_unit}
                 {duration > 1 ? "s" : ""}
               </span>
             </div>
@@ -114,13 +114,13 @@ const PriceCalculationStep = ({
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Pricing Tier:</span>
               <span className="font-medium text-gray-900">
-                {selectedTier.durationUnit} ({selectedTier.maxPeriod} max)
+                {selectedTier.duration_unit} ({selectedTier.max_period} max)
               </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Base Price:</span>
               <span className="font-medium text-gray-900">
-                {formatCurrency(basePrice)} per {durationUnit}
+                {formatCurrency(basePrice)} per {duration_unit}
               </span>
             </div>
             <div className="flex justify-between text-sm">
@@ -129,14 +129,14 @@ const PriceCalculationStep = ({
                 {formatCurrency(baseCost)}
               </span>
             </div>
-            {securityDeposit > 0 && (
+            {security_deposit > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600 flex items-center">
                   <Shield className="h-3.5 w-3.5 mr-1 text-green-600" />
                   Security Deposit:
                 </span>
                 <span className="font-medium text-gray-900">
-                  {formatCurrency(securityDeposit)}
+                  {formatCurrency(security_deposit)}
                 </span>
               </div>
             )}
@@ -149,18 +149,18 @@ const PriceCalculationStep = ({
           <div>
             <h4 className="text-md md:text-lg font-semibold text-green-800">Total Cost</h4>
             <p className="text-sm text-green-700">
-              For {duration} {durationUnit}
+              For {duration} {duration_unit}
               {duration > 1 ? "s" : ""}
             </p>
           </div>
           <div className="text-right">
             <div className="text-2xl font-bold text-green-800">
-              {formatCurrency(totalCost)}
+              {formatCurrency(base_cost)}
             </div>
             <p className="text-xs text-green-700">
-              {securityDeposit > 0
+              {security_deposit > 0
                 ? `(Includes refundable ${formatCurrency(
-                    securityDeposit
+                    security_deposit
                   )} deposit)`
                 : ""}
             </p>

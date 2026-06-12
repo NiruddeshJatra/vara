@@ -1,92 +1,47 @@
-export interface RegistrationData {
-  email: string;
-  username: string;
-  password1: string;
-  password2: string;
-  termsAgreed: boolean;
-  marketingConsent: boolean;
-  profileCompleted: boolean;
-}
-
-export interface ProfileFormData {
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  location: string;
-  dateOfBirth: string;
-  nationalIdNumber: string;
-  nationalIdFront: File | null;
-  nationalIdBack: File | null;
-  profileCompleted?: boolean;
-}
-
-export interface ProfileCompletionData {
-  profileCompleted: boolean;
-}
-
-// For login
-export interface LoginData {
-  email: string;
-  password: string;
-  rememberMe?: boolean;
-}
-
-// User data from the server
-export interface UserData {
+export interface User {
   id: string;
-  email: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  profilePictureUrl?: string;
-  dateOfBirth: string;
-  location: string;
-  profilePicture: string | null;
-  isTrusted: boolean;
-  averageRating: number;
-  memberSince: string;
-  notificationCount: number;
-  bio: string;
-  profileCompleted: boolean;
+  phone_number: string;
+  full_name: string;
+  email: string | null;
+  profile_picture: string | null;
+  date_of_birth: string | null;
+  district: string;
+  thana: string;
+  full_address: string;
+  trust_level: 'unverified' | 'verified' | 'partner';
+  trust_badge: 'verified' | 'partner' | null;
+  is_approved: boolean | null;
+  profile_completed: boolean;
+  average_rating: string;
+  marketing_consent: boolean;
+  member_since: string;
+  created_at: string;
 }
 
-// API response
-export interface AuthResponse {
-  user: UserData;
-  accessToken?: string;
-  refreshToken?: string;
+export interface AuthState {
+  user: User | null;
+  accessToken: string | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
-// Form errors
-export type ProfileFormErrors = {
-  [K in keyof ProfileFormData]?: string;
-};
-
-export interface RegistrationValidationErrors {
-  confirmPassword?: string;
+export interface ApiResponse<T = Record<string, unknown>> {
+  success: boolean;
+  message: string;
+  data: T;
 }
 
-export interface RegistrationFormErrors {
+export interface ProfileStep1Form {
+  date_of_birth: string;       // 'YYYY-MM-DD'
+  district: string;
+  thana: string;
+  full_address: string;
+  profile_picture?: File | null;
   email?: string;
-  username?: string;
-  password1?: string;
-  password2?: string;
-  termsAgreed?: string;
-  confirmPassword?: string;
 }
 
-export type LoginFormErrors = {
-  [K in keyof LoginData]?: string;
-}
-
-export interface ProfileUpdateData {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phoneNumber?: string;
-  location?: string;
-  dateOfBirth?: string;
-  bio?: string;
-  profilePicture?: File | null;
+export interface ProfileStep2Form {
+  nid_number: string;
+  nid_image: File;
+  institutional_id_image?: File | null;
 }

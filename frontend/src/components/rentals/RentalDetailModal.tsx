@@ -85,22 +85,22 @@ const RentalDetailModal = ({
     const d = new Date(dateStr);
     return isNaN(d.getTime()) ? null : d;
   };
-  const startDate = safeDate(rental.startDate);
-  const endDate = safeDate(rental.endDate);
+  const start_date = safeDate(rental.start_date);
+  const end_date = safeDate(rental.end_date);
   const formatDate = (date: Date | null) => date ? format(date, 'MMM d, yyyy') : 'N/A';
 
   // Price and service fee
-  const totalCost = typeof rental.totalCost === 'number' ? rental.totalCost : 0;
-  const serviceFee = typeof rental.serviceFee === 'number' ? rental.serviceFee : 0;
+  const base_cost = typeof rental.base_cost === 'number' ? rental.base_cost : 0;
+  const service_fee = typeof rental.service_fee === 'number' ? rental.service_fee : 0;
 
   // Product info
   const productTitle = typeof rental.product?.title === 'string' ? rental.product.title : 'Product';
   const productCategory = typeof rental.product?.category === 'string' ? rental.product.category : '';
   const productDescription = typeof rental.product?.description === 'string' ? rental.product.description : '';
-  const securityDeposit = typeof rental.product?.securityDeposit === 'number' ? rental.product.securityDeposit : 0;
+  const security_deposit = typeof rental.product?.security_deposit === 'number' ? rental.product.security_deposit : 0;
 
   // Rental duration
-  const rentalDuration = startDate && endDate ? differenceInCalendarDays(endDate, startDate) : 'N/A';
+  const rentalDuration = start_date && end_date ? differenceInCalendarDays(end_date, start_date) : 'N/A';
 
   const navigateImage = (direction: 'prev' | 'next') => {
     if (!hasImages) return;
@@ -199,26 +199,26 @@ const RentalDetailModal = ({
               <div className="bg-gradient-to-r from-green-50 to-white rounded-lg p-4 border border-green-200 shadow-sm">
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="text-base font-semibold text-green-800">Price Summary</h3>
-                  <span className="text-lg font-bold text-green-700">৳{totalCost}</span>
+                  <span className="text-lg font-bold text-green-700">৳{base_cost}</span>
                 </div>
                 
                 <div className="space-y-2 text-sm text-gray-600">
                   <div className="flex justify-between">
                     <span>Base price</span>
-                    <span>৳{rental.totalCost} × {rentalDuration} days</span>
+                    <span>৳{rental.base_cost} × {rentalDuration} days</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Service fee</span>
-                    <span>৳{serviceFee}</span>
+                    <span>৳{service_fee}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Security deposit</span>
-                    <span>৳{securityDeposit}</span>
+                    <span>৳{security_deposit}</span>
                   </div>
                   <Separator className="my-2 bg-green-100" />
                   <div className="flex justify-between font-medium text-green-800">
                     <span>Total</span>
-                    <span>৳{totalCost}</span>
+                    <span>৳{base_cost}</span>
                   </div>
                 </div>
               </div>
@@ -275,14 +275,14 @@ const RentalDetailModal = ({
                         <div className="flex-1 bg-white p-3 rounded border border-green-300 text-center">
                           <p className="text-xs text-gray-500 uppercase mb-1">Start Date</p>
                           <p className="text-sm font-medium text-gray-800">
-                            {formatDate(startDate)}
+                            {formatDate(start_date)}
                           </p>
                         </div>
                         
                         <div className="flex-1 bg-white p-3 rounded border border-green-300 text-center">
                           <p className="text-xs text-gray-500 uppercase mb-1">End Date</p>
                           <p className="text-sm font-medium text-gray-800">
-                            {formatDate(endDate)}
+                            {formatDate(end_date)}
                           </p>
                         </div>
                         
@@ -318,7 +318,7 @@ const RentalDetailModal = ({
                           <Separator className="bg-green-50" />
                           <li className="flex justify-between text-sm">
                             <span className="text-gray-600">Security Deposit</span>
-                            <span className="font-medium text-gray-800">৳{securityDeposit}</span>
+                            <span className="font-medium text-gray-800">৳{security_deposit}</span>
                           </li>
                         </ul>
                       </div>
@@ -354,7 +354,7 @@ const RentalDetailModal = ({
                           <div>
                             <h4 className="text-sm font-medium text-green-800">Request Submitted</h4>
                             <p className="text-xs text-gray-600 mt-1">
-                              {formatDate(startDate)}
+                              {formatDate(start_date)}
                             </p>
                             <p className="mt-2 text-xs text-gray-700 bg-green-50/50 p-2 rounded border border-green-100">
                               Rental request was submitted for {productTitle}.
@@ -373,7 +373,7 @@ const RentalDetailModal = ({
                                 Request {rental.status === RentalStatus.REJECTED ? 'Rejected' : 'Approved'}
                               </h4>
                               <p className="text-xs text-gray-600 mt-1">
-                                {formatDate(endDate)}
+                                {formatDate(end_date)}
                               </p>
                               <p className="mt-2 text-xs text-gray-700 bg-green-50/50 p-2 rounded border border-green-100">
                                 {rental.status === RentalStatus.REJECTED 
@@ -391,7 +391,7 @@ const RentalDetailModal = ({
                             <div>
                               <h4 className="text-sm font-medium text-green-800">Rental Started</h4>
                               <p className="text-xs text-gray-600 mt-1">
-                                {formatDate(startDate)}
+                                {formatDate(start_date)}
                               </p>
                               <p className="mt-2 text-xs text-gray-700 bg-green-50/50 p-2 rounded border border-green-100">
                                 The {productCategory} was picked up and the rental period began.
@@ -406,7 +406,7 @@ const RentalDetailModal = ({
                             <div>
                               <h4 className="text-sm font-medium text-green-800">Rental Completed</h4>
                               <p className="text-xs text-gray-600 mt-1">
-                                {formatDate(endDate)}
+                                {formatDate(end_date)}
                               </p>
                               <p className="mt-2 text-xs text-gray-700 bg-green-50/50 p-2 rounded border border-green-100">
                                 The item was returned in good condition and the rental was completed.
@@ -516,7 +516,7 @@ const RentalDetailModal = ({
                                           ))}
                                         </div>
                                         <span className="ml-2 text-xs text-gray-500">
-                                          {formatDate(new Date(review.createdAt))}
+                                          {formatDate(new Date(review.created_at))}
                                         </span>
                                       </div>
                                     </div>

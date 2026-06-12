@@ -10,7 +10,7 @@ interface Review {
   userImage?: string;
   rating: number;
   comment: string;
-  createdAt: string;
+  created_at: string;
 }
 
 interface ReviewsSectionProps {
@@ -18,7 +18,7 @@ interface ReviewsSectionProps {
   itemType: 'product' | 'rental';
   reviews: Review[];
   totalReviews: number;
-  averageRating: number;
+  average_rating: number;
   onViewAll: () => void;
   showAllButton?: boolean;
 }
@@ -28,7 +28,7 @@ export default function ReviewsSection({
   itemType,
   reviews, 
   totalReviews, 
-  averageRating, 
+  average_rating, 
   onViewAll,
   showAllButton = true
 }: ReviewsSectionProps) {
@@ -38,7 +38,7 @@ export default function ReviewsSection({
         <h2 className="text-xl font-semibold text-green-800 flex items-center gap-2">
           <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
           <span>
-            {averageRating.toFixed(1)} · {totalReviews} reviews
+            {average_rating.toFixed(1)} · {totalReviews} reviews
           </span>
         </h2>
         {showAllButton && (
@@ -81,7 +81,7 @@ export default function ReviewsSection({
                           ))}
                         </div>
                         <span className="ml-2 text-xs text-gray-500">
-                          {format(new Date(review.createdAt), 'MMM d, yyyy')}
+                          {format(new Date(review.created_at), 'MMM d, yyyy')}
                         </span>
                       </div>
                     </div>

@@ -35,15 +35,15 @@ const ProductHistoryStep = ({ formData, onChange, errors = {} }: Props) => {
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
-            <Label htmlFor="purchaseYear" className="text-xs md:text-sm font-medium text-gray-700">
+            <Label htmlFor="purchase_year" className="text-xs md:text-sm font-medium text-gray-700">
               Purchase Year <span className="text-red-500">*</span>
             </Label>
             <Select 
-              value={formData.purchaseYear} 
-              onValueChange={(value) => handleChange('purchaseYear', value)}
+              value={formData.purchase_year} 
+              onValueChange={(value) => handleChange('purchase_year', value)}
             >
-              <SelectTrigger className={`h-9 sm:h-10 text-xs md:text-sm ${errors.purchaseYear ? "border-red-500" : ""}`}>
-                {formData.purchaseYear || "Select Year"}
+              <SelectTrigger className={`h-9 sm:h-10 text-xs md:text-sm ${errors.purchase_year ? "border-red-500" : ""}`}>
+                {formData.purchase_year || "Select Year"}
               </SelectTrigger>
               <SelectContent className="text-xs md:text-sm">
                 {years.map(year => (
@@ -51,8 +51,8 @@ const ProductHistoryStep = ({ formData, onChange, errors = {} }: Props) => {
                 ))}
               </SelectContent>
             </Select>
-            {errors.purchaseYear && (
-              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">{errors.purchaseYear[0]}</p>
+            {errors.purchase_year && (
+              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">{errors.purchase_year[0]}</p>
             )}
             <p className="text-xs text-gray-500">
               The year when you purchased this product.
@@ -60,20 +60,20 @@ const ProductHistoryStep = ({ formData, onChange, errors = {} }: Props) => {
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="originalPrice" className="text-xs md:text-sm font-medium text-gray-700">
+            <Label htmlFor="original_price" className="text-xs md:text-sm font-medium text-gray-700">
               Original Price <span className="text-red-500">*</span>
             </Label>
             <Input
-              id="originalPrice"
+              id="original_price"
               type="number"
               min="0"
-              value={formData.originalPrice || ''}
-              onChange={(e) => handleChange('originalPrice', e.target.value ? Number(e.target.value) : undefined)}
-              className={`h-10 text-sm ${errors.originalPrice ? "border-red-500" : ""}`}
+              value={formData.original_price || ''}
+              onChange={(e) => handleChange('original_price', e.target.value ? Number(e.target.value) : undefined)}
+              className={`h-10 text-sm ${errors.original_price ? "border-red-500" : ""}`}
               placeholder="Enter original purchase price"
             />
-            {errors.originalPrice && (
-              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">{errors.originalPrice[0]}</p>
+            {errors.original_price && (
+              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">{errors.original_price[0]}</p>
             )}
             <p className="text-xs text-gray-500">
               The price you paid when purchasing this product.
@@ -86,8 +86,8 @@ const ProductHistoryStep = ({ formData, onChange, errors = {} }: Props) => {
             Ownership History <span className="text-red-500">*</span>
           </Label>
           <RadioGroup
-            value={formData.ownershipHistory}
-            onValueChange={(value) => handleChange('ownershipHistory', value)}
+            value={formData.ownership_history}
+            onValueChange={(value) => handleChange('ownership_history', value)}
             className="grid grid-cols-1 md:grid-cols-2 gap-2"
           >
             <div className="flex items-center space-x-2">
@@ -107,8 +107,8 @@ const ProductHistoryStep = ({ formData, onChange, errors = {} }: Props) => {
               <Label htmlFor="ownership-secondhand" className="text-xs md:text-sm">Second Hand</Label>
             </div>
           </RadioGroup>
-          {errors.ownershipHistory && (
-            <p className="text-xs text-red-500 mt-1 flex items-center gap-1">{errors.ownershipHistory[0]}</p>
+          {errors.ownership_history && (
+            <p className="text-xs text-red-500 mt-1 flex items-center gap-1">{errors.ownership_history[0]}</p>
           )}
           <p className="text-xs text-gray-500">
             Indicate whether you are the first owner of this product or if it has been previously owned.

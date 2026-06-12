@@ -25,26 +25,26 @@ const ConfirmationStep = ({ formData, onEdit, isEditing = false, productId }: Pr
 
   // Group unavailable dates into ranges
   const getUnavailableDateRanges = () => {
-    if (!formData.unavailableDates || formData.unavailableDates.length === 0) {
+    if (!formData.unavailable_periods || formData.unavailable_periods.length === 0) {
       return [];
     }
 
     // Filter out null dates and convert to Date objects
-    const validDates = formData.unavailableDates
+    const validDates = formData.unavailable_periods
       .filter(date => date.date !== null)
       .map(date => ({
         date: parseISO(date.date!),
-        isRange: date.isRange,
-        rangeStart: date.rangeStart ? parseISO(date.rangeStart) : null,
-        rangeEnd: date.rangeEnd ? parseISO(date.rangeEnd) : null
+        is_range: date.is_range,
+        range_start: date.range_start ? parseISO(date.range_start) : null,
+        range_end: date.range_end ? parseISO(date.range_end) : null
       }));
 
     // Sort dates
     const sortedDates = [...validDates].sort((a, b) => a.date.getTime() - b.date.getTime());
 
     const ranges = [];
-    let rangeStart = sortedDates[0].date;
-    let rangeEnd = sortedDates[0].date;
+    let range_start = sortedDates[0].date;
+    let range_end = sortedDates[0].date;
 
     for (let i = 1; i < sortedDates.length; i++) {
       const currentDate = sortedDates[i].date;
@@ -55,17 +55,17 @@ const ConfirmationStep = ({ formData, onEdit, isEditing = false, productId }: Pr
 
       if (dayDiff === 1) {
         // Consecutive date, extend the range
-        rangeEnd = currentDate;
+        range_end = currentDate;
       } else {
         // Non-consecutive date, add the current range and start a new one
-        ranges.push({ start: rangeStart, end: rangeEnd });
-        rangeStart = currentDate;
-        rangeEnd = currentDate;
+        ranges.push({ start: range_start, end: range_end });
+        range_start = currentDate;
+        range_end = currentDate;
       }
     }
 
     // Add the last range
-    ranges.push({ start: rangeStart, end: rangeEnd });
+    ranges.push({ start: range_start, end: range_end });
 
     return ranges;
   };
@@ -105,22 +105,22 @@ const ConfirmationStep = ({ formData, onEdit, isEditing = false, productId }: Pr
 
             <div className="font-semibold text-green-700 text-xs sm:text-sm">Pricing</div>
             <div className="space-y-2">
-              {formData.pricingTiers.map((tier, index) => (
+              {formData.pricing_tiers.map((tier, index) => (
                 <div key={index} className="text-gray-600 whitespace-nowrap text-xs sm:text-sm">
                   {tier.price} Taka 
-                  {tier.durationUnit === 'day' ? ' daily' :
-                    tier.durationUnit === 'week' ? ' weekly' :
-                      tier.durationUnit === 'month' ? ' monthly' :
-                        (tier.durationUnit as string).charAt(0).toUpperCase() + (tier.durationUnit as string).slice(1) + 'ly'} <br />
-                  {tier.maxPeriod && ` (Max: ${tier.maxPeriod} ${tier.durationUnit}${tier.maxPeriod > 1 ? 's' : ''})`}
+                  {tier.duration_unit === 'day' ? ' daily' :
+                    tier.duration_unit === 'week' ? ' weekly' :
+                      tier.duration_unit === 'month' ? ' monthly' :
+                        (tier.duration_unit as string).charAt(0).toUpperCase() + (tier.duration_unit as string).slice(1) + 'ly'} <br />
+                  {tier.max_period && ` (Max: ${tier.max_period} ${tier.duration_unit}${tier.max_period > 1 ? 's' : ''})`}
                 </div>
               ))}
             </div>
 
-            {formData.securityDeposit > 0 && (
+            {formData.security_deposit > 0 && (
               <>
                 <div className="font-semibold text-green-700 text-xs sm:text-sm">Security Deposit</div>
-                <div className="text-gray-600 text-xs sm:text-sm">{formData.securityDeposit} Taka</div>
+                <div className="text-gray-600 text-xs sm:text-sm">{formData.security_deposit} Taka</div>
               </>
             )}
 

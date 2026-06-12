@@ -12,13 +12,13 @@ interface Review {
 }
 
 interface ReviewsSectionProps {
-  averageRating?: number;
+  average_rating?: number;
   totalRentals?: number;
   reviews?: Review[];
 }
 
 export default function ReviewsSection({
-  averageRating = 4.9,
+  average_rating = 4.9,
   totalRentals = 12,
   reviews = [
     { name: 'Rahim Ahmed', rating: 5, review: 'Excellent product, just as described. Very happy with my rental experience. Bhara made the delivery and pickup process so smooth.', date: '2023-05-15' },
@@ -28,8 +28,8 @@ export default function ReviewsSection({
   
   // Format rating safely
   const displayRating = () => {
-    if (typeof averageRating === 'number') {
-      return averageRating.toFixed(1);
+    if (typeof average_rating === 'number') {
+      return average_rating.toFixed(1);
     }
     return '0.0';
   };

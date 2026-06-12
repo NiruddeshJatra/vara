@@ -39,10 +39,10 @@ const MOCK_REQUESTS = [
     renterRating: 4.7,
     owner: "Ahmed Rahman",
     ownerRating: 4.9,
-    startDate: "2023-06-20",
-    endDate: "2023-06-25",
+    start_date: "2023-06-20",
+    end_date: "2023-06-25",
     totalPrice: 6000,
-    securityDeposit: 5000,
+    security_deposit: 5000,
     requestDate: "2023-06-15T10:30:00Z",
     hasMultipleRequests: true,
     requestCount: 3,
@@ -57,10 +57,10 @@ const MOCK_REQUESTS = [
     renterRating: 4.8,
     owner: "Mohammed Ali",
     ownerRating: 4.2,
-    startDate: "2023-06-22",
-    endDate: "2023-06-24",
+    start_date: "2023-06-22",
+    end_date: "2023-06-24",
     totalPrice: 3600,
-    securityDeposit: 10000,
+    security_deposit: 10000,
     requestDate: "2023-06-14T14:15:00Z",
     hasMultipleRequests: false,
     requestCount: 1,
@@ -75,10 +75,10 @@ const MOCK_REQUESTS = [
     renterRating: 3.5,
     owner: "Imran Hossain",
     ownerRating: 4.6,
-    startDate: "2023-06-25",
-    endDate: "2023-07-02",
+    start_date: "2023-06-25",
+    end_date: "2023-07-02",
     totalPrice: 17500,
-    securityDeposit: 15000,
+    security_deposit: 15000,
     requestDate: "2023-06-13T09:45:00Z",
     hasMultipleRequests: true,
     requestCount: 2,
@@ -93,10 +93,10 @@ const MOCK_REQUESTS = [
     renterRating: 5.0,
     owner: "Nadia Ahmed",
     ownerRating: 4.7,
-    startDate: "2023-06-18",
-    endDate: "2023-06-19",
+    start_date: "2023-06-18",
+    end_date: "2023-06-19",
     totalPrice: 1600,
-    securityDeposit: 4000,
+    security_deposit: 4000,
     requestDate: "2023-06-12T16:20:00Z",
     hasMultipleRequests: false,
     requestCount: 1,
@@ -111,10 +111,10 @@ const MOCK_REQUESTS = [
     renterRating: 4.2,
     owner: "Fatima Khan",
     ownerRating: 4.8,
-    startDate: "2023-06-21",
-    endDate: "2023-06-28",
+    start_date: "2023-06-21",
+    end_date: "2023-06-28",
     totalPrice: 6300,
-    securityDeposit: 4500,
+    security_deposit: 4500,
     requestDate: "2023-06-11T11:10:00Z",
     hasMultipleRequests: true,
     requestCount: 4,
@@ -276,14 +276,14 @@ const RentalRequestsTable = ({ searchTerm }: RentalRequestsTableProps) => {
                   <TableCell>
                     <div className="flex items-center gap-1 text-sm text-green-700">
                       <Calendar className="h-3.5 w-3.5 text-green-600" />
-                      <span>{formatDate(request.startDate)} - {formatDate(request.endDate)}</span>
+                      <span>{formatDate(request.start_date)} - {formatDate(request.end_date)}</span>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
                       <div className="text-green-700">৳{request.totalPrice}</div>
                       <div className="text-xs text-green-600">
-                        ৳{request.securityDeposit} deposit
+                        ৳{request.security_deposit} deposit
                       </div>
                     </div>
                   </TableCell>

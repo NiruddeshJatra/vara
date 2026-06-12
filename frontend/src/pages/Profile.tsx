@@ -113,9 +113,9 @@ const Profile = () => {
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
-      phoneNumber: user.phoneNumber,
+      phone_number: user.phone_number,
       location: user.location,
-      dateOfBirth: user.dateOfBirth,
+      date_of_birth: user.date_of_birth,
       bio: user.bio,
       profilePicture: profilePictureFile
     };

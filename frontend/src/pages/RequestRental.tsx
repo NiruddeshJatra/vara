@@ -24,7 +24,7 @@ export default function RequestRentalPage() {
       return;
     }
 
-    if (!user.profileCompleted) {
+    if (!user.profile_completed) {
       navigate('/auth/complete-profile', { state: { returnTo: location.pathname } });
       return;
     }
@@ -43,7 +43,7 @@ export default function RequestRentalPage() {
         console.log('Using product data from navigation state:', { 
           id: product.id,
           title: product.title,
-          pricingTiers: product.pricingTiers?.length || 0,
+          pricing_tiers: product.pricing_tiers?.length || 0,
           images: product.images?.length || 0
         });
         return;
@@ -61,12 +61,12 @@ export default function RequestRentalPage() {
           console.log('Successfully fetched product data:', { 
             id: fetchedProduct.id,
             title: fetchedProduct.title,
-            pricingTiers: fetchedProduct.pricingTiers?.length || 0,
+            pricing_tiers: fetchedProduct.pricing_tiers?.length || 0,
             images: fetchedProduct.images?.length || 0
           });
           
           // Validate that the product has pricing tiers
-          if (!fetchedProduct.pricingTiers || fetchedProduct.pricingTiers.length === 0) {
+          if (!fetchedProduct.pricing_tiers || fetchedProduct.pricing_tiers.length === 0) {
             setError('This product does not have any pricing options available');
           } else {
             setProduct(fetchedProduct);
@@ -127,7 +127,7 @@ export default function RequestRentalPage() {
   }
 
   // No product or not authenticated
-  if (!product || !user?.profileCompleted) {
+  if (!product || !user?.profile_completed) {
     return null;
   }
 

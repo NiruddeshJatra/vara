@@ -1,15 +1,28 @@
-import api from './api.service';
-import { RentalStatus } from '../constants/rental';
+import api from '@/lib/axios';
 import { RentalRequest, RentalRequestFormData } from '../types/rentals';
 import config from '../config';
 import { toast } from '@/components/ui/use-toast';
 import { queryClient } from '../lib/react-query';
 import { invalidateRentals } from '../lib/query-invalidation';
 
+interface PaginatedData<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
 /**
  * Service for handling rental-related operations
  */
 class RentalService {
+  /**
+   * Unwrap the {success, message, data} envelope from a response
+   */
+  private unwrap<T>(response: { data: { data: T } }): T {
+    return response.data.data;
+  }
+
   /**
    * Create a new rental request
    * @param productId The ID of the product to rent
@@ -20,190 +33,128 @@ class RentalService {
     try {
       const rentalData = {
         product: productId,
-        start_time: data.startDate?.toISOString(),
-        end_time: this.calculateEndTime(data.startDate, data.duration, data.durationUnit),
+        start_date: data.start_date ? data.start_date.toISOString().split('T')[0] : null,
         duration: data.duration,
-        duration_unit: data.durationUnit,
+        duration_unit: data.duration_unit,
         purpose: data.purpose,
-        notes: data.notes || '',
-        total_cost: data.totalCost,
-        service_fee: data.serviceFee
+        notes: data.notes || ''
       };
 
       const response = await api.post(config.rentals.createEndpoint, rentalData);
-      
+
       // Invalidate relevant rental queries
       invalidateRentals();
       // Invalidate product queries since rental affects availability
       queryClient.invalidateQueries({ queryKey: ['product', productId] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      
-      toast({ 
-        title: "Rental Request Created", 
-        description: "Your rental request has been submitted successfully" 
-      });
-      
-      return response.data;
-    } catch (error: any) {
-      // Handle specific error cases
-      if (error.response?.data) {
-        const errorData = error.response.data;
-        
-        // Handle own product error
-        if (errorData.code === 'own_product_rental') {
-          toast({ 
-            title: "Rental Request Failed", 
-            description: "You cannot rent your own product", 
-            variant: "destructive" 
-          });
-          throw new Error("You cannot rent your own product");
-        }
-        
-        // Handle product unavailable error
-        if (errorData.code === 'product_unavailable') {
-          toast({ 
-            title: "Product Unavailable", 
-            description: "Product is not available during the selected period", 
-            variant: "destructive" 
-          });
-          throw new Error("Product is not available during the selected period");
-        }
 
-        // Handle other validation errors
-        if (errorData.detail) {
-          toast({ 
-            title: "Validation Error", 
-            description: errorData.detail, 
-            variant: "destructive" 
-          });
-          throw new Error(errorData.detail);
-        }
+      toast({
+        title: "Rental Request Created",
+        description: "Your rental request has been submitted successfully"
+      });
+
+      return this.unwrap<RentalRequest>(response);
+    } catch (error: any) {
+      const message = error.response?.data?.message;
+      const fieldErrors = error.response?.data?.data;
+
+      if (fieldErrors?.non_field_errors?.length) {
+        toast({
+          title: "Rental Request Failed",
+          description: fieldErrors.non_field_errors[0],
+          variant: "destructive"
+        });
+        throw new Error(fieldErrors.non_field_errors[0]);
       }
-      
-      toast({ 
-        title: "Request Failed", 
-        description: "Failed to create rental request. Please try again.", 
-        variant: "destructive" 
+
+      if (message) {
+        toast({
+          title: "Rental Request Failed",
+          description: message,
+          variant: "destructive"
+        });
+        throw new Error(message);
+      }
+
+      toast({
+        title: "Request Failed",
+        description: "Failed to create rental request. Please try again.",
+        variant: "destructive"
       });
       throw new Error('Failed to create rental request. Please try again.');
     }
   }
 
-  private calculateEndTime(startDate: Date, duration: number, durationUnit: string): string {
-    let endDate = new Date(startDate);
-    
-    switch (durationUnit) {
-      case 'day':
-        endDate.setDate(endDate.getDate() + duration);
-        break;
-      case 'week':
-        endDate.setDate(endDate.getDate() + duration * 7);
-        break;
-      case 'month':
-        endDate.setMonth(endDate.getMonth() + duration);
-        break;
-      default:
-        throw new Error(`Invalid duration unit: ${durationUnit}`);
-    }
-
-    return endDate.toISOString();
+  /**
+   * Accept a pending rental request (owner)
+   */
+  async acceptRental(rentalId: string): Promise<RentalRequest> {
+    return this.transitionRental(config.rentals.acceptEndpoint(rentalId), rentalId, "Rental request accepted");
   }
 
   /**
-   * Update the status of a rental request (owner only)
-   * @param requestId The ID of the rental request to update
-   * @param status The new status
-   * @returns The updated rental request
+   * Reject a pending rental request (owner)
    */
-  async updateRentalStatus(requestId: string, status: RentalStatus): Promise<RentalRequest> {
+  async rejectRental(rentalId: string, reason?: string): Promise<RentalRequest> {
+    return this.transitionRental(config.rentals.rejectEndpoint(rentalId), rentalId, "Rental request rejected", { reason });
+  }
+
+  /**
+   * Cancel a rental request (renter, pending/accepted before start)
+   */
+  async cancelRental(rentalId: string): Promise<RentalRequest> {
+    return this.transitionRental(config.rentals.cancelEndpoint(rentalId), rentalId, "Rental request cancelled");
+  }
+
+  private async transitionRental(
+    endpoint: string,
+    rentalId: string,
+    successMessage: string,
+    body?: Record<string, unknown>
+  ): Promise<RentalRequest> {
     try {
-      let endpoint: string;
-      switch (status) {
-        case RentalStatus.APPROVED:
-          endpoint = config.rentals.acceptEndpoint(requestId);
-          break;
-        case RentalStatus.REJECTED:
-          endpoint = config.rentals.rejectEndpoint(requestId);
-          break;
-        case RentalStatus.CANCELLED:
-          endpoint = config.rentals.cancelEndpoint(requestId);
-          break;
-        default:
-          toast({ 
-            title: "Invalid Status", 
-            description: `Invalid rental status: ${status}`, 
-            variant: "destructive" 
-          });
-          throw new Error(`Invalid rental status: ${status}`);
-      }
-      
-      const response = await api.post(endpoint, {
-        reason: status === RentalStatus.REJECTED ? 'No reason provided' : undefined
-      });
-      
+      const response = await api.post(endpoint, body);
+
       // Invalidate rental queries
       invalidateRentals();
-      queryClient.invalidateQueries({ queryKey: ['rental', requestId] });
-      
-      // Update the cache with the new rental data
-      queryClient.setQueryData(['rental', requestId], response.data);
-      
-      const statusMessages = {
-        [RentalStatus.APPROVED]: "Rental request approved",
-        [RentalStatus.REJECTED]: "Rental request rejected",
-        [RentalStatus.CANCELLED]: "Rental request cancelled"
-      };
-      
-      toast({ 
-        title: "Status Updated", 
-        description: statusMessages[status] || `Status updated to ${status}`
+      queryClient.invalidateQueries({ queryKey: ['rental', rentalId] });
+
+      const rental = this.unwrap<RentalRequest>(response);
+      queryClient.setQueryData(['rental', rentalId], rental);
+
+      toast({
+        title: "Status Updated",
+        description: successMessage
       });
-      
-      return response.data;
-    } catch (error) {
-      toast({ 
-        title: "Status Update Failed", 
-        description: `Failed to update rental status to ${status}`, 
-        variant: "destructive" 
+
+      return rental;
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Failed to update rental status";
+      toast({
+        title: "Status Update Failed",
+        description: message,
+        variant: "destructive"
       });
-      throw new Error(`Failed to update rental status to ${status}`);
+      throw new Error(message);
     }
   }
 
   /**
-   * Get all rental requests for the current user (as owner or renter)
+   * Get all rentals where the current user is the renter
    * @returns List of rental requests
    */
   async getUserRentals(): Promise<RentalRequest[]> {
     try {
       const response = await api.get(config.rentals.myRentalsEndpoint);
-      return response.data;
+      const data = this.unwrap<PaginatedData<RentalRequest>>(response);
+      return data.results || [];
     } catch (error) {
-      toast({ 
-        title: "Fetch Failed", 
-        description: "Failed to fetch your rentals", 
-        variant: "destructive" 
+      toast({
+        title: "Fetch Failed",
+        description: "Failed to fetch your rentals",
+        variant: "destructive"
       });
       throw new Error('Failed to fetch user rentals');
-    }
-  }
-
-  /**
-   * Get rental requests for a specific product (owner only)
-   * @param productId The ID of the product
-   * @returns List of rental requests
-   */
-  async getProductRentals(productId: string): Promise<RentalRequest[]> {
-    try {
-      const response = await api.get(config.rentals.listEndpoint);
-      return response.data.filter(rental => rental.product.id === productId);
-    } catch (error) {
-      toast({ 
-        title: "Fetch Failed", 
-        description: "Failed to fetch product rentals", 
-        variant: "destructive" 
-      });
-      throw new Error('Failed to fetch product rentals');
     }
   }
 
@@ -215,12 +166,12 @@ class RentalService {
   async getRentalRequest(requestId: string): Promise<RentalRequest> {
     try {
       const response = await api.get(config.rentals.detailEndpoint(requestId));
-      return response.data;
+      return this.unwrap<RentalRequest>(response);
     } catch (error) {
-      toast({ 
-        title: "Fetch Failed", 
-        description: "Failed to fetch rental request details", 
-        variant: "destructive" 
+      toast({
+        title: "Fetch Failed",
+        description: "Failed to fetch rental request details",
+        variant: "destructive"
       });
       throw new Error('Failed to fetch rental request');
     }
@@ -233,12 +184,13 @@ class RentalService {
   async getUserListingsRentals(): Promise<RentalRequest[]> {
     try {
       const response = await api.get(config.rentals.myListingsRentalsEndpoint);
-      return response.data;
+      const data = this.unwrap<PaginatedData<RentalRequest>>(response);
+      return data.results || [];
     } catch (error) {
-      toast({ 
-        title: "Fetch Failed", 
-        description: "Failed to fetch your listings' rentals", 
-        variant: "destructive" 
+      toast({
+        title: "Fetch Failed",
+        description: "Failed to fetch your listings' rentals",
+        variant: "destructive"
       });
       throw new Error('Failed to fetch user listings rentals');
     }
@@ -252,12 +204,13 @@ class RentalService {
   async getRentalPhotos(rentalId: string): Promise<any[]> {
     try {
       const response = await api.get(config.rentals.photosEndpoint(rentalId));
-      return response.data;
+      const data = this.unwrap<any>(response);
+      return Array.isArray(data) ? data : (data.results || []);
     } catch (error) {
-      toast({ 
-        title: "Fetch Failed", 
-        description: "Failed to fetch rental photos", 
-        variant: "destructive" 
+      toast({
+        title: "Fetch Failed",
+        description: "Failed to fetch rental photos",
+        variant: "destructive"
       });
       throw new Error('Failed to fetch rental photos');
     }
@@ -281,21 +234,21 @@ class RentalService {
           'Content-Type': 'multipart/form-data'
         }
       });
-      
+
       // Invalidate rental photos query
       queryClient.invalidateQueries({ queryKey: ['rental', rentalId, 'photos'] });
-      
-      toast({ 
-        title: "Photo Uploaded", 
-        description: "Rental photo uploaded successfully" 
+
+      toast({
+        title: "Photo Uploaded",
+        description: "Rental photo uploaded successfully"
       });
-      
-      return response.data;
+
+      return this.unwrap<any>(response);
     } catch (error) {
-      toast({ 
-        title: "Upload Failed", 
-        description: "Failed to upload rental photo", 
-        variant: "destructive" 
+      toast({
+        title: "Upload Failed",
+        description: "Failed to upload rental photo",
+        variant: "destructive"
       });
       throw new Error('Failed to upload rental photo');
     }

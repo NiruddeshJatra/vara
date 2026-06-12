@@ -155,8 +155,8 @@ export default function ItemDetailPage() {
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 my-4 sm:my-8 animate-fade-up">
           <ProductHeader
             title={product.title}
-            averageRating={typeof product.averageRating === 'number' ? product.averageRating : 0}
-            totalRentals={product.rentalCount || 0}
+            average_rating={typeof product.average_rating === 'number' ? product.average_rating : 0}
+            totalRentals={product.rental_count || 0}
             location={product.location || 'Not specified'}
             category={product.category}
           />
@@ -196,25 +196,25 @@ export default function ItemDetailPage() {
               <div className="animate-fade-left delay-500">
                 <ItemDetails
                   category={product.category}
-                  productType={product.productType}
-                  securityDeposit={String(product.securityDeposit)}
+                  product_type={product.product_type}
+                  security_deposit={String(product.security_deposit)}
                 />
               </div>
               
               {/* Product History */}
               <div className="animate-fade-left delay-550">
                 <ProductHistory
-                  purchaseYear={product.purchaseYear}
-                  ownershipHistory={product.ownershipHistory}
-                  originalPrice={product.originalPrice}
-                  totalRentals={product.rentalCount || 0}
+                  purchase_year={product.purchase_year}
+                  ownership_history={product.ownership_history}
+                  original_price={Number(product.original_price)}
+                  totalRentals={product.rental_count || 0}
                 />
               </div>
 
               {/* Availability Calendar */}
               <div className="animate-fade-left delay-600">
                 <AvailabilitySection 
-                  unavailableDates={product.unavailableDates.map(date => {
+                  unavailable_periods={product.unavailable_periods.map(date => {
                     // Convert to proper Date objects
                     return new Date(date.date);
                   })}
@@ -224,8 +224,8 @@ export default function ItemDetailPage() {
               {/* Reviews Section */}
               <div className="animate-fade-left delay-700">
                 <ReviewsSection
-                  averageRating={typeof product.averageRating === 'number' ? product.averageRating : 0}
-                  totalRentals={product.rentalCount || 0}
+                  average_rating={typeof product.average_rating === 'number' ? product.average_rating : 0}
+                  totalRentals={product.rental_count || 0}
                 />
               </div>
             </div>

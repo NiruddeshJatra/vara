@@ -35,41 +35,41 @@ const Rentals = () => {
         owner: typeof req.product?.owner === 'object' ? req.product.owner.username : req.product.owner,
         title: req.product?.title || '',
         category: req.product?.category || '',
-        productType: req.product?.productType || '',
+        product_type: req.product?.product_type || '',
         description: req.product?.description || '',
         location: req.product?.location || '',
-        securityDeposit: req.product?.securityDeposit ?? null,
-        purchaseYear: req.product?.purchaseYear || '',
-        originalPrice: req.product?.originalPrice ? Number(req.product.originalPrice) : 0,
-        ownershipHistory: req.product?.ownershipHistory || '',
+        security_deposit: req.product?.security_deposit ?? null,
+        purchase_year: req.product?.purchase_year || '',
+        original_price: req.product?.original_price ? Number(req.product.original_price) : 0,
+        ownership_history: req.product?.ownership_history || '',
         status: req.product?.status || '',
         statusMessage: req.product?.statusMessage || null,
         statusChangedAt: req.product?.statusChangedAt || null,
         images: (req.product?.images || req.product?.productImages || []).map((img: any) => ({
           id: img.id,
           image: img.image,
-          createdAt: img.createdAt,
+          created_at: img.created_at,
         })),
-        unavailableDates: req.product?.unavailableDates || [],
-        pricingTiers: req.product?.pricingTiers || [],
-        viewsCount: req.product?.viewsCount || 0,
-        rentalCount: req.product?.rentalCount || 0,
-        averageRating: req.product?.averageRating ? Number(req.product.averageRating) : 0,
-        createdAt: req.product?.createdAt || '',
-        updatedAt: req.product?.updatedAt || '',
+        unavailable_periods: req.product?.unavailable_periods || [],
+        pricing_tiers: req.product?.pricing_tiers || [],
+        views_count: req.product?.views_count || 0,
+        rental_count: req.product?.rental_count || 0,
+        average_rating: req.product?.average_rating ? Number(req.product.average_rating) : 0,
+        created_at: req.product?.created_at || '',
+        updated_at: req.product?.updated_at || '',
       },
       reviews: req.reviews || [],
-      startDate: req.startTime,
-      endDate: req.endTime,
+      start_date: req.startTime,
+      end_date: req.endTime,
       duration: req.duration,
-      durationUnit: req.durationUnit,
-      totalCost: req.totalCost !== undefined && req.totalCost !== null && !isNaN(Number(req.totalCost)) ? Number(req.totalCost) : (req.product?.pricingTiers?.[0]?.price || 0),
-      serviceFee: req.serviceFee !== undefined && req.serviceFee !== null && !isNaN(Number(req.serviceFee)) ? Number(req.serviceFee) : 0,
-      securityDeposit: req.securityDeposit !== undefined && req.securityDeposit !== null && !isNaN(Number(req.securityDeposit)) ? Number(req.securityDeposit) : 0,
+      duration_unit: req.duration_unit,
+      base_cost: req.base_cost !== undefined && req.base_cost !== null && !isNaN(Number(req.base_cost)) ? Number(req.base_cost) : (req.product?.pricing_tiers?.[0]?.price || 0),
+      service_fee: req.service_fee !== undefined && req.service_fee !== null && !isNaN(Number(req.service_fee)) ? Number(req.service_fee) : 0,
+      security_deposit: req.security_deposit !== undefined && req.security_deposit !== null && !isNaN(Number(req.security_deposit)) ? Number(req.security_deposit) : 0,
       status: req.status,
-      statusHistory: req.statusHistory || [],
-      createdAt: req.createdAt,
-      updatedAt: req.updatedAt,
+      status_history: req.status_history || [],
+      created_at: req.created_at,
+      updated_at: req.updated_at,
       notes: req.notes,
       renter: typeof req.renter === 'object' ? req.renter.username : req.renter,
       owner: typeof req.owner === 'object' ? req.owner.username : req.owner,
@@ -110,21 +110,21 @@ const Rentals = () => {
     let filtered = rentals.filter(rental => {
       if (statusFilter !== 'all' && rental.status !== statusFilter) return false;
       if (searchTerm && !rental.product.title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-      if (dateRange.from && new Date(rental.startDate) < dateRange.from) return false;
-      if (dateRange.to && new Date(rental.endDate) > dateRange.to) return false;
+      if (dateRange.from && new Date(rental.start_date) < dateRange.from) return false;
+      if (dateRange.to && new Date(rental.end_date) > dateRange.to) return false;
       return true;
     });
     filtered = [...filtered].sort((a, b) => {
       switch (sortOption) {
         case 'oldest':
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
         case 'priceHighToLow':
-          return b.totalCost - a.totalCost;
+          return b.base_cost - a.base_cost;
         case 'priceLowToHigh':
-          return a.totalCost - b.totalCost;
+          return a.base_cost - b.base_cost;
         case 'newest':
         default:
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       }
     });
     return filtered;
