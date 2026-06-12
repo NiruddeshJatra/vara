@@ -16,10 +16,10 @@ interface ProtectedRouteProps {
  * @param requireCompleteProfile - If true, requires the user to complete their profile.
  */
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAuth = true, requireCompleteProfile = false }) => {
-  const { isAuthenticated, loading, user } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
   
-  if (loading) {
+  if (isLoading) {
     return <PageLoader />;
   }
   

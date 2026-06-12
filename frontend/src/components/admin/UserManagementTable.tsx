@@ -46,12 +46,8 @@ const UserManagementTable = ({ searchTerm }: UserManagementTableProps) => {
       setLoading(true);
       setError(null);
       try {
-        const token = localStorage.getItem('admin_token');
-        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL || ''}/api/admin/users/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        // Parked for v2 — no admin API at launch (Django admin runs operations)
+        const response = await axios.get('/api/admin/users/');
         setUsers(response.data);
       } catch (err: any) {
         setError(

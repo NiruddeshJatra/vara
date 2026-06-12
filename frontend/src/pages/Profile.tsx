@@ -6,9 +6,9 @@ import ProfileInformation from "@/components/profile/ProfileInformation";
 import NavBar from "@/components/home/NavBar";
 import Footer from "@/components/home/Footer";
 import { useAuth } from "@/contexts/AuthContext";
-import { ProfileUpdateData } from "@/types/auth";
+import { User } from "@/types/auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import AuthService from "@/services/auth.service";
+import authService from "@/services/auth.service";
 import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
@@ -24,7 +24,7 @@ const Profile = () => {
   // Use React Query to fetch user profile data
   const { data: user, isLoading } = useQuery({
     queryKey: ['user', 'profile'],
-    queryFn: () => AuthService.getCurrentUser(),
+    queryFn: () => authService.getProfile(),
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
     enabled: isAuthenticated, // Only fetch if authenticated
@@ -33,7 +33,18 @@ const Profile = () => {
   
   // Use mutation for profile updates - MUST BE DEFINED BEFORE ANY CONDITIONAL RETURNS
   const updateProfileMutation = useMutation({
-    mutationFn: (data: ProfileUpdateData) => AuthService.updateProfile(data),
+    mutationFn: async (data: { profile: User; picture: File | null }) => {
+      // Full name is updated via PATCH /users/profile/; the rest via step1
+      await authService.updateFullName(data.profile.full_name);
+      const formData = new FormData();
+      if (data.profile.date_of_birth) formData.append('date_of_birth', data.profile.date_of_birth);
+      if (data.profile.district) formData.append('district', data.profile.district);
+      if (data.profile.thana) formData.append('thana', data.profile.thana);
+      if (data.profile.full_address) formData.append('full_address', data.profile.full_address);
+      if (data.profile.email) formData.append('email', data.profile.email);
+      if (data.picture) formData.append('profile_picture', data.picture);
+      return authService.updateProfile(formData);
+    },
     onSuccess: (updatedUserData) => {
       // Explicitly update React Query cache with the new data
       queryClient.setQueryData(['user', 'profile'], updatedUserData);
@@ -109,18 +120,7 @@ const Profile = () => {
   const handleSaveChanges = async () => {
     if (!user) return;
 
-    const updateData: ProfileUpdateData = {
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      phone_number: user.phone_number,
-      location: user.location,
-      date_of_birth: user.date_of_birth,
-      bio: user.bio,
-      profilePicture: profilePictureFile
-    };
-
-    updateProfileMutation.mutate(updateData);
+    updateProfileMutation.mutate({ profile: user, picture: profilePictureFile });
   };
 
   const handleInputChange = (field: any, value: string) => {

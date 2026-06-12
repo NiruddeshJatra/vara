@@ -26,7 +26,6 @@ import RentalRequestsTable from "../components/admin/RentalRequestsTable";
 import ActiveRentalsTable from "../components/admin/ActiveRentalsTable";
 import UserManagementTable from "../components/admin/UserManagementTable";
 import ReportsAndAnalytics from "../components/admin/ReportsAndAnalytics";
-import { useAdminAuth } from "../contexts/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import axios from 'axios';
@@ -36,7 +35,6 @@ const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [prevTab, setPrevTab] = useState("dashboard");
-  const { adminLogout } = useAdminAuth();
   const navigate = useNavigate();
 
   // --- FETCH REAL DASHBOARD DATA ---
@@ -56,13 +54,8 @@ const AdminDashboard = () => {
       setLoadingStats(true);
       setStatsError(null);
       try {
-        // Replace with your actual API endpoint
-        const token = localStorage.getItem('admin_token');
-        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL || ''}/api/admin/dashboard-stats/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        // Parked for v2 — no admin API at launch (Django admin runs operations)
+        const response = await axios.get('/api/admin/dashboard-stats/');
         setDashboardStats(response.data);
       } catch (error: any) {
         setStatsError(
@@ -76,7 +69,6 @@ const AdminDashboard = () => {
   }, []);
 
   const handleLogout = () => {
-    adminLogout();
     toast({
       title: "Logged out successfully",
       description: "You have been logged out of the admin panel",

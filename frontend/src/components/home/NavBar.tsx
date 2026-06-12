@@ -48,6 +48,7 @@ const NavBar = () => {
     try {
       await logout();
       setIsMobileMenuOpen(false);
+      navigate('/auth/login/', { replace: true });
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -134,7 +135,7 @@ const NavBar = () => {
                 <div className="profile-menu-button flex items-center gap-2 cursor-pointer border-2 border-green-500 px-4 py-2 rounded-full hover:bg-green-50 hover:border-green-600 hover:shadow-sm hover:scale-105 transition-all duration-300">
                 <Menu size={24} className="text-green-600" />
                   <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center animate-[profileButtonPulse_2s_infinite]">
-                    <span className="text-white font-bold text-sm">{user?.username?.charAt(0).toUpperCase()}</span>
+                    <span className="text-white font-bold text-sm">{user?.full_name?.charAt(0).toUpperCase()}</span>
                   </div>
                 </div>
               </DropdownMenuTrigger>
@@ -203,7 +204,7 @@ const NavBar = () => {
           {isAuthenticated && (
             <div className="flex items-center mr-2">
               <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center animate-[profileButtonPulse_2s_infinite]">
-                <span className="text-white font-bold text-sm">{user?.username?.charAt(0).toUpperCase()}</span>
+                <span className="text-white font-bold text-sm">{user?.full_name?.charAt(0).toUpperCase()}</span>
               </div>
             </div>
           )}

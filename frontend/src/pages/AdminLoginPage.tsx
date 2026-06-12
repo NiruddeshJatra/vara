@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAdminAuth } from "../contexts/AdminAuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,19 +9,15 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { adminLogin } = useAdminAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    const success = await adminLogin(email, password);
-    if (success) {
-      navigate("/admin/dashboard");
-    } else {
-      setError("Invalid credentials. Try admin@bhara.com / adminpassword");
-    }
+    // Admin dashboard is parked for v2 — operations run in Django admin at launch.
+    void navigate;
+    setError("The admin dashboard is parked. Use Django admin for operations.");
   };
 
   return (
