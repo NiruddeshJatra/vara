@@ -224,8 +224,8 @@ export default function ItemDetailPage() {
               {/* Reviews Section */}
               <div className="animate-fade-left delay-700">
                 <ReviewsSection
-                  average_rating={typeof product.average_rating === 'number' ? product.average_rating : 0}
-                  totalRentals={product.rental_count || 0}
+                  productId={product.id}
+                  average_rating={Number(product.average_rating) || 0}
                 />
               </div>
             </div>
