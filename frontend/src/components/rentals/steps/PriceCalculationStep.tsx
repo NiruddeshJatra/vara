@@ -14,12 +14,7 @@ import { calculateEndDate } from "@/utils/validations/rental.validations";
 
 interface Props {
   product: Product;
-  formData: RentalRequestFormData & {
-    baseCost: number;
-    service_fee: number;
-    security_deposit: number;
-    base_cost: number;
-  };
+  formData: RentalRequestFormData;
   onNext: () => void;
   onPrev: () => void;
   loading?: boolean;
@@ -36,14 +31,13 @@ const PriceCalculationStep = ({
     (tier) => tier.duration_unit === formData.duration_unit
   ) || { duration_unit: "day", price: 0, max_period: 30 };
 
+  // Mirrors the backend pricing snapshot: unit_price, base_cost,
+  // security_deposit (service fee is deducted from the owner's payout,
+  // never charged to the renter)
   const basePrice = selectedTier.price || 0;
   const duration = formData.duration || 0;
   const baseCost = basePrice * duration;
-  // Service fee is now deducted from owner's earnings, not added to renter's price
-  const service_fee = Math.round(baseCost * 0.08); // 8% service fee
-  const security_deposit = product.security_deposit || 0;
-  // Total cost for renter does NOT include service fee
-  const base_cost = baseCost; // Only base cost for renter
+  const security_deposit = Number(product.security_deposit) || 0;
   const duration_unit = formData.duration_unit || "day";
 
   const formatDate = (date: Date | null) => {
@@ -155,11 +149,11 @@ const PriceCalculationStep = ({
           </div>
           <div className="text-right">
             <div className="text-2xl font-bold text-green-800">
-              {formatCurrency(base_cost)}
+              {formatCurrency(baseCost)}
             </div>
             <p className="text-xs text-green-700">
               {security_deposit > 0
-                ? `(Includes refundable ${formatCurrency(
+                ? `(+ refundable ${formatCurrency(
                     security_deposit
                   )} deposit)`
                 : ""}

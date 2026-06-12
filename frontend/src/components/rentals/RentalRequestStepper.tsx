@@ -40,24 +40,6 @@ const RentalRequestStepper = ({ product }: Props) => {
     null
   );
 
-  const calculateTotalCost = () => {
-    const selectedTier =
-      product.pricing_tiers?.find(
-        (tier) => tier.duration_unit === formData.duration_unit
-      ) || pricingTier;
-    const baseCost = selectedTier.price * formData.duration;
-    const service_fee = Math.round(baseCost * 0.20); // 20% service fee
-    const security_deposit = product.security_deposit || 0;
-    const base_cost = baseCost + service_fee; // Total doesn't include deposit as it's refundable
-
-    return {
-      baseCost,
-      service_fee,
-      security_deposit,
-      base_cost,
-    };
-  };
-
   const validateStep = () => {
     const selectedTier =
       product.pricing_tiers?.find(
@@ -107,11 +89,6 @@ const RentalRequestStepper = ({ product }: Props) => {
 
     if (Object.keys(stepErrors).length === 0) {
       setIsProcessing(true);
-
-      if (currentStep === 2) {
-        const costs = calculateTotalCost();
-        setFormData((prev) => ({ ...prev, ...costs }));
-      }
 
       if (currentStep === 3) {
         setIsSubmitting(true);
@@ -296,7 +273,7 @@ const RentalRequestStepper = ({ product }: Props) => {
             {currentStep === 2 && (
               <PriceCalculationStep
                 product={product}
-                formData={{ ...formData, ...calculateTotalCost() }}
+                formData={formData}
                 onNext={handleNextStep}
                 onPrev={handlePrevStep}
                 loading={isProcessing}
