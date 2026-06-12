@@ -54,3 +54,4 @@
 *.njsproj
 *.sln
 *.sw?
+.gstack/
