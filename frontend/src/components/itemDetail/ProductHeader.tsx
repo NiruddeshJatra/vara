@@ -5,7 +5,7 @@ import { CATEGORY_DISPLAY } from '@/constants/productTypes';
 
 interface ProductHeaderProps {
   title: string;
-  averageRating?: number | null;
+  average_rating?: number | null;
   totalRentals?: number;
   location?: string;
   category?: string;
@@ -13,15 +13,15 @@ interface ProductHeaderProps {
 
 export const ProductHeader = ({
   title,
-  averageRating,
+  average_rating,
   totalRentals = 0,
   location,
   category
 }: ProductHeaderProps) => {
   // Helper to safely handle rating display
   const displayRating = () => {
-    if (typeof averageRating === 'number') {
-      return averageRating.toFixed(1);
+    if (typeof average_rating === 'number') {
+      return average_rating.toFixed(1);
     }
     return '4.0'; // Default rating when none exists
   };

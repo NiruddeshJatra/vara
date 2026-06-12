@@ -21,15 +21,15 @@ interface Props {
 
 const RentalRequestStepper = ({ product }: Props) => {
   const pricingTier =
-    product.pricingTiers && product.pricingTiers.length > 0
-      ? product.pricingTiers[0]
-      : { durationUnit: "day" as DurationUnit, price: 0, maxPeriod: 30 };
+    product.pricing_tiers && product.pricing_tiers.length > 0
+      ? product.pricing_tiers[0]
+      : { duration_unit: "day" as DurationUnit, price: 0, max_period: 30 };
 
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<RentalRequestFormData>({
-    startDate: null,
+    start_date: null,
     duration: 1,
-    durationUnit: pricingTier.durationUnit,
+    duration_unit: pricingTier.duration_unit,
     purpose: "",
     notes: "",
   });
@@ -42,35 +42,35 @@ const RentalRequestStepper = ({ product }: Props) => {
 
   const calculateTotalCost = () => {
     const selectedTier =
-      product.pricingTiers?.find(
-        (tier) => tier.durationUnit === formData.durationUnit
+      product.pricing_tiers?.find(
+        (tier) => tier.duration_unit === formData.duration_unit
       ) || pricingTier;
     const baseCost = selectedTier.price * formData.duration;
-    const serviceFee = Math.round(baseCost * 0.20); // 20% service fee
-    const securityDeposit = product.securityDeposit || 0;
-    const totalCost = baseCost + serviceFee; // Total doesn't include deposit as it's refundable
+    const service_fee = Math.round(baseCost * 0.20); // 20% service fee
+    const security_deposit = product.security_deposit || 0;
+    const base_cost = baseCost + service_fee; // Total doesn't include deposit as it's refundable
 
     return {
       baseCost,
-      serviceFee,
-      securityDeposit,
-      totalCost,
+      service_fee,
+      security_deposit,
+      base_cost,
     };
   };
 
   const validateStep = () => {
     const selectedTier =
-      product.pricingTiers?.find(
-        (tier) => tier.durationUnit === formData.durationUnit
+      product.pricing_tiers?.find(
+        (tier) => tier.duration_unit === formData.duration_unit
       ) || pricingTier;
 
     switch (currentStep) {
       case 1:
         return validateRentalDetails(
           formData,
-          selectedTier.maxPeriod,
-          selectedTier.durationUnit,
-          product.unavailableDates || []
+          selectedTier.max_period,
+          selectedTier.duration_unit,
+          product.unavailable_periods || []
         );
       case 3:
         return validateAdditionalDetails(formData);
@@ -127,9 +127,9 @@ const RentalRequestStepper = ({ product }: Props) => {
           setCurrentStep(4);
           // Reset form after successful submission
           setFormData({
-            startDate: null,
+            start_date: null,
             duration: 1,
-            durationUnit: "day",
+            duration_unit: "day",
             purpose: "",
             notes: "",
           });

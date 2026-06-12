@@ -201,7 +201,7 @@ const ProfileListings = () => {
                 <div className="flex items-center text-yellow-500">
                   <Star size={14} className="fill-current" />
                   <span className="ml-1 text-sm font-medium">
-                    {typeof listing.averageRating === 'number' ? listing.averageRating.toFixed(1) : '0.0'}
+                    {Number(listing.average_rating) > 0 ? Number(listing.average_rating).toFixed(1) : '0.0'}
                   </span>
                 </div>
               </div>
@@ -212,15 +212,15 @@ const ProfileListings = () => {
                 <div className="flex items-center">
                   <Banknote size={16} className="text-green-700 mr-1" />
                   <span className="text-lg font-bold text-green-700">
-                    {listing.pricingTiers?.[0]?.price || 'N/A'}
+                    {listing.pricing_tiers?.[0]?.price || 'N/A'}
                   </span>
                   <span className="text-sm font-semibold text-green-700 ml-1">
-                    /{listing.pricingTiers?.[0]?.durationUnit || 'N/A'}
+                    /{listing.pricing_tiers?.[0]?.duration_unit || 'N/A'}
                   </span>
                 </div>
-                {listing.securityDeposit > 0 && (
+                {Number(listing.security_deposit) > 0 && (
                   <div className="text-sm text-gray-500">
-                    Deposit: {listing.securityDeposit}
+                    Deposit: {listing.security_deposit}
                   </div>
                 )}
               </div>

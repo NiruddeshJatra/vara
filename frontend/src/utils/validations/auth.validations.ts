@@ -32,10 +32,10 @@ export const validateUsername = (username: string): string | null => {
   return null;
 };
 
-export const validatePhoneNumber = (phoneNumber: string): string | null => {
-  if (!phoneNumber) return 'Phone number is required';
+export const validatePhoneNumber = (phone_number: string): string | null => {
+  if (!phone_number) return 'Phone number is required';
   const phoneRegex = /^(\+?88)?01[3-9]\d{8}$/;
-  if (!phoneRegex.test(phoneNumber)) return 'Please enter a valid Bangladeshi phone number';
+  if (!phoneRegex.test(phone_number)) return 'Please enter a valid Bangladeshi phone number';
   return null;
 };
 
@@ -45,9 +45,9 @@ export const validateNationalId = (nationalId: string): string | null => {
   return null;
 };
 
-export const validateDateOfBirth = (dateOfBirth: string): string | null => {
-  if (!dateOfBirth) return 'Date of birth is required';
-  const birthDate = new Date(dateOfBirth);
+export const validateDateOfBirth = (date_of_birth: string): string | null => {
+  if (!date_of_birth) return 'Date of birth is required';
+  const birthDate = new Date(date_of_birth);
   const today = new Date();
   const age = today.getFullYear() - birthDate.getFullYear();
   const monthDiff = today.getMonth() - birthDate.getMonth();
@@ -103,14 +103,14 @@ export const validateProfileForm = (data: ProfileFormData): Record<string, strin
   if (!data.firstName) errors.firstName = 'First name is required';
   if (!data.lastName) errors.lastName = 'Last name is required';
   
-  const phoneError = validatePhoneNumber(data.phoneNumber);
-  if (phoneError) errors.phoneNumber = phoneError;
+  const phoneError = validatePhoneNumber(data.phone_number);
+  if (phoneError) errors.phone_number = phoneError;
   
   const locationError = validateLocation(data.location);
   if (locationError) errors.location = locationError;
   
-  const dateOfBirthError = validateDateOfBirth(data.dateOfBirth);
-  if (dateOfBirthError) errors.dateOfBirth = dateOfBirthError;
+  const dateOfBirthError = validateDateOfBirth(data.date_of_birth);
+  if (dateOfBirthError) errors.date_of_birth = dateOfBirthError;
   
   const nationalIdError = validateNationalId(data.nationalIdNumber);
   if (nationalIdError) errors.nationalIdNumber = nationalIdError;

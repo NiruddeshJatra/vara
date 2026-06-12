@@ -16,19 +16,19 @@ type Props = {
 };
 
 const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBack }: Props) => {
-  // Initialize pricingTiers if it doesn't exist
-  if (!formData.pricingTiers || formData.pricingTiers.length === 0) {
-    onChange({ pricingTiers: [{ 
-      durationUnit: 'day' as DurationUnit, 
+  // Initialize pricing_tiers if it doesn't exist
+  if (!formData.pricing_tiers || formData.pricing_tiers.length === 0) {
+    onChange({ pricing_tiers: [{ 
+      duration_unit: 'day' as DurationUnit, 
       price: undefined,
-      maxPeriod: undefined 
+      max_period: undefined 
     }] });
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
-    if (name === 'securityDeposit') {
+    if (name === 'security_deposit') {
       const numValue = value === '' ? 0 : Number(value);
       onChange({ [name]: numValue });
     } else {
@@ -37,30 +37,30 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
   };
 
   const handlePricingTierChange = (index: number, field: keyof PricingTier, value: any) => {
-    const updatedTiers = [...(formData.pricingTiers || [])];
+    const updatedTiers = [...(formData.pricing_tiers || [])];
     updatedTiers[index] = { ...updatedTiers[index], [field]: value };
-    onChange({ pricingTiers: updatedTiers });
+    onChange({ pricing_tiers: updatedTiers });
   };
 
   const addPricingTier = () => {
-    const updatedTiers = [...(formData.pricingTiers || [])];
+    const updatedTiers = [...(formData.pricing_tiers || [])];
     updatedTiers.push({ 
-      durationUnit: 'day' as DurationUnit, 
+      duration_unit: 'day' as DurationUnit, 
       price: undefined,
-      maxPeriod: 30
+      max_period: 30
     });
-    onChange({ pricingTiers: updatedTiers });
+    onChange({ pricing_tiers: updatedTiers });
   };
 
   const removePricingTier = (index: number) => {
-    const updatedTiers = [...(formData.pricingTiers || [])];
+    const updatedTiers = [...(formData.pricing_tiers || [])];
     updatedTiers.splice(index, 1);
-    onChange({ pricingTiers: updatedTiers });
+    onChange({ pricing_tiers: updatedTiers });
   };
 
   // Get placeholder text based on duration unit
-  const getPricePlaceholder = (durationUnit: DurationUnit) => {
-    switch (durationUnit) {
+  const getPricePlaceholder = (duration_unit: DurationUnit) => {
+    switch (duration_unit) {
       case 'day':
         return 'Enter price per day in Taka';
       case 'week':
@@ -72,8 +72,8 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
     }
   };
 
-  const getMaxPeriodPlaceholder = (durationUnit: DurationUnit) => {
-    switch (durationUnit) {
+  const getMaxPeriodPlaceholder = (duration_unit: DurationUnit) => {
+    switch (duration_unit) {
       case 'day':
         return 'Maximum number of days (optional)';
       case 'week':
@@ -121,11 +121,11 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
         <p className="text-xs/5 md:text-sm/6 text-gray-600">
           Set different prices for different rental durations by adding multiple tiers (daily, weekly, monthly rates).
         </p>
-        {formData.pricingTiers?.map((tier, index) => (
+        {formData.pricing_tiers?.map((tier, index) => (
           <div key={index} className="p-4 border rounded-lg bg-green-50 space-y-2 sm:space-y-4">
             <div className="flex justify-between items-center">
               <h4 className="text-md md:text-lg font-medium text-green-800">Tier {index + 1}</h4>
-              {formData.pricingTiers && formData.pricingTiers.length > 1 && (
+              {formData.pricing_tiers && formData.pricing_tiers.length > 1 && (
                 <Button 
                   type="button" 
                   variant="ghost" 
@@ -143,11 +143,11 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
                   Duration Unit <span className="text-red-500">*</span>
                 </label>
                 <Select 
-                  value={tier.durationUnit} 
-                  onValueChange={(value) => handlePricingTierChange(index, 'durationUnit', value as DurationUnit)}
+                  value={tier.duration_unit} 
+                  onValueChange={(value) => handlePricingTierChange(index, 'duration_unit', value as DurationUnit)}
                 >
-                  <SelectTrigger className={errors[`pricingTiers.${index}.durationUnit`] ? 'border-red-500' : ''}>
-                    {DURATION_UNIT_LABELS[tier.durationUnit as DurationUnit] || "Select Duration Unit"}
+                  <SelectTrigger className={errors[`pricing_tiers.${index}.duration_unit`] ? 'border-red-500' : ''}>
+                    {DURATION_UNIT_LABELS[tier.duration_unit as DurationUnit] || "Select Duration Unit"}
                   </SelectTrigger>
                   <SelectContent className="text-xs md:text-sm">
                     {durationOptions.map(option => (
@@ -157,9 +157,9 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
                     ))}
                   </SelectContent>
                 </Select>
-                {errors[`pricingTiers.${index}.durationUnit`] && (
+                {errors[`pricing_tiers.${index}.duration_unit`] && (
                   <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                    <AlertCircle size={14} /> {errors[`pricingTiers.${index}.durationUnit`][0]}
+                    <AlertCircle size={14} /> {errors[`pricing_tiers.${index}.duration_unit`][0]}
                   </p>
                 )}
               </div>
@@ -172,12 +172,12 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
                   min="0"
                   value={tier.price || ''}
                   onChange={(e) => handlePricingTierChange(index, 'price', e.target.value ? Number(e.target.value) : undefined)}
-                  className={`h-10 text-sm placeholder:text-sm ${errors[`pricingTiers.${index}.price`] ? 'border-red-500' : ''}`}
-                  placeholder={getPricePlaceholder(tier.durationUnit as DurationUnit)}
+                  className={`h-10 text-sm placeholder:text-sm ${errors[`pricing_tiers.${index}.price`] ? 'border-red-500' : ''}`}
+                  placeholder={getPricePlaceholder(tier.duration_unit as DurationUnit)}
                 />
-                {errors[`pricingTiers.${index}.price`] && (
+                {errors[`pricing_tiers.${index}.price`] && (
                   <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                    <AlertCircle size={14} /> {errors[`pricingTiers.${index}.price`][0]}
+                    <AlertCircle size={14} /> {errors[`pricing_tiers.${index}.price`][0]}
                   </p>
                 )}
                 {/* Dynamic service fee and owner earnings display */}
@@ -186,7 +186,7 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
                     <Calculator className="h-3.5 w-3.5 text-green-600" />
                     {`After 20% service fee, you will receive`}
                     <span className="font-bold">{Math.round(tier.price * 0.8)}</span>
-                    {`Taka ${DURATION_UNIT_LABELS[tier.durationUnit as DurationUnit]}`}
+                    {`Taka ${DURATION_UNIT_LABELS[tier.duration_unit as DurationUnit]}`}
                   </div>
                 )}
               </div>
@@ -197,14 +197,14 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
                 <Input
                   type="number"
                   min="1"
-                  value={tier.maxPeriod || ''}
-                  onChange={(e) => handlePricingTierChange(index, 'maxPeriod', e.target.value ? Number(e.target.value) : undefined)}
-                  className={`h-10 text-sm placeholder:text-sm ${errors[`pricingTiers.${index}.maxPeriod`] ? 'border-red-500' : ''}`}
-                  placeholder={getMaxPeriodPlaceholder(tier.durationUnit as DurationUnit)}
+                  value={tier.max_period || ''}
+                  onChange={(e) => handlePricingTierChange(index, 'max_period', e.target.value ? Number(e.target.value) : undefined)}
+                  className={`h-10 text-sm placeholder:text-sm ${errors[`pricing_tiers.${index}.max_period`] ? 'border-red-500' : ''}`}
+                  placeholder={getMaxPeriodPlaceholder(tier.duration_unit as DurationUnit)}
                 />
-                {errors[`pricingTiers.${index}.maxPeriod`] && (
+                {errors[`pricing_tiers.${index}.max_period`] && (
                   <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                    <AlertCircle size={14} /> {errors[`pricingTiers.${index}.maxPeriod`][0]}
+                    <AlertCircle size={14} /> {errors[`pricing_tiers.${index}.max_period`][0]}
                   </p>
                 )}
                 <p className="text-xs/5 text-gray-500 mt-1">
@@ -222,10 +222,10 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
           </label>
           <div className="flex items-center gap-2">
             <Input
-              name="securityDeposit"
+              name="security_deposit"
               type="number"
               min="0"
-              value={formData.securityDeposit || ''}
+              value={formData.security_deposit || ''}
               onChange={handleChange}
               className="h-10 text-sm placeholder:text-sm"
               placeholder="Recommended for valuable items"

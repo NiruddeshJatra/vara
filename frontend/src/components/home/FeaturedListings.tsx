@@ -14,115 +14,107 @@ const FeaturedListings = () => {
   const mockListings: Product[] = [
     {
       id: '1',
-      owner: 'user1',
+      owner: { id: 'user1', full_name: 'Rahim Uddin', trust_level: 'verified' as const, average_rating: '4.5' },
       title: 'Canon EOS 80D DSLR Camera',
       category: Category.PHOTOGRAPHY_VIDEOGRAPHY,
-      productType: ProductType.CAMERA,
+      product_type: ProductType.CAMERA,
       description: 'Perfect for events, travel, and content creation. Comes with 18-135mm lens.',
       location: 'Dhaka',
-      securityDeposit: 5000,
-      purchaseYear: '2022',
-      originalPrice: 80000,
-      ownershipHistory: 'First owner',
+      security_deposit: '5000',
+      purchase_year: '2022',
+      original_price: '80000',
+      ownership_history: 'First owner',
       status: 'AVAILABLE',
-      statusMessage: null,
-      statusChangedAt: null,
       images: [
-        { id: 'img1', image: 'https://images.unsplash.com/photo-1549800026-02dd1c2bca6c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', createdAt: '2024-01-01' } // Canon DSLR
+        { id: 'img1', image: 'https://images.unsplash.com/photo-1549800026-02dd1c2bca6c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', created_at: '2024-01-01' } // Canon DSLR
       ],
-      unavailableDates: [],
-      pricingTiers: [
-        { id: 'pt1', durationUnit: 'day' as DurationUnit, price: 800, maxPeriod: 7 }
+      unavailable_periods: [],
+      pricing_tiers: [
+        { id: 'pt1', duration_unit: 'day' as DurationUnit, price: 800, max_period: 7 }
       ],
-      viewsCount: 10,
-      rentalCount: 2,
-      averageRating: 4.5,
-      createdAt: '2024-01-01',
-      updatedAt: '2024-04-01',
+      views_count: 10,
+      rental_count: 2,
+      average_rating: '4.5',
+      created_at: '2024-01-01',
+      updated_at: '2024-04-01',
     },
     {
       id: '2',
-      owner: 'user2',
+      owner: { id: 'user2', full_name: 'Karim Hossain', trust_level: 'verified' as const, average_rating: '4.3' },
       title: 'Quechua Waterproof Tent (4 Person)',
       category: Category.CAMPING_HIKING,
-      productType: ProductType.TENT,
+      product_type: ProductType.TENT,
       description: 'Spacious, easy to set up, and ideal for camping in Bangladesh.',
       location: 'Sylhet',
-      securityDeposit: 2000,
-      purchaseYear: '2021',
-      originalPrice: 18000,
-      ownershipHistory: 'Second owner',
+      security_deposit: '2000',
+      purchase_year: '2021',
+      original_price: '18000',
+      ownership_history: 'Second owner',
       status: 'AVAILABLE',
-      statusMessage: null,
-      statusChangedAt: null,
       images: [
-        { id: 'img2', image: 'https://images.unsplash.com/photo-1534950947221-dcaca2836ce8?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', createdAt: '2024-01-02' } // 4 person tent
+        { id: 'img2', image: 'https://images.unsplash.com/photo-1534950947221-dcaca2836ce8?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', created_at: '2024-01-02' } // 4 person tent
       ],
-      unavailableDates: [],
-      pricingTiers: [
-        { id: 'pt2', durationUnit: 'day' as DurationUnit, price: 300, maxPeriod: 10 }
+      unavailable_periods: [],
+      pricing_tiers: [
+        { id: 'pt2', duration_unit: 'day' as DurationUnit, price: 300, max_period: 10 }
       ],
-      viewsCount: 5,
-      rentalCount: 1,
-      averageRating: 4.3,
-      createdAt: '2024-01-02',
-      updatedAt: '2024-04-02',
+      views_count: 5,
+      rental_count: 1,
+      average_rating: '4.3',
+      created_at: '2024-01-02',
+      updated_at: '2024-04-02',
     },
     {
       id: '3',
-      owner: 'user3',
+      owner: { id: 'user3', full_name: 'Fatema Begum', trust_level: 'verified' as const, average_rating: '4.7' },
       title: 'Phoenix Mountain Bicycle',
       category: Category.SPORTS_OUTDOOR,
-      productType: ProductType.BICYCLE,
+      product_type: ProductType.BICYCLE,
       description: 'Durable, lightweight, and great for city or trail rides.',
       location: 'Chattogram',
-      securityDeposit: 1500,
-      purchaseYear: '2023',
-      originalPrice: 25000,
-      ownershipHistory: 'First owner',
+      security_deposit: '1500',
+      purchase_year: '2023',
+      original_price: '25000',
+      ownership_history: 'First owner',
       status: 'AVAILABLE',
-      statusMessage: null,
-      statusChangedAt: null,
       images: [
-        { id: 'img3', image: 'https://images.unsplash.com/photo-1534150034764-046bf225d3fa?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', createdAt: '2024-01-03' } // Mountain bike
+        { id: 'img3', image: 'https://images.unsplash.com/photo-1534150034764-046bf225d3fa?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', created_at: '2024-01-03' } // Mountain bike
       ],
-      unavailableDates: [],
-      pricingTiers: [
-        { id: 'pt3', durationUnit: 'day' as DurationUnit, price: 200, maxPeriod: 5 }
+      unavailable_periods: [],
+      pricing_tiers: [
+        { id: 'pt3', duration_unit: 'day' as DurationUnit, price: 200, max_period: 5 }
       ],
-      viewsCount: 7,
-      rentalCount: 0,
-      averageRating: 4.7,
-      createdAt: '2024-01-03',
-      updatedAt: '2024-04-03',
+      views_count: 7,
+      rental_count: 0,
+      average_rating: '4.7',
+      created_at: '2024-01-03',
+      updated_at: '2024-04-03',
     },
     {
       id: '4',
-      owner: 'user4',
+      owner: { id: 'user4', full_name: 'Sumon Ahmed', trust_level: 'verified' as const, average_rating: '4.6' },
       title: 'Sony Bluetooth Speaker',
       category: Category.ELECTRONICS,
-      productType: ProductType.SPEAKER,
+      product_type: ProductType.SPEAKER,
       description: 'High-quality sound, portable, and perfect for parties or picnics.',
       location: 'Khulna',
-      securityDeposit: 800,
-      purchaseYear: '2020',
-      originalPrice: 8000,
-      ownershipHistory: 'First owner',
+      security_deposit: '800',
+      purchase_year: '2020',
+      original_price: '8000',
+      ownership_history: 'First owner',
       status: 'AVAILABLE',
-      statusMessage: null,
-      statusChangedAt: null,
       images: [
-        { id: 'img4', image: 'https://images.unsplash.com/photo-1617766376513-148515e5d3b8?q=80&w=1931&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', createdAt: '2024-01-04' } // Sony Bluetooth speaker
+        { id: 'img4', image: 'https://images.unsplash.com/photo-1617766376513-148515e5d3b8?q=80&w=1931&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', created_at: '2024-01-04' } // Sony Bluetooth speaker
       ],
-      unavailableDates: [],
-      pricingTiers: [
-        { id: 'pt4', durationUnit: 'day' as DurationUnit, price: 100, maxPeriod: 3 }
+      unavailable_periods: [],
+      pricing_tiers: [
+        { id: 'pt4', duration_unit: 'day' as DurationUnit, price: 100, max_period: 3 }
       ],
-      viewsCount: 4,
-      rentalCount: 1,
-      averageRating: 4.6,
-      createdAt: '2024-01-04',
-      updatedAt: '2024-04-04',
+      views_count: 4,
+      rental_count: 1,
+      average_rating: '4.6',
+      created_at: '2024-01-04',
+      updated_at: '2024-04-04',
     },
   ];
   const [selectedItem, setSelectedItem] = useState<string | null>(null);

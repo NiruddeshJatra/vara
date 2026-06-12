@@ -63,25 +63,25 @@ const ContactDetailsStep = ({ profileFormData, errors, onChange, onNext, loading
         </div>
 
         <div>
-          <label htmlFor="phoneNumber" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="phone_number" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
             Phone Number <span className="text-red-500">*</span>
           </label>
           <div className="relative">
             <Input
-              id="phoneNumber"
-              name="phoneNumber"
+              id="phone_number"
+              name="phone_number"
               type="tel"
               placeholder="+8801XXXXXXXXX"
-              value={profileFormData.phoneNumber}
-              onChange={(e) => onChange({ phoneNumber: e.target.value })}
-              error={!!errors.phoneNumber}
+              value={profileFormData.phone_number}
+              onChange={(e) => onChange({ phone_number: e.target.value })}
+              error={!!errors.phone_number}
               className="pl-9 h-9 sm:h-10 text-sm"
             />
             <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           </div>
-          {errors.phoneNumber ? (
+          {errors.phone_number ? (
             <p className="mt-1 text-xs sm:text-sm text-red-500 flex items-center gap-1">
-              <AlertCircle size={14} /> {errors.phoneNumber}
+              <AlertCircle size={14} /> {errors.phone_number}
             </p>
           ) : (
             <p className="mt-1 text-xs text-gray-500">Valid Bangladeshi number format required</p>
@@ -115,18 +115,18 @@ const ContactDetailsStep = ({ profileFormData, errors, onChange, onNext, loading
 
         <div>
           <DateOfBirthPicker
-            value={profileFormData.dateOfBirth}
-            onChange={(date) => onChange({ dateOfBirth: date })}
-            error={!!errors.dateOfBirth}
+            value={profileFormData.date_of_birth}
+            onChange={(date) => onChange({ date_of_birth: date })}
+            error={!!errors.date_of_birth}
             label="Date of Birth"
             required={true}
           />
-          {errors.dateOfBirth && (
+          {errors.date_of_birth && (
             <p className="mt-1 text-xs sm:text-sm text-red-500 flex items-center gap-1">
-              <AlertCircle size={14} /> {errors.dateOfBirth}
+              <AlertCircle size={14} /> {errors.date_of_birth}
             </p>
           )}
-          {!errors.dateOfBirth && (
+          {!errors.date_of_birth && (
             <p className="mt-1 text-xs text-gray-500">Must be 18 years or older</p>
           )}
         </div>

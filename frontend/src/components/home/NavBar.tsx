@@ -54,7 +54,7 @@ const NavBar = () => {
   };
 
   const handleUploadProduct = () => {
-    if (!user?.profileCompleted) {
+    if (!user?.profile_completed) {
       setShowProfileModal(true);
       return;
     }

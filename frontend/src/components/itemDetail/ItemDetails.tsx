@@ -4,9 +4,9 @@ import { CATEGORY_DISPLAY, PRODUCT_TYPE_DISPLAY } from '@/constants/productTypes
 
 interface ItemDetailsProps {
   category: string;
-  productType: string;
+  product_type: string;
   itemAge?: number;
-  securityDeposit?: string;
+  security_deposit?: string;
 }
 
 const formatPrice = (price: number) => {
@@ -19,8 +19,8 @@ const formatPrice = (price: number) => {
 
 export default function ItemDetails({
   category,
-  productType,
-  securityDeposit = '0'
+  product_type,
+  security_deposit = '0'
 }: ItemDetailsProps) {
   return (
     <div className="mb-6 sm:mb-10 pb-6 sm:pb-10 border-b border-gray-200">
@@ -39,7 +39,7 @@ export default function ItemDetails({
             <BoxSelect className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2 sm:mr-3 text-green-600" />
             Product Type
           </h4>
-          <p className="pl-6 text-green-700 font-medium text-sm sm:text-base" data-product-type={productType}>{PRODUCT_TYPE_DISPLAY[productType] || productType}</p>
+          <p className="pl-6 text-green-700 font-medium text-sm sm:text-base" data-product-type={product_type}>{PRODUCT_TYPE_DISPLAY[product_type] || product_type}</p>
         </div>
         
         <div className="bg-green-50 p-3 sm:p-4 rounded-lg col-span-2">
@@ -48,7 +48,7 @@ export default function ItemDetails({
             Security Deposit
           </h4>
           <p className="pl-3 text-green-700 font-medium flex items-center text-sm sm:text-base">
-            ৳ {formatPrice(Number(securityDeposit))} <span className="text-xs text-green-600 ml-1">(Refundable)</span>
+            ৳ {formatPrice(Number(security_deposit))} <span className="text-xs text-green-600 ml-1">(Refundable)</span>
           </p>
         </div>
       </div>

@@ -8,16 +8,16 @@ interface CustomDateRange {
 }
 
 interface Props {
-  unavailableDates: (Date | CustomDateRange)[];
-  onRemoveRange?: (startDate: Date, endDate: Date) => void;
+  unavailable_periods: (Date | CustomDateRange)[];
+  onRemoveRange?: (start_date: Date, end_date: Date) => void;
 }
 
 interface InternalDateRange {
-  startDate: Date;
-  endDate: Date;
+  start_date: Date;
+  end_date: Date;
 }
 
-const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
+const UnavailabilityCalendar = ({ unavailable_periods, onRemoveRange }: Props) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [dateRanges, setDateRanges] = useState<InternalDateRange[]>([]);
   const currentMonth = currentDate.getMonth();
@@ -39,7 +39,7 @@ const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
   
   // Group individual dates into ranges
   useEffect(() => {
-    if (unavailableDates.length === 0) {
+    if (unavailable_periods.length === 0) {
       setDateRanges([]);
       return;
     }
@@ -48,15 +48,15 @@ const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
     const flattenedDates: Date[] = [];
     const directRanges: InternalDateRange[] = [];
 
-    unavailableDates.forEach(dateItem => {
+    unavailable_periods.forEach(dateItem => {
       if (dateItem instanceof Date) {
         // Simple Date object
         flattenedDates.push(new Date(dateItem));
       } else {
         // It's a CustomDateRange, add it directly to directRanges
         directRanges.push({
-          startDate: new Date(dateItem.start),
-          endDate: new Date(dateItem.end)
+          start_date: new Date(dateItem.start),
+          end_date: new Date(dateItem.end)
         });
         
         // Also add each day in the range to flattenedDates for the calendar highlighting
@@ -84,8 +84,8 @@ const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
         if (!currentRange) {
           // Start a new range
           currentRange = {
-            startDate: new Date(date),
-            endDate: new Date(date)
+            start_date: new Date(date),
+            end_date: new Date(date)
           };
         } else {
           // Check if this date is consecutive with the current range
@@ -95,13 +95,13 @@ const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
           
           if (dayDiff === 1) {
             // Extend the current range
-            currentRange.endDate = new Date(date);
+            currentRange.end_date = new Date(date);
           } else {
             // End the current range and start a new one
             ranges.push(currentRange);
             currentRange = {
-              startDate: new Date(date),
-              endDate: new Date(date)
+              start_date: new Date(date),
+              end_date: new Date(date)
             };
           }
         }
@@ -114,24 +114,24 @@ const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
     }
     
     setDateRanges(ranges);
-  }, [unavailableDates]);
+  }, [unavailable_periods]);
   
   // Function to check if a date is unavailable
   const isDateUnavailable = (year: number, month: number, day: number) => {
     const checkDate = new Date(year, month, day);
     checkDate.setHours(0, 0, 0, 0); // Normalize time to start of day
     
-    return unavailableDates.some(date => {
+    return unavailable_periods.some(date => {
       if (date instanceof Date) {
-        const unavailableDate = new Date(date);
-        unavailableDate.setHours(0, 0, 0, 0); // Normalize time to start of day
-        return checkDate.getTime() === unavailableDate.getTime();
+        const unavailable_period = new Date(date);
+        unavailable_period.setHours(0, 0, 0, 0); // Normalize time to start of day
+        return checkDate.getTime() === unavailable_period.getTime();
       } else if (typeof date === 'object' && 'start' in date && 'end' in date) {
-        const startDate = new Date(date.start);
-        const endDate = new Date(date.end);
-        startDate.setHours(0, 0, 0, 0);
-        endDate.setHours(0, 0, 0, 0);
-        return checkDate >= startDate && checkDate <= endDate;
+        const start_date = new Date(date.start);
+        const end_date = new Date(date.end);
+        start_date.setHours(0, 0, 0, 0);
+        end_date.setHours(0, 0, 0, 0);
+        return checkDate >= start_date && checkDate <= end_date;
       }
       return false;
     });
@@ -149,22 +149,22 @@ const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
     setCurrentDate(newDate);
   };
 
-  const formatDateRange = (startDate: Date, endDate: Date) => {
+  const formatDateRange = (start_date: Date, end_date: Date) => {
     const formatOptions: Intl.DateTimeFormatOptions = { 
       month: 'short', 
       day: 'numeric',
       year: 'numeric'
     };
     
-    const startFormatted = startDate.toLocaleDateString('en-US', formatOptions);
-    const endFormatted = endDate.toLocaleDateString('en-US', formatOptions);
+    const startFormatted = start_date.toLocaleDateString('en-US', formatOptions);
+    const endFormatted = end_date.toLocaleDateString('en-US', formatOptions);
     
     return `${startFormatted} - ${endFormatted}`;
   };
 
   const handleRemoveRange = (range: InternalDateRange) => {
     if (onRemoveRange) {
-      onRemoveRange(range.startDate, range.endDate);
+      onRemoveRange(range.start_date, range.end_date);
     }
   };
 
@@ -175,7 +175,7 @@ const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
         Unavailability Calendar
       </h4>
 
-      {unavailableDates.length > 0 ? (
+      {unavailable_periods.length > 0 ? (
         <div>
           <div className="mb-4 bg-white rounded-lg overflow-hidden border border-gray-200">
             <div className="flex items-center justify-between p-2 bg-green-100 text-green-800">
@@ -231,7 +231,7 @@ const UnavailabilityCalendar = ({ unavailableDates, onRemoveRange }: Props) => {
             <div className="flex flex-wrap gap-2">
               {dateRanges.map((range, index) => (
                 <div key={index} className="unavailability-calendar-range text-sm bg-red-50 text-red-800 px-2 py-1 rounded-md flex items-center gap-2">
-                  <span>{formatDateRange(range.startDate, range.endDate)}</span>
+                  <span>{formatDateRange(range.start_date, range.end_date)}</span>
                   {onRemoveRange && (
                     <button 
                       onClick={() => handleRemoveRange(range)}

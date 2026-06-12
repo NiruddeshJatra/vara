@@ -93,11 +93,11 @@ const ProfileInformation = ({
               </div>
               
               <div>
-                <Label htmlFor="phoneNumber" className="text-green-800 font-medium">Phone Number</Label>
+                <Label htmlFor="phone_number" className="text-green-800 font-medium">Phone Number</Label>
                 <Input 
-                  id="phoneNumber" 
-                  value={userData.phoneNumber} 
-                  onChange={(e) => onInputChange('phoneNumber', e.target.value)}
+                  id="phone_number" 
+                  value={userData.phone_number} 
+                  onChange={(e) => onInputChange('phone_number', e.target.value)}
                   disabled={!isEditing}
                   className={`border-green-300 bg-white text-green-800 ${!isEditing ? "bg-green-50/70 border-green-200" : ""}`}
                 />
@@ -116,8 +116,8 @@ const ProfileInformation = ({
               
               <div>
                 <DateOfBirthPicker
-                  value={userData.dateOfBirth}
-                  onChange={(date) => onInputChange('dateOfBirth', date)}
+                  value={userData.date_of_birth}
+                  onChange={(date) => onInputChange('date_of_birth', date)}
                   label="Date of Birth"
                   required={false}
                   className={!isEditing ? "opacity-70 pointer-events-none" : ""}

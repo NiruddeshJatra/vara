@@ -2,7 +2,7 @@ import { DurationUnit } from '@/constants/rental';
 import { ProductType, Category } from '@/constants/productTypes';
 import { ProductStatus } from '@/constants/productStatus';
 import { OwnershipHistory } from '@/constants/productAttributes';
-import { Product, ProductImage, UnavailableDate, PricingTier } from '@/types/listings';
+import { Product, ProductImage, UnavailablePeriod, PricingTier } from '@/types/listings';
 
 // Mock categories data
 export const categories = [
@@ -116,84 +116,84 @@ export const generateListings = (count: number): Product[] => {
     {
       title: "Canon EOS 5D Mark IV DSLR Camera",
       category: Category.PHOTOGRAPHY_VIDEOGRAPHY,
-      productType: ProductType.CAMERA,
+      product_type: ProductType.CAMERA,
       description: "Professional-grade DSLR with 30.4MP full-frame sensor. Perfect for events, portraits, and landscapes. Includes 24-70mm and 50mm lenses.",
       images: imageCategories[0]
     },
     {
       title: "Sony Alpha a7 III Mirrorless Camera",
       category: Category.PHOTOGRAPHY_VIDEOGRAPHY,
-      productType: ProductType.CAMERA,
+      product_type: ProductType.CAMERA,
       description: "Full-frame mirrorless camera with exceptional low-light performance. 24.2MP sensor with 5-axis stabilization. Includes charging equipment.",
       images: imageCategories[0]
     },
     {
       title: "Trek Marlin 7 Mountain Bike",
       category: Category.SPORTS_FITNESS,
-      productType: ProductType.BICYCLE,
+      product_type: ProductType.BICYCLE,
       description: "High-performance mountain bike with lightweight aluminum frame. 29-inch wheels, hydraulic disc brakes, and front suspension.",
       images: imageCategories[1]
     },
     {
       title: "Specialized Road Bike - Carbon Frame",
       category: Category.SPORTS_FITNESS,
-      productType: ProductType.BICYCLE,
+      product_type: ProductType.BICYCLE,
       description: "Carbon fiber road bike for racing or training. Shimano 105 groupset, 22 speeds. Recently serviced and in excellent condition.",
       images: imageCategories[1]
     },
     {
       title: "Coleman 4-Person Dome Tent",
       category: Category.PARTY_EVENTS,
-      productType: ProductType.TENT,
+      product_type: ProductType.TENT,
       description: "Spacious tent that sets up in under 10 minutes. Weatherproof with reinforced seams. Includes rainfly, stakes, and carrying bag.",
       images: imageCategories[2]
     },
     {
       title: "Complete Backpacking Kit - Tent, Sleeping Bag & Pad",
       category: Category.PARTY_EVENTS,
-      productType: ProductType.TENT,
+      product_type: ProductType.TENT,
       description: "Everything you need for a weekend adventure. Lightweight 2-person tent, 20°F sleeping bag, and inflatable sleeping pad.",
       images: imageCategories[2]
     },
     {
       title: "JBL PartyBox 300 Bluetooth Speaker",
       category: Category.ELECTRONICS,
-      productType: ProductType.SPEAKER,
+      product_type: ProductType.SPEAKER,
       description: "Powerful portable speaker with vivid light show. 18 hours of battery life, 120W output. Perfect for parties and outdoor events.",
       images: imageCategories[3]
     },
     {
       title: "Sony WH-1000XM4 Noise Cancelling Headphones",
       category: Category.ELECTRONICS,
-      productType: ProductType.SPEAKER,
+      product_type: ProductType.SPEAKER,
       description: "Industry-leading noise cancellation headphones with 30-hour battery life. Bluetooth, touch controls, and exceptional sound quality.",
       images: imageCategories[3]
     },
     {
       title: "MacBook Pro 16\" (2021, M1 Pro)",
       category: Category.ELECTRONICS,
-      productType: ProductType.LAPTOP,
+      product_type: ProductType.LAPTOP,
       description: "Apple's flagship laptop with M1 Pro chip. 16GB RAM, 512GB SSD. Perfect for professional video editing, design work, or development.",
       images: imageCategories[4]
     },
     {
       title: "iPad Pro 12.9\" with Apple Pencil",
       category: Category.ELECTRONICS,
-      productType: ProductType.TABLET,
+      product_type: ProductType.TABLET,
       description: "Latest iPad Pro with Liquid Retina XDR display. Includes Apple Pencil (2nd gen) for drawing or note-taking. 256GB storage.",
       images: imageCategories[4]
     },
     {
       title: "DeWalt Cordless Drill Set (20V)",
       category: Category.TOOLS_EQUIPMENT,
-      productType: ProductType.POWER_TOOLS,
+      product_type: ProductType.POWER_TOOLS,
       description: "Professional drill with 2 batteries, charger, and hard case. Includes 30-piece bit set for various projects. Lightweight and powerful.",
       images: imageCategories[5]
     },
     {
       title: "Pressure Washer - 3000 PSI Electric",
       category: Category.TOOLS_EQUIPMENT,
-      productType: ProductType.POWER_TOOLS,
+      product_type: ProductType.POWER_TOOLS,
       description: "Electric pressure washer with 25ft hose and 5 interchangeable nozzles. Perfect for cleaning decks, patios, cars, and more.",
       images: imageCategories[5]
     },
@@ -223,55 +223,53 @@ export const generateListings = (count: number): Product[] => {
     const mockProduct: Product = {
       id: `item-${i}`,
       title: product.title,
-      owner: `user-${i}`, // Just the owner ID as string
+      owner: { id: `user-${i}`, full_name: owners[i % owners.length], trust_level: 'verified' as const, average_rating: '4.5' },
       category: product.category,
-      productType: product.productType,
+      product_type: product.product_type,
       description: product.description,
       location: `${i} Main St, New York, NY 10001`, // Simple string address
-      securityDeposit: Math.floor(Math.random() * 500) + 100,
-      purchaseYear: (new Date().getFullYear() - Math.floor(Math.random() * 5)).toString(),
-      originalPrice: Math.floor(Math.random() * 5000) + 1000,
-      ownershipHistory: Math.random() > 0.5 ? OwnershipHistory.FIRSTHAND : OwnershipHistory.SECONDHAND,
+      security_deposit: String(Math.floor(Math.random() * 500) + 100),
+      purchase_year: (new Date().getFullYear() - Math.floor(Math.random() * 5)).toString(),
+      original_price: String(Math.floor(Math.random() * 5000) + 1000),
+      ownership_history: Math.random() > 0.5 ? OwnershipHistory.FIRSTHAND : OwnershipHistory.SECONDHAND,
       status: ProductStatus.ACTIVE, // Using correct enum value
-      statusMessage: null,
-      statusChangedAt: now.toISOString(),
       images: product.images.map((image, idx): ProductImage => ({
         id: `img-${i}-${idx}`,
         image,
-        createdAt: now.toISOString()
+        created_at: now.toISOString()
       })),
-      unavailableDates: Array.from({ length: Math.floor(Math.random() * 3) }, (_, idx): UnavailableDate => ({
+      unavailable_periods: Array.from({ length: Math.floor(Math.random() * 3) }, (_, idx): UnavailablePeriod => ({
         id: `unavailable-${i}-${idx}`,
         date: new Date(randomDate.getTime() + idx * 24 * 60 * 60 * 1000).toISOString(),
-        isRange: false,
-        rangeStart: null,
-        rangeEnd: null
+        is_range: false,
+        range_start: null,
+        range_end: null
       })),
-      pricingTiers: [
+      pricing_tiers: [
         {
           id: `tier-${i}-1`,
-          durationUnit: 'day',
+          duration_unit: 'day',
           price: Math.floor(Math.random() * 100) + 50,
-          maxPeriod: 7
+          max_period: 7
         },
         {
           id: `tier-${i}-2`,
-          durationUnit: 'week',
+          duration_unit: 'week',
           price: Math.floor(Math.random() * 500) + 200,
-          maxPeriod: 4
+          max_period: 4
         },
         {
           id: `tier-${i}-3`,
-          durationUnit: 'month',
+          duration_unit: 'month',
           price: Math.floor(Math.random() * 1500) + 500,
-          maxPeriod: 12
+          max_period: 12
         }
       ],
-      viewsCount: Math.floor(Math.random() * 1000),
-      rentalCount: Math.floor(Math.random() * 100),
-      averageRating: Math.random() * 5,
-      createdAt: now.toISOString(),
-      updatedAt: now.toISOString()
+      views_count: Math.floor(Math.random() * 1000),
+      rental_count: Math.floor(Math.random() * 100),
+      average_rating: (Math.random() * 5).toFixed(2),
+      created_at: now.toISOString(),
+      updated_at: now.toISOString()
     };
 
     return mockProduct;

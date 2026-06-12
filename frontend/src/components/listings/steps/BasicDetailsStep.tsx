@@ -33,8 +33,8 @@ const BasicDetailsStep = ({ formData, errors, onChange, onNext }: Props) => {
       setAvailableProductTypes(productTypes);
 
       // Reset product type if it's not in the new category
-      if (formData.productType && !productTypes.includes(formData.productType)) {
-        onChange({ productType: '' });
+      if (formData.product_type && !productTypes.includes(formData.product_type)) {
+        onChange({ product_type: '' });
       }
     } else {
       setAvailableProductTypes([]);
@@ -91,14 +91,14 @@ const BasicDetailsStep = ({ formData, errors, onChange, onNext }: Props) => {
         </div>
 
         <div>
-          <Label htmlFor="productType" className="text-xs sm:text-sm font-medium">Product Type <span className="text-red-500">*</span></Label>
+          <Label htmlFor="product_type" className="text-xs sm:text-sm font-medium">Product Type <span className="text-red-500">*</span></Label>
           <Select
-            value={formData.productType}
-            onValueChange={(value) => onChange({ productType: value })}
+            value={formData.product_type}
+            onValueChange={(value) => onChange({ product_type: value })}
             disabled={!formData.category}
           >
-            <SelectTrigger className={`h-9 sm:h-10 text-xs sm:text-sm ${errors.productType ? 'border-red-500' : ''}`}>
-              {formData.productType ? PRODUCT_TYPE_DISPLAY[formData.productType] : "Select Product Type"}
+            <SelectTrigger className={`h-9 sm:h-10 text-xs sm:text-sm ${errors.product_type ? 'border-red-500' : ''}`}>
+              {formData.product_type ? PRODUCT_TYPE_DISPLAY[formData.product_type] : "Select Product Type"}
             </SelectTrigger>
             <SelectContent className="text-xs sm:text-sm">
               {availableProductTypes.map(type => (
@@ -108,9 +108,9 @@ const BasicDetailsStep = ({ formData, errors, onChange, onNext }: Props) => {
               ))}
             </SelectContent>
           </Select>
-          {errors.productType && (
+          {errors.product_type && (
             <p className="mt-1 text-xs sm:text-sm text-red-500 flex items-center gap-1">
-              <AlertCircle size={12} className="sm:w-4 sm:h-4" /> {errors.productType[0]}
+              <AlertCircle size={12} className="sm:w-4 sm:h-4" /> {errors.product_type[0]}
             </p>
           )}
         </div>

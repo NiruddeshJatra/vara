@@ -37,7 +37,7 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
       return;
     }
 
-    if (!user.profileCompleted) {
+    if (!user.profile_completed) {
       setShowProfileModal(true);
       return;
     }
@@ -63,8 +63,9 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
   }
 
   const displayRating = () => {
-    if (typeof selectedItem.averageRating === 'number') {
-      return selectedItem.averageRating.toFixed(1);
+    const rating = Number(selectedItem.average_rating);
+    if (!Number.isNaN(rating) && rating > 0) {
+      return rating.toFixed(1);
     }
     return '4.0'; // Default rating when none exists
   };
@@ -135,7 +136,7 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
                 <span className="text-xs sm:text-sm font-medium">
                   {displayRating()}
                 </span>
-                <span className="text-xs text-gray-500">({selectedItem.rentalCount || 0} rentals)</span>
+                <span className="text-xs text-gray-500">({selectedItem.rental_count || 0} rentals)</span>
                 <Badge
                   variant="outline"
                   className="bg-green-50 text-xs font-medium text-green-700 hover:bg-green-100"
@@ -146,19 +147,19 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
 
               <div className="item-modal-pricing bg-green-50 px-3 sm:px-4 py-2 sm:py-4 rounded-lg space-y-2 sm:space-y-3">
                 <h3 className="text-base sm:text-lg font-semibold text-green-800">Rental Options</h3>
-                {selectedItem.pricingTiers && selectedItem.pricingTiers.length > 0 ? (
-                  selectedItem.pricingTiers.map((tier, index) => (
+                {selectedItem.pricing_tiers && selectedItem.pricing_tiers.length > 0 ? (
+                  selectedItem.pricing_tiers.map((tier, index) => (
                     <div key={tier.id || index} className="flex justify-between items-center rounded">
                       <div className="flex items-center gap-1">
                         <span className="text-green-700 font-bold">৳</span>
                         <div>
                           <span className="text-sm sm:text-lg font-bold text-green-800">{tier.price}</span>
-                          <span className="text-xs sm:text-sm text-gray-600 ml-1">per {tier.durationUnit}</span>
+                          <span className="text-xs sm:text-sm text-gray-600 ml-1">per {tier.duration_unit}</span>
                         </div>
                       </div>
-                      {tier.maxPeriod && (
+                      {tier.max_period && (
                         <span className="text-xs sm:text-sm text-gray-600">
-                          Max: {tier.maxPeriod} {tier.durationUnit}s
+                          Max: {tier.max_period} {tier.duration_unit}s
                         </span>
                       )}
                     </div>

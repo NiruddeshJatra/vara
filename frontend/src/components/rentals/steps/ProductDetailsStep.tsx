@@ -39,15 +39,15 @@ const ProductDetailsStep = ({
   onNext,
   loading,
 }: Props) => {
-  const pricingTiers = product.pricingTiers || [];
+  const pricing_tiers = product.pricing_tiers || [];
 
   // State to keep track of the selected pricing tier
   const [selectedTierIndex, setSelectedTierIndex] = useState(
-    pricingTiers.findIndex(
-      (tier) => tier.durationUnit === formData.durationUnit
+    pricing_tiers.findIndex(
+      (tier) => tier.duration_unit === formData.duration_unit
     ) > -1
-      ? pricingTiers.findIndex(
-          (tier) => tier.durationUnit === formData.durationUnit
+      ? pricing_tiers.findIndex(
+          (tier) => tier.duration_unit === formData.duration_unit
         )
       : 0
   );
@@ -56,49 +56,49 @@ const ProductDetailsStep = ({
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const selectedTier =
-    pricingTiers.length > 0
-      ? pricingTiers[selectedTierIndex]
-      : { durationUnit: "day" as DurationUnit, price: 0, maxPeriod: 30 };
+    pricing_tiers.length > 0
+      ? pricing_tiers[selectedTierIndex]
+      : { duration_unit: "day" as DurationUnit, price: 0, max_period: 30 };
 
   const handleChangeTier = (index: number) => {
     setSelectedTierIndex(index);
     onChange({
-      durationUnit: pricingTiers[index].durationUnit,
+      duration_unit: pricing_tiers[index].duration_unit,
       duration: 1, // Reset duration when changing unit
     });
   };
 
   // Calculate the end date based on selected duration
   const calculateEndDate = () => {
-    if (!formData.startDate) return null;
+    if (!formData.start_date) return null;
 
-    const endDate = new Date(formData.startDate);
+    const end_date = new Date(formData.start_date);
 
-    switch (selectedTier.durationUnit) {
+    switch (selectedTier.duration_unit) {
       case "day":
-        endDate.setDate(endDate.getDate() + formData.duration);
+        end_date.setDate(end_date.getDate() + formData.duration);
         break;
       case "week":
-        endDate.setDate(endDate.getDate() + formData.duration * 7);
+        end_date.setDate(end_date.getDate() + formData.duration * 7);
         break;
       case "month":
-        endDate.setMonth(endDate.getMonth() + formData.duration);
+        end_date.setMonth(end_date.getMonth() + formData.duration);
         break;
     }
 
-    return endDate;
+    return end_date;
   };
 
-  const endDate = calculateEndDate();
+  const end_date = calculateEndDate();
 
   useEffect(() => {
     // Initialize with default values if not already set
-    if (!formData.durationUnit && pricingTiers.length > 0) {
+    if (!formData.duration_unit && pricing_tiers.length > 0) {
       onChange({
-        durationUnit: pricingTiers[0].durationUnit,
+        duration_unit: pricing_tiers[0].duration_unit,
       });
     }
-  }, [formData.durationUnit, pricingTiers, onChange]);
+  }, [formData.duration_unit, pricing_tiers, onChange]);
 
   // Add a handler to clear errors when input changes
   const handleInputChange = (data: Partial<RentalRequestFormData>) => {
@@ -144,8 +144,8 @@ const ProductDetailsStep = ({
                 variant="outline"
                 className="bg-green-50 text-green-700 hover:bg-green-100"
               >
-                {PRODUCT_TYPE_DISPLAY[product.productType] ||
-                  product.productType}
+                {PRODUCT_TYPE_DISPLAY[product.product_type] ||
+                  product.product_type}
               </Badge>
             </div>
 
@@ -157,11 +157,11 @@ const ProductDetailsStep = ({
                 </span>
               </div>
 
-              {product.securityDeposit && (
+              {product.security_deposit && (
                 <div className="flex items-center">
                   <Shield size={14} className="text-green-600 mr-1.5" />
                   <span className="text-gray-700">
-                    Security Deposit: {product.securityDeposit} Taka
+                    Security Deposit: {product.security_deposit} Taka
                   </span>
                 </div>
               )}
@@ -176,7 +176,7 @@ const ProductDetailsStep = ({
               Select Pricing Option
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {pricingTiers.map((tier, index) => (
+              {pricing_tiers.map((tier, index) => (
                 <div
                   key={index}
                   onClick={() => handleChangeTier(index)}
@@ -190,10 +190,10 @@ const ProductDetailsStep = ({
                     <Banknote size={16} className="text-green-600 mr-1.5" />
                     {tier.price} Taka
                   </div>
-                  <div className="text-gray-700">per {tier.durationUnit}</div>
-                  {tier.maxPeriod && (
+                  <div className="text-gray-700">per {tier.duration_unit}</div>
+                  {tier.max_period && (
                     <div className="text-xs text-gray-500 mt-1">
-                      Maximum: {tier.maxPeriod} {tier.durationUnit}s
+                      Maximum: {tier.max_period} {tier.duration_unit}s
                     </div>
                   )}
                 </div>
@@ -212,15 +212,15 @@ const ProductDetailsStep = ({
                 <input
                   type="text"
                   value={
-                    formData.startDate
-                      ? format(formData.startDate, "MMMM d, yyyy")
+                    formData.start_date
+                      ? format(formData.start_date, "MMMM d, yyyy")
                       : ""
                   }
                   onClick={() => setIsCalendarOpen(!isCalendarOpen)}
                   readOnly
                   placeholder="Select start date"
                   className={`pl-4 h-9 sm:h-10 text-sm w-full rounded-md border ${
-                    errors.startDate
+                    errors.start_date
                       ? "border-red-300 focus:border-red-500 focus:ring-red-500"
                       : "border-green-300 focus:border-green-500 focus:ring-green-500"
                   } focus:outline-none focus:ring-1 focus:ring-green-500`}
@@ -228,9 +228,9 @@ const ProductDetailsStep = ({
                 {isCalendarOpen && (
                   <Calendar
                     mode="single"
-                    selected={formData.startDate}
+                    selected={formData.start_date}
                     onSelect={(date) => {
-                      handleInputChange({ startDate: date });
+                      handleInputChange({ start_date: date });
                     }}
                     className="rounded-md border border-gray-300 focus:border-green-500 focus:ring-green-500 bg-white absolute top-full left-0 mt-2 z-10"
                     classNames={{
@@ -243,9 +243,9 @@ const ProductDetailsStep = ({
                   />
                 )}
               </div>
-              {errors.startDate ? (
+              {errors.start_date ? (
                 <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-                  <AlertCircle size={14} /> {errors.startDate}
+                  <AlertCircle size={14} /> {errors.start_date}
                 </p>
               ) : (
                 <p className="text-xs text-gray-500 mt-1">
@@ -280,7 +280,7 @@ const ProductDetailsStep = ({
                   </span>
                 </div>
                 <span className="text-sm sm:text-md ml-2 text-gray-700">
-                  {selectedTier.durationUnit}(s)
+                  {selectedTier.duration_unit}(s)
                 </span>
               </div>
               {errors.duration ? (
@@ -289,8 +289,8 @@ const ProductDetailsStep = ({
                 </p>
               ) : (
                 <p className="text-xs text-gray-500 mt-1">
-                  {selectedTier.maxPeriod
-                    ? `Maximum ${selectedTier.maxPeriod} ${selectedTier.durationUnit}s`
+                  {selectedTier.max_period
+                    ? `Maximum ${selectedTier.max_period} ${selectedTier.duration_unit}s`
                     : ""}
                 </p>
               )}
@@ -298,7 +298,7 @@ const ProductDetailsStep = ({
           </div>
 
           {/* Rental Period Summary */}
-          {formData.startDate && formData.duration > 0 && (
+          {formData.start_date && formData.duration > 0 && (
             <div className="bg-green-50 p-3 rounded-md border border-green-100 mt-3">
               <h4 className="text-sm font-medium text-green-800 mb-2">
                 Rental Period Summary
@@ -307,19 +307,19 @@ const ProductDetailsStep = ({
                 <div>
                   <span className="text-gray-600">Start Date:</span>
                   <span className="ml-1.5 text-green-700 font-medium">
-                    {format(formData.startDate, "MMMM d, yyyy")}
+                    {format(formData.start_date, "MMMM d, yyyy")}
                   </span>
                 </div>
                 <div>
                   <span className="text-gray-600">End Date:</span>
                   <span className="ml-1.5 text-green-700 font-medium">
-                    {endDate ? format(endDate, "MMMM d, yyyy") : "-"}
+                    {end_date ? format(end_date, "MMMM d, yyyy") : "-"}
                   </span>
                 </div>
                 <div>
                   <span className="text-gray-600">Duration:</span>
                   <span className="ml-1.5 text-green-700 font-medium">
-                    {formData.duration} {selectedTier.durationUnit}
+                    {formData.duration} {selectedTier.duration_unit}
                     {formData.duration > 1 ? "s" : ""}
                   </span>
                 </div>

@@ -37,7 +37,7 @@ const MOCK_LISTINGS = [
     category: "Electronics",
     owner: "Ahmed Rahman",
     price: 1200,
-    securityDeposit: 5000,
+    security_deposit: 5000,
     submittedDate: "2023-06-15T10:30:00Z"
   },
   {
@@ -46,7 +46,7 @@ const MOCK_LISTINGS = [
     category: "Electronics",
     owner: "Fatima Khan",
     price: 900,
-    securityDeposit: 4500,
+    security_deposit: 4500,
     submittedDate: "2023-06-14T14:15:00Z"
   },
   {
@@ -55,7 +55,7 @@ const MOCK_LISTINGS = [
     category: "Camera",
     owner: "Mohammed Ali",
     price: 1800,
-    securityDeposit: 10000,
+    security_deposit: 10000,
     submittedDate: "2023-06-13T09:45:00Z"
   },
   {
@@ -64,7 +64,7 @@ const MOCK_LISTINGS = [
     category: "Computers",
     owner: "Noor Ahmed",
     price: 2500,
-    securityDeposit: 15000,
+    security_deposit: 15000,
     submittedDate: "2023-06-12T16:20:00Z"
   },
   {
@@ -73,7 +73,7 @@ const MOCK_LISTINGS = [
     category: "Gaming",
     owner: "Imran Hossain",
     price: 800,
-    securityDeposit: 4000,
+    security_deposit: 4000,
     submittedDate: "2023-06-11T11:10:00Z"
   }
 ];
@@ -169,7 +169,7 @@ const PendingListingsTable = ({ searchTerm }: PendingListingsTableProps) => {
                   </TableCell>
                   <TableCell className="text-green-700">{listing.owner}</TableCell>
                   <TableCell className="text-green-700">৳{listing.price}/day</TableCell>
-                  <TableCell className="text-green-700">৳{listing.securityDeposit}</TableCell>
+                  <TableCell className="text-green-700">৳{listing.security_deposit}</TableCell>
                   <TableCell className="text-green-700">{formatDate(listing.submittedDate)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">

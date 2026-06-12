@@ -20,7 +20,7 @@ const Register = () => {
     password2: '',
     termsAgreed: false,
     marketingConsent: false,
-    profileCompleted: false
+    profile_completed: false
   });
   const [errors, setErrors] = useState<RegistrationFormErrors>({});
   const handlePasswordChange = (value: string) => {
@@ -70,7 +70,7 @@ const Register = () => {
           password1: formData.password1,
           password2: formData.password2,
           marketingConsent: formData.marketingConsent || false,
-          profileCompleted: false,
+          profile_completed: false,
           termsAgreed: formData.termsAgreed
         };
 

@@ -1,5 +1,5 @@
 import { RentalRequestFormData, RentalErrors } from '@/types/rentals';
-import { UnavailableDate } from '@/types/listings';
+import { UnavailablePeriod } from '@/types/listings';
 import { isWithinInterval } from 'date-fns';
 import { DurationUnit } from '@/constants/rental';
 
@@ -8,48 +8,48 @@ import { DurationUnit } from '@/constants/rental';
  */
 export const validateRentalDetails = (
   data: RentalRequestFormData,
-  maxPeriod: number | null,
-  durationUnit: DurationUnit,
-  unavailableDates: UnavailableDate[]
+  max_period: number | null,
+  duration_unit: DurationUnit,
+  unavailable_periods: UnavailablePeriod[]
 ): RentalErrors => {
   const errors: RentalErrors = {};
 
   // Start date validation
-  if (!data.startDate) {
-    errors.startDate = 'Start date is required';
+  if (!data.start_date) {
+    errors.start_date = 'Start date is required';
   } else {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const startDate = new Date(data.startDate);
-    startDate.setHours(0, 0, 0, 0);
+    const start_date = new Date(data.start_date);
+    start_date.setHours(0, 0, 0, 0);
 
-    if (startDate < today) {
-      errors.startDate = 'Start date cannot be in the past';
+    if (start_date < today) {
+      errors.start_date = 'Start date cannot be in the past';
     }
 
     // Calculate end date for the rental period
-    const endDate = calculateEndDate(startDate, data.duration || 1, data.durationUnit || durationUnit);
+    const end_date = calculateEndDate(start_date, data.duration || 1, data.duration_unit || duration_unit);
 
     // Check if any part of the rental period overlaps with unavailable dates
-    if (unavailableDates?.length > 0) {
-      for (const unavailable of unavailableDates) {
-        if (unavailable.isRange && unavailable.rangeStart && unavailable.rangeEnd) {
-          const unavailStart = new Date(unavailable.rangeStart);
-          const unavailEnd = new Date(unavailable.rangeEnd);
+    if (unavailable_periods?.length > 0) {
+      for (const unavailable of unavailable_periods) {
+        if (unavailable.is_range && unavailable.range_start && unavailable.range_end) {
+          const unavailStart = new Date(unavailable.range_start);
+          const unavailEnd = new Date(unavailable.range_end);
           
           // Check if rental period overlaps with unavailable range
           if (
-            (startDate <= unavailEnd && endDate >= unavailStart) || // Rental period overlaps with unavailable range
-            (startDate >= unavailStart && endDate <= unavailEnd) // Rental period is within unavailable range
+            (start_date <= unavailEnd && end_date >= unavailStart) || // Rental period overlaps with unavailable range
+            (start_date >= unavailStart && end_date <= unavailEnd) // Rental period is within unavailable range
           ) {
-            errors.startDate = 'The selected rental period overlaps with unavailable dates';
+            errors.start_date = 'The selected rental period overlaps with unavailable dates';
             break;
           }
         } else if (unavailable.date) {
-          const unavailableDate = new Date(unavailable.date);
+          const unavailable_period = new Date(unavailable.date);
           // Check if single unavailable date falls within rental period
-          if (unavailableDate >= startDate && unavailableDate <= endDate) {
-            errors.startDate = 'The selected rental period includes unavailable dates';
+          if (unavailable_period >= start_date && unavailable_period <= end_date) {
+            errors.start_date = 'The selected rental period includes unavailable dates';
             break;
           }
         }
@@ -60,15 +60,15 @@ export const validateRentalDetails = (
   // Duration validation
   if (!data.duration || data.duration < 1) {
     errors.duration = 'Duration must be at least 1';
-  } else if (maxPeriod && data.duration > maxPeriod) {
-    errors.duration = `Maximum allowed duration is ${maxPeriod} ${durationUnit}${maxPeriod > 1 ? 's' : ''}`;
+  } else if (max_period && data.duration > max_period) {
+    errors.duration = `Maximum allowed duration is ${max_period} ${duration_unit}${max_period > 1 ? 's' : ''}`;
   }
 
   // Duration unit validation
-  if (!data.durationUnit) {
-    errors.durationUnit = 'Duration unit is required';
-  } else if (data.durationUnit !== durationUnit) {
-    errors.durationUnit = `This item can only be rented by ${durationUnit}`;
+  if (!data.duration_unit) {
+    errors.duration_unit = 'Duration unit is required';
+  } else if (data.duration_unit !== duration_unit) {
+    errors.duration_unit = `This item can only be rented by ${duration_unit}`;
   }
 
   return errors;
@@ -96,24 +96,24 @@ export const validateAdditionalDetails = (data: RentalRequestFormData): RentalEr
 /**
  * Calculate end date based on start date, duration, and duration unit
  */
-export const calculateEndDate = (startDate: Date, duration: number, durationUnit: DurationUnit): Date => {
-  const endDate = new Date(startDate);
+export const calculateEndDate = (start_date: Date, duration: number, duration_unit: DurationUnit): Date => {
+  const end_date = new Date(start_date);
   
-  switch (durationUnit) {
+  switch (duration_unit) {
     case 'day':
-      endDate.setDate(endDate.getDate() + duration);
+      end_date.setDate(end_date.getDate() + duration);
       break;
     case 'week':
-      endDate.setDate(endDate.getDate() + (duration * 7));
+      end_date.setDate(end_date.getDate() + (duration * 7));
       break;
     case 'month':
-      endDate.setMonth(endDate.getMonth() + duration);
+      end_date.setMonth(end_date.getMonth() + duration);
       break;
     default:
-      throw new Error(`Invalid duration unit: ${durationUnit}`);
+      throw new Error(`Invalid duration unit: ${duration_unit}`);
   }
   
-  return endDate;
+  return end_date;
 };
 
 /**
@@ -123,10 +123,10 @@ export const validateAllRentalSteps = (
   formData: RentalRequestFormData,
   selectedTierMaxPeriod: number | null,
   currentDurationUnit: DurationUnit,
-  unavailableDates: UnavailableDate[]
+  unavailable_periods: UnavailablePeriod[]
 ): RentalErrors => {
   return {
-    ...validateRentalDetails(formData, selectedTierMaxPeriod, currentDurationUnit, unavailableDates),
+    ...validateRentalDetails(formData, selectedTierMaxPeriod, currentDurationUnit, unavailable_periods),
     ...validateAdditionalDetails(formData)
   };
 };

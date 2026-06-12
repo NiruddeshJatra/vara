@@ -17,7 +17,7 @@ export const ProfileCompletionButton = () => {
   const [isClicked, setIsClicked] = useState(false); // Track click for mobile
   
   // Don't render if user is not logged in or if profile is complete
-  if (!user || user.profileCompleted === true) return null;
+  if (!user || user.profile_completed === true) return null;
 
   // Don't render if we're on the complete profile page
   if (window.location.pathname === '/auth/complete-profile') return null;

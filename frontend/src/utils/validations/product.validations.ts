@@ -3,7 +3,7 @@ import { ListingFormData, FormError } from '@/types/listings';
 export const validateBasicDetails = (data: ListingFormData): FormError => {
     const newErrors: FormError = {};
     if (!data.title) newErrors.title = ['Title is required'];
-    if (!data.productType) newErrors.productType = ['Product type is required'];
+    if (!data.product_type) newErrors.product_type = ['Product type is required'];
     if (!data.description) newErrors.description = ['Description is required'];
     if (!data.location) newErrors.location = ['Location is required'];
     return newErrors;
@@ -28,32 +28,32 @@ export const validateImageUpload = (data: ListingFormData): FormError => {
 
 export const validateProductHistory = (data: ListingFormData): FormError => {
     const newErrors: FormError = {};
-    if (!data.purchaseYear) newErrors.purchaseYear = ['Purchase year is required'];
-    if (!data.originalPrice || data.originalPrice <= 0) newErrors.originalPrice = ['Original price is required and must be greater than 0'];
-    if (!data.ownershipHistory) newErrors.ownershipHistory = ['Ownership history is required'];
+    if (!data.purchase_year) newErrors.purchase_year = ['Purchase year is required'];
+    if (!data.original_price || data.original_price <= 0) newErrors.original_price = ['Original price is required and must be greater than 0'];
+    if (!data.ownership_history) newErrors.ownership_history = ['Ownership history is required'];
     return newErrors;
 };
 
 export const validatePricing = (data: ListingFormData): FormError => {
     const newErrors: FormError = {};
 
-    if (!data.pricingTiers || data.pricingTiers.length === 0) {
-        newErrors.pricingTiers = ['At least one pricing tier is required'];
+    if (!data.pricing_tiers || data.pricing_tiers.length === 0) {
+        newErrors.pricing_tiers = ['At least one pricing tier is required'];
     } else {
         // Check for duplicate duration units
         const durationUnits = new Set();
-        data.pricingTiers.forEach((tier, index) => {
-            if (durationUnits.has(tier.durationUnit)) {
-                newErrors[`pricingTiers.${index}.durationUnit`] = ['Duplicate duration unit is not allowed'];
+        data.pricing_tiers.forEach((tier, index) => {
+            if (durationUnits.has(tier.duration_unit)) {
+                newErrors[`pricing_tiers.${index}.duration_unit`] = ['Duplicate duration unit is not allowed'];
             } else {
-                durationUnits.add(tier.durationUnit);
+                durationUnits.add(tier.duration_unit);
             }
 
             if (!tier.price || tier.price <= 0) {
-                newErrors[`pricingTiers.${index}.price`] = ['Price is required and must be greater than 0'];
+                newErrors[`pricing_tiers.${index}.price`] = ['Price is required and must be greater than 0'];
             }
-            if (tier.maxPeriod && tier.maxPeriod < 1) {
-                newErrors[`pricingTiers.${index}.maxPeriod`] = ['Maximum period must be at least 1'];
+            if (tier.max_period && tier.max_period < 1) {
+                newErrors[`pricing_tiers.${index}.max_period`] = ['Maximum period must be at least 1'];
             }
         });
     }
@@ -64,40 +64,40 @@ export const validatePricing = (data: ListingFormData): FormError => {
 export const validateUnavailability = (data: ListingFormData): FormError => {
     const newErrors: FormError = {};
 
-    if (!data.unavailableDates || data.unavailableDates.length === 0) {
+    if (!data.unavailable_periods || data.unavailable_periods.length === 0) {
         return newErrors; // Unavailable dates are optional
     }
 
     // Validate individual dates/ranges
-    data.unavailableDates.forEach((date, index) => {
+    data.unavailable_periods.forEach((date, index) => {
         // For single dates
-        if (!date.isRange && date.date) {
+        if (!date.is_range && date.date) {
             const selectedDate = new Date(date.date);
             if (selectedDate < new Date()) {
-                newErrors[`unavailableDates.${index}.date`] = ['Cannot select dates in the past'];
+                newErrors[`unavailable_periods.${index}.date`] = ['Cannot select dates in the past'];
             }
         }
 
         // For date ranges
-        if (date.isRange) {
-            if (date.rangeStart && date.rangeEnd) {
-                const startDate = new Date(date.rangeStart);
-                const endDate = new Date(date.rangeEnd);
+        if (date.is_range) {
+            if (date.range_start && date.range_end) {
+                const start_date = new Date(date.range_start);
+                const end_date = new Date(date.range_end);
                 const today = new Date();
 
-                if (startDate < today) {
-                    newErrors[`unavailableDates.${index}.rangeStart`] = ['Range start date cannot be in the past'];
+                if (start_date < today) {
+                    newErrors[`unavailable_periods.${index}.range_start`] = ['Range start date cannot be in the past'];
                 }
 
-                if (endDate < startDate) {
-                    newErrors[`unavailableDates.${index}.rangeEnd`] = ['Range end date must be after start date'];
+                if (end_date < start_date) {
+                    newErrors[`unavailable_periods.${index}.range_end`] = ['Range end date must be after start date'];
                 }
             } else {
-                if (!date.rangeStart) {
-                    newErrors[`unavailableDates.${index}.rangeStart`] = ['Range start date is required'];
+                if (!date.range_start) {
+                    newErrors[`unavailable_periods.${index}.range_start`] = ['Range start date is required'];
                 }
-                if (!date.rangeEnd) {
-                    newErrors[`unavailableDates.${index}.rangeEnd`] = ['Range end date is required'];
+                if (!date.range_end) {
+                    newErrors[`unavailable_periods.${index}.range_end`] = ['Range end date is required'];
                 }
             }
         }

@@ -10,19 +10,19 @@ interface ProfileHeaderProps {
     lastName?: string;
     username?: string;
     profilePicture?: string | null;
-    profilePictureUrl?: string | null;
-    memberSince?: string;
+    profile_picture?: string | null;
+    member_since?: string;
     isTrusted?: boolean;
-    averageRating?: number | string;
+    average_rating?: number | string;
     notificationCount?: number;
-    profileCompleted?: boolean;
+    profile_completed?: boolean;
   };
   isEditing: boolean;
   onEdit: () => void;
 }
 
 const ProfileHeader = ({ userData, isEditing, onEdit }: ProfileHeaderProps) => {
-  const isProfileComplete = userData?.profileCompleted ?? false;
+  const isProfileComplete = userData?.profile_completed ?? false;
 
   // Track when profile data is updated
   useEffect(() => {
@@ -37,13 +37,13 @@ const ProfileHeader = ({ userData, isEditing, onEdit }: ProfileHeaderProps) => {
     }
     
     // Try profile picture URL first
-    if (userData.profilePictureUrl) {
+    if (userData.profile_picture) {
       // Check if it's a relative URL and prefix with base URL if needed
-      if (userData.profilePictureUrl.startsWith('/')) {
-        const absoluteUrl = `http://localhost:8000${userData.profilePictureUrl}`;
+      if (userData.profile_picture.startsWith('/')) {
+        const absoluteUrl = `http://localhost:8000${userData.profile_picture}`;
         return absoluteUrl;
       }
-      return userData.profilePictureUrl;
+      return userData.profile_picture;
     }
     
     // Then try profile picture with URL construction
@@ -100,11 +100,11 @@ const ProfileHeader = ({ userData, isEditing, onEdit }: ProfileHeaderProps) => {
           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 sm:mt-3 items-center sm:justify-start">
             <div className="flex items-center">
               <Star className="w-4 h-4 text-yellow-500 mr-1 fill-yellow-500" />
-              <span className="font-medium text-green-700 text-sm sm:text-base">{userData?.averageRating || 0}</span>
+              <span className="font-medium text-green-700 text-sm sm:text-base">{userData?.average_rating || 0}</span>
               <span className="text-green-600 ml-2 text-xs sm:text-sm">(42 reviews)</span>
             </div>
             <div className="text-green-600 text-xs sm:text-sm">
-              Member since {userData?.memberSince || ''}
+              Member since {userData?.member_since || ''}
             </div>
           </div>
         </div>

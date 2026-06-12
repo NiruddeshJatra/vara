@@ -33,7 +33,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAuth =
     return <Navigate to="/advertisements" replace />;
   }
 
-  if (requireCompleteProfile && !user?.profileCompleted) {
+  if (requireCompleteProfile && !user?.profile_completed) {
     return <Navigate to="/auth/complete-profile" state={{ from: location }} replace />;
   }
   

@@ -27,7 +27,7 @@ const ItemCard = React.memo(({
   // Use a default image if product.images is empty
   const images = product.images && product.images.length > 0
     ? product.images
-    : [{ id: 'default', image: 'https://placehold.co/600x400?text=No+Image', createdAt: new Date().toISOString() }];
+    : [{ id: 'default', image: 'https://placehold.co/600x400?text=No+Image', created_at: new Date().toISOString() }];
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     const imgSrc = (e.target as HTMLImageElement).src;
@@ -81,8 +81,9 @@ const ItemCard = React.memo(({
 
   // Helper to safely handle rating display
   const displayRating = () => {
-    if (typeof product.averageRating === 'number') {
-      return product.averageRating.toFixed(1);
+    const rating = Number(product.average_rating);
+    if (!Number.isNaN(rating) && rating > 0) {
+      return rating.toFixed(1);
     }
     return '4.0'; // Default rating when none exists
   };
@@ -168,17 +169,17 @@ const ItemCard = React.memo(({
               {displayRating()}
             </span>
           </div>
-          <span className="text-gray-500">({product.rentalCount || 0} reviews)</span>
+          <span className="text-gray-500">({product.rental_count || 0} reviews)</span>
         </div>
 
         <div className="flex justify-between items-center">
           <div className="flex items-center">
             <span className="text-green-700 mr-1 font-bold">৳</span>
             <span className="text-sm sm:text-base md:text-lg font-bold text-green-700">
-              {product.pricingTiers?.[0]?.price || 0}
+              {product.pricing_tiers?.[0]?.price || 0}
             </span>
             <span className="text-xs sm:text-sm font-semibold text-green-700">
-              /{product.pricingTiers?.[0]?.durationUnit || 'day'}
+              /{product.pricing_tiers?.[0]?.duration_unit || 'day'}
             </span>
           </div>
 

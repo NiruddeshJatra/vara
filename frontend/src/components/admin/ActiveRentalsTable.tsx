@@ -34,10 +34,10 @@ const MOCK_RENTALS = [
     itemTitle: "Samsung Galaxy S21 Ultra",
     renter: "Adnan Khan",
     owner: "Ahmed Rahman",
-    startDate: "2023-06-15",
-    endDate: "2023-06-20",
+    start_date: "2023-06-15",
+    end_date: "2023-06-20",
     totalPrice: 6000,
-    securityDeposit: 5000,
+    security_deposit: 5000,
     progressPercent: 60,
     daysLeft: 2,
     status: "in_progress",
@@ -50,10 +50,10 @@ const MOCK_RENTALS = [
     itemTitle: "DJI Mavic Air 2 Drone",
     renter: "Mahmud Islam",
     owner: "Fatima Khan",
-    startDate: "2023-06-12",
-    endDate: "2023-06-19",
+    start_date: "2023-06-12",
+    end_date: "2023-06-19",
     totalPrice: 6300,
-    securityDeposit: 4500,
+    security_deposit: 4500,
     progressPercent: 90,
     daysLeft: 1,
     status: "in_progress",
@@ -66,10 +66,10 @@ const MOCK_RENTALS = [
     itemTitle: "Canon EOS R5 Camera with RF 24-105mm Lens",
     renter: "Fatima Khan",
     owner: "Mohammed Ali",
-    startDate: "2023-06-16",
-    endDate: "2023-06-18",
+    start_date: "2023-06-16",
+    end_date: "2023-06-18",
     totalPrice: 3600,
-    securityDeposit: 10000,
+    security_deposit: 10000,
     progressPercent: 66,
     daysLeft: 1,
     status: "in_progress",
@@ -82,10 +82,10 @@ const MOCK_RENTALS = [
     itemTitle: "PlayStation 5 with Two Controllers",
     renter: "Saad Rahman",
     owner: "Nadia Ahmed",
-    startDate: "2023-06-17",
-    endDate: "2023-06-18",
+    start_date: "2023-06-17",
+    end_date: "2023-06-18",
     totalPrice: 1600,
-    securityDeposit: 4000,
+    security_deposit: 4000,
     progressPercent: 95,
     daysLeft: 0,
     status: "in_progress",
@@ -98,10 +98,10 @@ const MOCK_RENTALS = [
     itemTitle: "Microsoft Surface Laptop 4",
     renter: "Rahima Begum",
     owner: "Kamal Ahmed",
-    startDate: "2023-06-10",
-    endDate: "2023-06-18",
+    start_date: "2023-06-10",
+    end_date: "2023-06-18",
     totalPrice: 7200,
-    securityDeposit: 9000,
+    security_deposit: 9000,
     progressPercent: 98,
     daysLeft: 0,
     status: "pending_return",
@@ -236,7 +236,7 @@ const ActiveRentalsTable = ({ searchTerm }: ActiveRentalsTableProps) => {
                         {rental.itemTitle}
                       </div>
                       <div className="text-xs text-green-600">
-                        ৳{rental.totalPrice} (৳{rental.securityDeposit} deposit)
+                        ৳{rental.totalPrice} (৳{rental.security_deposit} deposit)
                       </div>
                     </div>
                   </TableCell>
@@ -266,12 +266,12 @@ const ActiveRentalsTable = ({ searchTerm }: ActiveRentalsTableProps) => {
                     <div className="flex items-center gap-1.5 text-sm text-green-700">
                       <div className="flex items-center">
                         <Calendar className="h-3.5 w-3.5 text-green-600 mr-1" />
-                        <span>{formatDate(rental.startDate)}</span>
+                        <span>{formatDate(rental.start_date)}</span>
                       </div>
                       <ArrowRight className="h-3.5 w-3.5 text-green-600" />
                       <div className="flex items-center">
                         <Calendar className="h-3.5 w-3.5 text-green-600 mr-1" />
-                        <span>{formatDate(rental.endDate)}</span>
+                        <span>{formatDate(rental.end_date)}</span>
                       </div>
                     </div>
                   </TableCell>

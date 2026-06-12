@@ -8,10 +8,10 @@ interface DateRange {
 }
 
 interface AvailabilitySectionProps {
-  unavailableDates: (Date | DateRange)[];
+  unavailable_periods: (Date | DateRange)[];
 }
 
-export default function AvailabilitySection({ unavailableDates }: AvailabilitySectionProps) {
+export default function AvailabilitySection({ unavailable_periods }: AvailabilitySectionProps) {
   return (
     <div className="mb-10 pb-10 border-b border-gray-200">
       <div className="flex items-center justify-between mb-6">
@@ -22,7 +22,7 @@ export default function AvailabilitySection({ unavailableDates }: AvailabilitySe
         </div>
       </div>
       
-      <AvailabilityCalendar unavailableDates={unavailableDates} />
+      <AvailabilityCalendar unavailable_periods={unavailable_periods} />
     </div>
   );
 } 

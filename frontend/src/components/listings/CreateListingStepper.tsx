@@ -44,16 +44,16 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
     return location.state?.initialData || initialData || {
       title: '',
       category: Category.PHOTOGRAPHY_VIDEOGRAPHY,
-      productType: ProductType.CAMERA,
+      product_type: ProductType.CAMERA,
       description: '',
       location: '',
       images: [],
-      unavailableDates: [],
-      securityDeposit: 0,
-      purchaseYear: new Date().getFullYear().toString(),
-      originalPrice: 0,
-      ownershipHistory: OwnershipHistory.FIRSTHAND,
-      pricingTiers: [{ durationUnit: 'day', price: 0, maxPeriod: 30 }]
+      unavailable_periods: [],
+      security_deposit: 0,
+      purchase_year: new Date().getFullYear().toString(),
+      original_price: 0,
+      ownership_history: OwnershipHistory.FIRSTHAND,
+      pricing_tiers: [{ duration_unit: 'day', price: 0, max_period: 30 }]
     };
   });
   const [errors, setErrors] = useState<FormError>({});

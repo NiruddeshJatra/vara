@@ -156,27 +156,27 @@ const Advertisements = () => {
   }
 
   // Helper function to check if a product is available during a specific date range
-  const isProductAvailableDuring = (product: Product, startDate: Date, endDate: Date): boolean => {
-    if (!product.unavailableDates || product.unavailableDates.length === 0) {
+  const isProductAvailableDuring = (product: Product, start_date: Date, end_date: Date): boolean => {
+    if (!product.unavailable_periods || product.unavailable_periods.length === 0) {
       // If there are no unavailable dates, the product is always available
       return true;
     }
 
     // Check if any unavailable date falls within our target range
-    return !product.unavailableDates.some(unavailable => {
-      if (unavailable.isRange && unavailable.rangeStart && unavailable.rangeEnd) {
+    return !product.unavailable_periods.some(unavailable => {
+      if (unavailable.is_range && unavailable.range_start && unavailable.range_end) {
         // Handle date range
-        const rangeStart = parseISO(unavailable.rangeStart);
-        const rangeEnd = parseISO(unavailable.rangeEnd);
+        const range_start = parseISO(unavailable.range_start);
+        const range_end = parseISO(unavailable.range_end);
         // Check if there's an overlap between the two ranges
         return (
-          (rangeStart <= endDate && rangeEnd >= startDate)
+          (range_start <= end_date && range_end >= start_date)
         );
       } else if (unavailable.date) {
         // Handle single date
-        const unavailableDate = parseISO(unavailable.date);
+        const unavailable_period = parseISO(unavailable.date);
         return (
-          unavailableDate >= startDate && unavailableDate <= endDate
+          unavailable_period >= start_date && unavailable_period <= end_date
         );
       }
       return false;
@@ -223,9 +223,9 @@ const Advertisements = () => {
     const categoryMatch = selectedCategory ? item.category === selectedCategory : true;
 
     // Ensure the item has pricing tiers before checking price range
-    const priceInRange = item.pricingTiers?.length > 0 ? 
-      (item.pricingTiers[0]?.price || 0) >= priceRange[0] && 
-      (item.pricingTiers[0]?.price || 0) <= priceRange[1] : true;
+    const priceInRange = item.pricing_tiers?.length > 0 ? 
+      (item.pricing_tiers[0]?.price || 0) >= priceRange[0] && 
+      (item.pricing_tiers[0]?.price || 0) <= priceRange[1] : true;
     
     // Location filtering
     const locationMatch = !location || (item.location?.toLowerCase() || '').includes(location.toLowerCase());
@@ -254,11 +254,11 @@ const Advertisements = () => {
     }
 
     // Exact matches in product type are valuable
-    if (item.productType?.toLowerCase() === searchTermLower) {
+    if (item.product_type?.toLowerCase() === searchTermLower) {
       searchScore += 40;
     }
     // Partial matches in product type are somewhat valuable
-    else if (item.productType?.toLowerCase()?.includes(searchTermLower)) {
+    else if (item.product_type?.toLowerCase()?.includes(searchTermLower)) {
       searchScore += 30;
     }
 
@@ -293,9 +293,9 @@ const Advertisements = () => {
     }
 
     // Product type matches
-    if (item.productType?.toLowerCase() === searchTermLower) {
+    if (item.product_type?.toLowerCase() === searchTermLower) {
       score += 40;
-    } else if (item.productType?.toLowerCase()?.includes(searchTermLower)) {
+    } else if (item.product_type?.toLowerCase()?.includes(searchTermLower)) {
       score += 30;
     }
 
