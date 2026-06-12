@@ -9,7 +9,7 @@ interface RentalSectionProps {
   rentals: Rental[];
   userRole: 'renter' | 'owner';
   onViewDetails: (rental: Rental) => void;
-  onStatusAction: (rentalId: number, action: string) => void;
+  onStatusAction: (rentalId: string, action: string) => void;
   emptyMessage: string;
 }
 

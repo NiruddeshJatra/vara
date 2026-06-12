@@ -129,28 +129,28 @@ export const generateListings = (count: number): Product[] => {
     },
     {
       title: "Trek Marlin 7 Mountain Bike",
-      category: Category.SPORTS_FITNESS,
+      category: Category.SPORTS_OUTDOOR,
       product_type: ProductType.BICYCLE,
       description: "High-performance mountain bike with lightweight aluminum frame. 29-inch wheels, hydraulic disc brakes, and front suspension.",
       images: imageCategories[1]
     },
     {
       title: "Specialized Road Bike - Carbon Frame",
-      category: Category.SPORTS_FITNESS,
+      category: Category.SPORTS_OUTDOOR,
       product_type: ProductType.BICYCLE,
       description: "Carbon fiber road bike for racing or training. Shimano 105 groupset, 22 speeds. Recently serviced and in excellent condition.",
       images: imageCategories[1]
     },
     {
       title: "Coleman 4-Person Dome Tent",
-      category: Category.PARTY_EVENTS,
+      category: Category.CAMPING_HIKING,
       product_type: ProductType.TENT,
       description: "Spacious tent that sets up in under 10 minutes. Weatherproof with reinforced seams. Includes rainfly, stakes, and carrying bag.",
       images: imageCategories[2]
     },
     {
       title: "Complete Backpacking Kit - Tent, Sleeping Bag & Pad",
-      category: Category.PARTY_EVENTS,
+      category: Category.CAMPING_HIKING,
       product_type: ProductType.TENT,
       description: "Everything you need for a weekend adventure. Lightweight 2-person tent, 20°F sleeping bag, and inflatable sleeping pad.",
       images: imageCategories[2]

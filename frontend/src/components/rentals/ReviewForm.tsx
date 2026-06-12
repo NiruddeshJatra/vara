@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Star, Upload, Leaf } from "lucide-react";
 
 interface ReviewFormProps {
-  rentalId: number;
+  rentalId: string;
   userRole: 'renter' | 'owner';
   onSubmit: (rating: number, review: string) => void;
 }
