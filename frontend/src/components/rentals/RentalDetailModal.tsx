@@ -16,7 +16,8 @@ import {
   ChevronRight,
   Camera
 } from "lucide-react";
-import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
+import { formatDate as formatDateIntl, formatDateTime as formatDateTimeIntl } from "@/utils/formatDate";
 import ReviewForm from "./ReviewForm";
 import { useEffect, useState } from "react";
 import { RentalStatus, RENTAL_STATUS_DISPLAY } from '@/constants/rental';
@@ -44,6 +45,7 @@ const RentalDetailModal = ({
   onStatusAction,
   userRole
 }: RentalDetailModalProps) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<string>("details");
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [rentalPhotos, setRentalPhotos] = useState<RentalPhotoItem[]>([]);
@@ -59,19 +61,19 @@ const RentalDetailModal = ({
   const getStatusConfig = (status: RentalStatus) => {
     switch(status) {
       case RentalStatus.PENDING:
-        return { color: 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200', label: 'Pending Approval' };
+        return { color: 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200', label: t('rental.status.pendingApproval') };
       case RentalStatus.ACCEPTED:
-        return { color: 'bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200', label: 'Accepted' };
+        return { color: 'bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200', label: t('rental.status.accepted') };
       case RentalStatus.IN_PROGRESS:
-        return { color: 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200', label: 'In Progress' };
+        return { color: 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200', label: t('rental.status.in_progress') };
       case RentalStatus.COMPLETED:
-        return { color: 'bg-purple-100 text-purple-800 border-purple-300 hover:bg-purple-200', label: 'Completed' };
+        return { color: 'bg-purple-100 text-purple-800 border-purple-300 hover:bg-purple-200', label: t('rental.status.completed') };
       case RentalStatus.REJECTED:
-        return { color: 'bg-red-100 text-red-800 border-red-300 hover:bg-red-200', label: 'Rejected' };
+        return { color: 'bg-red-100 text-red-800 border-red-300 hover:bg-red-200', label: t('rental.status.rejected') };
       case RentalStatus.CANCELLED:
-        return { color: 'bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-200', label: 'Cancelled' };
+        return { color: 'bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-200', label: t('rental.status.cancelled') };
       default:
-        return { color: 'bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200', label: 'Unknown' };
+        return { color: 'bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200', label: t('rental.status.unknown') };
     }
   };
 
@@ -87,7 +89,7 @@ const RentalDetailModal = ({
   // Counterpart info — full name, trust level and rating only; no phone
   // (contact between parties is handled by Bhara off-platform)
   const counterpart = userRole === 'renter' ? rental.owner_info : rental.renter_info;
-  const counterpartLabel = userRole === 'renter' ? 'Owner' : 'Renter';
+  const counterpartLabel = userRole === 'renter' ? t('rental.modal.owner') : t('rental.modal.renter');
   const counterpartVerified =
     counterpart?.trust_level === 'verified' || counterpart?.trust_level === 'partner';
 
@@ -99,8 +101,8 @@ const RentalDetailModal = ({
   };
   const start_date = safeDate(rental.start_date);
   const end_date = safeDate(rental.end_date);
-  const formatDate = (date: Date | null) => date ? format(date, 'MMM d, yyyy') : 'N/A';
-  const formatDateTime = (date: Date | null) => date ? format(date, 'MMM d, yyyy h:mm a') : 'N/A';
+  const formatDate = (date: Date | null) => date ? formatDateIntl(date) : 'N/A';
+  const formatDateTime = (date: Date | null) => date ? formatDateTimeIntl(date) : 'N/A';
 
   // Pricing snapshot from the backend (frozen at request time)
   const unitPrice = Number(rental.unit_price) || 0;
@@ -108,13 +110,13 @@ const RentalDetailModal = ({
   const security_deposit = Number(rental.security_deposit) || 0;
 
   // Product info
-  const productTitle = product?.title || rental.product_title || 'Product';
-  const productCategory = product?.category || '';
+  const productTitle = product?.title || rental.product_title || t('rental.modal.product');
+  const productCategory = product?.category ? t('categories.' + product.category, { defaultValue: product.category }) : '';
   const productDescription = product?.description || '';
   void productDescription;
 
   // Rental duration from the request itself
-  const rentalDuration = `${rental.duration} ${rental.duration_unit}${rental.duration > 1 ? 's' : ''}`;
+  const rentalDuration = `${rental.duration} ${t('rental.units.' + rental.duration_unit, { count: rental.duration })}`;
 
   // Settlement (computed by the backend from staff-entered payment records)
   const settlement = rental.settlement;
@@ -124,13 +126,13 @@ const RentalDetailModal = ({
 
   const timelineLabel = (status: RentalStatus) => {
     switch (status) {
-      case RentalStatus.PENDING: return 'Request Submitted';
-      case RentalStatus.ACCEPTED: return 'Request Accepted';
-      case RentalStatus.IN_PROGRESS: return 'Rental Started';
-      case RentalStatus.COMPLETED: return 'Rental Completed';
-      case RentalStatus.REJECTED: return 'Request Rejected';
-      case RentalStatus.CANCELLED: return 'Rental Cancelled';
-      default: return RENTAL_STATUS_DISPLAY[status] || status;
+      case RentalStatus.PENDING: return t('rental.timeline.submitted');
+      case RentalStatus.ACCEPTED: return t('rental.timeline.accepted');
+      case RentalStatus.IN_PROGRESS: return t('rental.timeline.started');
+      case RentalStatus.COMPLETED: return t('rental.timeline.completed');
+      case RentalStatus.REJECTED: return t('rental.timeline.rejected');
+      case RentalStatus.CANCELLED: return t('rental.timeline.cancelled');
+      default: return t('rental.status.' + status, { defaultValue: RENTAL_STATUS_DISPLAY[status] || status });
     }
   };
 
@@ -178,7 +180,7 @@ const RentalDetailModal = ({
   const handleReviewSubmit = async (rating: number, comment: string) => {
     try {
       await reviewService.createReview(rental.id, rating, comment);
-      toast({ title: "Review Submitted", description: "Thank you for your review!" });
+      toast({ title: t('review.submittedTitle'), description: t('review.submittedDesc') });
       onClose();
     } catch (error: any) {
       const fieldErrors = error.response?.data?.data;
@@ -186,8 +188,8 @@ const RentalDetailModal = ({
         ? Object.values(fieldErrors).find((v) => Array.isArray(v) && v.length)
         : null;
       toast({
-        title: "Review Failed",
-        description: (firstError as string[] | null)?.[0] || error.response?.data?.message || 'Failed to submit review',
+        title: t('review.failedTitle'),
+        description: (firstError as string[] | null)?.[0] || error.response?.data?.message || t('review.submitFailed'),
         variant: "destructive",
       });
     }
@@ -217,7 +219,7 @@ const RentalDetailModal = ({
         <div className="bg-gradient-to-r from-green-200 to-lime-100 px-6 py-3 flex items-center justify-between border-b border-green-300 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div>
-              <h2 className="text-lg font-bold text-green-800">Rental #{String(rental.id).slice(0, 8)}</h2>
+              <h2 className="text-lg font-bold text-green-800">{t('rental.modal.rentalNo', { id: String(rental.id).slice(0, 8) })}</h2>
               <p className="text-sm text-green-600">{productTitle}</p>
             </div>
           </div>
@@ -244,7 +246,7 @@ const RentalDetailModal = ({
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full w-full bg-gray-100 text-gray-500">
-                    No images available
+                    {t('rental.modal.noImages')}
                   </div>
                 )}
 
@@ -253,14 +255,14 @@ const RentalDetailModal = ({
                   <button
                     onClick={() => navigateImage('prev')}
                     className="bg-white/90 hover:bg-white p-1.5 rounded-full shadow-sm text-green-700"
-                    aria-label="Previous image"
+                    aria-label={t('rental.modal.prevImage')}
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </button>
                   <button
                     onClick={() => navigateImage('next')}
                     className="bg-white/90 hover:bg-white p-1.5 rounded-full shadow-sm text-green-700"
-                    aria-label="Next image"
+                    aria-label={t('rental.modal.nextImage')}
                   >
                     <ChevronRight className="h-5 w-5" />
                   </button>
@@ -269,7 +271,7 @@ const RentalDetailModal = ({
                 {/* Image counter badge */}
                 <div className="absolute bottom-3 right-3 bg-green-700/80 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
                   <Camera className="h-3 w-3" />
-                  <span>{hasImages ? `${activeImageIndex + 1} of ${productImages.length}` : 'No images'}</span>
+                  <span>{hasImages ? t('rental.modal.imageCounter', { current: activeImageIndex + 1, total: productImages.length }) : t('rental.modal.noImagesShort')}</span>
                 </div>
               </div>
 
@@ -297,22 +299,22 @@ const RentalDetailModal = ({
               {/* Rental price card */}
               <div className="bg-gradient-to-r from-green-50 to-white rounded-lg p-4 border border-green-200 shadow-sm">
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-base font-semibold text-green-800">Price Summary</h3>
+                  <h3 className="text-base font-semibold text-green-800">{t('rental.modal.priceSummary')}</h3>
                   <span className="text-lg font-bold text-green-700">৳{base_cost}</span>
                 </div>
 
                 <div className="space-y-2 text-sm text-gray-600">
                   <div className="flex justify-between">
-                    <span>Base price</span>
+                    <span>{t('rental.modal.basePrice')}</span>
                     <span>৳{unitPrice} × {rentalDuration}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Security deposit (refundable)</span>
+                    <span>{t('rental.modal.depositRefundable')}</span>
                     <span>৳{security_deposit}</span>
                   </div>
                   <Separator className="my-2 bg-green-100" />
                   <div className="flex justify-between font-medium text-green-800">
-                    <span>Total</span>
+                    <span>{t('rental.modal.total')}</span>
                     <span>৳{base_cost}</span>
                   </div>
                 </div>
@@ -333,7 +335,7 @@ const RentalDetailModal = ({
                         {counterpartVerified && (
                           <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300 gap-1 text-[10px] px-1.5 py-0">
                             <CheckCircle className="w-3 h-3" />
-                            {counterpart.trust_level === 'partner' ? 'Partner' : 'Verified'}
+                            {counterpart.trust_level === 'partner' ? t('profilePage.partner') : t('profilePage.verified')}
                           </Badge>
                         )}
                       </div>
@@ -356,9 +358,9 @@ const RentalDetailModal = ({
               <div className="bg-gradient-to-r from-green-50 to-lime-50 rounded-lg p-3 border border-green-200 flex items-start gap-2.5">
                 <Shield className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium text-green-800 text-sm">Bhara-Protected Transaction</p>
+                  <p className="font-medium text-green-800 text-sm">{t('rental.modal.protectedTitle')}</p>
                   <p className="text-xs text-gray-600 mt-0.5">
-                    Bhara handles all communications and transactions for security.
+                    {t('rental.modal.protectedDesc')}
                   </p>
                 </div>
               </div>
@@ -374,19 +376,19 @@ const RentalDetailModal = ({
                     value="details"
                     className="rounded-full data-[state=active]:bg-white data-[state=active]:text-green-700 data-[state=active]:shadow-sm"
                   >
-                    Details
+                    {t('rental.modal.tabDetails')}
                   </TabsTrigger>
                   <TabsTrigger
                     value="timeline"
                     className="rounded-full data-[state=active]:bg-white data-[state=active]:text-green-700 data-[state=active]:shadow-sm"
                   >
-                    Timeline
+                    {t('rental.modal.tabTimeline')}
                   </TabsTrigger>
                   <TabsTrigger
                     value="reviews"
                     className="rounded-full data-[state=active]:bg-white data-[state=active]:text-green-700 data-[state=active]:shadow-sm"
                   >
-                    Reviews
+                    {t('rental.modal.tabReviews')}
                   </TabsTrigger>
                 </TabsList>
 
@@ -397,26 +399,26 @@ const RentalDetailModal = ({
                     <div className="px-4 py-3">
                       <div className="flex items-center gap-2 mb-3">
                         <Calendar className="h-4 w-4 text-green-600" />
-                        <h3 className="text-base font-semibold text-green-800">Rental Period</h3>
+                        <h3 className="text-base font-semibold text-green-800">{t('rental.modal.rentalPeriod')}</h3>
                       </div>
 
                       <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                         <div className="flex-1 bg-white p-3 rounded border border-green-300 text-center">
-                          <p className="text-xs text-gray-500 uppercase mb-1">Start Date</p>
+                          <p className="text-xs text-gray-500 uppercase mb-1">{t('listings.startDate')}</p>
                           <p className="text-sm font-medium text-gray-800">
                             {formatDate(start_date)}
                           </p>
                         </div>
 
                         <div className="flex-1 bg-white p-3 rounded border border-green-300 text-center">
-                          <p className="text-xs text-gray-500 uppercase mb-1">End Date</p>
+                          <p className="text-xs text-gray-500 uppercase mb-1">{t('listings.endDate')}</p>
                           <p className="text-sm font-medium text-gray-800">
                             {formatDate(end_date)}
                           </p>
                         </div>
 
                         <div className="flex-1 bg-lime-50 p-3 rounded border border-lime-300 text-center">
-                          <p className="text-xs text-gray-500 uppercase mb-1">Duration</p>
+                          <p className="text-xs text-gray-500 uppercase mb-1">{t('rental.modal.duration')}</p>
                           <p className="text-sm font-medium text-lime-800">
                             {rentalDuration}
                           </p>
@@ -428,20 +430,20 @@ const RentalDetailModal = ({
                   {/* Item details */}
                   <div className="bg-white rounded-lg border border-green-200 overflow-hidden">
                     <div className="bg-gradient-to-r from-green-50 to-white px-4 py-3 border-b border-green-100">
-                      <h3 className="text-base font-semibold text-green-800">Item Details</h3>
+                      <h3 className="text-base font-semibold text-green-800">{t('rental.modal.itemDetails')}</h3>
                     </div>
 
                     <div className="p-4">
                       <div>
-                        <h4 className="text-xs font-medium text-gray-500 mb-2">Specifications</h4>
+                        <h4 className="text-xs font-medium text-gray-500 mb-2">{t('rental.modal.specifications')}</h4>
                         <ul className="space-y-2.5">
                           <li className="flex justify-between text-sm">
-                            <span className="text-gray-600">Category</span>
+                            <span className="text-gray-600">{t('listings.category')}</span>
                             <span className="font-medium text-gray-800">{productCategory}</span>
                           </li>
                           <Separator className="bg-green-50" />
                           <li className="flex justify-between text-sm">
-                            <span className="text-gray-600">Security Deposit</span>
+                            <span className="text-gray-600">{t('listings.securityDeposit')}</span>
                             <span className="font-medium text-gray-800">৳{security_deposit}</span>
                           </li>
                         </ul>
@@ -453,28 +455,28 @@ const RentalDetailModal = ({
                   {settlement && (
                     <div className="bg-white rounded-lg border border-green-200 overflow-hidden">
                       <div className="bg-gradient-to-r from-green-50 to-white px-4 py-3 border-b border-green-100">
-                        <h3 className="text-base font-semibold text-green-800">Settlement</h3>
+                        <h3 className="text-base font-semibold text-green-800">{t('rental.settlement.title')}</h3>
                       </div>
 
                       <div className="p-4">
                         <ul className="space-y-2.5">
                           <li className="flex justify-between text-sm">
-                            <span className="text-gray-600">Rent paid</span>
+                            <span className="text-gray-600">{t('rental.settlement.rentPaid')}</span>
                             <span className="font-medium text-gray-800">৳{Number(settlement.rent_paid) || 0}</span>
                           </li>
                           <Separator className="bg-green-50" />
                           <li className="flex justify-between text-sm">
-                            <span className="text-gray-600">Deposit held</span>
+                            <span className="text-gray-600">{t('rental.settlement.depositHeld')}</span>
                             <span className="font-medium text-gray-800">৳{Number(settlement.deposit_held) || 0}</span>
                           </li>
                           <Separator className="bg-green-50" />
                           <li className="flex justify-between text-sm">
-                            <span className="text-gray-600">Deposit returned</span>
+                            <span className="text-gray-600">{t('rental.settlement.depositReturned')}</span>
                             <span className="font-medium text-gray-800">৳{Number(settlement.deposit_returned) || 0}</span>
                           </li>
                           <Separator className="bg-green-50" />
                           <li className="flex justify-between text-sm">
-                            <span className="text-gray-600">Owner paid</span>
+                            <span className="text-gray-600">{t('rental.settlement.ownerPaid')}</span>
                             <span className="font-medium text-gray-800">৳{Number(settlement.owner_paid) || 0}</span>
                           </li>
                         </ul>
@@ -488,7 +490,7 @@ const RentalDetailModal = ({
                       <div className="flex items-start gap-2.5">
                         <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
                         <div>
-                          <p className="font-medium text-gray-800 text-sm mb-1">Special Notes</p>
+                          <p className="font-medium text-gray-800 text-sm mb-1">{t('rental.modal.specialNotes')}</p>
                           <p className="text-xs text-gray-700">{rental.notes}</p>
                         </div>
                       </div>
@@ -500,7 +502,7 @@ const RentalDetailModal = ({
                 <TabsContent value="timeline" className="space-y-5">
                   <div className="bg-gradient-to-r from-green-50 to-white rounded-lg border border-green-200 overflow-hidden">
                     <div className="px-4 py-3 border-b border-green-100">
-                      <h3 className="text-base font-semibold text-green-800">Rental Timeline</h3>
+                      <h3 className="text-base font-semibold text-green-800">{t('rental.modal.timelineTitle')}</h3>
                     </div>
 
                     <div className="p-4">
@@ -532,12 +534,12 @@ const RentalDetailModal = ({
                           <div className="relative pl-8">
                             <div className="absolute left-0 top-1 h-5 w-5 rounded-full bg-green-600 border-3 border-white shadow-sm"></div>
                             <div>
-                              <h4 className="text-sm font-medium text-green-800">Request Submitted</h4>
+                              <h4 className="text-sm font-medium text-green-800">{t('rental.timeline.submitted')}</h4>
                               <p className="text-xs text-gray-600 mt-1">
                                 {formatDate(safeDate(rental.created_at))}
                               </p>
                               <p className="mt-2 text-xs text-gray-700 bg-green-50/50 p-2 rounded border border-green-100">
-                                Rental request was submitted for {productTitle}.
+                                {t('rental.timeline.submittedFor', { title: productTitle })}
                               </p>
                             </div>
                           </div>
@@ -549,20 +551,20 @@ const RentalDetailModal = ({
                   {/* Documentation Photos */}
                   <div className="bg-gradient-to-r from-green-50 to-white rounded-lg border border-green-200 overflow-hidden">
                     <div className="px-4 py-3 border-b border-green-100">
-                      <h3 className="text-base font-semibold text-green-800">Documentation Photos</h3>
+                      <h3 className="text-base font-semibold text-green-800">{t('rental.photos.title')}</h3>
                     </div>
 
                     <div className="p-4 space-y-5">
                       {/* Pre-rental photos */}
                       <div>
-                        <h4 className="font-medium text-green-700 text-sm mb-2">Pre-Rental Condition</h4>
+                        <h4 className="font-medium text-green-700 text-sm mb-2">{t('rental.photos.preTitle')}</h4>
                         {preRentalPhotos.length > 0 ? (
                           <div className="grid grid-cols-3 gap-2">
                             {preRentalPhotos.map((photo) => (
                               <div key={photo.id} className="aspect-square rounded overflow-hidden border border-green-200 shadow-sm">
                                 <img
                                   src={photo.photo}
-                                  alt="Pre-rental condition"
+                                  alt={t('rental.photos.preTitle')}
                                   className="w-full h-full object-cover hover:scale-105 transition-transform"
                                 />
                               </div>
@@ -572,8 +574,8 @@ const RentalDetailModal = ({
                           <div className="border border-dashed border-green-200 rounded p-3 text-center bg-green-50/30">
                             <p className="text-green-600 text-xs">
                               {isPending
-                                ? 'Photos will be available once the rental begins.'
-                                : 'No pre-rental photos uploaded yet.'}
+                                ? t('rental.photos.availableAfterStart')
+                                : t('rental.photos.noPrePhotos')}
                             </p>
                           </div>
                         )}
@@ -581,14 +583,14 @@ const RentalDetailModal = ({
 
                       {/* Post-rental photos */}
                       <div>
-                        <h4 className="font-medium text-green-700 text-sm mb-2">Post-Rental Condition</h4>
+                        <h4 className="font-medium text-green-700 text-sm mb-2">{t('rental.photos.postTitle')}</h4>
                         {postRentalPhotos.length > 0 ? (
                           <div className="grid grid-cols-3 gap-2">
                             {postRentalPhotos.map((photo) => (
                               <div key={photo.id} className="aspect-square rounded overflow-hidden border border-green-200 shadow-sm">
                                 <img
                                   src={photo.photo}
-                                  alt="Post-rental condition"
+                                  alt={t('rental.photos.postTitle')}
                                   className="w-full h-full object-cover hover:scale-105 transition-transform"
                                 />
                               </div>
@@ -598,8 +600,8 @@ const RentalDetailModal = ({
                           <div className="border border-dashed border-green-200 rounded p-3 text-center bg-green-50/30">
                             <p className="text-green-600 text-xs">
                               {isCompleted
-                                ? 'No post-rental photos uploaded.'
-                                : 'Photos will be available once the rental is completed.'}
+                                ? t('rental.photos.noPostPhotos')
+                                : t('rental.photos.availableAfterComplete')}
                             </p>
                           </div>
                         )}
@@ -614,7 +616,7 @@ const RentalDetailModal = ({
                     <div className="px-4 py-3 border-b border-green-100">
                       <div className="flex items-center gap-2">
                         <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                        <h3 className="text-base font-semibold text-green-800">Reviews &amp; Ratings</h3>
+                        <h3 className="text-base font-semibold text-green-800">{t('review.sectionTitle')}</h3>
                       </div>
                     </div>
 
@@ -663,9 +665,9 @@ const RentalDetailModal = ({
                       ) : (
                         <div className="text-center py-8">
                           <MessageSquare className="mx-auto h-10 w-10 text-green-200 mb-2" />
-                          <p className="text-green-700 font-medium text-sm">No reviews yet</p>
+                          <p className="text-green-700 font-medium text-sm">{t('review.noReviews')}</p>
                           <p className="text-xs text-gray-500 mt-0.5">
-                            Be the first to review this rental experience!
+                            {t('review.beFirstRental')}
                           </p>
                         </div>
                       )}
@@ -678,7 +680,7 @@ const RentalDetailModal = ({
                       <div className="px-4 py-3 border-b border-green-100">
                         <div className="flex items-center gap-2">
                           <Star className="h-4 w-4 text-yellow-500" />
-                          <h3 className="text-base font-semibold text-green-800">Leave a Review</h3>
+                          <h3 className="text-base font-semibold text-green-800">{t('review.leaveReview')}</h3>
                         </div>
                       </div>
 
@@ -709,7 +711,7 @@ const RentalDetailModal = ({
               onClick={() => onStatusAction(rental.id, 'cancel')}
               className="border-red-300 text-red-600 hover:bg-red-50 text-xs"
             >
-              {isPending ? 'Cancel Request' : 'Cancel Rental'}
+              {isPending ? t('rental.actions.cancelRequest') : t('rental.actions.cancelRental')}
             </Button>
           )}
 
@@ -721,14 +723,14 @@ const RentalDetailModal = ({
                 onClick={() => onStatusAction(rental.id, 'reject')}
                 className="border-red-300 text-red-600 hover:bg-red-50 text-xs"
               >
-                Reject Request
+                {t('rental.actions.reject')}
               </Button>
               <Button
                 size="sm"
                 onClick={() => onStatusAction(rental.id, 'accept')}
                 className="bg-gradient-to-r from-green-600 to-lime-600 hover:opacity-90 text-white text-xs"
               >
-                Accept Request
+                {t('rental.actions.accept')}
               </Button>
             </>
           )}

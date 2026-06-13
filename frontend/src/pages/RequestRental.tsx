@@ -8,7 +8,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import productService from '@/services/product.service';
 import { AlertCircle } from 'lucide-react';
 
+import { useTranslation } from 'react-i18next';
 export default function RequestRentalPage() {
+  const { t } = useTranslation();
   const { productId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -34,7 +36,7 @@ export default function RequestRentalPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       if (!productId) {
-        setError('No product ID provided');
+        setError(t('requestRental.noProductId'));
         return;
       }
 
@@ -67,16 +69,16 @@ export default function RequestRentalPage() {
           
           // Validate that the product has pricing tiers
           if (!fetchedProduct.pricing_tiers || fetchedProduct.pricing_tiers.length === 0) {
-            setError('This product does not have any pricing options available');
+            setError(t('requestRental.noPricingOptions'));
           } else {
             setProduct(fetchedProduct);
           }
         } else {
-          setError('Product not found');
+          setError(t('requestRental.productNotFound'));
         }
       } catch (error) {
         console.error('Error fetching product details:', error);
-        setError('Failed to load product details. Please try again later.');
+        setError(t('requestRental.loadFailed'));
       } finally {
         setLoading(false);
       }
@@ -93,7 +95,7 @@ export default function RequestRentalPage() {
         <div className="flex-grow flex items-center justify-center py-10">
           <div className="text-center">
             <div className="animate-spin rounded-full h-14 w-14 border-t-2 border-b-2 border-green-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600 font-medium">Loading rental details...</p>
+            <p className="mt-4 text-gray-600 font-medium">{t('requestRental.loadingDetails')}</p>
           </div>
         </div>
         <Footer />
@@ -111,7 +113,7 @@ export default function RequestRentalPage() {
             <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-red-100 mb-4">
               <AlertCircle className="h-8 w-8 text-red-600" />
             </div>
-            <h2 className="text-xl font-semibold text-red-800 mb-2">Unable to Process Rental Request</h2>
+            <h2 className="text-xl font-semibold text-red-800 mb-2">{t('requestRental.unableTitle')}</h2>
             <p className="text-gray-700 mb-6">{error}</p>
             <button 
               onClick={() => navigate('/advertisements')}

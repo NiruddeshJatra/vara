@@ -10,6 +10,7 @@ import { Product } from "@/types/listings";
 import { RentalRequestFormData, RentalErrors } from "@/types/rentals";
 import { DurationUnit } from "@/constants/rental";
 import rentalService from "@/services/rental.service";
+import { useTranslation } from "react-i18next";
 import {
   validateRentalDetails,
   validateAdditionalDetails,
@@ -20,6 +21,7 @@ interface Props {
 }
 
 const RentalRequestStepper = ({ product }: Props) => {
+  const { t } = useTranslation();
   const pricingTier =
     product.pricing_tiers && product.pricing_tiers.length > 0
       ? product.pricing_tiers[0]
@@ -97,8 +99,8 @@ const RentalRequestStepper = ({ product }: Props) => {
         try {
           await rentalService.createRentalRequest(product.id, formData);
           toast({
-            title: "Success",
-            description: "Your rental request has been submitted successfully!",
+            title: t('common.toastSuccess'),
+            description: t('requestRental.submitSuccess'),
             variant: "default",
           });
           setCurrentStep(4);
@@ -115,9 +117,9 @@ const RentalRequestStepper = ({ product }: Props) => {
           const errorMessage =
             error instanceof Error
               ? error.message
-              : "Failed to submit rental request. Please try again.";
+              : t('requestRental.submitFailed');
           toast({
-            title: "Request Failed",
+            title: t('requestRental.requestFailedTitle'),
             description: errorMessage,
             variant: "destructive",
           });
@@ -155,13 +157,13 @@ const RentalRequestStepper = ({ product }: Props) => {
   const getStepLabel = (step: number) => {
     switch (step) {
       case 1:
-        return "Rental Details";
+        return t('requestRental.stepRentalDetails');
       case 2:
-        return "Price Details";
+        return t('requestRental.stepPriceDetails');
       case 3:
-        return "Additional Info";
+        return t('requestRental.stepAdditionalInfo');
       case 4:
-        return "Confirmation";
+        return t('requestRental.stepConfirmation');
       default:
         return "";
     }
@@ -173,10 +175,10 @@ const RentalRequestStepper = ({ product }: Props) => {
         <div className="max-w-4xl mx-auto bg-gradient-to-b from-white to-lime-50 rounded-lg shadow-subtle p-6 sm:p-8 md:p-10 overflow-hidden">
           <div className="text-center mb-6">
             <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-700 mb-1">
-              Request Rental
+              {t('requestRental.title')}
             </h1>
             <p className="text-xs sm:text-sm text-gray-500">
-              Complete the following steps to request your rental
+              {t('requestRental.subtitle')}
             </p>
           </div>
 
@@ -245,7 +247,7 @@ const RentalRequestStepper = ({ product }: Props) => {
                     <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 mr-2" />
                     <div>
                       <h3 className="text-sm font-medium text-red-800 capitalize">
-                        {key === "detail" ? "Error" : key.split("_").join(" ")}
+                        {key === "detail" ? t('common.toastError') : key.split("_").join(" ")}
                       </h3>
                       <p className="text-sm text-red-700 mt-1">
                         {Array.isArray(value) ? value[0] : value}

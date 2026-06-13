@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { AlertCircle, X, Camera, Info, Image, CheckCircle2, UploadCloud, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   images: File[];
@@ -12,6 +13,7 @@ type Props = {
 };
 
 const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
+  const { t } = useTranslation();
   const [dragActive, setDragActive] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -55,12 +57,12 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <p className="text-md sm:text-xl font-semibold text-gray-700">Upload Item Images</p>
+        <p className="text-md sm:text-xl font-semibold text-gray-700">{t('listing.images.title')}</p>
         <div className="flex items-center text-xs sm:text-sm text-gray-500">
           <span className="font-medium">{images.length}</span>
-          <span className="mx-1">images added</span>
+          <span className="mx-1">{t('listing.images.added')}</span>
           {images.length > 0 && images.length < 3 && (
-            <span className="text-amber-600 font-medium ml-1">(3+ recommended)</span>
+            <span className="text-amber-600 font-medium ml-1">{t('listing.images.recommended')}</span>
           )}
           {images.length >= 3 && (
             <CheckCircle2 className="h-4 w-4 text-green-600 ml-1" />
@@ -79,15 +81,15 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
         >
           {isUploading ? (
             <div className="space-y-4 w-3/4 max-w-md">
-              <p className="font-medium text-gray-700">Uploading images...</p>
+              <p className="font-medium text-gray-700">{t('listing.images.uploading')}</p>
               <Progress value={uploadProgress} className="h-2 w-full [&>div]:bg-green-500" />
-              <p className="text-sm text-gray-500">{uploadProgress}% complete</p>
+              <p className="text-sm text-gray-500">{t('listing.images.percentComplete', { percent: uploadProgress })}</p>
             </div>
           ) : (
             <div className="space-y-3 p-4">
               <UploadCloud size={48} className="mx-auto text-green-500" />
-              <p className="font-medium text-gray-700 text-xs sm:text-sm">Drag and drop images here</p>
-              <p className="text-xs sm:text-sm text-gray-500">or</p>
+              <p className="font-medium text-gray-700 text-xs sm:text-sm">{t('listing.images.dragDrop')}</p>
+              <p className="text-xs sm:text-sm text-gray-500">{t('listing.images.or')}</p>
               <input
                 type="file"
                 multiple
@@ -100,12 +102,12 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
                 htmlFor="file-upload"
                 className="inline-block px-6 py-2.5 bg-green-600 text-white rounded-md hover:bg-green-700 cursor-pointer font-medium text-xs sm:text-sm transition-colors"
               >
-                Browse Files
+                {t('listing.images.browse')}
               </label>
               <div className="mt-6 border-t border-gray-100 pt-4">
                 <p className="text-xs text-gray-500 flex items-center justify-center">
                   <Info size={12} className="mr-1 text-gray-400" />
-                  Maximum 5MB per image (JPG, JPEG, PNG only)
+                  {t('listing.images.maxSize')}
                 </p>
               </div>
             </div>
@@ -124,7 +126,7 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
         <>
           <h4 className="text-sm md:text-md font-medium text-gray-700 flex items-center gap-2 mt-6">
             <Image className="h-5 w-5 text-gray-500" />
-            Uploaded Images ({images.length})
+            {t('listing.images.uploaded', { count: images.length })}
           </h4>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
@@ -132,7 +134,7 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
               <div key={index} className="relative group overflow-hidden rounded-lg border border-gray-200 shadow-sm">
                 <img
                   src={URL.createObjectURL(file)}
-                  alt={`Preview ${index + 1}`}
+                  alt={t('listing.images.previewAlt', { index: index + 1 })}
                   className="h-36 w-full object-cover"
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200"></div>
@@ -141,13 +143,13 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
                     type="button"
                     onClick={() => onChange(images.filter((_, i) => i !== index))}
                     className="bg-red-500 rounded-full p-1 hover:bg-red-600 transition-colors"
-                    aria-label="Remove image"
+                    aria-label={t('listing.images.remove')}
                   >
                     <X size={14} className="text-white" />
                   </button>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs py-1 px-2">
-                  Image {index + 1} • {(file.size / (1024 * 1024)).toFixed(1)} MB
+                  {t('listing.images.imageLabel', { index: index + 1 })} • {(file.size / (1024 * 1024)).toFixed(1)} MB
                 </div>
               </div>
             ))}
@@ -158,7 +160,7 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
                 className="flex flex-col items-center justify-center w-full h-36 cursor-pointer hover:bg-gray-50 transition-colors p-4 border border-dashed border-gray-200 rounded-lg"
               >
                 <Camera size={24} className="text-gray-400 mb-2" />
-                <span className="text-sm text-gray-500 text-center">Add more images</span>
+                <span className="text-sm text-gray-500 text-center">{t('listing.images.addMore')}</span>
                 <input
                   id="file-upload-additional"
                   type="file"
@@ -176,17 +178,17 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
       <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-3 sm:p-4 rounded-lg border border-amber-200 mt-4">
         <h6 className="text-xs sm:text-sm font-medium text-amber-800 mb-1 sm:mb-2 flex items-center gap-1 sm:gap-2">
           <Info size={18} className="text-amber-600 sm:w-4 sm:h-4" />
-          Tips for Great Listing Photos
+          {t('listing.images.tipsTitle')}
         </h6>
         <div className="space-y-2 sm:space-y-3">
           <div>
             <ul className="text-xs/5 sm:text-sm/6 text-amber-700 space-y-0.5 sm:space-y-1 list-disc pl-4 sm:pl-5">
-              <li><span className="font-semibold">Multiple angles:</span> Show your item from different perspectives</li>
-              <li><span className="font-semibold">Good lighting:</span> Natural daylight works best for clear, detailed photos</li>
-              <li><span className="font-semibold">Show condition:</span> Highlight any wear, damages, or imperfections honestly</li>
-              <li><span className="font-semibold">Clean background:</span> Use a neutral background without distractions</li>
-              <li><span className="font-semibold">Size reference:</span> Include objects for scale when helpful</li>
-              <li><span className="font-semibold">Specifications:</span> Take photos of labels, model numbers, or brands</li>
+              <li><span className="font-semibold">{t('listing.images.tip1Label')}:</span> {t('listing.images.tip1')}</li>
+              <li><span className="font-semibold">{t('listing.images.tip2Label')}:</span> {t('listing.images.tip2')}</li>
+              <li><span className="font-semibold">{t('listing.images.tip3Label')}:</span> {t('listing.images.tip3')}</li>
+              <li><span className="font-semibold">{t('listing.images.tip4Label')}:</span> {t('listing.images.tip4')}</li>
+              <li><span className="font-semibold">{t('listing.images.tip5Label')}:</span> {t('listing.images.tip5')}</li>
+              <li><span className="font-semibold">{t('listing.images.tip6Label')}:</span> {t('listing.images.tip6')}</li>
             </ul>
           </div>
         </div>
@@ -199,7 +201,7 @@ const ImageUploadStep = ({ images, error, onChange, onNext }: Props) => {
             className="bg-green-600 hover:bg-green-700"
             disabled={images.length === 0}
           >
-            Continue <ArrowRight className="ml-2 h-4 w-4" />
+            {t('common.continue')} <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
       )}

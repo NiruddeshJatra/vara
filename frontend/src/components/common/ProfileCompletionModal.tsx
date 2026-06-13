@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { AlertTriangle } from 'lucide-react';
 import {
@@ -20,9 +21,12 @@ interface ProfileCompletionModalProps {
 export const ProfileCompletionModal = ({
   isOpen,
   onClose,
-  title = "Profile Incomplete",
-  description = "You need to complete your profile before you can perform this action."
+  title,
+  description
 }: ProfileCompletionModalProps) => {
+  const { t } = useTranslation();
+  const resolvedTitle = title ?? t('profileCompletion.incomplete');
+  const resolvedDescription = description ?? t('profileCompletion.genericDescription');
   const navigate = useNavigate();
 
   const handleCompleteProfile = () => {
@@ -36,10 +40,10 @@ export const ProfileCompletionModal = ({
         <DialogHeader>
           <div className="flex items-center gap-2 text-amber-600">
             <AlertTriangle className="h-5 w-5" />
-            <DialogTitle>{title}</DialogTitle>
+            <DialogTitle>{resolvedTitle}</DialogTitle>
           </div>
           <DialogDescription className="pt-2">
-            {description}
+            {resolvedDescription}
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">

@@ -1,7 +1,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { differenceInDays, formatDistanceToNow, isValid } from "date-fns";
+import { differenceInDays, isValid } from "date-fns";
+import { useTranslation } from "react-i18next";
+import { formatDate as formatDateIntl, formatRelativeTime } from "@/utils/formatDate";
 import { Rental } from "@/types/rentals";
 import { RentalStatus } from "@/constants/rental";
 import {
@@ -26,6 +28,7 @@ const RentalCard = ({
   onViewDetails,
   onStatusAction,
 }: RentalCardProps) => {
+  const { t } = useTranslation();
   // Debug logging removed after mapping fix
 
   const statusConfig = {
@@ -55,13 +58,7 @@ const RentalCard = ({
     },
   };
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return isNaN(date.getTime())
-      ? "N/A"
-      : date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  };
+  const formatDate = (dateString: string) => formatDateIntl(dateString);
 
   const getTimeInfo = () => {
     const now = new Date();
@@ -74,48 +71,26 @@ const RentalCard = ({
       !rental.end_date ||
       !isValid(end)
     ) {
-      return "N/A";
+      return t('common.notAvailable');
     }
 
     if (
       rental.status === RentalStatus.ACCEPTED ||
       rental.status === RentalStatus.IN_PROGRESS
     ) {
-      if (now < start) return `Starts in ${differenceInDays(start, now)}d`;
+      if (now < start) return t('rental.card.startsIn', { days: differenceInDays(start, now) });
       if (now >= start && now <= end)
-        return `${differenceInDays(end, now)}d left`;
+        return t('rental.card.daysLeft', { days: differenceInDays(end, now) });
     }
     if (rental.status === RentalStatus.PENDING) {
       const created = new Date(rental.created_at);
-      if (!rental.created_at || !isValid(created)) return "N/A";
-      const timeAgo = formatDistanceToNow(created)
-        .replace(/about|over|almost|less than/g, "")
-        .replace("months", "mo")
-        .replace("month", "mo")
-        .replace("days", "d")
-        .replace("day", "d")
-        .replace("years", "yr")
-        .replace("year", "yr")
-        .replace("hours", "hr")
-        .replace("hour", "hr")
-        .trim();
-      return `Requested ${timeAgo} ago`;
+      if (!rental.created_at || !isValid(created)) return t('common.notAvailable');
+      return t('rental.card.requested', { time: formatRelativeTime(created) });
     }
     // For completed/cancelled/etc.
     const updated = new Date(rental.updated_at);
-    if (!rental.updated_at || !isValid(updated)) return "N/A";
-    const completedTime = formatDistanceToNow(updated)
-      .replace(/about|over|almost|less than/g, "")
-      .replace("months", "mo")
-      .replace("month", "mo")
-      .replace("days", "d")
-      .replace("day", "d")
-      .replace("years", "yr")
-      .replace("year", "yr")
-      .replace("hours", "hr")
-      .replace("hour", "hr")
-      .trim();
-    return `Updated ${completedTime} ago`;
+    if (!rental.updated_at || !isValid(updated)) return t('common.notAvailable');
+    return t('rental.card.updated', { time: formatRelativeTime(updated) });
   };
 
   // Pricing snapshot from the backend (decimal string)
@@ -123,7 +98,7 @@ const RentalCard = ({
 
   const product = typeof rental.product === 'object' ? rental.product : null;
   const imageUrl = product?.images?.[0]?.image || '/placeholder.png';
-  const productTitle = product?.title || rental.product_title || 'Untitled';
+  const productTitle = product?.title || rental.product_title || t('rental.card.untitled');
   const productCategory = product?.category || 'N/A';
 
   return (
@@ -146,7 +121,7 @@ const RentalCard = ({
           </div>
 
           <div className="flex flex-wrap gap-3 text-sm text-gray-700">
-            <span className="bg-green-50 border border-green-100 px-2 py-0.5 rounded text-green-800"><b>Category:</b> {productCategory}</span>
+            <span className="bg-green-50 border border-green-100 px-2 py-0.5 rounded text-green-800"><b>{t('listings.category')}:</b> {productCategory}</span>
           </div>
 
           <div className="flex items-center gap-2 ml-2 text-sm text-gray-600">
@@ -156,8 +131,8 @@ const RentalCard = ({
 
           <div className="bg-green-50 px-3 py-2 rounded-md border border-green-200 text-xs">
             {userRole === 'renter'
-              ? "Bhara handles all communications with the item owner"
-              : "Bhara handles all communications with the renter"}
+              ? t('rental.card.bharaHandlesOwner')
+              : t('rental.card.bharaHandlesRenter')}
           </div>
         </div>
 
@@ -172,7 +147,7 @@ const RentalCard = ({
             onClick={() => onViewDetails(rental)}
           >
             <Eye className="h-4 w-4 mr-1" />
-            View Details
+            {t('rental.card.viewDetails')}
           </Button>
         </div>
       </div>

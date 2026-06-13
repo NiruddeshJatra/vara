@@ -8,6 +8,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Search, Calendar as CalendarIcon } from "lucide-react";
 import { RentalStatus } from "@/constants/rental";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 interface RentalsStatusFilterProps {
   statusFilter: RentalStatus | "all";
@@ -30,23 +31,24 @@ const RentalsStatusFilter = ({
   dateRange,
   onDateRangeChange
 }: RentalsStatusFilterProps) => {
+  const { t } = useTranslation();
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const statusOptions: { value: RentalStatus | "all"; label: string; color: string; borderColor: string }[] = [
-    { value: 'all', label: 'All', color: 'bg-gray-600', borderColor: 'border-gray-300' },
-    { value: RentalStatus.PENDING, label: 'Pending', color: 'bg-yellow-600', borderColor: 'border-gray-300' },
-    { value: RentalStatus.ACCEPTED, label: 'Accepted', color: 'bg-blue-600', borderColor: 'border-gray-300' },
-    { value: RentalStatus.IN_PROGRESS, label: 'In Progress', color: 'bg-green-600', borderColor: 'border-gray-300' },
-    { value: RentalStatus.REJECTED, label: 'Rejected', color: 'bg-red-600/90', borderColor: 'border-gray-300' },
-    { value: RentalStatus.CANCELLED, label: 'Cancelled', color: 'bg-orange-600', borderColor: 'border-gray-300' },
-    { value: RentalStatus.COMPLETED, label: 'Completed', color: 'bg-purple-600', borderColor: 'border-gray-300' }
+    { value: 'all', label: t('rental.filter.all'), color: 'bg-gray-600', borderColor: 'border-gray-300' },
+    { value: RentalStatus.PENDING, label: t('rental.status.pending'), color: 'bg-yellow-600', borderColor: 'border-gray-300' },
+    { value: RentalStatus.ACCEPTED, label: t('rental.status.accepted'), color: 'bg-blue-600', borderColor: 'border-gray-300' },
+    { value: RentalStatus.IN_PROGRESS, label: t('rental.status.in_progress'), color: 'bg-green-600', borderColor: 'border-gray-300' },
+    { value: RentalStatus.REJECTED, label: t('rental.status.rejected'), color: 'bg-red-600/90', borderColor: 'border-gray-300' },
+    { value: RentalStatus.CANCELLED, label: t('rental.status.cancelled'), color: 'bg-orange-600', borderColor: 'border-gray-300' },
+    { value: RentalStatus.COMPLETED, label: t('rental.status.completed'), color: 'bg-purple-600', borderColor: 'border-gray-300' }
   ];
 
   const sortOptions = [
-    { value: 'newest', label: 'Newest First' },
-    { value: 'oldest', label: 'Oldest First' },
-    { value: 'priceHighToLow', label: 'Price: High to Low' },
-    { value: 'priceLowToHigh', label: 'Price: Low to High' }
+    { value: 'newest', label: t('rental.filter.newest') },
+    { value: 'oldest', label: t('rental.filter.oldest') },
+    { value: 'priceHighToLow', label: t('rental.filter.priceHighToLow') },
+    { value: 'priceLowToHigh', label: t('rental.filter.priceLowToHigh') }
   ];
 
   return (
@@ -78,7 +80,7 @@ const RentalsStatusFilter = ({
         <div className="relative flex-1 min-w-[120px]">
           <Search className="absolute left-3 top-3 h-4 w-4 text-green-600/60" />
           <Input
-            placeholder="Search by item title or rental ID"
+            placeholder={t('rental.filter.searchPlaceholder')}
             className="pl-9 h-10 text-xs sm:text-sm border-green-400 focus:border-green-500 focus:ring-green-300"
             value={searchTerm}
             onChange={(e) => onSearchTermChange(e.target.value)}
@@ -102,9 +104,9 @@ const RentalsStatusFilter = ({
                   <span className="hidden sm:inline">{format(dateRange.from, "MMM d")}</span>
                 )
               ) : (
-                <span className="hidden sm:inline">Date range</span>
+                <span className="hidden sm:inline">{t('rental.filter.dateRange')}</span>
               )}
-              <span className="sm:hidden">Date</span>
+              <span className="sm:hidden">{t('rental.filter.date')}</span>
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -128,14 +130,14 @@ const RentalsStatusFilter = ({
                   setIsCalendarOpen(false);
                 }}
               >
-                Clear
+                {t('common.clear')}
               </Button>
               <Button 
                 size="sm"
                 className="bg-green-600 hover:bg-green-700"
                 onClick={() => setIsCalendarOpen(false)}
               >
-                Apply
+                {t('common.apply')}
               </Button>
             </div>
           </PopoverContent>
@@ -144,7 +146,7 @@ const RentalsStatusFilter = ({
         {/* Sort dropdown */}
         <Select value={sortOption} onValueChange={onSortOptionChange}>
           <SelectTrigger className="w-[180px] sm:w-36 text-xs sm:text-sm border-green-400">
-            <SelectValue placeholder="Sort by" />
+            <SelectValue placeholder={t('rental.filter.sortBy')} />
           </SelectTrigger>
           <SelectContent>
             {sortOptions.map((option) => (

@@ -1,5 +1,6 @@
 import { Input } from '@/components/ui/input';
 import { AlertCircle, Shield, Info, Plus, Trash2, Calculator } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ListingFormData, FormError, PricingTier } from '@/types/listings';
 import '@/styles/input-fixes.css';
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
@@ -16,6 +17,7 @@ type Props = {
 };
 
 const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBack }: Props) => {
+  const { t } = useTranslation();
   // Initialize pricing_tiers if it doesn't exist
   if (!formData.pricing_tiers || formData.pricing_tiers.length === 0) {
     onChange({ pricing_tiers: [{ 
@@ -62,52 +64,52 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
   const getPricePlaceholder = (duration_unit: DurationUnit) => {
     switch (duration_unit) {
       case 'day':
-        return 'Enter price per day in Taka';
+        return t('listing.pricing.pricePlaceholderDay');
       case 'week':
-        return 'Enter price per week in Taka';
+        return t('listing.pricing.pricePlaceholderWeek');
       case 'month':
-        return 'Enter price per month in Taka';
+        return t('listing.pricing.pricePlaceholderMonth');
       default:
-        return 'Enter price in Taka';
+        return t('listing.pricing.pricePlaceholder');
     }
   };
 
   const getMaxPeriodPlaceholder = (duration_unit: DurationUnit) => {
     switch (duration_unit) {
       case 'day':
-        return 'Maximum number of days (optional)';
+        return t('listing.pricing.maxPlaceholderDay');
       case 'week':
-        return 'Maximum number of weeks (optional)';
+        return t('listing.pricing.maxPlaceholderWeek');
       case 'month':
-        return 'Maximum number of months (optional)';
+        return t('listing.pricing.maxPlaceholderMonth');
       default:
-        return 'Maximum period (optional)';
+        return t('listing.pricing.maxPlaceholder');
     }
   };
 
   const DURATION_UNIT_LABELS: Record<DurationUnit, string> = {
-    day: 'Per Day',
-    week: 'Per Week',
-    month: 'Per Month'
+    day: t('listing.pricing.perDay'),
+    week: t('listing.pricing.perWeek'),
+    month: t('listing.pricing.perMonth')
   };
 
   return (
     <div className="space-y-6">
       <div className="space-y-1 mt-5">
-        <h4 className="text-md md:text-xl font-semibold text-green-800">Pricing</h4>
+        <h4 className="text-md md:text-xl font-semibold text-green-800">{t('listing.pricing.title')}</h4>
         <p className="text-xs/5 md:text-sm/6 text-gray-600">
-          Set your pricing tiers and security deposit for this item.
+          {t('listing.pricing.subtitle')}
         </p>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-2">
           <span className="text-xs text-amber-700 flex items-center gap-2">
             <Info size={16} className="text-amber-600" />
-            <b>Note:</b> A service fee will be deducted from your set price for each rental. The amount you receive after fees will be shown below for each tier.
+            <b>{t('listing.pricing.noteLabel')}:</b> {t('listing.pricing.feeNote')}
           </span>
         </div>
       </div>
       <div className="space-y-3">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-green-900">Pricing Tiers</h3>
+          <h3 className="text-lg font-semibold text-green-900">{t('listing.pricing.tiersTitle')}</h3>
           <Button 
             type="button" 
             variant="outline" 
@@ -115,16 +117,16 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
             onClick={addPricingTier}
             className="flex items-center gap-1 text-green-700 font-semibold border-gray-300"
           >
-            <Plus size={16} /> Add Tier
+            <Plus size={16} /> {t('listing.pricing.addTier')}
           </Button>
         </div>
         <p className="text-xs/5 md:text-sm/6 text-gray-600">
-          Set different prices for different rental durations by adding multiple tiers (daily, weekly, monthly rates).
+          {t('listing.pricing.tiersHint')}
         </p>
         {formData.pricing_tiers?.map((tier, index) => (
           <div key={index} className="p-4 border rounded-lg bg-green-50 space-y-2 sm:space-y-4">
             <div className="flex justify-between items-center">
-              <h4 className="text-md md:text-lg font-medium text-green-800">Tier {index + 1}</h4>
+              <h4 className="text-md md:text-lg font-medium text-green-800">{t('listing.pricing.tier', { index: index + 1 })}</h4>
               {formData.pricing_tiers && formData.pricing_tiers.length > 1 && (
                 <Button 
                   type="button" 
@@ -140,14 +142,14 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs md:text-sm font-medium mb-1 text-gray-700">
-                  Duration Unit <span className="text-red-500">*</span>
+                  {t('listing.pricing.durationUnit')} <span className="text-red-500">*</span>
                 </label>
                 <Select 
                   value={tier.duration_unit} 
                   onValueChange={(value) => handlePricingTierChange(index, 'duration_unit', value as DurationUnit)}
                 >
                   <SelectTrigger className={errors[`pricing_tiers.${index}.duration_unit`] ? 'border-red-500' : ''}>
-                    {DURATION_UNIT_LABELS[tier.duration_unit as DurationUnit] || "Select Duration Unit"}
+                    {DURATION_UNIT_LABELS[tier.duration_unit as DurationUnit] || t('listing.pricing.selectDurationUnit')}
                   </SelectTrigger>
                   <SelectContent className="text-xs md:text-sm">
                     {durationOptions.map(option => (
@@ -165,7 +167,7 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
               </div>
               <div>
                 <label className="block text-xs md:text-sm font-medium mb-1 text-gray-700">
-                  Base Price <span className="text-red-500">*</span>
+                  {t('listing.pricing.basePrice')} <span className="text-red-500">*</span>
                 </label>
                 <Input
                   type="number"
@@ -184,15 +186,15 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
                 {typeof tier.price === 'number' && tier.price > 0 && (
                   <div className="mt-1 text-xs text-green-700 flex items-center gap-2">
                     <Calculator className="h-3.5 w-3.5 text-green-600" />
-                    {`After 20% service fee, you will receive`}
+                    {t('listing.pricing.afterFee')}
                     <span className="font-bold">{Math.round(tier.price * 0.8)}</span>
-                    {`Taka ${DURATION_UNIT_LABELS[tier.duration_unit as DurationUnit]}`}
+                    {t('common.taka') + ' ' + DURATION_UNIT_LABELS[tier.duration_unit as DurationUnit]}
                   </div>
                 )}
               </div>
               <div className="md:col-span-2">
                 <label className="block text-xs md:text-sm font-medium mb-1 text-gray-700">
-                  Maximum Rental Period
+                  {t('listing.pricing.maxPeriod')}
                 </label>
                 <Input
                   type="number"
@@ -208,7 +210,7 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
                   </p>
                 )}
                 <p className="text-xs/5 text-gray-500 mt-1">
-                  Set for maximum how many days/weeks/months you want to rent out. Leave empty for no limit.
+                  {t('listing.pricing.maxPeriodHint')}
                 </p>
               </div>
             </div>
@@ -218,7 +220,7 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs md:text-sm font-medium mb-1 text-gray-700">
-            Security Deposit (Taka)
+            {t('listing.pricing.deposit')}
           </label>
           <div className="flex items-center gap-2">
             <Input
@@ -228,28 +230,28 @@ const PricingStep = ({ formData, errors, durationOptions, onChange, onNext, onBa
               value={formData.security_deposit || ''}
               onChange={handleChange}
               className="h-10 text-sm placeholder:text-sm"
-              placeholder="Recommended for valuable items"
+              placeholder={t('listing.pricing.depositPlaceholder')}
             />
             <div className="h-10 flex items-center text-green-700">
               <Shield size={18} />
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            A refundable amount the renter has to pay before renting to protect against damage or loss
+            {t('listing.pricing.depositHint')}
           </p>
         </div>
       </div>
       <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-4 rounded-lg border border-amber-200 mt-4">
         <h3 className="text-xs font-medium text-amber-800 mb-2 flex items-center gap-2">
           <Info size={16} className="text-amber-600" />
-          Pricing Tips
+          {t('listing.pricing.tipsTitle')}
         </h3>
         <ul className="text-xs text-amber-700 space-y-1 list-disc pl-5">
-          <li>Set competitive prices by checking similar items in your area</li>
-          <li>Consider offering discounts for longer rental periods</li>
-          <li>For example: Higher daily rate, lower weekly rate, lowest monthly rate</li>
-          <li>Add a deposit for valuable items to protect against damage</li>
-          <li>Keep in mind that renters will have to pay the deposit before renting. So, set a deposit amount that is reasonable for your item and reasonable for the renter to pay</li>
+          <li>{t('listing.pricing.tip1')}</li>
+          <li>{t('listing.pricing.tip2')}</li>
+          <li>{t('listing.pricing.tip3')}</li>
+          <li>{t('listing.pricing.tip4')}</li>
+          <li>{t('listing.pricing.tip5')}</li>
         </ul>
       </div>
     </div>

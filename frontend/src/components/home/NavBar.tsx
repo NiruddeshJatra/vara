@@ -77,7 +77,7 @@ const NavBar = () => {
           {/* Conditional Slogan */}
           {!showSearchInNav && (
             <p className={`hidden md:block text-xs ml-2 mt-1 ${(!isHomePage || isScrolled) ? "text-green-600" : "text-green-400/80"}`}>
-              Borrow What You Need, Lend What You Don't
+              {t('common.slogan')}
             </p>
           )}
         </div>
@@ -108,7 +108,7 @@ const NavBar = () => {
                 className={"text-sm font-semibold text-black/70 hover:text-white border border-green-600 text-green-700 bg-green-50/50 hover:bg-lime-600 hover:border-none px-5"}
                 onClick={handleUploadProduct}
               >
-                <Plus size={16} className="mr-1" />Upload Product
+                <Plus size={16} className="mr-1" />{t('navigation.uploadProduct')}
               </Button>
             </>
           )}
@@ -121,7 +121,7 @@ const NavBar = () => {
               onClick={() => setFiltersOpen(!filtersOpen)}
             >
               <SlidersHorizontal className="w-4 h-4 mr-1" />
-              <span>Filters</span>
+              <span>{t('common.filters')}</span>
             </Button>
           )}
         </div>
@@ -143,25 +143,25 @@ const NavBar = () => {
                 <DropdownMenuItem asChild className="focus:bg-green-50 focus:text-green-700">
                   <Link to="/profile" className="flex items-center">
                     <User className="mr-2 h-4 w-4 text-green-600" />
-                    <span>My Profile</span>
+                    <span>{t('navigation.myProfile')}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="focus:bg-green-50 focus:text-green-700">
                   <Link to="/rentals" className="flex items-center">
                     <Package className="mr-2 h-4 w-4 text-green-600" />
-                    <span>My Rentals</span>
+                    <span>{t('navigation.myRentals')}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="focus:bg-green-50 focus:text-green-700">
                   <Link to="/my-listings" className="flex items-center">
                     <PackageOpen className="mr-2 h-4 w-4 text-green-600" />
-                    <span>My Listings</span>
+                    <span>{t('navigation.myListings')}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="focus:bg-green-50 focus:text-green-700">
                   <Link to="/about" className="flex items-center">
                     <Info className="mr-2 h-4 w-4 text-green-600" />
-                    <span>About Us</span>
+                    <span>{t('navigation.about')}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="focus:bg-green-50 focus:text-green-700">
@@ -177,7 +177,7 @@ const NavBar = () => {
                   className="focus:bg-green-50 focus:text-green-700 cursor-pointer"
                 >
                   <LogOut className="mr-2 h-4 w-4 text-green-600" />
-                  <span>Log Out</span>
+                  <span>{t('common.logout')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -186,13 +186,13 @@ const NavBar = () => {
               {/* Show login button if we're not on the login page */}
               {!filepath.pathname.includes('/auth/login/') && (
                 <Link to="/auth/login/">
-                  <Button variant="outline" className="border-green-500 text-green-700 hover:bg-green-50 hover:text-green-800 font-semibold py-1 lg:py-2 px-4 md:px-4 lg:px-5 rounded-full hover:scale-105 transition-all duration-200 text-xs md:text-xs lg:text-sm">Log In</Button>
+                  <Button variant="outline" className="border-green-500 text-green-700 hover:bg-green-50 hover:text-green-800 font-semibold py-1 lg:py-2 px-4 md:px-4 lg:px-5 rounded-full hover:scale-105 transition-all duration-200 text-xs md:text-xs lg:text-sm">{t('common.login')}</Button>
                 </Link>
               )}
               {/* Show register button if we're not on the register page */}
               {!filepath.pathname.includes('/auth/registration/') && (
                 <Link to="/auth/registration/">
-                  <Button className="bg-green-600 hover:bg-green-700 text-white font-semibold py-1 lg:py-2 px-4 md:px-4 lg:px-5 rounded-full hover:scale-105 transition-all duration-200 text-xs md:text-xs lg:text-sm">Sign Up</Button>
+                  <Button className="bg-green-600 hover:bg-green-700 text-white font-semibold py-1 lg:py-2 px-4 md:px-4 lg:px-5 rounded-full hover:scale-105 transition-all duration-200 text-xs md:text-xs lg:text-sm">{t('common.signup')}</Button>
                 </Link>
               )}
             </>
@@ -231,16 +231,16 @@ const NavBar = () => {
             {isAuthenticated && (
               <>
                 <Link to="/rentals" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 menu-item-fade-in">
-                  <Package size={18} /> My Rentals
+                  <Package size={18} /> {t('navigation.myRentals')}
                 </Link>
                 <Link to="/my-listings" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 menu-item-fade-in-delay-1">
-                  <PackageOpen size={18} /> My Listings
+                  <PackageOpen size={18} /> {t('navigation.myListings')}
                 </Link>
                 <Link to="/profile" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 menu-item-fade-in-delay-2">
-                  <User size={18} /> Profile
+                  <User size={18} /> {t('navigation.profile')}
                 </Link>
                 <Link to="/about" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 menu-item-fade-in-delay-3">
-                  <Info size={18} /> About Us
+                  <Info size={18} /> {t('navigation.about')}
                 </Link>
                 <Link to="/faq" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 menu-item-fade-in-delay-4">
                   <HelpCircle size={18} /> {t('navigation.faq')}
@@ -252,21 +252,21 @@ const NavBar = () => {
                   onClick={handleUploadProduct}
                   className="w-full bg-green-600 hover:bg-green-700 hover:scale-105 text-white font-semibold py-2 rounded-full mt-2 flex items-center justify-center gap-2 menu-item-fade-in-delay-6"
                 >
-                  <Plus size={18} /> Upload Product
+                  <Plus size={18} /> {t('navigation.uploadProduct')}
                 </Button>
                 <Button
                   onClick={handleLogout}
                   variant="outline"
                   className="w-full border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700 hover:scale-105 font-semibold py-2 rounded-full mt-2 flex items-center justify-center gap-2 menu-item-fade-in-delay-7"
                 >
-                  <LogOut size={18} /> Log Out
+                  <LogOut size={18} /> {t('common.logout')}
                 </Button>
               </>
             )}
             {!isAuthenticated && (
               <>
                 <Link to="/about" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 menu-item-fade-in">
-                  <Info size={18} /> About Us
+                  <Info size={18} /> {t('navigation.about')}
                 </Link>
                 <Link to="/faq" className="text-base font-semibold py-2 text-green-700 hover:text-green-900 transition-colors w-full text-center flex items-center justify-center gap-2 menu-item-fade-in-delay-1">
                   <HelpCircle size={18} /> {t('navigation.faq')}
@@ -275,10 +275,10 @@ const NavBar = () => {
                   <LanguageSwitcher />
                 </div>
                 <Link to="/auth/login/" className="w-full menu-item-fade-in-delay-3">
-                  <Button variant="outline" className="w-full border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700 font-semibold py-2 rounded-full mt-2">Log In</Button>
+                  <Button variant="outline" className="w-full border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700 font-semibold py-2 rounded-full mt-2">{t('common.login')}</Button>
                 </Link>
                 <Link to="/auth/registration/" className="w-full menu-item-fade-in-delay-4">
-                  <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-full mt-2">Sign Up</Button>
+                  <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-full mt-2">{t('common.signup')}</Button>
                 </Link>
               </>
             )}
@@ -290,8 +290,8 @@ const NavBar = () => {
       <ProfileCompletionModal 
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
-        title="Complete Your Profile"
-        description="You need to complete your profile before you can upload products."
+        title={t('profileCompletion.title')}
+        description={t('profileCompletion.uploadDescription')}
       />
     </header>
   );

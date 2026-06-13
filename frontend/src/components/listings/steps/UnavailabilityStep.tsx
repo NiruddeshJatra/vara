@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils";
 import AvailabilityCalendar from "@/components/listings/UnavailabilityCalendar";
 import { DateRange } from "react-day-picker";
 import "./calendar-popover.responsive.css";
+import { useTranslation } from "react-i18next";
+import { formatDate as formatDateIntl } from "@/utils/formatDate";
 
 type Props = {
   formData: ListingFormData;
@@ -29,6 +31,7 @@ const UnavailabilityStep = ({
   onNext,
   onBack,
 }: Props) => {
+  const { t } = useTranslation();
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -98,18 +101,17 @@ const UnavailabilityStep = ({
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold mb-4 text-green-800">
-        Set Unavailable Dates
+        {t('listing.unavailability.title')}
       </h2>
 
       <div className="border border-gray-200 p-4 rounded-lg bg-white shadow-sm">
         <h4 className="font-medium mb-3 text-green-700 flex items-center gap-2">
           <CalendarDays size={18} className="text-green-600 mr-1" />
-          Select Unavailable Dates
+          {t('listing.unavailability.selectTitle')}
         </h4>
 
         <p className="text-xs/5 md:text-sm/6 text-gray-600 mb-4">
-          Select dates when the item will not be available for rent (e.g., when
-          you need it for personal use).
+          {t('listing.unavailability.selectHint')}
         </p>
 
         <div className="flex flex-col md:flex-row gap-4">
@@ -127,14 +129,14 @@ const UnavailabilityStep = ({
                   {dateRange?.from ? (
                     dateRange.to ? (
                       <>
-                        {format(dateRange.from, "LLL dd, y")} -{" "}
-                        {format(dateRange.to, "LLL dd, y")}
+                        {formatDateIntl(dateRange.from)} -{" "}
+                        {formatDateIntl(dateRange.to)}
                       </>
                     ) : (
-                      format(dateRange.from, "LLL dd, y")
+                      formatDateIntl(dateRange.from)
                     )
                   ) : (
-                    <span>Pick a date range</span>
+                    <span>{t('listing.unavailability.pickRange')}</span>
                   )}
                 </Button>
               </PopoverTrigger>
@@ -175,7 +177,7 @@ const UnavailabilityStep = ({
                   )}
                 >
                   <CalendarDays className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP") : <span>Pick a single date</span>}
+                  {date ? formatDateIntl(date) : <span>{t('listing.unavailability.pickSingle')}</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -225,16 +227,12 @@ const UnavailabilityStep = ({
       <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-3 sm:p-4 rounded-lg border border-amber-200 mt-3 sm:mt-4">
         <h3 className="text-xs sm:text-sm font-medium text-amber-800 mb-1 sm:mb-2 flex items-center gap-1 sm:gap-2">
           <Info size={14} className="text-amber-600 sm:w-4 sm:h-4" />
-          Availability Tips
+          {t('listing.unavailability.tipsTitle')}
         </h3>
         <ul className="text-xs/5 sm:text-sm/6 text-amber-700 space-y-0.5 sm:space-y-1 list-disc pl-4 sm:pl-5">
-          <li>
-            Consider blocking out dates when you need the item for personal use.
-          </li>
-          <li>Keep your calendar updated to avoid double bookings.</li>
-          <li>
-            Unavailable dates help renters plan better and reduce cancellations.
-          </li>
+          <li>{t('listing.unavailability.tip1')}</li>
+          <li>{t('listing.unavailability.tip2')}</li>
+          <li>{t('listing.unavailability.tip3')}</li>
         </ul>
       </div>
     </div>

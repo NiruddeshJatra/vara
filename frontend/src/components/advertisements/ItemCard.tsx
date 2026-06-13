@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Product, ProductImage } from '@/types/listings';
 import { CATEGORY_DISPLAY, PRODUCT_TYPE_DISPLAY } from '@/constants/productTypes';
 
+import { useTranslation } from 'react-i18next';
 interface ItemCardProps {
   product: Product;
   onQuickView?: () => void;
@@ -20,6 +21,7 @@ const ItemCard = React.memo(({
   searchTerm = '',
   searchScore = 0
 }: ItemCardProps) => {
+  const { t } = useTranslation();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -107,7 +109,7 @@ const ItemCard = React.memo(({
           <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
             <img 
               src="https://placehold.co/600x400?text=Image+Not+Available" 
-              alt="Error loading image"
+              alt={t('ads.imageError')}
               className="w-full h-full object-contain"
               loading="lazy"
             />
@@ -145,7 +147,7 @@ const ItemCard = React.memo(({
         )}
 
         <Badge variant="secondary" className="absolute top-2 left-2 bg-white/90 text-green-800 z-10 text-[10px] sm:text-xs py-0.5 px-1.5 sm:px-2">
-          {CATEGORY_DISPLAY[product.category] || product.category}
+          {t('categories.' + product.category, { defaultValue: CATEGORY_DISPLAY[product.category] || product.category })}
         </Badge>
         
         {/* Show search match badge when it's a search result */}
@@ -169,7 +171,7 @@ const ItemCard = React.memo(({
               {displayRating()}
             </span>
           </div>
-          <span className="text-gray-500">({product.rental_count || 0} reviews)</span>
+          <span className="text-gray-500">{t('review.countOnly', { count: product.rental_count || 0 })}</span>
         </div>
 
         <div className="flex justify-between items-center">
@@ -179,7 +181,7 @@ const ItemCard = React.memo(({
               {product.pricing_tiers?.[0]?.price || 0}
             </span>
             <span className="text-xs sm:text-sm font-semibold text-green-700">
-              /{product.pricing_tiers?.[0]?.duration_unit || 'day'}
+              /{t('rental.units.' + (product.pricing_tiers?.[0]?.duration_unit || 'day'), { count: 1 })}
             </span>
           </div>
 
@@ -190,8 +192,8 @@ const ItemCard = React.memo(({
             onClick={handleQuickView}
           >
             <Eye size={14} className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden xs:inline text-[10px] sm:text-xs hover:text-green-600">Quick View</span>
-            <span className="xs:hidden text-[12px] sm:text-xs hover:text-green-600">Quick View</span>
+            <span className="hidden xs:inline text-[10px] sm:text-xs hover:text-green-600">{t('ads.quickView')}</span>
+            <span className="xs:hidden text-[12px] sm:text-xs hover:text-green-600">{t('ads.quickView')}</span>
           </Button>
         </div>
       </div>

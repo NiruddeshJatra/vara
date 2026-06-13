@@ -1,11 +1,12 @@
+import i18n from '@/i18n';
 import { ListingFormData, FormError } from '@/types/listings';
 
 export const validateBasicDetails = (data: ListingFormData): FormError => {
     const newErrors: FormError = {};
-    if (!data.title) newErrors.title = ['Title is required'];
-    if (!data.product_type) newErrors.product_type = ['Product type is required'];
-    if (!data.description) newErrors.description = ['Description is required'];
-    if (!data.location) newErrors.location = ['Location is required'];
+    if (!data.title) newErrors.title = [i18n.t('validation.titleRequired')];
+    if (!data.product_type) newErrors.product_type = [i18n.t('validation.productTypeRequired')];
+    if (!data.description) newErrors.description = [i18n.t('validation.descriptionRequired')];
+    if (!data.location) newErrors.location = [i18n.t('validation.locationRequired')];
     return newErrors;
 };
 
@@ -14,7 +15,7 @@ export const validateImageUpload = (data: ListingFormData): FormError => {
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
     if (data.images.length === 0) {
-        newErrors.images = ['At least one image required'];
+        newErrors.images = [i18n.t('validation.imageRequired')];
     } else {
         // Check each image's size
         data.images.forEach((file, index) => {
@@ -28,9 +29,9 @@ export const validateImageUpload = (data: ListingFormData): FormError => {
 
 export const validateProductHistory = (data: ListingFormData): FormError => {
     const newErrors: FormError = {};
-    if (!data.purchase_year) newErrors.purchase_year = ['Purchase year is required'];
-    if (!data.original_price || data.original_price <= 0) newErrors.original_price = ['Original price is required and must be greater than 0'];
-    if (!data.ownership_history) newErrors.ownership_history = ['Ownership history is required'];
+    if (!data.purchase_year) newErrors.purchase_year = [i18n.t('validation.purchaseYearRequired')];
+    if (!data.original_price || data.original_price <= 0) newErrors.original_price = [i18n.t('validation.originalPriceRequired')];
+    if (!data.ownership_history) newErrors.ownership_history = [i18n.t('validation.ownershipRequired')];
     return newErrors;
 };
 
@@ -38,22 +39,22 @@ export const validatePricing = (data: ListingFormData): FormError => {
     const newErrors: FormError = {};
 
     if (!data.pricing_tiers || data.pricing_tiers.length === 0) {
-        newErrors.pricing_tiers = ['At least one pricing tier is required'];
+        newErrors.pricing_tiers = [i18n.t('validation.tierRequired')];
     } else {
         // Check for duplicate duration units
         const durationUnits = new Set();
         data.pricing_tiers.forEach((tier, index) => {
             if (durationUnits.has(tier.duration_unit)) {
-                newErrors[`pricing_tiers.${index}.duration_unit`] = ['Duplicate duration unit is not allowed'];
+                newErrors[`pricing_tiers.${index}.duration_unit`] = [i18n.t('validation.duplicateUnit')];
             } else {
                 durationUnits.add(tier.duration_unit);
             }
 
             if (!tier.price || tier.price <= 0) {
-                newErrors[`pricing_tiers.${index}.price`] = ['Price is required and must be greater than 0'];
+                newErrors[`pricing_tiers.${index}.price`] = [i18n.t('validation.priceRequired')];
             }
             if (tier.max_period && tier.max_period < 1) {
-                newErrors[`pricing_tiers.${index}.max_period`] = ['Maximum period must be at least 1'];
+                newErrors[`pricing_tiers.${index}.max_period`] = [i18n.t('validation.maxPeriodMin')];
             }
         });
     }
@@ -74,7 +75,7 @@ export const validateUnavailability = (data: ListingFormData): FormError => {
         if (!date.is_range && date.date) {
             const selectedDate = new Date(date.date);
             if (selectedDate < new Date()) {
-                newErrors[`unavailable_periods.${index}.date`] = ['Cannot select dates in the past'];
+                newErrors[`unavailable_periods.${index}.date`] = [i18n.t('validation.datePast')];
             }
         }
 
@@ -86,18 +87,18 @@ export const validateUnavailability = (data: ListingFormData): FormError => {
                 const today = new Date();
 
                 if (start_date < today) {
-                    newErrors[`unavailable_periods.${index}.range_start`] = ['Range start date cannot be in the past'];
+                    newErrors[`unavailable_periods.${index}.range_start`] = [i18n.t('validation.rangeStartPast')];
                 }
 
                 if (end_date < start_date) {
-                    newErrors[`unavailable_periods.${index}.range_end`] = ['Range end date must be after start date'];
+                    newErrors[`unavailable_periods.${index}.range_end`] = [i18n.t('validation.rangeEndAfterStart')];
                 }
             } else {
                 if (!date.range_start) {
-                    newErrors[`unavailable_periods.${index}.range_start`] = ['Range start date is required'];
+                    newErrors[`unavailable_periods.${index}.range_start`] = [i18n.t('validation.rangeStartRequired')];
                 }
                 if (!date.range_end) {
-                    newErrors[`unavailable_periods.${index}.range_end`] = ['Range end date is required'];
+                    newErrors[`unavailable_periods.${index}.range_end`] = [i18n.t('validation.rangeEndRequired')];
                 }
             }
         }

@@ -5,30 +5,30 @@ const bdPhoneRegex = /^01[3-9]\d{8}$/;
 export const phoneSchema = z.object({
   phone_number: z
     .string()
-    .regex(bdPhoneRegex, 'Enter a valid Bangladeshi phone number (e.g. 01712345678)')
+    .regex(bdPhoneRegex, 'validation.phoneInvalidExample')
 });
 
 export const otpSchema = z.object({
-  otp: z.string().length(6, 'OTP must be exactly 6 digits').regex(/^\d+$/, 'OTP must be numeric')
+  otp: z.string().length(6, 'validation.otpLength').regex(/^\d+$/, 'validation.otpNumeric')
 });
 
 export const signupDetailsSchema = z.object({
-  full_name: z.string().min(2, 'Full name must be at least 2 characters').max(150),
+  full_name: z.string().min(2, 'validation.fullNameMin').max(150),
   password: z
     .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Za-z]/, 'Password must contain at least one letter')
-    .regex(/\d/, 'Password must contain at least one number'),
+    .min(8, 'validation.passwordMin')
+    .regex(/[A-Za-z]/, 'validation.passwordLetter')
+    .regex(/\d/, 'validation.passwordNumber'),
   confirm_password: z.string(),
   marketing_consent: z.boolean().default(false),
 }).refine(
   (data) => data.password === data.confirm_password,
-  { message: 'Passwords do not match', path: ['confirm_password'] }
+  { message: 'validation.passwordsMismatch', path: ['confirm_password'] }
 );
 
 export const loginSchema = z.object({
-  phone_number: z.string().regex(bdPhoneRegex, 'Enter a valid Bangladeshi phone number'),
-  password: z.string().min(1, 'Password is required'),
+  phone_number: z.string().regex(bdPhoneRegex, 'validation.phoneInvalid'),
+  password: z.string().min(1, 'validation.passwordRequired'),
 });
 
 const eighteenYearsAgo = () => {
@@ -40,20 +40,20 @@ const eighteenYearsAgo = () => {
 export const profileStep1Schema = z.object({
   date_of_birth: z
     .string()
-    .min(1, 'Date of birth is required')
+    .min(1, 'validation.dobRequired')
     .refine((val) => {
       const dob = new Date(val);
       return dob <= eighteenYearsAgo();
-    }, 'You must be at least 18 years old'),
-  district: z.string().min(1, 'District is required'),
-  thana: z.string().min(1, 'Thana is required'),
-  full_address: z.string().min(5, 'Please enter a valid address'),
-  email: z.string().email('Enter a valid email').optional().or(z.literal('')),
+    }, 'validation.dobAdult'),
+  district: z.string().min(1, 'validation.districtRequired'),
+  thana: z.string().min(1, 'validation.thanaRequired'),
+  full_address: z.string().min(5, 'validation.addressInvalid'),
+  email: z.string().email('validation.emailInvalid').optional().or(z.literal('')),
   profile_picture: z.instanceof(File).optional().nullable(),
 });
 
 export const profileStep2Schema = z.object({
-  nid_number: z.string().min(1, 'NID number is required'),
-  nid_image: z.instanceof(File, { message: 'NID image is required' }),
+  nid_number: z.string().min(1, 'validation.nidNumberRequired'),
+  nid_image: z.instanceof(File, { message: 'validation.nidImageRequired' }),
   institutional_id_image: z.instanceof(File).optional().nullable(),
 });

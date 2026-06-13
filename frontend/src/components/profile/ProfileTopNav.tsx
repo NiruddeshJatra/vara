@@ -1,4 +1,5 @@
 import { Bell, Menu, Search } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -19,6 +20,7 @@ const ProfileTopNav = ({
   onNotificationClick,
   onToggleMobileMenu
 }: ProfileTopNavProps) => {
+  const { t } = useTranslation();
   return (
     <header className="bg-white border-b border-green-100 shadow-sm sticky top-0 z-10">
       <div className="flex justify-between items-center p-4">
@@ -34,7 +36,7 @@ const ProfileTopNav = ({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
             <Input
               type="text"
-              placeholder="Search..."
+              placeholder={t('profilePage.searchPlaceholder')}
               className="pl-10 h-10 border-green-200 focus:border-green-500 focus:ring-green-500"
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
@@ -60,7 +62,7 @@ const ProfileTopNav = ({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
           <Input
             type="text"
-            placeholder="Search..."
+            placeholder={t('profilePage.searchPlaceholder')}
             className="pl-10 h-10 w-full border-green-200 focus:border-green-500 focus:ring-green-500"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}

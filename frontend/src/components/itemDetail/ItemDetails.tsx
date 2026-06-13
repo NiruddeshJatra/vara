@@ -2,6 +2,7 @@ import React from 'react';
 import { Banknote, Tag, BoxSelect, Clock } from 'lucide-react';
 import { CATEGORY_DISPLAY, PRODUCT_TYPE_DISPLAY } from '@/constants/productTypes';
 
+import { useTranslation } from 'react-i18next';
 interface ItemDetailsProps {
   category: string;
   product_type: string;
@@ -22,22 +23,23 @@ export default function ItemDetails({
   product_type,
   security_deposit = '0'
 }: ItemDetailsProps) {
+  const { t } = useTranslation();
   return (
     <div className="mb-6 sm:mb-10 pb-6 sm:pb-10 border-b border-gray-200">
-      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-4">Item details</h3>
+      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-4">{t('rental.modal.itemDetails')}</h3>
       <div className="grid grid-cols-2 gap-3 sm:gap-6">
         <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
           <h4 className="font-semibold text-green-900 mb-1 flex items-center text-lg sm:text-xl">
             <Tag className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2 sm:mr-3 text-green-600" />
-            Category
+            {t('listings.category')}
           </h4>
-          <p className="pl-6 text-green-700 font-medium text-sm sm:text-base" data-category={category}>{CATEGORY_DISPLAY[category] || category}</p>
+          <p className="pl-6 text-green-700 font-medium text-sm sm:text-base" data-category={category}>{t('categories.' + category, { defaultValue: CATEGORY_DISPLAY[category] || category })}</p>
         </div>
         
         <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
           <h4 className="font-semibold text-green-900 mb-1 flex items-center text-lg sm:text-xl">
             <BoxSelect className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2 sm:mr-3 text-green-600" />
-            Product Type
+            {t('listing.productType')}
           </h4>
           <p className="pl-6 text-green-700 font-medium text-sm sm:text-base" data-product-type={product_type}>{PRODUCT_TYPE_DISPLAY[product_type] || product_type}</p>
         </div>
@@ -45,10 +47,10 @@ export default function ItemDetails({
         <div className="bg-green-50 p-3 sm:p-4 rounded-lg col-span-2">
           <h4 className="font-semibold text-green-900 mb-1 flex items-center text-lg sm:text-xl">
             <Banknote className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2 sm:mr-3 text-green-600" />
-            Security Deposit
+            {t('listings.securityDeposit')}
           </h4>
           <p className="pl-3 text-green-700 font-medium flex items-center text-sm sm:text-base">
-            ৳ {formatPrice(Number(security_deposit))} <span className="text-xs text-green-600 ml-1">(Refundable)</span>
+            ৳ {formatPrice(Number(security_deposit))} <span className="text-xs text-green-600 ml-1">({t('itemDetail.refundable')})</span>
           </p>
         </div>
       </div>

@@ -12,6 +12,7 @@ import {
   PRODUCT_TYPE_DISPLAY
 } from '@/constants/productTypes';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   formData: ListingFormData;
@@ -21,6 +22,7 @@ type Props = {
 };
 
 const BasicDetailsStep = ({ formData, errors, onChange, onNext }: Props) => {
+  const { t } = useTranslation();
   const [availableProductTypes, setAvailableProductTypes] = useState<string[]>([]);
 
   // Update available product types when category changes
@@ -49,14 +51,14 @@ const BasicDetailsStep = ({ formData, errors, onChange, onNext }: Props) => {
   return (
     <div className="space-y-4 sm:space-y-6">
       <div>
-        <Label htmlFor="title" className="text-xs sm:text-sm font-medium">Title <span className="text-red-500">*</span></Label>
+        <Label htmlFor="title" className="text-xs sm:text-sm font-medium">{t('listing.titleLabel')} <span className="text-red-500">*</span></Label>
         <Input
           id="title"
           name="title"
           value={formData.title}
           onChange={handleChange}
           className={`h-9 sm:h-10 text-sm ${errors.title ? 'border-red-500' : ''}`}
-          placeholder="Enter a descriptive title for your product"
+          placeholder={t('listing.titlePlaceholder')}
         />
         {errors.title && (
           <p className="mt-1 text-xs sm:text-sm text-red-500 flex items-center gap-1">
@@ -67,18 +69,18 @@ const BasicDetailsStep = ({ formData, errors, onChange, onNext }: Props) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
         <div>
-          <Label htmlFor="category" className="text-xs sm:text-sm font-medium">Category <span className="text-red-500">*</span></Label>
+          <Label htmlFor="category" className="text-xs sm:text-sm font-medium">{t('listings.category')} <span className="text-red-500">*</span></Label>
           <Select
             value={formData.category}
             onValueChange={(value) => onChange({ category: value })}
           >
             <SelectTrigger className={`h-9 sm:h-10 text-xs sm:text-sm ${errors.category ? 'border-red-500' : ''}`}>
-              {formData.category ? CATEGORY_DISPLAY[formData.category] : "Select Category"}
+              {formData.category ? t('categories.' + formData.category, { defaultValue: CATEGORY_DISPLAY[formData.category] }) : t('listing.selectCategory')}
             </SelectTrigger>
             <SelectContent className="text-xs sm:text-sm">
               {Object.values(Category).map(cat => (
                 <SelectItem key={cat} value={cat} className="text-xs sm:text-sm">
-                  {CATEGORY_DISPLAY[cat]}
+                  {t('categories.' + cat, { defaultValue: CATEGORY_DISPLAY[cat] })}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -91,14 +93,14 @@ const BasicDetailsStep = ({ formData, errors, onChange, onNext }: Props) => {
         </div>
 
         <div>
-          <Label htmlFor="product_type" className="text-xs sm:text-sm font-medium">Product Type <span className="text-red-500">*</span></Label>
+          <Label htmlFor="product_type" className="text-xs sm:text-sm font-medium">{t('listing.productType')} <span className="text-red-500">*</span></Label>
           <Select
             value={formData.product_type}
             onValueChange={(value) => onChange({ product_type: value })}
             disabled={!formData.category}
           >
             <SelectTrigger className={`h-9 sm:h-10 text-xs sm:text-sm ${errors.product_type ? 'border-red-500' : ''}`}>
-              {formData.product_type ? PRODUCT_TYPE_DISPLAY[formData.product_type] : "Select Product Type"}
+              {formData.product_type ? PRODUCT_TYPE_DISPLAY[formData.product_type] : t('listing.selectProductType')}
             </SelectTrigger>
             <SelectContent className="text-xs sm:text-sm">
               {availableProductTypes.map(type => (
@@ -117,14 +119,14 @@ const BasicDetailsStep = ({ formData, errors, onChange, onNext }: Props) => {
       </div>
 
       <div>
-        <Label htmlFor="description" className="text-xs sm:text-sm font-medium">Description <span className="text-red-500">*</span></Label>
+        <Label htmlFor="description" className="text-xs sm:text-sm font-medium">{t('listings.description')} <span className="text-red-500">*</span></Label>
         <Textarea
           id="description"
           name="description"
           value={formData.description}
           onChange={handleChange}
           className={`text-xs sm:text-sm min-h-[80px] sm:min-h-[100px] ${errors.description ? 'border-red-500' : ''}`}
-          placeholder="Describe your product in detail"
+          placeholder={t('listing.descriptionPlaceholder')}
           rows={3}
         />
         {errors.description && (
@@ -136,11 +138,11 @@ const BasicDetailsStep = ({ formData, errors, onChange, onNext }: Props) => {
 
       <div>
         <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-          Location <span className="text-red-500">*</span>
+          {t('listings.location')} <span className="text-red-500">*</span>
         </label>
         <Input
           name="location"
-          placeholder="City, Area"
+          placeholder={t('listing.locationPlaceholder')}
           value={formData.location}
           onChange={handleChange}
           className={`h-9 sm:h-10 text-sm ${errors.location ? 'border-red-500' : ''}`}
@@ -150,20 +152,20 @@ const BasicDetailsStep = ({ formData, errors, onChange, onNext }: Props) => {
             <AlertCircle size={12} className="sm:w-4 sm:h-4" /> {errors.location[0]}
           </p>
         ) : (
-          <p className="mt-1 text-xs text-gray-500">Where is the product located?</p>
+          <p className="mt-1 text-xs text-gray-500">{t('listing.locationHint')}</p>
         )}
       </div>
 
       <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-3 sm:p-4 rounded-lg border border-amber-200 mt-3 sm:mt-4">
         <h3 className="text-xs sm:text-sm font-medium text-amber-800 mb-1 sm:mb-2 flex items-center gap-1 sm:gap-2">
           <Lightbulb size={14} className="text-amber-600 sm:w-4 sm:h-4" />
-          Listing Tips
+          {t('listing.tipsTitle')}
         </h3>
         <ul className="text-xs/5 sm:text-sm/6 text-amber-700 space-y-0.5 sm:space-y-1 list-disc pl-4 sm:pl-5">
-          <li><strong>Title:</strong> Be specific and include brand names when relevant</li>
-          <li><strong>Description:</strong> Mention condition, dimensions, features, and usage instructions</li>
-          <li><strong>Category:</strong> Choose the most relevant category for better visibility</li>
-          <li><strong>Location:</strong> Provide location details to help renters know the nearest location</li>
+          <li><strong>{t('listing.titleLabel')}:</strong> {t('listing.tipTitle')}</li>
+          <li><strong>{t('listings.description')}:</strong> {t('listing.tipDescription')}</li>
+          <li><strong>{t('listings.category')}:</strong> {t('listing.tipCategory')}</li>
+          <li><strong>{t('listings.location')}:</strong> {t('listing.tipLocation')}</li>
         </ul>
       </div>
 

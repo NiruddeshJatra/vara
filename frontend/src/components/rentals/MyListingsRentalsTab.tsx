@@ -1,6 +1,7 @@
 import { Rental } from "@/types/rentals";
 import { RentalStatus } from "@/constants/rental";
 import RentalSection from "./RentalSection";
+import { useTranslation } from "react-i18next";
 
 interface MyListingsRentalsTabProps {
   rentals: Rental[];
@@ -9,6 +10,7 @@ interface MyListingsRentalsTabProps {
 }
 
 const MyListingsRentalsTab = ({ rentals, onViewDetails, onStatusAction }: MyListingsRentalsTabProps) => {
+  const { t } = useTranslation();
   // Filter rentals by status
   const activeRentals = rentals.filter(rental =>
     [RentalStatus.ACCEPTED, RentalStatus.IN_PROGRESS].includes(rental.status)
@@ -22,35 +24,35 @@ const MyListingsRentalsTab = ({ rentals, onViewDetails, onStatusAction }: MyList
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-2 sm:p-4 md:p-6">
       {/* Active Rentals */}
       <RentalSection
-        title="Active Rentals"
-        description="Your items currently being rented"
+        title={t('rental.sections.activeTitle')}
+        description={t('rental.sections.ownerActiveDesc')}
         rentals={activeRentals}
         userRole="owner"
         onViewDetails={onViewDetails}
         onStatusAction={onStatusAction}
-        emptyMessage="You don't have any items currently being rented."
+        emptyMessage={t('rental.sections.ownerActiveEmpty')}
       />
       
       {/* Pending Requests */}
       <RentalSection
-        title="Pending Requests"
-        description="Requests to rent your items"
+        title={t('rental.sections.pendingTitle')}
+        description={t('rental.sections.ownerPendingDesc')}
         rentals={pendingRentals}
         userRole="owner"
         onViewDetails={onViewDetails}
         onStatusAction={onStatusAction}
-        emptyMessage="You don't have any pending rental requests for your items."
+        emptyMessage={t('rental.sections.ownerPendingEmpty')}
       />
       
       {/* Rental History */}
       <RentalSection
-        title="Rental History"
-        description="Past rentals of your items"
+        title={t('rental.sections.historyTitle')}
+        description={t('rental.sections.ownerHistoryDesc')}
         rentals={historyRentals}
         userRole="owner"
         onViewDetails={onViewDetails}
         onStatusAction={onStatusAction}
-        emptyMessage="Your items' rental history will appear here once you complete a rental."
+        emptyMessage={t('rental.sections.ownerHistoryEmpty')}
       />
     </div>
   );

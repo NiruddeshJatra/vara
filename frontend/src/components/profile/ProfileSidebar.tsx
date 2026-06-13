@@ -8,6 +8,7 @@ import {
   Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from 'react-i18next';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
@@ -26,6 +27,7 @@ interface ProfileSidebarProps {
 }
 
 const ProfileSidebar = ({ userData, activeTab, onTabChange, onLogout }: ProfileSidebarProps) => {
+  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleTabChange = (tab: string) => {
@@ -83,7 +85,7 @@ const ProfileSidebar = ({ userData, activeTab, onTabChange, onLogout }: ProfileS
                 onClick={() => handleTabChange("profile")}
               >
                 <User className="h-5 w-5" />
-                <span>Profile Information</span>
+                <span>{t('profilePage.personalInfo')}</span>
               </button>
             </li>
             <li>
@@ -94,7 +96,7 @@ const ProfileSidebar = ({ userData, activeTab, onTabChange, onLogout }: ProfileS
                 onClick={() => handleTabChange("listings")}
               >
                 <PackageOpen className="h-5 w-5" />
-                <span>My Listings</span>
+                <span>{t('navigation.myListings')}</span>
               </button>
             </li>
             <li>
@@ -105,7 +107,7 @@ const ProfileSidebar = ({ userData, activeTab, onTabChange, onLogout }: ProfileS
                 onClick={() => handleTabChange("history")}
               >
                 <History className="h-5 w-5" />
-                <span>Rental History</span>
+                <span>{t('rental.sections.historyTitle')}</span>
               </button>
             </li>
             <li>
@@ -116,7 +118,7 @@ const ProfileSidebar = ({ userData, activeTab, onTabChange, onLogout }: ProfileS
                 onClick={() => handleTabChange("reviews")}
               >
                 <Star className="h-5 w-5" />
-                <span>Reviews</span>
+                <span>{t('profile.reviews')}</span>
               </button>
             </li>
             <li>
@@ -127,7 +129,7 @@ const ProfileSidebar = ({ userData, activeTab, onTabChange, onLogout }: ProfileS
                 onClick={() => handleTabChange("settings")}
               >
                 <Settings className="h-5 w-5" />
-                <span>Settings</span>
+                <span>{t('profile.settings')}</span>
               </button>
             </li>
           </ul>

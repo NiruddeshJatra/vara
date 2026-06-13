@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
   Tooltip,
   TooltipContent,
@@ -11,6 +12,7 @@ import {
 } from "@/components/ui/tooltip";
 
 export const ProfileCompletionButton = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
@@ -39,7 +41,7 @@ export const ProfileCompletionButton = () => {
           </TooltipTrigger>
           <TooltipContent side="left" className="max-w-xs p-4">
             <div className="space-y-2">
-              <p className="font-medium text-amber-800">Profile Incomplete</p>
+              <p className="font-medium text-amber-800">{t('profileCompletion.incomplete')}</p>
               <p className="text-sm text-gray-700">
                 You need to complete your profile to upload products or request rentals.
               </p>

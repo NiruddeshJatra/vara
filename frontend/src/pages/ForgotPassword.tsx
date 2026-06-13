@@ -12,13 +12,14 @@ import { toast } from '@/components/ui/use-toast';
 import authService from "@/services/auth.service";
 import { OtpInput } from "@/components/auth/OtpInput";
 import { phoneSchema, otpSchema } from "@/utils/validators";
+import { useTranslation } from "react-i18next";
 
 const passwordResetSchema = z.object({
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Za-z]/, "Password must contain at least one letter")
-    .regex(/\d/, "Password must contain at least one number"),
+    .min(8, "validation.passwordMin")
+    .regex(/[A-Za-z]/, "validation.passwordLetter")
+    .regex(/\d/, "validation.passwordNumber"),
 });
 
 type PhoneFormData = { phone_number: string };
@@ -28,6 +29,7 @@ type ResetFormData = z.infer<typeof passwordResetSchema>;
 type ResetStage = 'phone' | 'otp' | 'reset';
 
 const ForgotPassword = () => {
+  const { t } = useTranslation();
   const [stage, setStage] = useState<ResetStage>('phone');
   const [isLoading, setIsLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -66,7 +68,7 @@ const ForgotPassword = () => {
       const firstField = Object.values(fieldErrors).find((v) => Array.isArray(v) && v.length);
       if (firstField) description = (firstField as string[])[0];
     }
-    toast({ title: "Reset Error", description, variant: "destructive" });
+    toast({ title: t('auth.forgot.errorTitle'), description, variant: "destructive" });
   };
 
   const onSubmitPhone = async (data: PhoneFormData) => {
@@ -77,9 +79,9 @@ const ForgotPassword = () => {
       setResendTimer(300);
       setCanResend(false);
       setStage('otp');
-      toast({ title: "OTP Sent", description: "OTP sent successfully!" });
+      toast({ title: t('auth.otpSentTitle'), description: t('auth.otpSentDesc') });
     } catch (error: any) {
-      showApiError(error, 'Failed to send OTP');
+      showApiError(error, t('auth.otpSendFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -89,12 +91,12 @@ const ForgotPassword = () => {
     if (!canResend || !phoneNumber) return;
     try {
       await authService.requestOtp(phoneNumber, 'password_reset');
-      toast({ title: "OTP Sent", description: "OTP resent successfully!" });
+      toast({ title: t('auth.otpSentTitle'), description: t('auth.otpResentDesc') });
       setResendTimer(300);
       setCanResend(false);
       otpForm.setValue('otp', '');
     } catch (error: any) {
-      showApiError(error, 'Failed to resend OTP');
+      showApiError(error, t('auth.otpResendFailed'));
     }
   };
 
@@ -104,9 +106,9 @@ const ForgotPassword = () => {
       const token = await authService.verifyOtp(phoneNumber, data.otp, 'password_reset');
       setEphemeralToken(token);
       setStage('reset');
-      toast({ title: "Verified", description: "OTP verified successfully!" });
+      toast({ title: t('auth.otpVerifiedTitle'), description: t('auth.otpVerifiedDesc') });
     } catch (error: any) {
-      showApiError(error, 'OTP verification failed');
+      showApiError(error, t('auth.otpVerifyFailed'));
       otpForm.setValue('otp', '');
     } finally {
       setIsLoading(false);
@@ -117,19 +119,19 @@ const ForgotPassword = () => {
     setIsLoading(true);
     try {
       await authService.passwordResetComplete(ephemeralToken, data.password);
-      toast({ title: "Success", description: "Password reset successfully. Please sign in." });
+      toast({ title: t('common.toastSuccess'), description: t('auth.forgot.successToast') });
       navigate('/auth/login/', { replace: true });
     } catch (error: any) {
-      showApiError(error, 'Password reset failed');
+      showApiError(error, t('auth.forgot.resetFailed'));
     } finally {
       setIsLoading(false);
     }
   };
 
   const stageHeader = {
-    phone: { title: 'Forgot Password', subtitle: 'Enter your phone number to reset your password' },
-    otp: { title: 'Verify OTP', subtitle: `Enter the 6-digit code sent to ${phoneNumber}` },
-    reset: { title: 'Reset Password', subtitle: 'Set a new password for your account' },
+    phone: { title: t('auth.forgot.phoneTitle'), subtitle: t('auth.forgot.phoneSubtitle') },
+    otp: { title: t('auth.forgot.otpTitle'), subtitle: t('auth.otpSentTo', { phone: phoneNumber }) },
+    reset: { title: t('auth.forgot.resetTitle'), subtitle: t('auth.forgot.resetSubtitle') },
   }[stage];
 
   return (
@@ -154,7 +156,7 @@ const ForgotPassword = () => {
                   <form onSubmit={phoneForm.handleSubmit(onSubmitPhone)} className="space-y-6">
                     <div className="space-y-2 animate-fade-up delay-100">
                       <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700">
-                        Phone Number
+                        {t('auth.phoneNumber')}
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -170,9 +172,9 @@ const ForgotPassword = () => {
                         />
                       </div>
                       {phoneForm.formState.errors.phone_number && (
-                        <p className="text-red-500 text-xs mt-1">{phoneForm.formState.errors.phone_number.message}</p>
+                        <p className="text-red-500 text-xs mt-1">{t(phoneForm.formState.errors.phone_number.message as string)}</p>
                       )}
-                      <p className="text-xs text-gray-500">We'll send a 6-digit OTP to this number</p>
+                      <p className="text-xs text-gray-500">{t('auth.otpHint')}</p>
                     </div>
 
                     <div className="animate-fade-up delay-200">
@@ -181,15 +183,15 @@ const ForgotPassword = () => {
                         className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition duration-150 ease-in-out hover-lift"
                         disabled={isLoading}
                       >
-                        {isLoading ? 'Sending...' : 'Send OTP'}
+                        {isLoading ? t('auth.sendingOtp') : t('auth.sendOtp')}
                       </Button>
                     </div>
 
                     <div className="text-center mt-6 animate-fade-up delay-300">
                       <p className="text-sm text-gray-600">
-                        Remembered your password?{" "}
+                        {t('auth.forgot.remembered')}{" "}
                         <Link to="/auth/login/" className="font-medium text-green-600 hover:text-green-500">
-                          Sign in
+                          {t('auth.register.signinLink')}
                         </Link>
                       </p>
                     </div>
@@ -205,7 +207,7 @@ const ForgotPassword = () => {
                       />
                       {otpForm.formState.errors.otp && (
                         <p className="mt-2 text-xs text-red-500 text-center">
-                          {otpForm.formState.errors.otp.message}
+                          {t(otpForm.formState.errors.otp.message as string)}
                         </p>
                       )}
                     </div>
@@ -217,10 +219,10 @@ const ForgotPassword = () => {
                           onClick={handleResendOtp}
                           className="text-green-600 hover:text-green-700 font-medium text-sm transition-colors"
                         >
-                          Resend OTP
+                          {t('auth.resendOtp')}
                         </button>
                       ) : (
-                        <p className="text-gray-500 text-sm">Resend OTP in {formatTime(resendTimer)}</p>
+                        <p className="text-gray-500 text-sm">{t('auth.resendOtpIn', { time: formatTime(resendTimer) })}</p>
                       )}
                     </div>
 
@@ -230,7 +232,7 @@ const ForgotPassword = () => {
                         className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition duration-150 ease-in-out hover-lift"
                         disabled={isLoading || otpValue.length !== 6}
                       >
-                        {isLoading ? 'Verifying...' : 'Verify'}
+                        {isLoading ? t('auth.verifying') : t('auth.verify')}
                       </Button>
                     </div>
 
@@ -240,7 +242,7 @@ const ForgotPassword = () => {
                         onClick={() => setStage('phone')}
                         className="text-sm text-gray-600 hover:text-gray-700 transition-colors"
                       >
-                        &larr; Change number
+                        &larr; {t('auth.changeNumber')}
                       </button>
                     </div>
                   </form>
@@ -250,7 +252,7 @@ const ForgotPassword = () => {
                   <form onSubmit={resetForm.handleSubmit(onSubmitReset)} className="space-y-6">
                     <div className="space-y-2 animate-fade-up delay-100">
                       <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                        New Password
+                        {t('auth.forgot.newPassword')}
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -259,7 +261,7 @@ const ForgotPassword = () => {
                         <Input
                           id="password"
                           type={showPassword ? "text" : "password"}
-                          placeholder="Enter a new password"
+                          placeholder={t('auth.forgot.newPasswordPlaceholder')}
                           className={`pl-10 ${resetForm.formState.errors.password ? 'border-red-500' : ''}`}
                           disabled={isLoading}
                           {...resetForm.register('password')}
@@ -273,7 +275,7 @@ const ForgotPassword = () => {
                         </button>
                       </div>
                       {resetForm.formState.errors.password && (
-                        <p className="text-red-500 text-xs mt-1">{resetForm.formState.errors.password.message}</p>
+                        <p className="text-red-500 text-xs mt-1">{t(resetForm.formState.errors.password.message as string)}</p>
                       )}
                     </div>
 
@@ -283,15 +285,15 @@ const ForgotPassword = () => {
                         className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition duration-150 ease-in-out hover-lift"
                         disabled={isLoading}
                       >
-                        {isLoading ? 'Resetting...' : 'Reset Password'}
+                        {isLoading ? t('auth.forgot.submitting') : t('auth.forgot.submit')}
                       </Button>
                     </div>
 
                     <div className="text-center mt-6 animate-fade-up delay-300">
                       <p className="text-sm text-gray-600">
-                        Back to{" "}
+                        {t('auth.forgot.backTo')}{" "}
                         <Link to="/auth/login/" className="font-medium text-green-600 hover:text-green-500">
-                          Sign in
+                          {t('auth.register.signinLink')}
                         </Link>
                       </p>
                     </div>
@@ -303,7 +305,7 @@ const ForgotPassword = () => {
             <div className="mt-8 flex justify-center items-center space-x-6 animate-fade-up delay-600">
               <div className="flex items-center text-gray-500 text-sm">
                 <ShieldCheck className="h-5 w-5 text-green-600 mr-2" />
-                <span>Secure Reset</span>
+                <span>{t('auth.forgot.secureBadge')}</span>
               </div>
             </div>
           </div>

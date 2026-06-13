@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { formatDateLong } from '@/utils/formatDate';
 import { useState, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
 import { format } from 'date-fns';
@@ -30,9 +32,11 @@ export function DateOfBirthPicker({
   onChange,
   error = false,
   className,
-  label = "Date of Birth",
+  label,
   required = false,
 }: DateOfBirthPickerProps) {
+  const { t } = useTranslation();
+  const resolvedLabel = label ?? t('completeProfile.dateOfBirth');
   const [date, setDate] = useState<Date | null>(value ? new Date(value) : null);
   const [year, setYear] = useState<number | null>(date ? date.getFullYear() : null);
   const [month, setMonth] = useState<number | null>(date ? date.getMonth() : null);
@@ -44,18 +48,18 @@ export function DateOfBirthPicker({
 
   // Months
   const months = [
-    { value: 0, label: 'January' },
-    { value: 1, label: 'February' },
-    { value: 2, label: 'March' },
-    { value: 3, label: 'April' },
-    { value: 4, label: 'May' },
-    { value: 5, label: 'June' },
-    { value: 6, label: 'July' },
-    { value: 7, label: 'August' },
-    { value: 8, label: 'September' },
-    { value: 9, label: 'October' },
-    { value: 10, label: 'November' },
-    { value: 11, label: 'December' },
+    { value: 0, label: t('months.january') },
+    { value: 1, label: t('months.february') },
+    { value: 2, label: t('months.march') },
+    { value: 3, label: t('months.april') },
+    { value: 4, label: t('months.may') },
+    { value: 5, label: t('months.june') },
+    { value: 6, label: t('months.july') },
+    { value: 7, label: t('months.august') },
+    { value: 8, label: t('months.september') },
+    { value: 9, label: t('months.october') },
+    { value: 10, label: t('months.november') },
+    { value: 11, label: t('months.december') },
   ];
 
   // Generate days based on selected month and year
@@ -77,13 +81,13 @@ export function DateOfBirthPicker({
   }, [year, month, day, onChange]);
 
   // Format the display value
-  const displayValue = date ? format(date, 'MMMM d, yyyy') : '';
+  const displayValue = date ? formatDateLong(date) : '';
 
   return (
     <div className={cn("space-y-1", className)}>
       {label && (
         <label className="block text-sm font-medium text-gray-700">
-          {label} {required && <span className="text-red-500">*</span>}
+          {resolvedLabel} {required && <span className="text-red-500">*</span>}
         </label>
       )}
       
@@ -99,7 +103,7 @@ export function DateOfBirthPicker({
               )}
             >
               <Calendar className="mr-2 h-4 w-4" />
-              {displayValue || "Select date of birth"}
+              {displayValue || t('profilePage.selectDob')}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -112,7 +116,7 @@ export function DateOfBirthPicker({
                     onValueChange={(value) => setYear(parseInt(value))}
                   >
                     <SelectTrigger className="w-[100px]">
-                      <SelectValue placeholder="Year" />
+                      <SelectValue placeholder={t('profilePage.year')} />
                     </SelectTrigger>
                     <SelectContent className="text-xs sm:text-md">
                       {years.map((y) => (
@@ -132,7 +136,7 @@ export function DateOfBirthPicker({
                     disabled={year === null}
                   >
                     <SelectTrigger className="w-[120px]">
-                      <SelectValue placeholder="Month" />
+                      <SelectValue placeholder={t('profilePage.month')} />
                     </SelectTrigger>
                     <SelectContent className="text-xs sm:text-md">
                       {months.map((m) => (
@@ -152,7 +156,7 @@ export function DateOfBirthPicker({
                     disabled={month === null}
                   >
                     <SelectTrigger className="w-[70px]">
-                      <SelectValue placeholder="Day" />
+                      <SelectValue placeholder={t('profilePage.day')} />
                     </SelectTrigger>
                     <SelectContent className="text-xs sm:text-md">
                       {days.map((d) => (

@@ -1,6 +1,7 @@
 import api from '@/lib/axios';
 import { RentalRequest, RentalRequestFormData } from '../types/rentals';
 import config from '../config';
+import i18n from '@/i18n';
 import { toast } from '@/components/ui/use-toast';
 import { queryClient } from '../lib/react-query';
 import { invalidateRentals } from '../lib/query-invalidation';
@@ -49,8 +50,8 @@ class RentalService {
       queryClient.invalidateQueries({ queryKey: ['products'] });
 
       toast({
-        title: "Rental Request Created",
-        description: "Your rental request has been submitted successfully"
+        title: i18n.t('services.rentalRequestCreated'),
+        description: i18n.t('requestRental.submitSuccess')
       });
 
       return this.unwrap<RentalRequest>(response);
@@ -60,7 +61,7 @@ class RentalService {
 
       if (fieldErrors?.non_field_errors?.length) {
         toast({
-          title: "Rental Request Failed",
+          title: i18n.t('services.rentalRequestFailed'),
           description: fieldErrors.non_field_errors[0],
           variant: "destructive"
         });
@@ -69,7 +70,7 @@ class RentalService {
 
       if (message) {
         toast({
-          title: "Rental Request Failed",
+          title: i18n.t('services.rentalRequestFailed'),
           description: message,
           variant: "destructive"
         });
@@ -77,11 +78,11 @@ class RentalService {
       }
 
       toast({
-        title: "Request Failed",
-        description: "Failed to create rental request. Please try again.",
+        title: i18n.t('requestRental.requestFailedTitle'),
+        description: i18n.t('requestRental.submitFailed'),
         variant: "destructive"
       });
-      throw new Error('Failed to create rental request. Please try again.');
+      throw new Error(i18n.t('requestRental.submitFailed'));
     }
   }
 
@@ -89,21 +90,21 @@ class RentalService {
    * Accept a pending rental request (owner)
    */
   async acceptRental(rentalId: string): Promise<RentalRequest> {
-    return this.transitionRental(config.rentals.acceptEndpoint(rentalId), rentalId, "Rental request accepted");
+    return this.transitionRental(config.rentals.acceptEndpoint(rentalId), rentalId, i18n.t('services.rentalAccepted'));
   }
 
   /**
    * Reject a pending rental request (owner)
    */
   async rejectRental(rentalId: string, reason?: string): Promise<RentalRequest> {
-    return this.transitionRental(config.rentals.rejectEndpoint(rentalId), rentalId, "Rental request rejected", { reason });
+    return this.transitionRental(config.rentals.rejectEndpoint(rentalId), rentalId, i18n.t('services.rentalRejected'), { reason });
   }
 
   /**
    * Cancel a rental request (renter, pending/accepted before start)
    */
   async cancelRental(rentalId: string): Promise<RentalRequest> {
-    return this.transitionRental(config.rentals.cancelEndpoint(rentalId), rentalId, "Rental request cancelled");
+    return this.transitionRental(config.rentals.cancelEndpoint(rentalId), rentalId, i18n.t('services.rentalCancelled'));
   }
 
   private async transitionRental(
@@ -123,15 +124,15 @@ class RentalService {
       queryClient.setQueryData(['rental', rentalId], rental);
 
       toast({
-        title: "Status Updated",
+        title: i18n.t('services.statusUpdated'),
         description: successMessage
       });
 
       return rental;
     } catch (error: any) {
-      const message = error.response?.data?.message || "Failed to update rental status";
+      const message = error.response?.data?.message || i18n.t('services.statusUpdateFailed');
       toast({
-        title: "Status Update Failed",
+        title: i18n.t('services.statusUpdateFailedTitle'),
         description: message,
         variant: "destructive"
       });
@@ -150,8 +151,8 @@ class RentalService {
       return data.results || [];
     } catch (error) {
       toast({
-        title: "Fetch Failed",
-        description: "Failed to fetch your rentals",
+        title: i18n.t('services.fetchFailedTitle'),
+        description: i18n.t('rental.page.fetchFailed'),
         variant: "destructive"
       });
       throw new Error('Failed to fetch user rentals');
@@ -169,8 +170,8 @@ class RentalService {
       return this.unwrap<RentalRequest>(response);
     } catch (error) {
       toast({
-        title: "Fetch Failed",
-        description: "Failed to fetch rental request details",
+        title: i18n.t('services.fetchFailedTitle'),
+        description: i18n.t('services.fetchRentalDetailFailed'),
         variant: "destructive"
       });
       throw new Error('Failed to fetch rental request');
@@ -188,8 +189,8 @@ class RentalService {
       return data.results || [];
     } catch (error) {
       toast({
-        title: "Fetch Failed",
-        description: "Failed to fetch your listings' rentals",
+        title: i18n.t('services.fetchFailedTitle'),
+        description: i18n.t('services.fetchListingsRentalsFailed'),
         variant: "destructive"
       });
       throw new Error('Failed to fetch user listings rentals');
@@ -208,8 +209,8 @@ class RentalService {
       return Array.isArray(data) ? data : (data.results || []);
     } catch (error) {
       toast({
-        title: "Fetch Failed",
-        description: "Failed to fetch rental photos",
+        title: i18n.t('services.fetchFailedTitle'),
+        description: i18n.t('services.fetchPhotosFailed'),
         variant: "destructive"
       });
       throw new Error('Failed to fetch rental photos');
@@ -239,15 +240,15 @@ class RentalService {
       queryClient.invalidateQueries({ queryKey: ['rental', rentalId, 'photos'] });
 
       toast({
-        title: "Photo Uploaded",
-        description: "Rental photo uploaded successfully"
+        title: i18n.t('services.photoUploaded'),
+        description: i18n.t('services.photoUploadedDesc')
       });
 
       return this.unwrap<any>(response);
     } catch (error) {
       toast({
-        title: "Upload Failed",
-        description: "Failed to upload rental photo",
+        title: i18n.t('services.uploadFailedTitle'),
+        description: i18n.t('services.photoUploadFailed'),
         variant: "destructive"
       });
       throw new Error('Failed to upload rental photo');
