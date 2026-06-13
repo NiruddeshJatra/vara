@@ -1,3 +1,4 @@
+import i18n from '@/i18n';
 import { RentalRequestFormData, RentalErrors } from '@/types/rentals';
 import { UnavailablePeriod } from '@/types/listings';
 import { isWithinInterval } from 'date-fns';
@@ -16,7 +17,7 @@ export const validateRentalDetails = (
 
   // Start date validation
   if (!data.start_date) {
-    errors.start_date = 'Start date is required';
+    errors.start_date = i18n.t('validation.startDateRequired');
   } else {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -24,7 +25,7 @@ export const validateRentalDetails = (
     start_date.setHours(0, 0, 0, 0);
 
     if (start_date < today) {
-      errors.start_date = 'Start date cannot be in the past';
+      errors.start_date = i18n.t('validation.startDatePast');
     }
 
     // Calculate end date for the rental period
@@ -42,14 +43,14 @@ export const validateRentalDetails = (
             (start_date <= unavailEnd && end_date >= unavailStart) || // Rental period overlaps with unavailable range
             (start_date >= unavailStart && end_date <= unavailEnd) // Rental period is within unavailable range
           ) {
-            errors.start_date = 'The selected rental period overlaps with unavailable dates';
+            errors.start_date = i18n.t('validation.periodOverlaps');
             break;
           }
         } else if (unavailable.date) {
           const unavailable_period = new Date(unavailable.date);
           // Check if single unavailable date falls within rental period
           if (unavailable_period >= start_date && unavailable_period <= end_date) {
-            errors.start_date = 'The selected rental period includes unavailable dates';
+            errors.start_date = i18n.t('validation.periodIncludesUnavailable');
             break;
           }
         }
@@ -59,14 +60,14 @@ export const validateRentalDetails = (
 
   // Duration validation
   if (!data.duration || data.duration < 1) {
-    errors.duration = 'Duration must be at least 1';
+    errors.duration = i18n.t('validation.durationMin');
   } else if (max_period && data.duration > max_period) {
-    errors.duration = `Maximum allowed duration is ${max_period} ${duration_unit}${max_period > 1 ? 's' : ''}`;
+    errors.duration = i18n.t('validation.durationMax', { max: max_period, unit: i18n.t('rental.units.' + duration_unit, { count: max_period }) });
   }
 
   // Duration unit validation
   if (!data.duration_unit) {
-    errors.duration_unit = 'Duration unit is required';
+    errors.duration_unit = i18n.t('validation.durationUnitRequired');
   } else if (data.duration_unit !== duration_unit) {
     errors.duration_unit = `This item can only be rented by ${duration_unit}`;
   }
@@ -82,12 +83,12 @@ export const validateAdditionalDetails = (data: RentalRequestFormData): RentalEr
 
   // Purpose validation
   if (!data.purpose) {
-    errors.purpose = 'Please specify the purpose of rental';
+    errors.purpose = i18n.t('validation.purposeRequired');
   }
 
   // Notes validation (optional)
   if (data.notes && data.notes.length > 1000) {
-    errors.notes = 'Notes are too long (maximum 1000 characters)';
+    errors.notes = i18n.t('validation.notesTooLong');
   }
 
   return errors;

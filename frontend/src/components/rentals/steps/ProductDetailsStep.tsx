@@ -20,7 +20,8 @@ import {
   PRODUCT_TYPE_DISPLAY,
 } from "@/constants/productTypes";
 import { DurationUnit } from "@/constants/rental";
-import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
+import { formatDateLong } from "@/utils/formatDate";
 
 interface Props {
   product: Product;
@@ -39,6 +40,7 @@ const ProductDetailsStep = ({
   onNext,
   loading,
 }: Props) => {
+  const { t } = useTranslation();
   const pricing_tiers = product.pricing_tiers || [];
 
   // State to keep track of the selected pricing tier
@@ -108,7 +110,7 @@ const ProductDetailsStep = ({
   return (
     <div className="space-y-4 sm:space-y-6">
       <h4 className="text-md md:text-xl font-semibold text-green-800">
-        Item Details
+        {t('rental.modal.itemDetails')}
       </h4>
 
       {/* Product Information Card */}
@@ -138,7 +140,7 @@ const ProductDetailsStep = ({
                 variant="outline"
                 className="bg-green-50 text-green-700 hover:bg-green-100"
               >
-                {CATEGORY_DISPLAY[product.category] || product.category}
+                {t('categories.' + product.category, { defaultValue: CATEGORY_DISPLAY[product.category] || product.category })}
               </Badge>
               <Badge
                 variant="outline"
@@ -153,7 +155,7 @@ const ProductDetailsStep = ({
               <div className="flex items-center">
                 <MapPin size={14} className="text-green-600 mr-1.5" />
                 <span className="text-gray-700">
-                  {product.location || "Location not specified"}
+                  {product.location || t('requestRental.noLocation')}
                 </span>
               </div>
 
@@ -161,7 +163,7 @@ const ProductDetailsStep = ({
                 <div className="flex items-center">
                   <Shield size={14} className="text-green-600 mr-1.5" />
                   <span className="text-gray-700">
-                    Security Deposit: {product.security_deposit} Taka
+                    {t('listings.securityDeposit')}: {product.security_deposit} {t('common.taka')}
                   </span>
                 </div>
               )}
@@ -173,7 +175,7 @@ const ProductDetailsStep = ({
           {/* Pricing Tier Selection */}
           <div>
             <label className="block text-base font-medium text-gray-800 mb-3">
-              Select Pricing Option
+              {t('requestRental.selectPricing')}
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {pricing_tiers.map((tier, index) => (
@@ -188,12 +190,12 @@ const ProductDetailsStep = ({
                 >
                   <div className="font-medium text-md sm:text-lg flex items-center mb-1">
                     <Banknote size={16} className="text-green-600 mr-1.5" />
-                    {tier.price} Taka
+                    {tier.price} {t('common.taka')}
                   </div>
-                  <div className="text-gray-700">per {tier.duration_unit}</div>
+                  <div className="text-gray-700">{t('requestRental.perUnit', { unit: t('rental.units.' + tier.duration_unit, { count: 1 }) })}</div>
                   {tier.max_period && (
                     <div className="text-xs text-gray-500 mt-1">
-                      Maximum: {tier.max_period} {tier.duration_unit}s
+                      {t('requestRental.maximum')}: {tier.max_period} {t('rental.units.' + tier.duration_unit, { count: tier.max_period })}
                     </div>
                   )}
                 </div>
@@ -206,19 +208,19 @@ const ProductDetailsStep = ({
             {/* Start Date */}
             <div>
               <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
-                Rental Start Date <span className="text-red-500">*</span>
+                {t('requestRental.startDateLabel')} <span className="text-red-500">*</span>
               </label>
               <div className="relative w-full">
                 <input
                   type="text"
                   value={
                     formData.start_date
-                      ? format(formData.start_date, "MMMM d, yyyy")
+                      ? formatDateLong(formData.start_date)
                       : ""
                   }
                   onClick={() => setIsCalendarOpen(!isCalendarOpen)}
                   readOnly
-                  placeholder="Select start date"
+                  placeholder={t('requestRental.selectStartDate')}
                   className={`pl-4 h-9 sm:h-10 text-sm w-full rounded-md border ${
                     errors.start_date
                       ? "border-red-300 focus:border-red-500 focus:ring-red-500"
@@ -249,7 +251,7 @@ const ProductDetailsStep = ({
                 </p>
               ) : (
                 <p className="text-xs text-gray-500 mt-1">
-                  Choose when you want to start renting
+                  {t('requestRental.startDateHint')}
                 </p>
               )}
             </div>
@@ -257,7 +259,7 @@ const ProductDetailsStep = ({
             {/* Duration */}
             <div>
               <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
-                Rental Duration <span className="text-red-500">*</span>
+                {t('listings.rentDuration')} <span className="text-red-500">*</span>
               </label>
               <div className="flex items-center">
                 <div className="relative w-full">
@@ -280,7 +282,7 @@ const ProductDetailsStep = ({
                   </span>
                 </div>
                 <span className="text-sm sm:text-md ml-2 text-gray-700">
-                  {selectedTier.duration_unit}(s)
+                  {t('rental.units.' + selectedTier.duration_unit, { count: formData.duration || 1 })}
                 </span>
               </div>
               {errors.duration ? (
@@ -290,7 +292,7 @@ const ProductDetailsStep = ({
               ) : (
                 <p className="text-xs text-gray-500 mt-1">
                   {selectedTier.max_period
-                    ? `Maximum ${selectedTier.max_period} ${selectedTier.duration_unit}s`
+                    ? t('requestRental.maximum') + ' ' + selectedTier.max_period + ' ' + t('rental.units.' + selectedTier.duration_unit, { count: selectedTier.max_period })
                     : ""}
                 </p>
               )}
@@ -301,32 +303,31 @@ const ProductDetailsStep = ({
           {formData.start_date && formData.duration > 0 && (
             <div className="bg-green-50 p-3 rounded-md border border-green-100 mt-3">
               <h4 className="text-sm font-medium text-green-800 mb-2">
-                Rental Period Summary
+                {t('requestRental.periodSummary')}
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
                 <div>
-                  <span className="text-gray-600">Start Date:</span>
+                  <span className="text-gray-600">{t('listings.startDate')}:</span>
                   <span className="ml-1.5 text-green-700 font-medium">
-                    {format(formData.start_date, "MMMM d, yyyy")}
+                    {formatDateLong(formData.start_date)}
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-600">End Date:</span>
+                  <span className="text-gray-600">{t('listings.endDate')}:</span>
                   <span className="ml-1.5 text-green-700 font-medium">
-                    {end_date ? format(end_date, "MMMM d, yyyy") : "-"}
+                    {end_date ? formatDateLong(end_date) : "-"}
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-600">Duration:</span>
+                  <span className="text-gray-600">{t('rental.modal.duration')}:</span>
                   <span className="ml-1.5 text-green-700 font-medium">
-                    {formData.duration} {selectedTier.duration_unit}
-                    {formData.duration > 1 ? "s" : ""}
+                    {formData.duration} {t('rental.units.' + selectedTier.duration_unit, { count: formData.duration })}
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-600">Price:</span>
+                  <span className="text-gray-600">{t('listings.price')}:</span>
                   <span className="ml-1.5 text-green-700 font-medium">
-                    {selectedTier.price * formData.duration} Taka
+                    {selectedTier.price * formData.duration} {t('common.taka')}
                   </span>
                 </div>
               </div>
@@ -338,13 +339,13 @@ const ProductDetailsStep = ({
       <div className="bg-gradient-to-r from-amber-50 to-amber-100 p-3 sm:p-4 rounded-lg border border-amber-200 mt-4">
         <h3 className="text-xs sm:text-sm font-medium text-amber-800 mb-1 sm:mb-2 flex items-center gap-1 sm:gap-2">
         <Lightbulb size={14} className="text-amber-600 sm:w-4 sm:h-4" />
-          Rental Tips
+          {t('requestRental.tipsTitle')}
         </h3>
         <ul className="text-xs/5 sm:text-sm/6 text-amber-700 space-y-0.5 sm:space-y-1 list-disc pl-4 sm:pl-5">
-          <li>Choose dates when you'll be available to pick up and return the item</li>
-          <li>Consider any setup or learning time you might need</li>
-          <li>Check the item's availability calendar for open slots</li>
-          <li>Book for the full duration you need to avoid extensions</li>
+          <li>{t('requestRental.tip1')}</li>
+          <li>{t('requestRental.tip2')}</li>
+          <li>{t('requestRental.tip3')}</li>
+          <li>{t('requestRental.tip4')}</li>
         </ul>
       </div>
 
@@ -356,12 +357,12 @@ const ProductDetailsStep = ({
         >
           {loading ? (
             <>
-              <span className="mr-2">Processing</span>
+              <span className="mr-2">{t('common.processing')}</span>
               <Loader2 className="h-4 w-4 animate-spin" />
             </>
           ) : (
             <>
-              Continue to Price Details{" "}
+              {t('requestRental.continuePrice')}{" "}
               <ChevronRight size={16} className="ml-1" />
             </>
           )}

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 
+import { useTranslation } from 'react-i18next';
 interface ImageGalleryProps {
   images: string[];
   title: string;
 }
 
 export default function ImageGallery({ images, title }: ImageGalleryProps) {
+  const { t } = useTranslation();
   const [showFullImage, setShowFullImage] = useState(false);
   const [fullImageIndex, setFullImageIndex] = useState(0);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
@@ -224,7 +226,7 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
                     handleAllPhotosClick();
                   }}
                 >
-                  <span className="mr-1">Show all photos</span>
+                  <span className="mr-1">{t('itemDetail.showAllPhotos')}</span>
                 </button>
               )}
             </div>
@@ -238,7 +240,7 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
           className="hidden md:absolute md:bottom-4 md:right-4 md:left-auto md:translate-x-0 md:flex z-30 bg-white/90 text-gray-900 rounded-full px-4 py-2 font-medium shadow-md hover:bg-white transition-colors items-center text-xs sm:text-sm"
           onClick={handleAllPhotosClick}
         >
-          <span className="mr-1">Show all photos</span>
+          <span className="mr-1">{t('itemDetail.showAllPhotos')}</span>
         </button>
       )}
     </div>

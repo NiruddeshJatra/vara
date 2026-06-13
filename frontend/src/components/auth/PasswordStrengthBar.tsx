@@ -1,8 +1,11 @@
+import { useTranslation } from 'react-i18next';
+
 interface PasswordStrengthBarProps {
   password: string;
 }
 
 export function PasswordStrengthBar({ password }: PasswordStrengthBarProps) {
+  const { t } = useTranslation();
   const calculateStrength = (pwd: string): number => {
     let strength = 0;
     
@@ -39,15 +42,15 @@ export function PasswordStrengthBar({ password }: PasswordStrengthBarProps) {
       case 0:
         return '';
       case 1:
-        return 'Very Weak';
+        return t('auth.passwordStrength.veryWeak');
       case 2:
-        return 'Weak';
+        return t('auth.passwordStrength.weak');
       case 3:
-        return 'Fair';
+        return t('auth.passwordStrength.fair');
       case 4:
-        return 'Good';
+        return t('auth.passwordStrength.good');
       case 5:
-        return 'Strong';
+        return t('auth.passwordStrength.strong');
       default:
         return '';
     }

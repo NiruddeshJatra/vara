@@ -1,6 +1,7 @@
 import api from '@/lib/axios';
 import { Product, ListingFormData } from '../types/listings';
 import config from '../config';
+import i18n from '@/i18n';
 import { toast } from '@/components/ui/use-toast';
 import { queryClient } from '../lib/react-query';
 
@@ -83,8 +84,8 @@ class ProductService {
       return { products, count: data.count || products.length };
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to fetch products",
+        title: i18n.t('common.toastError'),
+        description: i18n.t('services.fetchProductsFailed'),
         variant: "destructive"
       });
       return { products: [], count: 0 };
@@ -107,8 +108,8 @@ class ProductService {
       return { products, count: data.count || products.length };
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to fetch your products",
+        title: i18n.t('common.toastError'),
+        description: i18n.t('services.fetchYourProductsFailed'),
         variant: "destructive"
       });
       return { products: [], count: 0 };
@@ -126,8 +127,8 @@ class ProductService {
       return this.withFullImageUrls(this.unwrap<Product>(response));
     } catch (error) {
       toast({
-        title: "Error",
-        description: `Failed to fetch product ${productId}`,
+        title: i18n.t('common.toastError'),
+        description: i18n.t('services.fetchProductFailed'),
         variant: "destructive"
       });
       throw error;
@@ -200,8 +201,8 @@ class ProductService {
       queryClient.invalidateQueries({ queryKey: ['userProducts'] });
 
       toast({
-        title: "Success",
-        description: "Product created successfully",
+        title: i18n.t('common.toastSuccess'),
+        description: i18n.t('services.productCreated'),
       });
 
       return this.unwrap<Product>(response);
@@ -210,14 +211,14 @@ class ProductService {
 
       if (error.response?.status === 401) {
         toast({
-          title: "Authentication Error",
-          description: "Please log in again to create a product.",
+          title: i18n.t('services.authErrorTitle'),
+          description: i18n.t('services.loginAgainToCreate'),
           variant: "destructive"
         });
       } else {
         toast({
-          title: "Product Creation Failed",
-          description: error.response?.data?.message || error.message || "Failed to create product",
+          title: i18n.t('services.productCreateFailedTitle'),
+          description: error.response?.data?.message || error.message || i18n.t('services.productCreateFailed'),
           variant: "destructive"
         });
       }
@@ -243,8 +244,8 @@ class ProductService {
       queryClient.invalidateQueries({ queryKey: ['userProducts'] });
 
       toast({
-        title: "Success",
-        description: "Product updated successfully",
+        title: i18n.t('common.toastSuccess'),
+        description: i18n.t('services.productUpdated'),
       });
 
       return this.unwrap<Product>(response);
@@ -252,7 +253,7 @@ class ProductService {
       const fieldErrors = error.response?.data?.data;
       if (fieldErrors?.images) {
         toast({
-          title: "Image Upload Failed",
+          title: i18n.t('services.imageUploadFailed'),
           description: fieldErrors.images.join(', '),
           variant: "destructive"
         });
@@ -260,8 +261,8 @@ class ProductService {
       }
 
       toast({
-        title: "Update Failed",
-        description: error.response?.data?.message || "Failed to update product",
+        title: i18n.t('services.updateFailedTitle'),
+        description: error.response?.data?.message || i18n.t('services.productUpdateFailed'),
         variant: "destructive"
       });
 
@@ -284,13 +285,13 @@ class ProductService {
       queryClient.removeQueries({ queryKey: ['product', productId] });
 
       toast({
-        title: "Success",
-        description: "Product deleted successfully",
+        title: i18n.t('common.toastSuccess'),
+        description: i18n.t('services.productDeleted'),
       });
     } catch (error) {
       toast({
-        title: "Deletion Failed",
-        description: "Failed to delete product. Please try again.",
+        title: i18n.t('services.deleteFailedTitle'),
+        description: i18n.t('profilePage.deleteFailed'),
         variant: "destructive"
       });
       throw error;

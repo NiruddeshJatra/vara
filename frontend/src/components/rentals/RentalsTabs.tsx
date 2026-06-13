@@ -1,6 +1,7 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Home, Package } from "lucide-react";
 import { Leaf } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface RentalsTabsProps {
   activeTab: 'myRentals' | 'myListingsRentals';
@@ -8,6 +9,7 @@ interface RentalsTabsProps {
 }
 
 const RentalsTabs = ({ activeTab, onTabChange }: RentalsTabsProps) => {
+  const { t } = useTranslation();
   return (
     <div className="mb-8 mt-8 relative">
       {/* Decorative background elements */}
@@ -29,7 +31,7 @@ const RentalsTabs = ({ activeTab, onTabChange }: RentalsTabsProps) => {
             }`}
           >
             <Home className="h-4 sm:h-5 w-4 sm:w-5" strokeWidth={1.5} />
-            <span className="whitespace-nowrap">My Borrowed Rentals</span>
+            <span className="whitespace-nowrap">{t('rental.tabs.borrowed')}</span>
           </TabsTrigger>
           <TabsTrigger 
             value="myListingsRentals"
@@ -40,7 +42,7 @@ const RentalsTabs = ({ activeTab, onTabChange }: RentalsTabsProps) => {
             }`}
           >
             <Package className="h-4 sm:h-5 w-4 sm:w-5" strokeWidth={1.5} />
-            <span className="whitespace-nowrap">My Listed Rentals</span>
+            <span className="whitespace-nowrap">{t('rental.tabs.listed')}</span>
           </TabsTrigger>
         </TabsList>
       </Tabs>

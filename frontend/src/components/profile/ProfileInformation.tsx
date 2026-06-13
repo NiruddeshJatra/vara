@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { User } from "@/types/auth";
 import { BD_DISTRICTS, getThanas } from "@/utils/bd-districts";
 
+import { useTranslation } from 'react-i18next';
 interface ProfileInformationProps {
   userData: User;
   isEditing: boolean;
@@ -26,6 +27,7 @@ const ProfileInformation = ({
   onInputChange,
   onProfilePictureUpload
 }: ProfileInformationProps) => {
+  const { t } = useTranslation();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,13 +57,13 @@ const ProfileInformation = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-t from-green-50/50 to-white">
           <CardHeader>
-            <CardTitle className="text-green-800">Personal Information</CardTitle>
-            <CardDescription className="text-green-600">Your basic account details</CardDescription>
+            <CardTitle className="text-green-800">{t('profilePage.personalInfo')}</CardTitle>
+            <CardDescription className="text-green-600">{t('profilePage.personalInfoDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-5">
               <div>
-                <Label htmlFor="full_name" className="text-green-800 font-medium">Full Name</Label>
+                <Label htmlFor="full_name" className="text-green-800 font-medium">{t('auth.fullName')}</Label>
                 <Input
                   id="full_name"
                   value={userData.full_name}
@@ -72,7 +74,7 @@ const ProfileInformation = ({
               </div>
 
               <div>
-                <Label htmlFor="phone_number" className="text-green-800 font-medium">Phone Number</Label>
+                <Label htmlFor="phone_number" className="text-green-800 font-medium">{t('auth.phoneNumber')}</Label>
                 <div className="relative">
                   <Input
                     id="phone_number"
@@ -84,7 +86,7 @@ const ProfileInformation = ({
               </div>
 
               <div>
-                <Label htmlFor="email" className="text-green-800 font-medium">Email Address</Label>
+                <Label htmlFor="email" className="text-green-800 font-medium">{t('profilePage.emailAddress')}</Label>
                 <Input
                   id="email"
                   value={userData.email || ""}
@@ -95,7 +97,7 @@ const ProfileInformation = ({
               </div>
 
               <div>
-                <Label htmlFor="full_address" className="text-green-800 font-medium">Full Address</Label>
+                <Label htmlFor="full_address" className="text-green-800 font-medium">{t('completeProfile.fullAddress')}</Label>
                 <Input
                   id="full_address"
                   value={userData.full_address || ""}
@@ -109,7 +111,7 @@ const ProfileInformation = ({
                 <DateOfBirthPicker
                   value={userData.date_of_birth || ""}
                   onChange={(date) => onInputChange('date_of_birth', date)}
-                  label="Date of Birth"
+                  label={t('completeProfile.dateOfBirth')}
                   required={false}
                   className={!isEditing ? "opacity-70 pointer-events-none" : ""}
                 />
@@ -120,13 +122,13 @@ const ProfileInformation = ({
 
         <Card className="border border-green-200 hover:shadow-md transition-shadow bg-gradient-to-t from-green-50/50 to-white">
           <CardHeader>
-            <CardTitle className="text-green-800">Location</CardTitle>
-            <CardDescription className="text-green-600">Where you're based</CardDescription>
+            <CardTitle className="text-green-800">{t('listings.location')}</CardTitle>
+            <CardDescription className="text-green-600">{t('profilePage.locationDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-5">
               <div>
-                <Label htmlFor="district" className="text-green-800 font-medium">District</Label>
+                <Label htmlFor="district" className="text-green-800 font-medium">{t('completeProfile.district')}</Label>
                 <select
                   id="district"
                   value={userData.district || ""}
@@ -134,7 +136,7 @@ const ProfileInformation = ({
                   disabled={!isEditing}
                   className={`flex h-10 w-full rounded-md border px-3 py-2 text-sm border-green-300 bg-white text-green-800 ${!isEditing ? "bg-green-50/70 border-green-200" : ""}`}
                 >
-                  <option value="">Select district</option>
+                  <option value="">{t('completeProfile.selectDistrict')}</option>
                   {BD_DISTRICTS.map((district) => (
                     <option key={district.name} value={district.name}>
                       {district.name}
@@ -144,7 +146,7 @@ const ProfileInformation = ({
               </div>
 
               <div>
-                <Label htmlFor="thana" className="text-green-800 font-medium">Thana</Label>
+                <Label htmlFor="thana" className="text-green-800 font-medium">{t('completeProfile.thana')}</Label>
                 <select
                   id="thana"
                   value={userData.thana || ""}
@@ -152,7 +154,7 @@ const ProfileInformation = ({
                   disabled={!isEditing || !userData.district}
                   className={`flex h-10 w-full rounded-md border px-3 py-2 text-sm border-green-300 bg-white text-green-800 ${!isEditing ? "bg-green-50/70 border-green-200" : ""}`}
                 >
-                  <option value="">Select thana</option>
+                  <option value="">{t('completeProfile.selectThana')}</option>
                   {getThanas(userData.district || "").map((thana) => (
                     <option key={thana} value={thana}>
                       {thana}
@@ -163,7 +165,7 @@ const ProfileInformation = ({
 
               {isEditing && (
                 <div className="pt-4">
-                  <h4 className="text-base font-medium mb-2 text-green-800">Profile Picture</h4>
+                  <h4 className="text-base font-medium mb-2 text-green-800">{t('completeProfile.profilePicture')}</h4>
                   <div className="border border-green-200 rounded-lg p-4 bg-green-50/70">
                     <div className="flex items-center gap-4">
                       <Avatar className="w-16 h-16 rounded-full border-2 border-green-200">
@@ -181,7 +183,7 @@ const ProfileInformation = ({
                           className="bg-white border border-green-300 rounded-lg px-4 py-2 text-sm font-medium text-green-700 hover:bg-green-50 cursor-pointer inline-flex items-center gap-2 shadow-sm"
                         >
                           <Upload className="w-4 h-4" />
-                          Choose file
+                          {t('profilePage.chooseFile')}
                           <input
                             id="profile-pic"
                             type="file"
@@ -190,7 +192,7 @@ const ProfileInformation = ({
                             onChange={handleProfilePictureChange}
                           />
                         </label>
-                        <p className="text-green-700 text-xs mt-1">JPG, JPEG, PNG formats, max 5MB</p>
+                        <p className="text-green-700 text-xs mt-1">{t('profilePage.pictureFormats')}</p>
                       </div>
                     </div>
                   </div>
@@ -208,13 +210,13 @@ const ProfileInformation = ({
             onClick={onCancelEdit}
             className="bg-white hover:bg-green-50 text-green-700 hover:text-green-900"
           >
-            Cancel
+            {t('profilePage.cancel')}
           </Button>
           <Button
             onClick={onSaveChanges}
             className="bg-green-600 hover:bg-green-700 text-white"
           >
-            Save Changes
+            {t('profilePage.saveChanges')}
           </Button>
         </div>
       )}

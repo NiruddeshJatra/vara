@@ -9,7 +9,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { RentalRequestFormData } from "@/types/rentals";
 import { Product } from "@/types/listings";
-import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
+import { formatDateLong } from "@/utils/formatDate";
 import { calculateEndDate } from "@/utils/validations/rental.validations";
 
 interface Props {
@@ -27,6 +28,7 @@ const PriceCalculationStep = ({
   onPrev,
   loading,
 }: Props) => {
+  const { t } = useTranslation();
   const selectedTier = product.pricing_tiers?.find(
     (tier) => tier.duration_unit === formData.duration_unit
   ) || { duration_unit: "day", price: 0, max_period: 30 };
@@ -41,19 +43,19 @@ const PriceCalculationStep = ({
   const duration_unit = formData.duration_unit || "day";
 
   const formatDate = (date: Date | null) => {
-    if (!date) return "Not set";
-    return format(date, "MMMM dd, yyyy");
+    if (!date) return t('requestRental.notSet');
+    return formatDateLong(date);
   };
 
   // Get end date using the shared function
   const getEndDate = () => {
-    if (!formData.start_date) return "Not set";
+    if (!formData.start_date) return t('requestRental.notSet');
     const end_date = calculateEndDate(
       formData.start_date,
       duration,
       duration_unit
     );
-    return format(end_date, "MMMM dd, yyyy");
+    return formatDateLong(end_date);
   };
 
   // Format currency
@@ -69,31 +71,30 @@ const PriceCalculationStep = ({
   return (
     <div className="space-y-4 sm:space-y-6">
       <h4 className="text-md md:text-xl font-semibold text-green-800">
-        Price Calculation
+        {t('requestRental.priceCalculation')}
       </h4>
 
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-green-50/50 rounded-lg border border-gray-200 p-4 space-y-3">
           <h5 className="text-md md:text-lg font-medium text-gray-800 flex items-center">
             <Clock className="mr-2 h-4 w-4 md:h-5 md:w-5 text-green-700" />
-            Rental Period
+            {t('rental.modal.rentalPeriod')}
           </h5>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Start Date:</span>
+              <span className="text-gray-600">{t('listings.startDate')}:</span>
               <span className="font-medium text-gray-900">
                 {formatDate(formData.start_date)}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">End Date:</span>
+              <span className="text-gray-600">{t('listings.endDate')}:</span>
               <span className="font-medium text-gray-900">{getEndDate()}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Duration:</span>
+              <span className="text-gray-600">{t('rental.modal.duration')}:</span>
               <span className="font-medium text-gray-900">
-                {duration} {duration_unit}
-                {duration > 1 ? "s" : ""}
+                {duration} {t('rental.units.' + duration_unit, { count: duration })}
               </span>
             </div>
           </div>
@@ -102,23 +103,23 @@ const PriceCalculationStep = ({
         <div className="bg-green-50/50 rounded-lg border border-gray-200 p-4 space-y-3">
           <h5 className="text-md md:text-lg font-medium text-gray-800 flex items-center">
             <Calculator className="mr-2 h-4 w-4 md:h-5 md:w-5 text-green-700" />
-            Cost Breakdown
+            {t('requestRental.costBreakdown')}
           </h5>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Pricing Tier:</span>
+              <span className="text-gray-600">{t('requestRental.pricingTier')}:</span>
               <span className="font-medium text-gray-900">
-                {selectedTier.duration_unit} ({selectedTier.max_period} max)
+                {t('rental.units.' + selectedTier.duration_unit, { count: 1 })} ({selectedTier.max_period} {t('requestRental.max')})
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Base Price:</span>
+              <span className="text-gray-600">{t('rental.modal.basePrice')}:</span>
               <span className="font-medium text-gray-900">
-                {formatCurrency(basePrice)} per {duration_unit}
+                {formatCurrency(basePrice)} / {t('rental.units.' + duration_unit, { count: 1 })}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Rental Cost:</span>
+              <span className="text-gray-600">{t('requestRental.rentalCost')}:</span>
               <span className="font-medium text-gray-900">
                 {formatCurrency(baseCost)}
               </span>
@@ -127,7 +128,7 @@ const PriceCalculationStep = ({
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600 flex items-center">
                   <Shield className="h-3.5 w-3.5 mr-1 text-green-600" />
-                  Security Deposit:
+                  {t('listings.securityDeposit')}:
                 </span>
                 <span className="font-medium text-gray-900">
                   {formatCurrency(security_deposit)}
@@ -141,10 +142,9 @@ const PriceCalculationStep = ({
       <div className="bg-gradient-to-r from-green-100 to-green-50 p-4 rounded-lg border border-green-200 mt-4">
         <div className="flex justify-between items-center">
           <div>
-            <h4 className="text-md md:text-lg font-semibold text-green-800">Total Cost</h4>
+            <h4 className="text-md md:text-lg font-semibold text-green-800">{t('requestRental.totalCost')}</h4>
             <p className="text-sm text-green-700">
-              For {duration} {duration_unit}
-              {duration > 1 ? "s" : ""}
+              {t('requestRental.forDuration', { duration, unit: t('rental.units.' + duration_unit, { count: duration }) })}
             </p>
           </div>
           <div className="text-right">
@@ -153,9 +153,7 @@ const PriceCalculationStep = ({
             </div>
             <p className="text-xs text-green-700">
               {security_deposit > 0
-                ? `(+ refundable ${formatCurrency(
-                    security_deposit
-                  )} deposit)`
+                ? t('requestRental.plusDeposit', { amount: formatCurrency(security_deposit) })
                 : ""}
             </p>
           </div>
@@ -169,7 +167,7 @@ const PriceCalculationStep = ({
           onClick={onPrev}
           disabled={loading}
         >
-          <ChevronLeft size={16} className="mr-1" /> Back
+          <ChevronLeft size={16} className="mr-1" /> {t('common.back')}
         </Button>
 
         <Button
@@ -179,12 +177,12 @@ const PriceCalculationStep = ({
         >
           {loading ? (
             <>
-              <span className="mr-2">Processing</span>
+              <span className="mr-2">{t('common.processing')}</span>
               <Loader2 className="h-4 w-4 animate-spin" />
             </>
           ) : (
             <>
-              Continue to Additional Info{" "}
+              {t('requestRental.continueAdditional')}{" "}
               <ChevronRight size={16} className="ml-1" />
             </>
           )}

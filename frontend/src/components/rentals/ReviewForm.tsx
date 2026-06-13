@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Star, Upload, Leaf } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface ReviewFormProps {
   rentalId: string;
@@ -10,6 +11,7 @@ interface ReviewFormProps {
 }
 
 const ReviewForm = ({ rentalId, userRole, onSubmit }: ReviewFormProps) => {
+  const { t } = useTranslation();
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [review, setReview] = useState("");
@@ -28,7 +30,7 @@ const ReviewForm = ({ rentalId, userRole, onSubmit }: ReviewFormProps) => {
       {/* Rating Section */}
       <div className="space-y-4">
         <div className="text-sm font-medium text-green-800">
-          Rate your experience {userRole === 'renter' ? 'with this item' : 'with this renter'}
+          {userRole === 'renter' ? t('review.rateItem') : t('review.rateRenter')}
         </div>
         <div 
           className="flex items-center gap-1" 
@@ -53,7 +55,7 @@ const ReviewForm = ({ rentalId, userRole, onSubmit }: ReviewFormProps) => {
             </button>
           ))}
           <span className="ml-3 text-sm font-medium text-green-700">
-            {rating > 0 ? `${rating}/5` : "Tap to rate"}
+            {rating > 0 ? `${rating}/5` : t('review.tapToRate')}
           </span>
         </div>
       </div>
@@ -61,12 +63,12 @@ const ReviewForm = ({ rentalId, userRole, onSubmit }: ReviewFormProps) => {
       {/* Review Input */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-green-800">
-          Share your experience
+          {t('review.shareExperience')}
         </label>
         <Textarea
           value={review}
           onChange={(e) => setReview(e.target.value)}
-          placeholder={`Describe your experience ${userRole === 'renter' ? 'with this item...' : 'with this renter...'}`}
+          placeholder={userRole === 'renter' ? t('review.describeItemPlaceholder') : t('review.describeRenterPlaceholder')}
           className="rounded-xl border-2 border-green-300 focus:border-green-500 focus:ring-1 focus:ring-green-300 h-32"
         />
       </div>
@@ -74,7 +76,7 @@ const ReviewForm = ({ rentalId, userRole, onSubmit }: ReviewFormProps) => {
       {/* Photo Upload */}
       <div className="space-y-3">
         <label className="text-sm font-medium text-green-800">
-          Add photos (optional)
+          {t('review.addPhotos')}
         </label>
         <div className="border-2 border-dashed border-green-300 rounded-xl p-6 text-center bg-green-50/30 backdrop-blur-sm">
           <Button 
@@ -83,10 +85,10 @@ const ReviewForm = ({ rentalId, userRole, onSubmit }: ReviewFormProps) => {
             className="border-green-400 text-green-700 hover:bg-green-50 gap-2"
           >
             <Upload className="h-4 w-4" />
-            Upload Images
+            {t('review.uploadImages')}
           </Button>
           <p className="mt-2 text-xs text-green-600">
-            PNG, JPG up to 5MB
+            {t('review.imageFormats')}
           </p>
         </div>
       </div>
@@ -98,7 +100,7 @@ const ReviewForm = ({ rentalId, userRole, onSubmit }: ReviewFormProps) => {
         disabled={rating === 0}
       >
         <Leaf className="h-4 w-4" />
-        Submit Review
+        {t('review.submit')}
       </Button>
     </form>
   );

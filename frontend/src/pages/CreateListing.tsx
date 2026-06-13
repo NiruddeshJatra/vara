@@ -9,7 +9,9 @@ import { toast } from '@/components/ui/use-toast';
 import productService from '@/services/product.service';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { useTranslation } from 'react-i18next';
 export default function CreateListingPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,15 +38,15 @@ export default function CreateListingPage() {
       await queryClient.invalidateQueries({ queryKey: ['products'] });
       
       toast({
-        title: 'Success',
-        description: 'Product created successfully!',
+        title: t('common.toastSuccess'),
+        description: t('listing.confirm.createdTitle'),
         variant: 'success',
       });
       return response;
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to create product. Please try again.',
+        title: t('common.toastError'),
+        description: t('listing.saveFailed'),
         variant: 'destructive',
       });
       console.error('Error creating product:', error);

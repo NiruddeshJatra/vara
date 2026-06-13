@@ -12,6 +12,7 @@ import { Category, ProductType } from '@/constants/productTypes';
 import { DURATION_UNIT_DISPLAY, DurationUnit } from '@/constants/rental';
 import { OwnershipHistory } from '@/constants/productAttributes';
 import productService from '@/services/product.service';
+import { useTranslation } from 'react-i18next';
 import { toast } from '@/components/ui/use-toast';
 import { useLocation } from 'react-router-dom';
 import { 
@@ -36,6 +37,7 @@ interface Props {
 }
 
 const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false, productId: initialProductId, onSubmit, onEditComplete }: Props) => {
+  const { t } = useTranslation();
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
   const [isEditing, setIsEditing] = useState(initialIsEditing || location.state?.isEditing || false);
@@ -125,8 +127,8 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
     if (Object.keys(allErrors).length > 0) {
       setErrors(allErrors);
       toast({
-        title: "Validation Error",
-        description: "Please fix the errors before submitting",
+        title: t('common.toastValidationError'),
+        description: t('listing.fixErrors'),
         variant: "destructive"
       });
       return;
@@ -152,14 +154,14 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
       }
 
       toast({
-        title: "Success",
-        description: isEditing ? "Listing updated successfully!" : "Listing created successfully!",
+        title: t('common.toastSuccess'),
+        description: isEditing ? t('listing.confirm.updatedTitle') : t('listing.confirm.createdTitle'),
         variant: "default"
       });
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save listing. Please try again.",
+        title: t('common.toastError'),
+        description: error instanceof Error ? error.message : t('listing.saveFailed'),
         variant: "destructive"
       });
 
@@ -177,11 +179,11 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
 
   const getStepLabel = (step: number) => {
     switch (step) {
-      case 1: return "Basic Details";
-      case 2: return "Images";
-      case 3: return "Product History";
-      case 4: return "Pricing";
-      case 5: return "Unavailable Dates";
+      case 1: return t('listing.stepBasic');
+      case 2: return t('listing.confirm.images');
+      case 3: return t('listing.history.title');
+      case 4: return t('listing.pricing.title');
+      case 5: return t('listing.confirm.unavailableDates');
       default: return "";
     }
   };
@@ -209,8 +211,8 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
       <div className="bg-gradient-to-b from-green-300 to-lime-100/20 pt-6 sm:pt-8 md:pt-10 px-3 sm:px-5 md:px-6">
         <div className="max-w-4xl mx-auto bg-gradient-to-b from-white to-lime-50 rounded-lg shadow-subtle p-6 sm:p-8 md:p-10 overflow-hidden">
           <div className="text-center mb-6">
-            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-700 mb-1">{isEditing ? "Edit Listing" : "Create New Listing"}</h1>
-            <p className="text-xs sm:text-sm text-gray-500">Complete the following steps to {isEditing ? "update" : "create"} your listing</p>
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-700 mb-1">{isEditing ? t('listing.editTitle') : t('listing.createTitle')}</h1>
+            <p className="text-xs sm:text-sm text-gray-500">{isEditing ? t('listing.editSubtitle') : t('listing.createSubtitle')}</p>
           </div>
 
           {/* Stepper navigation */}
@@ -343,7 +345,7 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
                 className="border-green-600 text-green-700 hover:bg-green-50 w-full sm:w-auto order-2 sm:order-1 h-9 sm:h-10 text-xs sm:text-sm"
               >
                 <ChevronLeft className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                Previous
+                {t('common.previous')}
               </Button>
             )}
             
@@ -352,7 +354,7 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
                 onClick={handleNextStep}
                 className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto sm:ml-auto order-1 sm:order-2 h-9 sm:h-10 text-xs sm:text-sm"
               >
-                Next
+                {t('common.next')}
                 <ChevronRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             )}
@@ -366,11 +368,11 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
                 {isSubmitting ? (
                   <>
                     <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-t-2 border-b-2 border-white mr-1 sm:mr-2"></div>
-                    {isEditing ? 'Updating...' : 'Submitting...'}
+                    {isEditing ? t('listing.updating') : t('listing.submitting')}
                   </>
                 ) : (
                   <>
-                    {isEditing ? 'Update Listing' : 'Submit Listing'}
+                    {isEditing ? t('listing.updateListing') : t('listing.submitListing')}
                     <ChevronRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
                   </>
                 )}

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import config from "@/config";
 
+import { useTranslation } from 'react-i18next';
 interface ProfileHeaderProps {
   userData: {
     full_name?: string;
@@ -20,6 +21,7 @@ interface ProfileHeaderProps {
 }
 
 const ProfileHeader = ({ userData, isEditing, onEdit }: ProfileHeaderProps) => {
+  const { t } = useTranslation();
   // Track when profile data is updated
   useEffect(() => {
     // Component will auto-update when userData changes
@@ -83,7 +85,7 @@ const ProfileHeader = ({ userData, isEditing, onEdit }: ProfileHeaderProps) => {
             </h2>
             {isVerified && (
               <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300 gap-1 text-xs sm:text-sm">
-                <CheckCircle className="w-3 h-3" /> {userData?.trust_level === 'partner' ? 'Partner' : 'Verified'}
+                <CheckCircle className="w-3 h-3" /> {userData?.trust_level === 'partner' ? t('profilePage.partner') : t('profilePage.verified')}
               </Badge>
             )}
           </div>
@@ -96,7 +98,7 @@ const ProfileHeader = ({ userData, isEditing, onEdit }: ProfileHeaderProps) => {
               <span className="font-medium text-green-700 text-sm sm:text-base">{userData?.average_rating || 0}</span>
             </div>
             <div className="text-green-600 text-xs sm:text-sm">
-              Member since {userData?.member_since || ''}
+              {t('profilePage.memberSince', { date: userData?.member_since || '' })}
             </div>
           </div>
         </div>
@@ -110,7 +112,7 @@ const ProfileHeader = ({ userData, isEditing, onEdit }: ProfileHeaderProps) => {
             onClick={onEdit}
           >
             <Edit className="w-4 h-4" />
-            Edit Profile
+            {t('profile.editProfile')}
           </Button>
         )}
       </div>
@@ -124,7 +126,7 @@ const ProfileHeader = ({ userData, isEditing, onEdit }: ProfileHeaderProps) => {
             onClick={onEdit}
           >
             <Edit className="w-4 h-4" />
-            Edit Profile
+            {t('profile.editProfile')}
           </Button>
         </div>
       )}

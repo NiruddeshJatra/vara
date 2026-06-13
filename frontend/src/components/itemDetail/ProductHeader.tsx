@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Star, MapPin } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { CATEGORY_DISPLAY } from '@/constants/productTypes';
@@ -18,6 +19,7 @@ export const ProductHeader = ({
   location,
   category
 }: ProductHeaderProps) => {
+  const { t } = useTranslation();
   // Helper to safely handle rating display
   const displayRating = () => {
     if (typeof average_rating === 'number') {
@@ -26,8 +28,8 @@ export const ProductHeader = ({
     return '4.0'; // Default rating when none exists
   };
 
-  const displayCategory = category && CATEGORY_DISPLAY[category] 
-    ? CATEGORY_DISPLAY[category] 
+  const displayCategory = category
+    ? t('categories.' + category, { defaultValue: CATEGORY_DISPLAY[category] || category })
     : category;
 
   return (
@@ -41,7 +43,7 @@ export const ProductHeader = ({
           <Star className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500 fill-yellow-500 mr-1" />
           <span className="font-medium text-xs sm:text-base">{displayRating()}</span>
           <span className="text-gray-500 text-xs sm:text-sm ml-1">
-            ({totalRentals} {totalRentals === 1 ? 'review' : 'reviews'})
+            {t('review.countOnly', { count: totalRentals })}
           </span>
         </div>
         

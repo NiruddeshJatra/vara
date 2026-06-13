@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -15,12 +16,13 @@ export default function ProductDescription({
   condition,
   category,
 }: ProductDescriptionProps) {
+  const { t } = useTranslation();
   const [showFullDescription, setShowFullDescription] = useState(false);
 
   return (
     <div className="mb-6 sm:mb-10 pb-6 sm:pb-10 border-b border-gray-200">
       <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-4">
-        About this item
+        {t('itemDetail.aboutItem')}
       </h3>
       <div
         className={`text-gray-600 space-y-2 sm:space-y-4 ${
@@ -31,9 +33,7 @@ export default function ProductDescription({
 
         {/* Placeholder for longer descriptions */}
         <p className="text-sm/6 sm:text-base/6">
-          This {title} is in {condition} condition and ready for rental. It
-          comes with all the standard features and is perfect for{" "}
-          {category.toLowerCase()} enthusiasts.
+          {t('itemDetail.generatedBlurb', { title, condition, category })}
         </p>
       </div>
 
@@ -45,11 +45,11 @@ export default function ProductDescription({
         >
           {showFullDescription ? (
             <>
-              Show less <ChevronUp className="h-4 w-4 ml-1" />
+              {t('itemDetail.showLess')} <ChevronUp className="h-4 w-4 ml-1" />
             </>
           ) : (
             <>
-              Show more <ChevronDown className="h-4 w-4 ml-1" />
+              {t('itemDetail.showMore')} <ChevronDown className="h-4 w-4 ml-1" />
             </>
           )}
         </Button>

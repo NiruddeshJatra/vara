@@ -10,6 +10,7 @@ import { CATEGORY_DISPLAY, PRODUCT_TYPE_DISPLAY } from '@/constants/productTypes
 import { ProfileCompletionModal } from '@/components/common/ProfileCompletionModal';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { useTranslation } from 'react-i18next';
 interface ItemModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -18,6 +19,7 @@ interface ItemModalProps {
 
 const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -130,23 +132,23 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
             </div>
             
             <div className="item-modal-details md:w-1/2 space-y-2 sm:space-y-3 mb-2" ref={rightPanelRef}>
-              <h2 className="item-modal-title text-lg sm:text-2xl font-bold text-green-800">{selectedItem.title || 'Untitled Product'}</h2>
+              <h2 className="item-modal-title text-lg sm:text-2xl font-bold text-green-800">{selectedItem.title || t('itemDetail.untitledProduct')}</h2>
               <div className="flex items-center gap-1 sm:gap-2">
                 <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                 <span className="text-xs sm:text-sm font-medium">
                   {displayRating()}
                 </span>
-                <span className="text-xs text-gray-500">({selectedItem.rental_count || 0} rentals)</span>
+                <span className="text-xs text-gray-500">{t('itemDetail.rentalsCount', { count: selectedItem.rental_count || 0 })}</span>
                 <Badge
                   variant="outline"
                   className="bg-green-50 text-xs font-medium text-green-700 hover:bg-green-100"
                 >
-                  {CATEGORY_DISPLAY[selectedItem.category] || selectedItem.category}
+                  {t('categories.' + selectedItem.category, { defaultValue: CATEGORY_DISPLAY[selectedItem.category] || selectedItem.category })}
                 </Badge>
               </div>
 
               <div className="item-modal-pricing bg-green-50 px-3 sm:px-4 py-2 sm:py-4 rounded-lg space-y-2 sm:space-y-3">
-                <h3 className="text-base sm:text-lg font-semibold text-green-800">Rental Options</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-green-800">{t('itemDetail.rentalOptions')}</h3>
                 {selectedItem.pricing_tiers && selectedItem.pricing_tiers.length > 0 ? (
                   selectedItem.pricing_tiers.map((tier, index) => (
                     <div key={tier.id || index} className="flex justify-between items-center rounded">
@@ -154,18 +156,18 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
                         <span className="text-green-700 font-bold">৳</span>
                         <div>
                           <span className="text-sm sm:text-lg font-bold text-green-800">{tier.price}</span>
-                          <span className="text-xs sm:text-sm text-gray-600 ml-1">per {tier.duration_unit}</span>
+                          <span className="text-xs sm:text-sm text-gray-600 ml-1">{t('requestRental.perUnit', { unit: t('rental.units.' + tier.duration_unit, { count: 1 }) })}</span>
                         </div>
                       </div>
                       {tier.max_period && (
                         <span className="text-xs sm:text-sm text-gray-600">
-                          Max: {tier.max_period} {tier.duration_unit}s
+                          {t('requestRental.max')}: {tier.max_period} {t('rental.units.' + tier.duration_unit, { count: tier.max_period })}
                         </span>
                       )}
                     </div>
                   ))
                 ) : (
-                  <p className="text-xs text-gray-600">No pricing information available</p>
+                  <p className="text-xs text-gray-600">{t('itemDetail.noPricing')}</p>
                 )}
               </div>
               
@@ -174,7 +176,7 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
                   className="item-modal-btn w-full bg-green-600 hover:bg-green-700 text-white py-2 text-xs sm:text-sm"
                   onClick={handleRequestRental}
                 >
-                  Request Rental
+                  {t('listings.requestToRent')}
                 </Button>
                 <div className="flex gap-1 sm:gap-2">
                   <Button 
@@ -186,7 +188,7 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
                       to={`/items/${selectedItem.id}`}
                       state={{ product: selectedItem }}
                     >
-                      View Full Details
+                      {t('itemDetail.viewFullDetails')}
                     </Link>
                   </Button>
                   <Button variant="outline" className="item-modal-btn border-green-300 py-2">
@@ -202,8 +204,8 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
       <ProfileCompletionModal 
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
-        title="Complete Your Profile"
-        description="You need to complete your profile before you can request rentals."
+        title={t('profileCompletion.title')}
+        description={t('profileCompletion.rentDescription')}
       />
     </>
   );

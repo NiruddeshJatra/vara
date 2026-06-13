@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { CalendarDays, Info, Calendar as CalendarIcon, X, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import './UnavailabilityCalendar.responsive.css';
+import { useTranslation } from 'react-i18next';
 
 interface CustomDateRange {
   start: Date;
@@ -20,6 +21,8 @@ interface InternalDateRange {
 const UnavailabilityCalendar = ({ unavailable_periods, onRemoveRange }: Props) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [dateRanges, setDateRanges] = useState<InternalDateRange[]>([]);
+  const { t, i18n } = useTranslation();
+  const calendarLocale = i18n.language?.startsWith('bn') ? 'bn-BD' : 'en-US';
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
   
@@ -156,8 +159,8 @@ const UnavailabilityCalendar = ({ unavailable_periods, onRemoveRange }: Props) =
       year: 'numeric'
     };
     
-    const startFormatted = start_date.toLocaleDateString('en-US', formatOptions);
-    const endFormatted = end_date.toLocaleDateString('en-US', formatOptions);
+    const startFormatted = start_date.toLocaleDateString(calendarLocale, formatOptions);
+    const endFormatted = end_date.toLocaleDateString(calendarLocale, formatOptions);
     
     return `${startFormatted} - ${endFormatted}`;
   };
@@ -172,7 +175,7 @@ const UnavailabilityCalendar = ({ unavailable_periods, onRemoveRange }: Props) =
     <div className="unavailability-calendar-root border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
       <h4 className="unavailability-calendar-title font-medium flex items-center gap-2 mb-4 text-green-700">
         <CalendarDays size={18} className="text-green-600 mr-1" />
-        Unavailability Calendar
+        {t('listing.unavailability.calendarTitle')}
       </h4>
 
       {unavailable_periods.length > 0 ? (
@@ -182,24 +185,24 @@ const UnavailabilityCalendar = ({ unavailable_periods, onRemoveRange }: Props) =
               <button 
                 onClick={goToPreviousMonth}
                 className="p-1 rounded-full hover:bg-green-200 text-green-700"
-                aria-label="Previous month"
+                aria-label={t('listing.unavailability.prevMonth')}
               >
                 <ChevronLeft size={16} />
               </button>
               <div className="text-center font-medium">
-                {new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long', year: 'numeric' })}
+                {new Date(currentYear, currentMonth).toLocaleString(calendarLocale, { month: 'long', year: 'numeric' })}
               </div>
               <button 
                 onClick={goToNextMonth}
                 className="p-1 rounded-full hover:bg-green-200 text-green-700"
-                aria-label="Next month"
+                aria-label={t('listing.unavailability.nextMonth')}
               >
                 <ChevronRight size={16} />
               </button>
             </div>
             
             <div className="grid grid-cols-7 gap-0">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+              {[t('weekdays.sun'), t('weekdays.mon'), t('weekdays.tue'), t('weekdays.wed'), t('weekdays.thu'), t('weekdays.fri'), t('weekdays.sat')].map(day => (
                 <div key={day} className="unavailability-calendar-weekdays text-center text-xs py-1 bg-green-50 text-green-800 font-medium border-r last:border-r-0">
                   {day}
                 </div>
@@ -226,7 +229,7 @@ const UnavailabilityCalendar = ({ unavailable_periods, onRemoveRange }: Props) =
           <div className="space-y-2">
             <h4 className="unavailability-calendar-range font-medium text-sm text-green-700 flex items-center gap-1">
               <CalendarIcon size={14} className="text-green-600" />
-              Unavailable Date Ranges:
+              {t('listing.unavailability.rangesTitle')}
             </h4>
             <div className="flex flex-wrap gap-2">
               {dateRanges.map((range, index) => (
@@ -236,7 +239,7 @@ const UnavailabilityCalendar = ({ unavailable_periods, onRemoveRange }: Props) =
                     <button 
                       onClick={() => handleRemoveRange(range)}
                       className="text-red-600 hover:text-red-800"
-                      aria-label="Remove date range"
+                      aria-label={t('listing.unavailability.removeRange')}
                     >
                       <Trash2 size={14} />
                     </button>
@@ -248,7 +251,7 @@ const UnavailabilityCalendar = ({ unavailable_periods, onRemoveRange }: Props) =
         </div>
       ) : (
         <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-          <span className="text-green-600">No unavailable dates set</span>
+          <span className="text-green-600">{t('listing.unavailability.noneSet')}</span>
         </div>
       )}
     </div>

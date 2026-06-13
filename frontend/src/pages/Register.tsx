@@ -13,6 +13,7 @@ import authService from "@/services/auth.service";
 import { OtpInput } from "@/components/auth/OtpInput";
 import { PasswordStrengthBar } from "@/components/auth/PasswordStrengthBar";
 import { phoneSchema, otpSchema, signupDetailsSchema } from "@/utils/validators";
+import { useTranslation } from "react-i18next";
 
 type PhoneFormData = { phone_number: string };
 type OtpFormData = { otp: string };
@@ -26,6 +27,7 @@ type DetailsFormData = {
 type SignupStep = 'phone' | 'otp' | 'details';
 
 const Register = () => {
+  const { t } = useTranslation();
   const [step, setStep] = useState<SignupStep>('phone');
   const [isLoading, setIsLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -71,7 +73,7 @@ const Register = () => {
       const firstField = Object.values(fieldErrors).find((v) => Array.isArray(v) && v.length);
       if (firstField) description = (firstField as string[])[0];
     }
-    toast({ title: "Registration Error", description, variant: "destructive" });
+    toast({ title: t('auth.register.errorTitle'), description, variant: "destructive" });
   };
 
   const onSubmitPhone = async (data: PhoneFormData) => {
@@ -82,9 +84,9 @@ const Register = () => {
       setResendTimer(300);
       setCanResend(false);
       setStep('otp');
-      toast({ title: "OTP Sent", description: "OTP sent successfully!" });
+      toast({ title: t('auth.otpSentTitle'), description: t('auth.otpSentDesc') });
     } catch (error: any) {
-      showApiError(error, 'Failed to send OTP');
+      showApiError(error, t('auth.otpSendFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -94,12 +96,12 @@ const Register = () => {
     if (!canResend || !phoneNumber) return;
     try {
       await authService.requestOtp(phoneNumber, 'signup');
-      toast({ title: "OTP Sent", description: "OTP resent successfully!" });
+      toast({ title: t('auth.otpSentTitle'), description: t('auth.otpResentDesc') });
       setResendTimer(300);
       setCanResend(false);
       otpForm.setValue('otp', '');
     } catch (error: any) {
-      showApiError(error, 'Failed to resend OTP');
+      showApiError(error, t('auth.otpResendFailed'));
     }
   };
 
@@ -109,9 +111,9 @@ const Register = () => {
       const token = await authService.verifyOtp(phoneNumber, data.otp, 'signup');
       setEphemeralToken(token);
       setStep('details');
-      toast({ title: "Verified", description: "OTP verified successfully!" });
+      toast({ title: t('auth.otpVerifiedTitle'), description: t('auth.otpVerifiedDesc') });
     } catch (error: any) {
-      showApiError(error, 'OTP verification failed');
+      showApiError(error, t('auth.otpVerifyFailed'));
       otpForm.setValue('otp', '');
     } finally {
       setIsLoading(false);
@@ -128,27 +130,27 @@ const Register = () => {
       });
 
       login(response.access_token, response.user);
-      toast({ title: "Success", description: "Account created successfully!" });
+      toast({ title: t('common.toastSuccess'), description: t('auth.register.successToast') });
 
       if (!response.user.profile_completed) {
         toast({
-          title: "Complete your profile",
-          description: "Complete your profile to start renting",
+          title: t('profileCompletion.title'),
+          description: t('profileCompletion.startRenting'),
         });
       }
 
       navigate('/advertisements', { replace: true });
     } catch (error: any) {
-      showApiError(error, 'Failed to create account');
+      showApiError(error, t('auth.register.createFailed'));
     } finally {
       setIsLoading(false);
     }
   };
 
   const stepHeader = {
-    phone: { title: 'Create Account', subtitle: 'Enter your phone number to get started' },
-    otp: { title: 'Verify Your Number', subtitle: `Enter the 6-digit code sent to ${phoneNumber}` },
-    details: { title: 'Almost There!', subtitle: 'Set up your account details' },
+    phone: { title: t('auth.register.phoneTitle'), subtitle: t('auth.register.phoneSubtitle') },
+    otp: { title: t('auth.register.otpTitle'), subtitle: t('auth.otpSentTo', { phone: phoneNumber }) },
+    details: { title: t('auth.register.detailsTitle'), subtitle: t('auth.register.detailsSubtitle') },
   }[step];
 
   return (
@@ -173,7 +175,7 @@ const Register = () => {
                   <form onSubmit={phoneForm.handleSubmit(onSubmitPhone)} className="space-y-6">
                     <div className="space-y-2 animate-fade-up delay-100">
                       <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700">
-                        Phone Number
+                        {t('auth.phoneNumber')}
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -189,9 +191,9 @@ const Register = () => {
                         />
                       </div>
                       {phoneForm.formState.errors.phone_number && (
-                        <p className="text-red-500 text-xs mt-1">{phoneForm.formState.errors.phone_number.message}</p>
+                        <p className="text-red-500 text-xs mt-1">{t(phoneForm.formState.errors.phone_number.message as string)}</p>
                       )}
-                      <p className="text-xs text-gray-500">We'll send a 6-digit OTP to this number</p>
+                      <p className="text-xs text-gray-500">{t('auth.otpHint')}</p>
                     </div>
 
                     <div className="animate-fade-up delay-200">
@@ -200,15 +202,15 @@ const Register = () => {
                         className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition duration-150 ease-in-out hover-lift"
                         disabled={isLoading}
                       >
-                        {isLoading ? 'Sending...' : 'Send OTP'}
+                        {isLoading ? t('auth.sendingOtp') : t('auth.sendOtp')}
                       </Button>
                     </div>
 
                     <div className="text-center mt-6 animate-fade-up delay-300">
                       <p className="text-sm text-gray-600">
-                        Already have an account?{" "}
+                        {t('auth.register.haveAccount')}{" "}
                         <a href="/auth/login/" className="font-medium text-green-600 hover:text-green-500">
-                          Sign in
+                          {t('auth.register.signinLink')}
                         </a>
                       </p>
                     </div>
@@ -224,7 +226,7 @@ const Register = () => {
                       />
                       {otpForm.formState.errors.otp && (
                         <p className="mt-2 text-xs text-red-500 text-center">
-                          {otpForm.formState.errors.otp.message}
+                          {t(otpForm.formState.errors.otp.message as string)}
                         </p>
                       )}
                     </div>
@@ -236,10 +238,10 @@ const Register = () => {
                           onClick={handleResendOtp}
                           className="text-green-600 hover:text-green-700 font-medium text-sm transition-colors"
                         >
-                          Resend OTP
+                          {t('auth.resendOtp')}
                         </button>
                       ) : (
-                        <p className="text-gray-500 text-sm">Resend OTP in {formatTime(resendTimer)}</p>
+                        <p className="text-gray-500 text-sm">{t('auth.resendOtpIn', { time: formatTime(resendTimer) })}</p>
                       )}
                     </div>
 
@@ -249,7 +251,7 @@ const Register = () => {
                         className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition duration-150 ease-in-out hover-lift"
                         disabled={isLoading || otpValue.length !== 6}
                       >
-                        {isLoading ? 'Verifying...' : 'Verify'}
+                        {isLoading ? t('auth.verifying') : t('auth.verify')}
                       </Button>
                     </div>
 
@@ -259,7 +261,7 @@ const Register = () => {
                         onClick={() => setStep('phone')}
                         className="text-sm text-gray-600 hover:text-gray-700 transition-colors"
                       >
-                        &larr; Change number
+                        &larr; {t('auth.changeNumber')}
                       </button>
                     </div>
                   </form>
@@ -269,7 +271,7 @@ const Register = () => {
                   <form onSubmit={detailsForm.handleSubmit(onSubmitDetails)} className="space-y-6">
                     <div className="space-y-2 animate-fade-up delay-100">
                       <label htmlFor="full_name" className="block text-sm font-medium text-gray-700">
-                        Full Name
+                        {t('auth.fullName')}
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -278,20 +280,20 @@ const Register = () => {
                         <Input
                           id="full_name"
                           type="text"
-                          placeholder="Your full name"
+                          placeholder={t('auth.fullNamePlaceholder')}
                           className={`pl-10 ${detailsForm.formState.errors.full_name ? 'border-red-500' : ''}`}
                           disabled={isLoading}
                           {...detailsForm.register('full_name')}
                         />
                       </div>
                       {detailsForm.formState.errors.full_name && (
-                        <p className="text-red-500 text-xs mt-1">{detailsForm.formState.errors.full_name.message}</p>
+                        <p className="text-red-500 text-xs mt-1">{t(detailsForm.formState.errors.full_name.message as string)}</p>
                       )}
                     </div>
 
                     <div className="space-y-2 animate-fade-up delay-200">
                       <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                        Password
+                        {t('auth.password')}
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -300,7 +302,7 @@ const Register = () => {
                         <Input
                           id="password"
                           type={showPassword ? "text" : "password"}
-                          placeholder="Create a password"
+                          placeholder={t('auth.register.passwordPlaceholder')}
                           className={`pl-10 ${detailsForm.formState.errors.password ? 'border-red-500' : ''}`}
                           disabled={isLoading}
                           {...detailsForm.register('password')}
@@ -314,14 +316,14 @@ const Register = () => {
                         </button>
                       </div>
                       {detailsForm.formState.errors.password && (
-                        <p className="text-red-500 text-xs mt-1">{detailsForm.formState.errors.password.message}</p>
+                        <p className="text-red-500 text-xs mt-1">{t(detailsForm.formState.errors.password.message as string)}</p>
                       )}
                       <PasswordStrengthBar password={password} />
                     </div>
 
                     <div className="space-y-2 animate-fade-up delay-300">
                       <label htmlFor="confirm_password" className="block text-sm font-medium text-gray-700">
-                        Confirm Password
+                        {t('auth.confirmPassword')}
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -330,7 +332,7 @@ const Register = () => {
                         <Input
                           id="confirm_password"
                           type={showConfirmPassword ? "text" : "password"}
-                          placeholder="Confirm your password"
+                          placeholder={t('auth.register.confirmPasswordPlaceholder')}
                           className={`pl-10 ${detailsForm.formState.errors.confirm_password ? 'border-red-500' : ''}`}
                           disabled={isLoading}
                           {...detailsForm.register('confirm_password')}
@@ -344,7 +346,7 @@ const Register = () => {
                         </button>
                       </div>
                       {detailsForm.formState.errors.confirm_password && (
-                        <p className="text-red-500 text-xs mt-1">{detailsForm.formState.errors.confirm_password.message}</p>
+                        <p className="text-red-500 text-xs mt-1">{t(detailsForm.formState.errors.confirm_password.message as string)}</p>
                       )}
                     </div>
 
@@ -357,7 +359,7 @@ const Register = () => {
                         {...detailsForm.register('marketing_consent')}
                       />
                       <label htmlFor="marketing_consent" className="ml-2 text-sm text-gray-600">
-                        I'd like to receive updates and offers from Bhara
+                        {t('auth.register.marketingConsent')}
                       </label>
                     </div>
 
@@ -367,7 +369,7 @@ const Register = () => {
                         className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition duration-150 ease-in-out hover-lift"
                         disabled={isLoading}
                       >
-                        {isLoading ? 'Creating Account...' : 'Create Account'}
+                        {isLoading ? t('auth.register.submitting') : t('auth.register.submit')}
                       </Button>
                     </div>
                   </form>
@@ -378,7 +380,7 @@ const Register = () => {
             <div className="mt-8 flex justify-center items-center space-x-6 animate-fade-up delay-600">
               <div className="flex items-center text-gray-500 text-sm">
                 <ShieldCheck className="h-5 w-5 text-green-600 mr-2" />
-                <span>Secure Signup</span>
+                <span>{t('auth.register.secureBadge')}</span>
               </div>
             </div>
           </div>

@@ -17,6 +17,7 @@ import debounce from 'lodash/debounce';
 import { queryClient } from '@/lib/react-query';
 import { invalidateProducts } from '@/lib/query-invalidation';
 
+import { useTranslation } from 'react-i18next';
 type AppCategory = {
   id: string;
   name: string;
@@ -26,6 +27,7 @@ type AppCategory = {
 };
 
 const Advertisements = () => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [location, setLocation] = useState('');
@@ -117,8 +119,8 @@ const Advertisements = () => {
   useEffect(() => {
     if (productsError) {
       toast({
-        title: 'Validation Error',
-        description: 'Failed to load advertisements. Please try again.',
+        title: t('common.toastError'),
+        description: t('ads.loadFailed'),
         variant: 'destructive',
       });
     }
@@ -128,7 +130,7 @@ const Advertisements = () => {
   useEffect(() => {
     const initialCategories: AppCategory[] = CATEGORY_VALUES.map((categoryId) => ({
       id: categoryId,
-      name: CATEGORY_DISPLAY[categoryId],
+      name: t('categories.' + categoryId, { defaultValue: CATEGORY_DISPLAY[categoryId] }),
       icon: categoryId, // FIX: Use categoryId so CategoryScroll gets correct key
       image: '',
       count: 0 // This will be updated when we get the actual data
@@ -338,12 +340,12 @@ const Advertisements = () => {
 
   const getPageTitle = () => {
     if (selectedCategory) {
-      return `${CATEGORY_DISPLAY[selectedCategory]} Items`;
+      return t('ads.categoryItems', { category: t('categories.' + selectedCategory, { defaultValue: CATEGORY_DISPLAY[selectedCategory] }) });
     }
     if (searchTerm) {
-      return `Search Results for "${searchTerm}"`;
+      return t('ads.searchResults', { term: searchTerm });
     }
-    return 'All Available Items';
+    return t('ads.allItems');
   };
 
   useEffect(() => {
@@ -389,26 +391,26 @@ const Advertisements = () => {
             <h1 className="text-xl text- sm:text-2xl md:text-3xl font-bold text-green-800 mb-6 sm:mb-8">
               {getPageTitle()}
               <span className="text-sm sm:text-base md:text-lg font-normal text-gray-500 ml-2">
-                ({sortedListings.length} items)
+                {t('ads.itemCount', { count: sortedListings.length })}
               </span>
             </h1>
 
             {productsLoading || productsError ? (
               <div className="p-6 sm:p-8 md:p-10 text-center animate-scale-up">
                 {productsError ? (
-                  <h2 className="text-lg sm:text-xl font-medium text-gray-700 mb-2">Failed to Load Products</h2>
+                  <h2 className="text-lg sm:text-xl font-medium text-gray-700 mb-2">{t('ads.failedTitle')}</h2>
                 ) : (
                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mx-auto mb-4"></div>
                 )}
                 <p className="text-gray-500 text-sm sm:text-base">
-                  {productsError ? 'Please try again later.' : 'Loading products...'}
+                  {productsError ? t('ads.tryLater') : t('ads.loadingProducts')}
                 </p>
               </div>
             ) : sortedListings.length === 0 ? (
               <div className="p-6 sm:p-8 md:p-10 text-center animate-scale-up">
-                <h2 className="text-lg sm:text-xl font-medium text-gray-700 mb-2">No Items Found</h2>
+                <h2 className="text-lg sm:text-xl font-medium text-gray-700 mb-2">{t('ads.noItemsTitle')}</h2>
                 <p className="text-gray-500 text-sm sm:text-base">
-                  Try adjusting your search or filter criteria to find what you're looking for.
+                  {t('ads.noItemsHint')}
                 </p>
               </div>
             ) : (

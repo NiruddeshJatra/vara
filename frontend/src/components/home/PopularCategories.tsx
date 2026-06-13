@@ -7,38 +7,38 @@ import { useTranslation } from 'react-i18next';
 const categories = [
   {
     icon: <MonitorSmartphone className="h-8 w-8 text-green-600" />,
-    name: 'Electronics & Gadgets',
-    items: '1,245 items',
+    nameKey: 'home.popularCategories.electronics',
+    itemsKey: 'home.popularCategories.electronicsCount',
     bgColor: 'bg-green-50'
   },
   {
     icon: <Hammer className="h-8 w-8 text-green-600" />,
-    name: 'Tools & Equipment',
-    items: '892 items',
+    nameKey: 'home.popularCategories.tools',
+    itemsKey: 'home.popularCategories.toolsCount',
     bgColor: 'bg-green-50'
   },
   {
     icon: <Tent className="h-8 w-8 text-green-600" />,
-    name: 'Outdoor & Adventure Gear',
-    items: '783 items',
+    nameKey: 'home.popularCategories.outdoor',
+    itemsKey: 'home.popularCategories.outdoorCount',
     bgColor: 'bg-green-50'
   },
   {
     icon: <Camera className="h-8 w-8 text-green-600" />,
-    name: 'Photography & Video',
-    items: '561 items',
+    nameKey: 'home.popularCategories.photography',
+    itemsKey: 'home.popularCategories.photographyCount',
     bgColor: 'bg-green-50'
   },
   {
     icon: <PartyPopper className="h-8 w-8 text-green-600" />,
-    name: 'Party & Event Supplies',
-    items: '478 items',
+    nameKey: 'home.popularCategories.party',
+    itemsKey: 'home.popularCategories.partyCount',
     bgColor: 'bg-green-50'
   },
   {
     icon: <Car className="h-8 w-8 text-green-600" />,
-    name: 'Vehicles & Transportation',
-    items: '329 items',
+    nameKey: 'home.popularCategories.vehicles',
+    itemsKey: 'home.popularCategories.vehiclesCount',
     bgColor: 'bg-green-50'
   }
 ];
@@ -74,8 +74,8 @@ const PopularCategories = () => {
                   {category.icon}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-sm md:text-lg text-green-800 group-hover:text-green-600 transition-colors">{category.name}</h3>
-                  <p className="text-sm text-green-700/80">{category.items}</p>
+                  <h3 className="font-semibold text-sm md:text-lg text-green-800 group-hover:text-green-600 transition-colors">{t(category.nameKey)}</h3>
+                  <p className="text-sm text-green-700/80">{t(category.itemsKey)}</p>
                 </div>
               </div>
             </a>

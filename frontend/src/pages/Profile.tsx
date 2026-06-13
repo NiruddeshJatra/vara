@@ -11,7 +11,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import authService from "@/services/auth.service";
 import { useNavigate } from "react-router-dom";
 
+import { useTranslation } from 'react-i18next';
 const Profile = () => {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -61,16 +63,16 @@ const Profile = () => {
       setPreviewUrl(null);
       
       toast({
-        title: "Success",
-        description: "Profile updated successfully",
+        title: t('common.toastSuccess'),
+        description: t('completeProfile.step1Success'),
         variant: "default"
       });
     },
     onError: (error: any) => {
       console.error('Error saving profile:', error);
       toast({
-        title: "Update Failed",
-        description: error instanceof Error ? error.message : "Failed to update profile",
+        title: t('profilePage.updateFailedTitle'),
+        description: error instanceof Error ? error.message : t('completeProfile.step1Failed'),
         variant: "destructive"
       });
     }
@@ -81,13 +83,13 @@ const Profile = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-green-800 mb-4">
-            Please login to view your profile
+            {t('profilePage.loginToView')}
           </h2>
           <button
             onClick={() => navigate("/auth/login/")}
             className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded"
           >
-            Login
+            {t('common.login')}
           </button>
         </div>
       </div>
@@ -110,8 +112,8 @@ const Profile = () => {
     setProfilePictureFile(null);
     setPreviewUrl(null);
     toast({
-      title: "Edit mode activated",
-      description: "You can now edit your profile information",
+      title: t('profilePage.editModeTitle'),
+      description: t('profilePage.editModeDesc'),
       variant: "default",
       duration: 3000,
     });
@@ -142,8 +144,8 @@ const Profile = () => {
     setPreviewUrl(null);
     // No need to refresh, just use the original user data from context
     toast({
-      title: "Changes discarded",
-      description: "Your profile was not updated",
+      title: t('profilePage.discardedTitle'),
+      description: t('profilePage.discardedDesc'),
       variant: "default",
       duration: 3000,
     });

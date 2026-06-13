@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ChevronLeft,
   ChevronRight,
@@ -62,6 +63,7 @@ const CategoryScroll = ({
   selectedCategory,
   setSelectedCategory
 }: CategoryScrollProps) => {
+  const { t } = useTranslation();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [showScrollButtons, setShowScrollButtons] = useState(false);
@@ -143,7 +145,7 @@ const CategoryScroll = ({
               <div className={`flex items-center justify-center w-10 sm:w-12 h-8 sm:h-10 mb-1 ${selectedCategory === null ? 'border-b-2 border-vhara-600' : ''}`}>
                 <Wrench className="h-5 w-5 sm:h-6 sm:w-6 text-vhara-800" />
               </div>
-              <span className="text-[10px] sm:text-xs text-green-800 font-medium text-center">All Items</span>
+              <span className="text-[10px] sm:text-xs text-green-800 font-medium text-center">{t('ads.allItemsShort')}</span>
             </div>
             
             {categories.map(category => (

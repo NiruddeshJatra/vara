@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from '@/components/ui/use-toast';
 import authService from "@/services/auth.service";
 import { loginSchema } from "@/utils/validators";
+import { useTranslation } from "react-i18next";
 
 type FormData = {
   phone_number: string;
@@ -18,6 +19,7 @@ type FormData = {
 };
 
 const Login = () => {
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
@@ -38,24 +40,24 @@ const Login = () => {
 
       login(response.access_token, response.user);
       toast({
-        title: "Success",
-        description: "Login successful!",
+        title: t('common.toastSuccess'),
+        description: t('auth.login.successToast'),
         variant: "default"
       });
 
       if (!response.user.profile_completed) {
         toast({
-          title: "Complete your profile",
-          description: "Complete your profile to start renting",
+          title: t('profileCompletion.title'),
+          description: t('profileCompletion.startRenting'),
         });
       }
 
       navigate('/advertisements', { replace: true });
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Login failed. Please check your credentials.';
+      const errorMessage = error.response?.data?.message || t('auth.login.failedFallback');
       const fieldErrors = error.response?.data?.data;
       toast({
-        title: 'Login Error',
+        title: t('auth.login.errorTitle'),
         description: fieldErrors?.detail || fieldErrors?.phone_number?.[0] || errorMessage,
         variant: 'destructive',
       });
@@ -78,14 +80,14 @@ const Login = () => {
 
               <div className="relative z-10">
                 <div className="text-center mb-8 animate-fade-up">
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
-                  <p className="text-gray-600">Sign in to your Bhara account</p>
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">{t('auth.login.title')}</h1>
+                  <p className="text-gray-600">{t('auth.login.subtitle')}</p>
                 </div>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                   <div className="space-y-2 animate-fade-up delay-100">
                     <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700">
-                      Phone Number
+                      {t('auth.phoneNumber')}
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -100,12 +102,12 @@ const Login = () => {
                         {...register('phone_number')}
                       />
                     </div>
-                    {errors.phone_number && <p className="text-red-500 text-xs mt-1">{errors.phone_number.message}</p>}
+                    {errors.phone_number && <p className="text-red-500 text-xs mt-1">{t(errors.phone_number.message as string)}</p>}
                   </div>
 
                   <div className="space-y-2 animate-fade-up delay-200">
                     <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                      Password
+                      {t('auth.password')}
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -127,7 +129,7 @@ const Login = () => {
                         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
                     </div>
-                    {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+                    {errors.password && <p className="text-red-500 text-xs mt-1">{t(errors.password.message as string)}</p>}
                   </div>
 
                   <div className="flex items-center justify-end mb-4 animate-fade-up delay-300">
@@ -136,7 +138,7 @@ const Login = () => {
                       className="text-sm text-green-600 hover:text-green-800"
                       style={{ textDecoration: 'underline', color: '#16a34a' }}
                     >
-                      Forgot Password?
+                      {t('auth.login.forgotPassword')}
                     </Link>
                   </div>
 
@@ -146,15 +148,15 @@ const Login = () => {
                       className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition duration-150 ease-in-out hover-lift"
                       disabled={isLoading}
                     >
-                      {isLoading ? 'Signing In...' : 'Sign In'}
+                      {isLoading ? t('auth.login.submitting') : t('auth.login.submit')}
                     </Button>
                   </div>
 
                   <div className="text-center mt-6 animate-fade-up delay-500">
                     <p className="text-sm text-gray-600">
-                      Don't have an account?{" "}
+                      {t('auth.login.noAccount')}{" "}
                       <a href="/auth/registration/" className="font-medium text-green-600 hover:text-green-500">
-                        Sign up
+                        {t('auth.login.signupLink')}
                       </a>
                     </p>
                   </div>
@@ -165,7 +167,7 @@ const Login = () => {
             <div className="mt-8 flex justify-center items-center space-x-6 animate-fade-up delay-600">
               <div className="flex items-center text-gray-500 text-sm">
                 <ShieldCheck className="h-5 w-5 text-green-600 mr-2" />
-                <span>Secure Login</span>
+                <span>{t('auth.login.secureBadge')}</span>
               </div>
             </div>
           </div>

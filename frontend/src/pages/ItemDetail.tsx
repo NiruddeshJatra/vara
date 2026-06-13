@@ -9,6 +9,7 @@ import ItemModal from '@/components/advertisements/ItemModal';
 import { toast } from '@/components/ui/use-toast';
 
 // Import modular components
+import { useTranslation } from 'react-i18next';
 import {
   ImageGallery,
   ProductHeader,
@@ -41,6 +42,7 @@ const stickyStyles = `
 `;
 
 export default function ItemDetailPage() {
+  const { t } = useTranslation();
   const { productId } = useParams();
   const location = useLocation();
   const [product, setProduct] = useState<Product | null>(null);
@@ -134,10 +136,10 @@ export default function ItemDetailPage() {
         <style>{stickyStyles}</style>
         <NavBar />
         <div className="flex-grow flex flex-col items-center justify-center py-20 px-4 mt-20 bg-green-50/65 animate-fade-in">
-          <h1 className="text-2xl font-bold text-red-500 mb-4">Product Not Found</h1>
-          <p className="text-gray-600 mb-6">The product you're looking for doesn't exist or has been removed.</p>
+          <h1 className="text-2xl font-bold text-red-500 mb-4">{t('itemDetail.notFoundTitle')}</h1>
+          <p className="text-gray-600 mb-6">{t('itemDetail.notFoundDesc')}</p>
           <Button asChild className="animate-pulse">
-            <Link to="/advertisements">Browse Available Items</Link>
+            <Link to="/advertisements">{t('itemDetail.browseAvailable')}</Link>
           </Button>
         </div>
         <Footer />
@@ -157,7 +159,7 @@ export default function ItemDetailPage() {
             title={product.title}
             average_rating={typeof product.average_rating === 'number' ? product.average_rating : 0}
             totalRentals={product.rental_count || 0}
-            location={product.location || 'Not specified'}
+            location={product.location || t('requestRental.noLocation')}
             category={product.category}
           />
         </div>

@@ -6,7 +6,9 @@ import ProfileListings from '@/components/profile/ProfileListings';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileCompletionModal } from '@/components/common/ProfileCompletionModal';
 
+import { useTranslation } from 'react-i18next';
 export default function MyListingsPage() {
+  const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -42,9 +44,9 @@ export default function MyListingsPage() {
         <div className="max-w-7xl mx-auto px-6 sm:px-8 md:px-12 lg:px-16">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-green-800">My Listings</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-green-800">{t('navigation.myListings')}</h1>
               <p className="text-gray-600 text-sm sm:text-base mt-1">
-                Manage your listed products
+                {t('profilePage.manageListings')}
               </p>
             </div>
           </div>
@@ -56,8 +58,8 @@ export default function MyListingsPage() {
       <ProfileCompletionModal 
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
-        title="Complete Your Profile"
-        description="Please complete your profile before uploading products."
+        title={t('profileCompletion.title')}
+        description={t('profileCompletion.uploadDescription')}
       />
 
       <Footer />

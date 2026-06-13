@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Star, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { formatDate as formatDateIntl } from '@/utils/formatDate';
 import reviewService from '@/services/review.service';
 import { Review } from '@/types/rentals';
 
@@ -15,6 +16,7 @@ export default function ReviewsSection({
   productId,
   average_rating = 0,
 }: ReviewsSectionProps) {
+  const { t } = useTranslation();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [count, setCount] = useState(0);
 
@@ -42,23 +44,20 @@ export default function ReviewsSection({
     return Number.isNaN(rating) ? '0.0' : rating.toFixed(1);
   };
 
-  const formatDate = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return isNaN(d.getTime()) ? '' : format(d, 'yyyy-MM-dd');
-  };
+  const formatDate = (dateStr: string) => formatDateIntl(dateStr);
 
   return (
     <section className="mt-10 bg-gradient-to-b from-green-50/50 to-white rounded-xl shadow-sm border border-green-100 p-4 sm:p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-lg sm:text-xl font-semibold text-green-800 flex items-center gap-2">
           <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-          <span>{displayRating()} · {count} reviews</span>
+          <span>{t('review.reviewsCount', { rating: displayRating(), count })}</span>
         </h2>
         <Button
           variant="outline"
           className="hidden sm:block bg-green-50 hover:bg-green-100 text-green-700 hover:text-green-800 border border-green-200"
         >
-          View all reviews
+          {t('review.viewAll')}
         </Button>
       </div>
 
@@ -103,9 +102,9 @@ export default function ReviewsSection({
         ) : (
           <div className="text-center py-8">
             <MessageSquare className="mx-auto h-10 w-10 text-green-200 mb-3" />
-            <p className="text-green-700 font-medium">No reviews yet</p>
+            <p className="text-green-700 font-medium">{t('review.noReviews')}</p>
             <p className="text-sm text-gray-500 mt-1">
-              Be the first to review this product!
+              {t('review.beFirstProduct')}
             </p>
           </div>
         )}

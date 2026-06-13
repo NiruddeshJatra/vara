@@ -13,7 +13,9 @@ import { normalizeProductToFormData } from '@/utils/normalizeProductToFormData';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invalidateProducts, removeProductFromCache } from '@/lib/query-invalidation';
 
+import { useTranslation } from 'react-i18next';
 const ProfileListings = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -84,8 +86,8 @@ const ProfileListings = () => {
       setProductToDelete(null);
       
       toast({
-        title: "Success",
-        description: "Product deleted successfully.",
+        title: t('common.toastSuccess'),
+        description: t('profilePage.deleteSuccess'),
         variant: "default"
       });
     },
@@ -96,8 +98,8 @@ const ProfileListings = () => {
       }
       
       toast({
-        title: "Error",
-        description: "Failed to delete product. Please try again.",
+        title: t('common.toastError'),
+        description: t('profilePage.deleteFailed'),
         variant: "destructive"
       });
     }
@@ -137,7 +139,7 @@ const ProfileListings = () => {
       <div className="flex justify-center items-center h-64">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-green-600" />
-          <p className="text-gray-600">Loading products...</p>
+          <p className="text-gray-600">{t('ads.loadingProducts')}</p>
         </div>
       </div>
     );
@@ -146,9 +148,9 @@ const ProfileListings = () => {
   if (error) {
     return (
       <div className="text-center py-8">
-        <h3 className="text-lg font-medium text-red-600">Error Loading Products</h3>
+        <h3 className="text-lg font-medium text-red-600">{t('profilePage.errorLoading')}</h3>
         <p className="mt-2 text-sm text-gray-500">
-          Failed to load your products. Please try again later.
+          {t('profilePage.errorLoadingDesc')}
         </p>
       </div>
     );
@@ -157,9 +159,9 @@ const ProfileListings = () => {
   if (listings.length === 0) {
     return (
       <div className="text-center py-8">
-        <h3 className="text-lg font-medium text-gray-900">No Products Yet</h3>
+        <h3 className="text-lg font-medium text-gray-900">{t('profilePage.noProducts')}</h3>
         <p className="mt-2 text-sm text-gray-500">
-          You haven't uploaded any products for rent yet.
+          {t('profilePage.noProductsDesc')}
         </p>
         <Button
           className="mt-4 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full shadow-md font-semibold text-sm sm:text-base transition-all duration-200"
@@ -169,10 +171,10 @@ const ProfileListings = () => {
           {isLoading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              Processing...
+              {t('common.processingEllipsis')}
             </>
           ) : (
-            'Upload Your First Product'
+            t('profilePage.uploadFirst')
           )}
         </Button>
       </div>
@@ -264,7 +266,7 @@ const ProfileListings = () => {
                   ) : (
                     <Trash2 className="h-4 w-4 mr-1" />
                   )}
-                  {deleteMutation.isPending && productToDelete === listing.id ? 'Deleting...' : 'Delete'}
+                  {deleteMutation.isPending && productToDelete === listing.id ? t('profilePage.deleting') : t('profilePage.delete')}
                 </Button>
               </div>
             </CardFooter>
@@ -275,9 +277,9 @@ const ProfileListings = () => {
       <Dialog open={deleteConfirmationOpen} onOpenChange={setDeleteConfirmationOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Product</DialogTitle>
+            <DialogTitle>{t('profilePage.deleteTitle')}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this product? This action cannot be undone.
+              {t('profilePage.deleteConfirm')}
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-4 mt-4">

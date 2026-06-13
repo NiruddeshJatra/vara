@@ -18,16 +18,8 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ compact = false }) 
 
   const toggleLanguage = () => {
     const newLanguage = currentLanguage === 'en' ? 'bn' : 'en';
-    console.log(`Changing language from ${currentLanguage} to ${newLanguage}`);
-    i18n.changeLanguage(newLanguage)
-      .then(() => {
-        console.log(`Language changed successfully to ${newLanguage}`);
-        // Force a reload to ensure all components re-render with new translations
-        window.location.reload();
-      })
-      .catch(error => {
-        console.error('Error changing language:', error);
-      });
+    // i18next re-renders subscribed components live — no reload needed
+    i18n.changeLanguage(newLanguage);
   };
 
   if (compact) {

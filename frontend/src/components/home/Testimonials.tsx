@@ -6,24 +6,24 @@ const testimonials = [
   {
     id: 1,
     name: "Shamima Akter",
-    location: "Dhaka",
-    quote: "I rented a Canon camera for my cousin's wedding. The process was smooth and saved us a lot! Highly recommend Bhara for anyone needing quality gear in Dhaka.",
+    locationKey: "home.testimonials.t1Location",
+    quoteKey: "home.testimonials.t1Quote",
     avatar: "/mock/camera-user.jpg",
     rating: 5
   },
   {
     id: 2,
     name: "Rafiq Islam",
-    location: "Chattogram",
-    quote: "Needed a mountain bike for a quick trip. Found one in my area and the owner was very friendly. Bhara made it super easy!",
+    locationKey: "home.testimonials.t2Location",
+    quoteKey: "home.testimonials.t2Quote",
     avatar: "/mock/bicycle-user.jpg",
     rating: 5
   },
   {
     id: 3,
     name: "Nusrat Jahan",
-    location: "Sylhet",
-    quote: "Booked a tent for our family picnic at Ratargul. The tent was clean and spacious. Loved the convenience!",
+    locationKey: "home.testimonials.t3Location",
+    quoteKey: "home.testimonials.t3Quote",
     avatar: "/mock/tent-user.jpg",
     rating: 5
   }
@@ -57,7 +57,7 @@ const Testimonials = () => {
                 </Avatar>
                 <div>
                   <h4 className="font-semibold text-green-800 text-sm">{testimonial.name}</h4>
-                  <p className="text-xs text-green-700">{testimonial.location}</p>
+                  <p className="text-xs text-green-700">{t(testimonial.locationKey)}</p>
                 </div>
               </div>
               
@@ -70,7 +70,7 @@ const Testimonials = () => {
               </div>
               
               <p className="italic text-green-700 text-[0.82rem]">
-                “{testimonial.quote}”
+                “{t(testimonial.quoteKey)}”
               </p>
             </div>
           ))}

@@ -1,4 +1,5 @@
 import { useState, Dispatch, SetStateAction } from "react";
+import { useTranslation } from 'react-i18next';
 import {
   Search,
   MapPin,
@@ -45,6 +46,7 @@ const CompactSearchBar = ({
   setAvailability,
   inNav,
 }: CompactSearchBarProps) => {
+  const { t } = useTranslation();
   const [tempPriceRange, setTempPriceRange] =
     useState<[number, number]>(priceRange);
   const [tempAvailability, setTempAvailability] = useState(availability);
@@ -102,7 +104,7 @@ const CompactSearchBar = ({
                   />
                   <Input
                     type="text"
-                    placeholder="What do you need to borrow today?"
+                    placeholder={t('home.hero.searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className={`text-[10px] sm:text-xs pl-9 placeholder:text-[10px] sm:placeholder:text-xs ${
@@ -120,7 +122,7 @@ const CompactSearchBar = ({
                   />
                   <Input
                     type="text"
-                    placeholder="Select your location"
+                    placeholder={t('home.hero.locationPlaceholder')}
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     className={`text-[10px] sm:text-xs pl-9 placeholder:text-[10px] sm:placeholder:text-xs ${
@@ -146,7 +148,7 @@ const CompactSearchBar = ({
                       inNav ? "h-4 w-4" : "h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2"
                     } `}
                   />
-                  {inNav ? "" : "Find Items"}
+                  {inNav ? "" : t('home.hero.buttonText')}
                 </Button>
                 {!inNav && (
                   <Button
@@ -161,7 +163,7 @@ const CompactSearchBar = ({
                     ) : (
                       <SlidersHorizontal className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                     )}
-                    <span>{filtersOpen ? "Hide Filters" : "Filters"}</span>
+                    <span>{filtersOpen ? t('ads.hideFilters') : t('common.filters')}</span>
                   </Button>
                 )}
               </div>
@@ -177,7 +179,7 @@ const CompactSearchBar = ({
               <div className="space-y-1 sm:space-y-2">
                 <label className="text-[10px] sm:text-xs md:text-sm font-medium text-green-800 flex items-center gap-2">
                   <Banknote className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-                  Price Range (৳)
+                  {t('ads.priceRange')}
                 </label>
                 <div className="mt-1 sm:mt-2">
                   <div className="flex justify-between text-[9px] sm:text-xs text-gray-500">
@@ -199,7 +201,7 @@ const CompactSearchBar = ({
               <div className="space-y-2 sm:space-y-3">
                 <label className="text-[10px] sm:text-xs md:text-sm font-medium text-green-800 mb-1 flex items-center gap-2">
                   <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-                  Availability
+                  {t('listings.availability')}
                 </label>
                 <div className="mt-1 sm:mt-2">
                   <Select
@@ -207,15 +209,15 @@ const CompactSearchBar = ({
                     onValueChange={setTempAvailability}
                   >
                     <SelectTrigger className="w-full border-green-400 focus:border-green-500">
-                      <SelectValue placeholder="Select availability" />
+                      <SelectValue placeholder={t('ads.selectAvailability')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="any">Any time</SelectItem>
-                      <SelectItem value="next3days">Next 3 days</SelectItem>
-                      <SelectItem value="thisWeek">This week</SelectItem>
-                      <SelectItem value="nextWeek">Next week</SelectItem>
-                      <SelectItem value="thisMonth">This month</SelectItem>
-                      <SelectItem value="nextMonth">Next month</SelectItem>
+                      <SelectItem value="any">{t('ads.anyTime')}</SelectItem>
+                      <SelectItem value="next3days">{t('ads.next3days')}</SelectItem>
+                      <SelectItem value="thisWeek">{t('ads.thisWeek')}</SelectItem>
+                      <SelectItem value="nextWeek">{t('ads.nextWeek')}</SelectItem>
+                      <SelectItem value="thisMonth">{t('ads.thisMonth')}</SelectItem>
+                      <SelectItem value="nextMonth">{t('ads.nextMonth')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -229,14 +231,14 @@ const CompactSearchBar = ({
                 className="text-[10px] sm:text-xs md:text-sm border-green-400 text-green-700 hover:bg-green-50 h-7 sm:h-8 md:h-9"
                 onClick={clearFilters}
               >
-                Clear all
+                {t('ads.clearAll')}
               </Button>
               <Button
                 size="sm"
                 className="bg-green-600 hover:bg-green-700 text-[10px] sm:text-xs md:text-sm h-7 sm:h-8 md:h-9"
                 onClick={applyFilters}
               >
-                Apply filters
+                {t('ads.applyFilters')}
               </Button>
             </div>
           </div>

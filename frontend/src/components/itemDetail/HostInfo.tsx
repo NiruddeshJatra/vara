@@ -1,7 +1,9 @@
 import React from 'react';
 import { User } from 'lucide-react';
 
+import { useTranslation } from 'react-i18next';
 export default function HostInfo() {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center justify-between pb-6 mb-6 border-b border-gray-200">
       <div className="flex items-center gap-4">
@@ -9,8 +11,8 @@ export default function HostInfo() {
           <User className="h-7 w-7 text-green-600" />
         </div>
         <div>
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Hosted and verified by Bhara</h2>
-          <p className="text-sm sm:text-base text-gray-600">You'll rent from the owner, but we handle everything</p>
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">{t('itemDetail.hostedByBhara')}</h2>
+          <p className="text-sm sm:text-base text-gray-600">{t('itemDetail.hostedByBharaDesc')}</p>
         </div>
       </div>
     </div>

@@ -12,9 +12,11 @@ import productService from '@/services/product.service';
 import { RentalStatus } from '@/constants/rental';
 import { Product } from '@/types/listings';
 import { Rental } from '@/types/rentals';
+import { useTranslation } from 'react-i18next';
 import '../styles/main.css';
 
 const Rentals = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'myRentals' | 'myListingsRentals'>('myRentals');
   const [statusFilter, setStatusFilter] = useState<RentalStatus | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -64,10 +66,10 @@ const Rentals = () => {
         setMyListingsRentals(await attachProducts(rentals));
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch rentals');
+      setError(err.message || t('rental.page.fetchFailed'));
       toast({
-        title: 'Error',
-        description: err.message || 'Failed to fetch rentals',
+        title: t('common.toastError'),
+        description: err.message || t('rental.page.fetchFailed'),
         variant: 'destructive',
       });
     } finally {
@@ -166,7 +168,7 @@ const Rentals = () => {
         />
 
         {/* Loading and error states */}
-        {loading && <div className="text-center py-8">Loading rentals...</div>}
+        {loading && <div className="text-center py-8">{t('rental.page.loading')}</div>}
         {error && <div className="text-center py-8 text-red-600">{error}</div>}
 
         {/* Tab content */}
