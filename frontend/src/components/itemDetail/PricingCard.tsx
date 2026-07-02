@@ -17,6 +17,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ product }) => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const isOwner = !!user && product.owner?.id === user.id;
 
   const handleRequestRental = () => {
     if (!isAuthenticated) {
@@ -86,15 +87,23 @@ const PricingCard: React.FC<PricingCardProps> = ({ product }) => {
           </div>
         ) : null}
 
-        <Button
-          className="w-full bg-green-600 hover:bg-green-700 h-10 sm:h-12 text-xs sm:text-base"
-          onClick={handleRequestRental}
-        >
-          {t('itemDetail.requestRentalNow')}
-        </Button>
-        <p className="text-xs text-gray-500 mt-2 sm:mt-3 text-center">
-          {t('itemDetail.noUpfront')}
-        </p>
+        {isOwner ? (
+          <p className="text-xs sm:text-sm text-gray-600 text-center py-2 bg-gray-50 rounded-md">
+            {t('itemDetail.ownListing')}
+          </p>
+        ) : (
+          <>
+            <Button
+              className="w-full bg-green-600 hover:bg-green-700 h-10 sm:h-12 text-xs sm:text-base"
+              onClick={handleRequestRental}
+            >
+              {t('itemDetail.requestRentalNow')}
+            </Button>
+            <p className="text-xs text-gray-500 mt-2 sm:mt-3 text-center">
+              {t('itemDetail.noUpfront')}
+            </p>
+          </>
+        )}
       </div>
 
       {/* Profile Completion Modal */}

@@ -10,6 +10,7 @@ import { User } from "@/types/auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import authService from "@/services/auth.service";
 import { useNavigate } from "react-router-dom";
+import { getApiError } from "@/utils/apiError";
 
 import { useTranslation } from 'react-i18next';
 const Profile = () => {
@@ -19,6 +20,9 @@ const Profile = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
+  // Original name captured when edit mode opens, so we only PATCH the name when
+  // it actually changed (the name endpoint 400s once a rental is completed).
+  const [originalName, setOriginalName] = useState("");
   const [activeTab, setActiveTab] = useState("profile");
   const [profilePictureFile, setProfilePictureFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -35,14 +39,19 @@ const Profile = () => {
   
   // Use mutation for profile updates - MUST BE DEFINED BEFORE ANY CONDITIONAL RETURNS
   const updateProfileMutation = useMutation({
-    mutationFn: async (data: { profile: User; picture: File | null }) => {
-      // Full name is updated via PATCH /users/profile/; the rest via step1
-      await authService.updateFullName(data.profile.full_name);
+    mutationFn: async (data: { profile: User; picture: File | null; nameChanged: boolean }) => {
+      // Name is updated via PATCH /users/profile/ — only when it actually changed,
+      // so editing address/email alone never trips the post-rental name lock.
+      if (data.nameChanged) {
+        await authService.updateFullName(data.profile.full_name);
+      }
+      // The rest goes via PATCH /users/profile/step1/, which requires all four
+      // fields — resend them all (prefilled from the current profile).
       const formData = new FormData();
-      if (data.profile.date_of_birth) formData.append('date_of_birth', data.profile.date_of_birth);
-      if (data.profile.district) formData.append('district', data.profile.district);
-      if (data.profile.thana) formData.append('thana', data.profile.thana);
-      if (data.profile.full_address) formData.append('full_address', data.profile.full_address);
+      formData.append('date_of_birth', data.profile.date_of_birth || '');
+      formData.append('district', data.profile.district || '');
+      formData.append('thana', data.profile.thana || '');
+      formData.append('full_address', data.profile.full_address || '');
       if (data.profile.email) formData.append('email', data.profile.email);
       if (data.picture) formData.append('profile_picture', data.picture);
       return authService.updateProfile(formData);
@@ -72,7 +81,7 @@ const Profile = () => {
       console.error('Error saving profile:', error);
       toast({
         title: t('profilePage.updateFailedTitle'),
-        description: error instanceof Error ? error.message : t('completeProfile.step1Failed'),
+        description: getApiError(error),
         variant: "destructive"
       });
     }
@@ -109,6 +118,7 @@ const Profile = () => {
 
   const handleEditProfile = () => {
     setIsEditing(true);
+    setOriginalName(user.full_name);
     setProfilePictureFile(null);
     setPreviewUrl(null);
     toast({
@@ -122,7 +132,11 @@ const Profile = () => {
   const handleSaveChanges = async () => {
     if (!user) return;
 
-    updateProfileMutation.mutate({ profile: user, picture: profilePictureFile });
+    updateProfileMutation.mutate({
+      profile: user,
+      picture: profilePictureFile,
+      nameChanged: user.full_name !== originalName,
+    });
   };
 
   const handleInputChange = (field: any, value: string) => {

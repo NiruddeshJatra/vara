@@ -4,6 +4,7 @@ import config from '../config';
 import i18n from '@/i18n';
 import { toast } from '@/components/ui/use-toast';
 import { queryClient } from '../lib/react-query';
+import { getApiError } from '@/utils/apiError';
 
 interface PaginatedData<T> {
   count: number;
@@ -218,7 +219,7 @@ class ProductService {
       } else {
         toast({
           title: i18n.t('services.productCreateFailedTitle'),
-          description: error.response?.data?.message || error.message || i18n.t('services.productCreateFailed'),
+          description: getApiError(error),
           variant: "destructive"
         });
       }
@@ -262,7 +263,7 @@ class ProductService {
 
       toast({
         title: i18n.t('services.updateFailedTitle'),
-        description: error.response?.data?.message || i18n.t('services.productUpdateFailed'),
+        description: getApiError(error),
         variant: "destructive"
       });
 

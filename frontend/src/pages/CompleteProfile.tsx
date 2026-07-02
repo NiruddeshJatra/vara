@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Calendar, Camera, IdCard, Mail, MapPin, ShieldCheck, Upload } from "lucide-react";
+import { Calendar, Camera, IdCard, Mail, ShieldCheck, Upload } from "lucide-react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "@/components/ui/use-toast";
 import Footer from "@/components/home/Footer";
@@ -11,6 +11,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import authService from "@/services/auth.service";
 import { profileStep1Schema, profileStep2Schema } from "@/utils/validators";
 import { BD_DISTRICTS, getThanas } from "@/utils/bd-districts";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Calendar as CalendarPicker } from "@/components/ui/calendar";
+import { formatDateLong } from "@/utils/formatDate";
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
@@ -290,20 +294,57 @@ const CompleteProfile = () => {
                   <label htmlFor="date_of_birth" className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                     {t('completeProfile.dateOfBirth')}
                   </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Calendar className="h-4 w-4 text-gray-400" />
-                    </div>
-                    <input
-                      {...step1Form.register('date_of_birth')}
-                      type="date"
-                      id="date_of_birth"
-                      className={`w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-                        step1Form.formState.errors.date_of_birth ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                      disabled={isSubmitting}
-                    />
-                  </div>
+                  <Controller
+                    control={step1Form.control}
+                    name="date_of_birth"
+                    render={({ field }) => (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            disabled={isSubmitting}
+                            className={`relative w-full flex items-center pl-10 pr-3 py-3 border rounded-lg text-left text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:opacity-50 ${
+                              step1Form.formState.errors.date_of_birth ? 'border-red-500' : 'border-gray-300'
+                            } ${field.value ? 'text-gray-900' : 'text-gray-500'}`}
+                          >
+                            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <Calendar className="h-4 w-4 text-gray-400" />
+                            </span>
+                            {field.value
+                              ? formatDateLong(field.value)
+                              : t('completeProfile.selectDate')}
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <CalendarPicker
+                            mode="single"
+                            selected={field.value ? new Date(field.value) : undefined}
+                            onSelect={(date) =>
+                              field.onChange(
+                                date
+                                  ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+                                  : ''
+                              )
+                            }
+                            captionLayout="dropdown-buttons"
+                            fromYear={1940}
+                            toYear={new Date().getFullYear() - 18}
+                            defaultMonth={
+                              field.value
+                                ? new Date(field.value)
+                                : new Date(new Date().getFullYear() - 18, 0)
+                            }
+                            disabled={(date) => date > new Date()}
+                            initialFocus
+                            classNames={{
+                              day_selected:
+                                'bg-green-600 text-white hover:bg-green-700 hover:text-white focus:bg-green-700 focus:text-white rounded-md',
+                            }}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    )}
+                  />
                   {step1Form.formState.errors.date_of_birth && (
                     <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
                       {t(step1Form.formState.errors.date_of_birth.message as string)}
@@ -317,26 +358,33 @@ const CompleteProfile = () => {
                   <label htmlFor="district" className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                     {t('completeProfile.district')}
                   </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <MapPin className="h-4 w-4 text-gray-400" />
-                    </div>
-                    <select
-                      {...step1Form.register('district')}
-                      id="district"
-                      className={`w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 appearance-none ${
-                        step1Form.formState.errors.district ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                      disabled={isSubmitting}
-                    >
-                      <option value="">{t('completeProfile.selectDistrict')}</option>
-                      {BD_DISTRICTS.map((district) => (
-                        <option key={district.name} value={district.name}>
-                          {district.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <Controller
+                    control={step1Form.control}
+                    name="district"
+                    render={({ field }) => (
+                      <Select
+                        value={field.value || ''}
+                        onValueChange={(val) => {
+                          field.onChange(val);
+                          step1Form.setValue('thana', '');
+                        }}
+                        disabled={isSubmitting}
+                      >
+                        <SelectTrigger
+                          className={`h-11 ${step1Form.formState.errors.district ? 'border-red-500' : ''}`}
+                        >
+                          <SelectValue placeholder={t('completeProfile.selectDistrict')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {BD_DISTRICTS.map((district) => (
+                            <SelectItem key={district.name} value={district.name}>
+                              {district.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                   {step1Form.formState.errors.district && (
                     <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
                       {t(step1Form.formState.errors.district.message as string)}
@@ -349,26 +397,30 @@ const CompleteProfile = () => {
                   <label htmlFor="thana" className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                     {t('completeProfile.thana')}
                   </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <MapPin className="h-4 w-4 text-gray-400" />
-                    </div>
-                    <select
-                      {...step1Form.register('thana')}
-                      id="thana"
-                      className={`w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 appearance-none ${
-                        step1Form.formState.errors.thana ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                      disabled={isSubmitting || !selectedDistrict}
-                    >
-                      <option value="">{t('completeProfile.selectThana')}</option>
-                      {getThanas(selectedDistrict).map((thana) => (
-                        <option key={thana} value={thana}>
-                          {thana}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <Controller
+                    control={step1Form.control}
+                    name="thana"
+                    render={({ field }) => (
+                      <Select
+                        value={field.value || ''}
+                        onValueChange={field.onChange}
+                        disabled={isSubmitting || !selectedDistrict}
+                      >
+                        <SelectTrigger
+                          className={`h-11 ${step1Form.formState.errors.thana ? 'border-red-500' : ''}`}
+                        >
+                          <SelectValue placeholder={t('completeProfile.selectThana')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {getThanas(selectedDistrict).map((thana) => (
+                            <SelectItem key={thana} value={thana}>
+                              {thana}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                   {step1Form.formState.errors.thana && (
                     <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
                       {t(step1Form.formState.errors.thana.message as string)}

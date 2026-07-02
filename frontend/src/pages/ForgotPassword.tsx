@@ -12,6 +12,7 @@ import { toast } from '@/components/ui/use-toast';
 import authService from "@/services/auth.service";
 import { OtpInput } from "@/components/auth/OtpInput";
 import { phoneSchema, otpSchema } from "@/utils/validators";
+import { getApiError } from "@/utils/apiError";
 import { useTranslation } from "react-i18next";
 
 const passwordResetSchema = z.object({
@@ -61,14 +62,12 @@ const ForgotPassword = () => {
   };
 
   const showApiError = (error: any, fallback: string) => {
-    const errorMessage = error.response?.data?.message || fallback;
-    const fieldErrors = error.response?.data?.data;
-    let description = errorMessage;
-    if (fieldErrors && typeof fieldErrors === 'object') {
-      const firstField = Object.values(fieldErrors).find((v) => Array.isArray(v) && v.length);
-      if (firstField) description = (firstField as string[])[0];
-    }
-    toast({ title: t('auth.forgot.errorTitle'), description, variant: "destructive" });
+    const message = getApiError(error);
+    toast({
+      title: t('auth.forgot.errorTitle'),
+      description: message === 'Something went wrong' ? fallback : message,
+      variant: "destructive",
+    });
   };
 
   const onSubmitPhone = async (data: PhoneFormData) => {

@@ -98,7 +98,7 @@ const About = () => {
           <div className="bg-white rounded-lg shadow-md p-8 mb-10">
             <h2 className="text-2xl font-bold text-green-800 mb-8 text-center font-['Hind_Siliguri']">{t('aboutPage.teamTitle')}</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div className="flex justify-center">
               <div className="flex flex-col items-center">
                 <div className="w-40 h-40 rounded-full overflow-hidden mb-4 border-4 border-green-100">
                   <img 
@@ -115,25 +115,6 @@ const About = () => {
                 {/* <p className="text-green-600 mb-3 font-['Hind_Siliguri']">ফাউন্ডার ও সিইও</p>
                 <p className="text-center text-gray-700 max-w-md font-['Hind_Siliguri']">
                   নাসিফ সফটওয়্যার ইঞ্জিনিয়ারিং পটভূমি থেকে এসেছেন এবং তিনি বাংলাদেশের শেয়ারিং ইকোনমিকে উন্নত করার জন্য Bhara প্রতিষ্ঠা করেছেন। তিনি বিশ্বাস করেন কিনে ফেলার পরিবর্তে ভাড়া নেওয়া বাংলাদেশের জন্য টেকসই ও অর্থনৈতিক সমাধান।
-                </p> */}
-              </div>
-              
-              <div className="flex flex-col items-center">
-                <div className="w-40 h-40 rounded-full overflow-hidden mb-4 border-4 border-green-100">
-                  <img 
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1374&auto=format&fit=crop" 
-                    alt="Riad Ashraf" 
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1374&auto=format&fit=crop";
-                    }}
-                  />
-                </div>
-                <h4 className="text-lg font-semibold text-green-800 mb-1">{t('aboutPage.member2')}</h4>
-                {/* <p className="text-green-600 mb-3 font-['Hind_Siliguri']">কো-ফাউন্ডার ও সিওও</p>
-                <p className="text-center text-gray-700 max-w-md font-['Hind_Siliguri']">
-                  রিয়াদ মার্কেটিং ও অপারেশন্স ব্যাকগ্রাউন্ড থেকে এসেছেন। তিনি Bhara'র দৈনন্দিন অপারেশন ও বিজনেস ডেভেলপমেন্ট দেখাশোনা করেন। নিরাপদ ও সুরক্ষিত ভাড়া সিস্টেম তৈরি করাই তার মূল লক্ষ্য।
                 </p> */}
               </div>
             </div>
@@ -243,7 +224,7 @@ const About = () => {
                 <div className="flex-1">
                   <h3 className="text-sm font-medium text-gray-500 font-['Hind_Siliguri']">{t('aboutPage.address')}</h3>
                   <a 
-                    href="https://www.google.com/maps/search/কুয়ার+পাড়,+জামালখান,+চট্টগ্রাম" 
+                    href="https://www.google.com/maps/search/New+Chaktai,+Chattogram"
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-gray-700 hover:text-green-700 transition-colors hover:underline font-['Hind_Siliguri']"

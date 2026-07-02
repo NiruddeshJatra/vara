@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const bdPhoneRegex = /^01[3-9]\d{8}$/;
+const bdPhoneRegex = /^(?:\+?880|0)1[3-9]\d{8}$/;
 
 export const phoneSchema = z.object({
   phone_number: z

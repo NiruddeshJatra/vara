@@ -19,6 +19,7 @@ interface ItemModalProps {
 
 const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
   const { user } = useAuth();
+  const isOwner = !!user && selectedItem?.owner?.id === user.id;
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -172,12 +173,18 @@ const ItemModal = ({ isOpen, onOpenChange, selectedItem }: ItemModalProps) => {
               </div>
               
               <div className="space-y-1 sm:space-y-2 pt-2 sm:pt-4">
-                <Button 
-                  className="item-modal-btn w-full bg-green-600 hover:bg-green-700 text-white py-2 text-xs sm:text-sm"
-                  onClick={handleRequestRental}
-                >
-                  {t('listings.requestToRent')}
-                </Button>
+                {isOwner ? (
+                  <p className="text-xs sm:text-sm text-gray-600 text-center py-2 bg-gray-50 rounded-md">
+                    {t('itemDetail.ownListing')}
+                  </p>
+                ) : (
+                  <Button
+                    className="item-modal-btn w-full bg-green-600 hover:bg-green-700 text-white py-2 text-xs sm:text-sm"
+                    onClick={handleRequestRental}
+                  >
+                    {t('listings.requestToRent')}
+                  </Button>
+                )}
                 <div className="flex gap-1 sm:gap-2">
                   <Button 
                     variant="outline" 

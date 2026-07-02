@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from '@/components/ui/use-toast';
 import authService from "@/services/auth.service";
 import { loginSchema } from "@/utils/validators";
+import { getApiError } from "@/utils/apiError";
 import { useTranslation } from "react-i18next";
 
 type FormData = {
@@ -54,11 +55,10 @@ const Login = () => {
 
       navigate('/advertisements', { replace: true });
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || t('auth.login.failedFallback');
-      const fieldErrors = error.response?.data?.data;
+      // Fix 1: login 401 no longer refreshes/redirects — render the real error here.
       toast({
         title: t('auth.login.errorTitle'),
-        description: fieldErrors?.detail || fieldErrors?.phone_number?.[0] || errorMessage,
+        description: getApiError(error),
         variant: 'destructive',
       });
     } finally {

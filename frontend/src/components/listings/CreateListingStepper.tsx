@@ -14,7 +14,8 @@ import { OwnershipHistory } from '@/constants/productAttributes';
 import productService from '@/services/product.service';
 import { useTranslation } from 'react-i18next';
 import { toast } from '@/components/ui/use-toast';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { getApiError } from '@/utils/apiError';
 import { 
   validateBasicDetails, 
   validateImageUpload, 
@@ -38,6 +39,7 @@ interface Props {
 
 const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false, productId: initialProductId, onSubmit, onEditComplete }: Props) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
   const [isEditing, setIsEditing] = useState(initialIsEditing || location.state?.isEditing || false);
@@ -136,41 +138,36 @@ const CreateListingStepper = ({ initialData, isEditing: initialIsEditing = false
 
     setIsSubmitting(true);
     try {
-      let response;
-      if (isEditing && productId) {
-        response = await productService.updateProduct(productId, formData);
-      } else {
-        response = await productService.createProduct(formData);
+      const response = isEditing && productId
+        ? await productService.updateProduct(productId, formData)
+        : await productService.createProduct(formData);
+
+      // productService already fires the success toast + query invalidation.
+      if (!isEditing) {
+        // Fix 4: on 201, route straight to the new listing.
+        if (response?.id) navigate(`/items/${response.id}`);
+        return;
       }
-      
+
+      // Edit flow keeps the in-stepper confirmation step.
       if (response?.id) {
         setProductId(response.id);
         setCurrentStep(6);
       }
-
-      // Call the completion callback if provided
-      if (isEditing && onEditComplete) {
+      if (onEditComplete) {
         onEditComplete();
       }
-
-      toast({
-        title: t('common.toastSuccess'),
-        description: isEditing ? t('listing.confirm.updatedTitle') : t('listing.confirm.createdTitle'),
-        variant: "default"
-      });
     } catch (error: any) {
       toast({
         title: t('common.toastError'),
-        description: error instanceof Error ? error.message : t('listing.saveFailed'),
+        description: getApiError(error),
         variant: "destructive"
       });
 
-      if (error.response?.data) {
-        // Handle validation errors from the backend
-        const errorData = error.response.data;
-        if (typeof errorData === 'object') {
-          setErrors(errorData);
-        }
+      // Field errors live in the envelope's `data` object.
+      const fieldErrors = error.response?.data?.data;
+      if (fieldErrors && typeof fieldErrors === 'object') {
+        setErrors(fieldErrors);
       }
     } finally {
       setIsSubmitting(false);

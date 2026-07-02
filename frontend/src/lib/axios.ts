@@ -15,6 +15,20 @@ api.interceptors.request.use((reqConfig) => {
   return reqConfig;
 });
 
+// Auth endpoints must never trigger the refresh-and-retry cascade: a 401 here
+// is a real credential/OTP error to surface, not an expired session. Refreshing
+// (and redirecting) on the login call's own 401 would reload the page and hide
+// the error.
+const AUTH_ENDPOINTS = [
+  '/auth/login/',
+  '/auth/token/refresh/',
+  '/auth/otp/request/',
+  '/auth/otp/verify/',
+];
+
+const isAuthEndpoint = (url?: string) =>
+  !!url && AUTH_ENDPOINTS.some((path) => url.includes(path));
+
 // Response interceptor - silent token refresh on 401
 let isRefreshing = false;
 let refreshQueue: Array<(token: string) => void> = [];
@@ -24,9 +38,12 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    const isRefreshCall = originalRequest?.url?.includes('/auth/token/refresh/');
-
-    if (error.response?.status === 401 && !originalRequest._retry && !isRefreshCall) {
+    // Only refresh-and-retry (at most once) for 401s on authenticated endpoints.
+    if (
+      error.response?.status === 401 &&
+      !originalRequest?._retry &&
+      !isAuthEndpoint(originalRequest?.url)
+    ) {
       if (isRefreshing) {
         // Queue requests while refresh is in progress
         return new Promise((resolve) => {

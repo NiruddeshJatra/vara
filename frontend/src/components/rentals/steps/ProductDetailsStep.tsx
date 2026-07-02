@@ -1,5 +1,5 @@
 // components/rentals/steps/ProductDetailsStep.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   AlertCircle,
   ChevronRight,
@@ -56,6 +56,22 @@ const ProductDetailsStep = ({
 
   // State to control calendar visibility
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const calendarRef = useRef<HTMLDivElement>(null);
+
+  // Close the calendar when clicking outside of it
+  useEffect(() => {
+    if (!isCalendarOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        calendarRef.current &&
+        !calendarRef.current.contains(event.target as Node)
+      ) {
+        setIsCalendarOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isCalendarOpen]);
 
   const selectedTier =
     pricing_tiers.length > 0
@@ -210,7 +226,7 @@ const ProductDetailsStep = ({
               <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
                 {t('requestRental.startDateLabel')} <span className="text-red-500">*</span>
               </label>
-              <div className="relative w-full">
+              <div className="relative w-full" ref={calendarRef}>
                 <input
                   type="text"
                   value={
@@ -233,6 +249,7 @@ const ProductDetailsStep = ({
                     selected={formData.start_date}
                     onSelect={(date) => {
                       handleInputChange({ start_date: date });
+                      setIsCalendarOpen(false);
                     }}
                     className="rounded-md border border-gray-300 focus:border-green-500 focus:ring-green-500 bg-white absolute top-full left-0 mt-2 z-10"
                     classNames={{
