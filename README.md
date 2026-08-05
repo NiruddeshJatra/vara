@@ -189,8 +189,8 @@ the Bhara REST API.
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/NiruddeshJatra/vara.git
-cd vara
+git clone https://github.com/NiruddeshJatra/bhara-frontend.git
+cd bhara-frontend
 npm install
 ```
 
@@ -282,7 +282,7 @@ statuses are colour-coded consistently across cards, badges, and filters:
 | | |
 |---|---|
 | 🌐 **Live app** | [bhara.xyz](https://bhara.xyz) |
-| 💻 **Repository** | [github.com/NiruddeshJatra/vara](https://github.com/NiruddeshJatra/vara) |
+| 💻 **Repository** | [github.com/NiruddeshJatra/bhara-frontend](https://github.com/NiruddeshJatra/bhara-frontend) |
 | 🔌 **API** | `api.bhara.xyz` (configure via `VITE_API_URL`) |
 | 📋 **Rebuild spec** | [`bhara_rebuild_spec.md`](bhara_rebuild_spec.md) |
 | 🌍 **Translation review** | [`TRANSLATION_REVIEW.md`](TRANSLATION_REVIEW.md) |
