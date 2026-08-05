@@ -1,6 +1,0 @@
-# All files are consistent.
-# - User, Review, and Product models properly update average_rating.
-# - Rental workflows and payment processes are in place.
-# - Serializers and views correctly expose required endpoints.
-# - API documentation covers all endpoints.
-# No changes required.
